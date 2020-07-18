@@ -1,0 +1,15 @@
+{{define "content"}}
+  <article class="grid">
+    <div>
+      <hgroup>
+        <h1>Import Feeds</h1>
+        <h2>Import feeds to follow multiple users or feeds or import from another client</h2>
+      </hgroup>
+      <form action="/import" method="POST">
+        <textarea id="feeds" name="feeds" placeholder="Feeds in nick: url, one per line" rows=24 autofocus required></textarea>
+        <button type="submit" class="primary">Import</button>
+      </form>
+    </div>
+    <div></div>
+  </article>
+{{end}}

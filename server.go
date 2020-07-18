@@ -183,6 +183,9 @@ func (s *Server) initRoutes() {
 	s.router.GET("/follow", s.am.MustAuth(s.FollowHandler()))
 	s.router.POST("/follow", s.am.MustAuth(s.FollowHandler()))
 
+	s.router.GET("/import", s.am.MustAuth(s.ImportHandler()))
+	s.router.POST("/import", s.am.MustAuth(s.ImportHandler()))
+
 	s.router.GET("/unfollow", s.am.MustAuth(s.UnfollowHandler()))
 	s.router.POST("/unfollow", s.am.MustAuth(s.UnfollowHandler()))
 

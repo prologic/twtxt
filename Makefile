@@ -9,7 +9,7 @@ deps:
 	@go get github.com/GeertJohan/go.rice/rice
 
 dev: build
-	@./twtd -D
+	@./twtd -D -r
 
 build: generate
 	@go build -tags "netgo static_build" -installsuffix netgo \

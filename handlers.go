@@ -1,10 +1,12 @@
 package twtxt
 
 import (
+	"bufio"
 	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -304,6 +306,76 @@ func (s *Server) FollowHandler() httprouter.Handle {
 		ctx = &Context{
 			Error:   false,
 			Message: fmt.Sprintf("Successfully started following %s: %s", nick, url),
+		}
+		s.render("error", w, ctx)
+		return
+	}
+}
+
+// ImportHandler ...
+func (s *Server) ImportHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		if r.Method == "GET" {
+			s.render("import", w, ctx)
+			return
+		}
+
+		feeds := r.FormValue("feeds")
+
+		if feeds == "" {
+			ctx := &Context{
+				Error:   true,
+				Message: "Nothing to import!",
+			}
+			s.render("error", w, ctx)
+			return
+		}
+
+		user := ctx.User
+		if user == nil {
+			log.Fatalf("user not found in context")
+		}
+
+		re := regexp.MustCompile(`(?P<nick>.*?)[: ](?P<url>.*)`)
+
+		imported := 0
+
+		scanner := bufio.NewScanner(strings.NewReader(feeds))
+		for scanner.Scan() {
+			line := scanner.Text()
+			matches := re.FindStringSubmatch(line)
+			if len(matches) >= 2 {
+				nick := matches[0]
+				url := NormalizeURL(matches[1])
+				if nick != "" || url != "" {
+					user.Following[nick] = url
+					imported++
+				}
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			log.WithError(err).Error("error scanning feeds for import")
+			ctx := &Context{
+				Error:   true,
+				Message: "Error importing feeds",
+			}
+			s.render("error", w, ctx)
+		}
+
+		if err := s.db.SetUser(ctx.Username, user); err != nil {
+			ctx := &Context{
+				Error:   true,
+				Message: "Error importing feeds",
+			}
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx = &Context{
+			Error:   false,
+			Message: fmt.Sprintf("Successfully imported %d feeds", imported),
 		}
 		s.render("error", w, ctx)
 		return

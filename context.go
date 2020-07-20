@@ -5,6 +5,7 @@ import (
 
 	"github.com/prologic/twtxt/session"
 	log "github.com/sirupsen/logrus"
+	"github.com/vcraescu/go-paginator"
 )
 
 type Context struct {
@@ -22,6 +23,7 @@ type Context struct {
 
 	Tweeter Tweeter
 	Tweets  Tweets
+	Pager   paginator.Paginator
 }
 
 func NewContext(conf *Config, db Store, req *http.Request) *Context {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/goware/urlx"
@@ -54,6 +55,39 @@ func NormalizeURL(url string) string {
 		return ""
 	}
 	return norm
+}
+
+// SafeParseInt ...
+func SafeParseInt(s string, d int) int {
+	n, e := strconv.Atoi(s)
+	if e != nil {
+		return d
+	}
+	return n
+}
+
+// Abs returns the absolute value of x.
+func Abs(x int) int {
+	if x < 0 {
+		return x * -1
+	}
+	return x
+}
+
+// Max returns the larger of x or y.
+func Max(x, y int) int {
+	if x < y {
+		return y
+	}
+	return x
+}
+
+// Min returns the smaller of x or y.
+func Min(x, y int) int {
+	if x > y {
+		return y
+	}
+	return x
 }
 
 // FormatMentions turns `@<nick URL>` into `<a href="URL">@nick</a>`

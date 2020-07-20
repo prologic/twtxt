@@ -24,6 +24,7 @@ var (
 	register      bool
 	baseURL       string
 	cookieSecret  string
+	tweetsPerPage int
 	sessionExpiry time.Duration
 )
 
@@ -38,6 +39,7 @@ func init() {
 	flag.BoolVarP(&register, "register", "r", twtxt.DefaultRegister, "enable user registration")
 	flag.StringVarP(&baseURL, "base-url", "u", twtxt.DefaultBaseURL, "base url to use")
 	flag.StringVarP(&cookieSecret, "cookie-secret", "S", twtxt.DefaultCookieSecret, "cookie secret to use")
+	flag.IntVarP(&tweetsPerPage, "tweets-per-page", "T", twtxt.DefaultTweetsPerPage, "tweets per page to display")
 	flag.DurationVarP(&sessionExpiry, "session-expiry", "E", twtxt.DefaultSessionExpiry, "session expiry to use")
 }
 
@@ -84,6 +86,7 @@ func main() {
 		twtxt.WithBaseURL(baseURL),
 		twtxt.WithRegister(register),
 		twtxt.WithCookieSecret(cookieSecret),
+		twtxt.WithTweetsPerPage(tweetsPerPage),
 		twtxt.WithSessionExpiry(sessionExpiry),
 	)
 	if err != nil {

@@ -21,6 +21,9 @@ const (
 	// DefaultCookieSecret is the server's default cookie secret
 	DefaultCookieSecret = "PLEASE_CHANGE_ME!!!"
 
+	// DefaultTweetsPerPage is the server's default tweets per page to display
+	DefaultTweetsPerPage = 50
+
 	// DefaultSessionExpiry is the server's default session expiry time
 	DefaultSessionExpiry = 24 * time.Hour
 )
@@ -80,6 +83,14 @@ func WithRegister(register bool) Option {
 func WithCookieSecret(secret string) Option {
 	return func(cfg *Config) error {
 		cfg.CookieSecret = secret
+		return nil
+	}
+}
+
+// WithTweetsPerPage sets the server's tweets per page
+func WithTweetsPerPage(tweetsPerPage int) Option {
+	return func(cfg *Config) error {
+		cfg.TweetsPerPage = tweetsPerPage
 		return nil
 	}
 }

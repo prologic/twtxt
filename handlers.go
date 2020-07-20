@@ -14,6 +14,8 @@ import (
 	securejoin "github.com/cyphar/filepath-securejoin"
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
+	"github.com/vcraescu/go-paginator"
+	"github.com/vcraescu/go-paginator/adapter"
 
 	"github.com/prologic/twtxt/session"
 )
@@ -183,11 +185,21 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(tweets))
 
-		if len(tweets) > 50 {
-			ctx.Tweets = tweets[:50]
-		} else {
-			ctx.Tweets = tweets
+		var pagedTweets Tweets
+
+		page := SafeParseInt(r.FormValue("page"), 1)
+		pager := paginator.New(adapter.NewSliceAdapter(tweets), s.config.TweetsPerPage)
+		pager.SetPage(page)
+
+		if err = pager.Results(&pagedTweets); err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading the  timeline"
+			s.render("error", w, ctx)
+			return
 		}
+
+		ctx.Tweets = pagedTweets
+		ctx.Pager = pager
 
 		s.render("timeline", w, ctx)
 	}
@@ -208,13 +220,23 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(tweets))
 
-		if len(tweets) > 50 {
-			ctx.Tweets = tweets[:50]
-		} else {
-			ctx.Tweets = tweets
+		var pagedTweets Tweets
+
+		page := SafeParseInt(r.FormValue("page"), 1)
+		pager := paginator.New(adapter.NewSliceAdapter(tweets), s.config.TweetsPerPage)
+		pager.SetPage(page)
+
+		if err = pager.Results(&pagedTweets); err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading the  timeline"
+			s.render("error", w, ctx)
+			return
 		}
 
-		s.render("discover", w, ctx)
+		ctx.Tweets = pagedTweets
+		ctx.Pager = pager
+
+		s.render("timeline", w, ctx)
 	}
 }
 

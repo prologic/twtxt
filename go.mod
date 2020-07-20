@@ -13,10 +13,12 @@ require (
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
 	github.com/gofrs/uuid v3.3.0+incompatible // indirect
+	github.com/gomarkdown/markdown v0.0.0-20200609195525-3f9352745725
 	github.com/goware/urlx v0.3.1
 	github.com/jinzhu/now v1.1.1 // indirect
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/lib/pq v1.7.0 // indirect
+	github.com/microcosm-cc/bluemonday v1.0.3
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prologic/bitcask v0.3.5

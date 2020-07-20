@@ -7,7 +7,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
 	"github.com/goware/urlx"
+	"github.com/microcosm-cc/bluemonday"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -90,12 +93,25 @@ func Min(x, y int) int {
 	return x
 }
 
+// FormatTweet formats a tweet into a valid HTML snippet
+func FormatTweet(text string) template.HTML {
+	htmlFlags := html.CommonFlags | html.HrefTargetBlank
+	opts := html.RendererOptions{Flags: htmlFlags}
+	renderer := html.NewRenderer(opts)
+
+	md := []byte(FormatMentions(text))
+	maybeUnsafeHTML := markdown.ToHTML(md, nil, renderer)
+	html := bluemonday.UGCPolicy().SanitizeBytes(maybeUnsafeHTML)
+
+	return template.HTML(html)
+}
+
 // FormatMentions turns `@<nick URL>` into `<a href="URL">@nick</a>`
-func FormatMentions(text string) template.HTML {
+func FormatMentions(text string) string {
 	re := regexp.MustCompile(`@<([^ ]+) *([^>]+)>`)
-	return template.HTML(re.ReplaceAllStringFunc(text, func(match string) string {
+	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
 		nick, url := parts[1], parts[2]
 		return fmt.Sprintf(`<a href="%s">@%s</a>`, url, nick)
-	}))
+	})
 }

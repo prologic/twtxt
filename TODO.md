@@ -12,6 +12,6 @@ In no particular order:
 
 - [ ] IndieAuth support
 - [ ] Account deletion
-- [ ] Render links
-- [ ] Render subset of Markdown
+- [X] Render links
+- [X] Render subset of Markdown
 - [ ] Reset password

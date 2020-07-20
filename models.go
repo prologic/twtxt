@@ -37,6 +37,11 @@ func LoadUser(data []byte) (user *User, err error) {
 	return
 }
 
+func (u *User) Follows(url string) bool {
+	_, ok := u.sources[NormalizeURL(url)]
+	return ok
+}
+
 func (u *User) Sources() map[string]string {
 	return u.sources
 }

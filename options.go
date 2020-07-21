@@ -15,7 +15,7 @@ const (
 	// DefaultName is the default instance name
 	DefaultName = "twtxt.net"
 
-	// DefaultTheme is teh default theme to use ('light' or 'dark')
+	// DefaultTheme is the default theme to use ('light' or 'dark')
 	DefaultTheme = "dark"
 
 	// DefaultRegister is the default user registration flag

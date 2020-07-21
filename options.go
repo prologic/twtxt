@@ -15,6 +15,9 @@ const (
 	// DefaultName is the default instance name
 	DefaultName = "twtxt.net"
 
+	// DefaultTheme is teh default theme to use ('light' or 'dark')
+	DefaultTheme = "dark"
+
 	// DefaultRegister is the default user registration flag
 	DefaultRegister = false
 
@@ -70,6 +73,14 @@ func WithBaseURL(baseURL string) Option {
 func WithName(name string) Option {
 	return func(cfg *Config) error {
 		cfg.Name = name
+		return nil
+	}
+}
+
+// WithTheme sets the default theme to use
+func WithTheme(theme string) Option {
+	return func(cfg *Config) error {
+		cfg.Theme = theme
 		return nil
 	}
 }

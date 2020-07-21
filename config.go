@@ -9,9 +9,10 @@ import (
 
 // Config contains the server configuration parameters
 type Config struct {
-	Data            string        `json:"data"`
-	Name            string        `json:"name"`
-	Store           string        `json:"store"`
+	Data            string `json:"data"`
+	Name            string `json:"name"`
+	Store           string `json:"store"`
+	Theme           string
 	BaseURL         string        `json:"base_url"`
 	Register        bool          `json:"register"`
 	RegisterMessage string        `json:"register_message"`

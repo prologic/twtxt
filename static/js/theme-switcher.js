@@ -40,6 +40,14 @@
    */
 
   function systemColorScheme() {
+    // Check `theme` cookie first.
+    let theme = getCookie("theme");
+    switch (theme) {
+      case "light":
+      case "dark":
+      return theme;
+    }
+
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return 'dark';
     }
@@ -72,16 +80,31 @@
         // Switch Theme
         if (switcher.currentTheme == 'light') {
           setTheme('dark');
+          storeTheme('dark');
         }
         else {
           setTheme('light');
+          storeTheme('light');
         }
 
       }, false);
     }
   }
 
-
+  function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i = 0; i < ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }
 
   /**
    * Set Theme
@@ -109,6 +132,16 @@
     switcher.currentTheme = set;
   }
 
+  /**
+   * Store Theme - Persists the theme in a cookie
+   *
+   * @param {string} set
+   */
+
+  function storeTheme(set) {
+    // Set a cookie to persist the theme
+    document.cookie = "theme=" + set + "; expires=Fri, 31 Dec 9999 23:59:59 UTC; path=/";
+  }
 
 
   /**

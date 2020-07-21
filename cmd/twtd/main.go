@@ -21,6 +21,7 @@ var (
 	data           string
 	store          string
 	name           string
+	theme          string
 	register       bool
 	baseURL        string
 	cookieSecret   string
@@ -37,6 +38,7 @@ func init() {
 	flag.StringVarP(&data, "data", "d", twtxt.DefaultData, "data directory")
 	flag.StringVarP(&store, "store", "s", twtxt.DefaultStore, "store to use")
 	flag.StringVarP(&name, "name", "n", twtxt.DefaultName, "set the instance's name")
+	flag.StringVarP(&theme, "theme", "t", twtxt.DefaultTheme, "set the default theme")
 	flag.BoolVarP(&register, "register", "r", twtxt.DefaultRegister, "enable user registration")
 	flag.StringVarP(&baseURL, "base-url", "u", twtxt.DefaultBaseURL, "base url to use")
 	flag.StringVarP(&cookieSecret, "cookie-secret", "S", twtxt.DefaultCookieSecret, "cookie secret to use")
@@ -84,6 +86,7 @@ func main() {
 	svr, err := twtxt.NewServer(bind,
 		twtxt.WithData(data),
 		twtxt.WithName(name),
+		twtxt.WithTheme(theme),
 		twtxt.WithStore(store),
 		twtxt.WithBaseURL(baseURL),
 		twtxt.WithRegister(register),

@@ -2,6 +2,7 @@ package twtxt
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/prologic/twtxt/session"
 	log "github.com/sirupsen/logrus"
@@ -21,6 +22,7 @@ type Context struct {
 
 	Error   bool
 	Message string
+	Theme   string
 
 	Tweeter Tweeter
 	Tweets  Tweets
@@ -33,6 +35,22 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		SoftwareVersion:  FullVersion(),
 		MaxTweetLength:   conf.MaxTweetLength,
 		RegisterDisabled: !conf.Register,
+
+		Theme: conf.Theme,
+	}
+
+	// Set the theme based on user-defined perfernece via Cookies
+	// XXX: This is what cookies were meant for :D (not tracking!)
+	if cookie, err := req.Cookie("theme"); err == nil {
+		log.Debugf("%#v", cookie)
+		name := strings.ToLower(cookie.Value)
+		switch name {
+		case "light", "dark":
+			log.Debugf("setting theme to %s", name)
+			ctx.Theme = name
+		default:
+			log.WithField("name", name).Warn("invalid theme found in user cookie")
+		}
 	}
 
 	if sess := req.Context().Value("sesssion"); sess != nil {

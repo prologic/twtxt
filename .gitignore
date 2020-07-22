@@ -3,16 +3,18 @@
 *.bak
 .DS_Store
 
-/dist
+/app/dist
 
-/twt
-/twtd
+/app/twt
+/app/twtd
 
-/cmd/twt/twt
-/cmd/twtd/twtd
+/app/cmd/twt/twt
+/app/cmd/twtd/twtd
 
 /data/cache
 /data/feeds/*
 /data/sourcees
 
-/rice-box.go
+/app/rice-box.go
+
+./data

@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+
+    twtxt:
+        build: .
+        ports:
+            - 8000:8000
+        volumes:
+            - ./data:/data

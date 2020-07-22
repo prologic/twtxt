@@ -37,6 +37,16 @@ go get -u github.com/prologic/twtxt/...
 
 ## Usage
 
+### Deploy with Docker
+
+Run :
+
+```console
+docker-compose up -d
+```
+
+Then visit: http://localhost:8000/
+
 ### CLI
 
 Run twt:

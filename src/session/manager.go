@@ -154,6 +154,8 @@ func (m *Manager) Handler(next http.Handler) http.Handler {
 			return
 		}
 
+		log.Debugf("sid: %#v", sid)
+
 		sesssion := NewSession(sid, m.store)
 
 		ctx := context.WithValue(r.Context(), "sesssion", sesssion)

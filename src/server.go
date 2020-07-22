@@ -248,7 +248,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 			strings.HasPrefix(config.BaseURL, "https"),
 			config.SessionExpiry,
 		),
-		session.NewMemoryStore(-1),
+		session.NewMemoryStore(config.SessionExpiry),
 	)
 
 	server := &Server{

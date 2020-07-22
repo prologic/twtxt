@@ -20,7 +20,7 @@ func TestNewID(t *testing.T) {
 		t.Errorf("Signed ID string was empty")
 	}
 
-	sid2, err := ValidateID(sid.String(), testSigningKey)
+	sid2, err := ValidateSessionID(sid.String(), testSigningKey)
 	if nil != err {
 		fmt.Printf("generated: %v \n expected: %v\n", sid, sid2)
 		t.Fatal(err)
@@ -34,7 +34,7 @@ func TestInvalidKey(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = ValidateID(sid.String(), "some other signing key")
+	_, err = ValidateSessionID(sid.String(), "some other signing key")
 	if nil == err {
 		t.Errorf("Was able to validate with incorrect signign key")
 	}
@@ -50,14 +50,14 @@ func TestModified(t *testing.T) {
 	runes[0]++
 	modsid := string(runes)
 
-	_, err = ValidateID(modsid, testSigningKey)
+	_, err = ValidateSessionID(modsid, testSigningKey)
 	if nil == err {
 		t.Errorf("Was able to validate modified encoded string")
 	}
 }
 
 func TestEmptyID(t *testing.T) {
-	_, err := ValidateID("", testSigningKey)
+	_, err := ValidateSessionID("", testSigningKey)
 	if err == nil {
 		t.Error("Able to validate empty key")
 	}
@@ -70,7 +70,7 @@ func TestBadKey(t *testing.T) {
 	}
 	badid := base64.URLEncoding.EncodeToString(buf)
 
-	_, err := ValidateID(badid, testSigningKey)
+	_, err := ValidateSessionID(badid, testSigningKey)
 	if err == nil {
 		t.Error("Able to validate bad key")
 	}

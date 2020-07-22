@@ -1,0 +1,40 @@
+---
+version: "3.8"
+
+services:
+  twtxt:
+    image: prologic/twtxt:latest
+    command: -d /data -r -s bitcask:///data/twtxt.db -u https://twtxt.net
+    environment:
+      - COOKIE_SECRET=PLEASE_CHANGE_ME_TO_A_64_BYTE_RANDOM_STRING
+    volumes:
+      - twtxt:/data
+    networks:
+      - traefik
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik"
+        - "traefik.http.services.twtxt.loadbalancer.server.port=8000"
+        - "traefik.http.routers.twtxt.rule=Host(`twtxt.net`)"
+      resources:
+        reservations:
+          cpus: "0.1"
+          memory: 128M
+        limits:
+          cpus: "0.2"
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+
+
+networks:
+  traefik:
+    external: true
+
+volumes:
+  twtxt:
+    driver: local

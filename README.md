@@ -54,6 +54,19 @@ $ twtd
 
 Then visit: http://localhost:8000/
 
+## Production Deployments
+
+### Docker Swarm
+
+You can deploy `twtxt` to a [Docker Swarm](https://docs.docker.com/engine/swarm/)
+cluster by utilsing the provided `twtxt.yaml` Docker Stack. This also depends on
+and uses the [Traefik](https://docs.traefik.io/) ingres load balancer so you must
+also have that configured and running in your cluster appropriately.
+
+```#!sh
+docker stack deploy -c twtxt.yml
+```
+
 ## Stargazers over time
 
 [![Stargazers over time](https://starcharts.herokuapp.com/prologic/twtxt.svg)](https://starcharts.herokuapp.com/prologic/twtxt)

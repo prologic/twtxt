@@ -17,7 +17,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Test
-        run: go test -v -cover -coverprofile=coverage.txt -covermode=atomic -race .
+        run: go test -v -cover -coverprofile=coverage.txt -covermode=atomic -race ./src
       - name: Report
         uses: codecov/codecov-action@v1
         with:

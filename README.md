@@ -30,18 +30,28 @@ There is also a publicly (_free_) service online available at:
 
 ### Source
 
-```#!bash
-$ go get -u github.com/prologic/twtxt/...
+```console
+go get -u github.com/prologic/twtxt/...
 ```
 
 ## Usage
+
+### Deploy with Docker Compose
+
+Run the compose configuration:
+
+```console
+docker-compose up -d
+```
+
+Then visit: http://localhost:8000/
 
 ### Web App
 
 Run twtd:
 
-```#!bash
-$ twtd
+```console
+twtd
 ```
 
 Then visit: http://localhost:8000/
@@ -55,7 +65,7 @@ cluster by utilsing the provided `twtxt.yaml` Docker Stack. This also depends on
 and uses the [Traefik](https://docs.traefik.io/) ingres load balancer so you must
 also have that configured and running in your cluster appropriately.
 
-```#!sh
+```console
 docker stack deploy -c twtxt.yml
 ```
 

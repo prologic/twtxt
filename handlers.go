@@ -40,6 +40,70 @@ func (s *Server) PageHandler(name string) httprouter.Handle {
 	}
 }
 
+// ProfileHandler ...
+func (s *Server) ProfileHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		nick := NormalizeUsername(p.ByName("nick"))
+		if nick == "" {
+			ctx.Error = true
+			ctx.Message = "No user specified"
+			s.render("error", w, ctx)
+			return
+		}
+
+		nick = NormalizeUsername(nick)
+
+		userProfile, err := s.db.GetUser(nick)
+		if err != nil {
+			log.WithError(err).Errorf("error loading user object for %s", nick)
+			ctx.Error = true
+			ctx.Message = "Error loading profile"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Profile = userProfile
+
+		var (
+			tweets Tweets
+			cache  Cache
+		)
+
+		cache, err = LoadCache(s.config.Data)
+		if err != nil {
+			log.WithError(err).Error("error loading cache")
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading the profile"
+			s.render("error", w, ctx)
+			return
+		}
+
+		tweets = append(tweets, cache.GetByURL(userProfile.URL)...)
+
+		sort.Sort(sort.Reverse(tweets))
+
+		var pagedTweets Tweets
+
+		page := SafeParseInt(r.FormValue("page"), 1)
+		pager := paginator.New(adapter.NewSliceAdapter(tweets), s.config.TweetsPerPage)
+		pager.SetPage(page)
+
+		if err = pager.Results(&pagedTweets); err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading the  timeline"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Tweets = pagedTweets
+		ctx.Pager = pager
+
+		s.render("profile", w, ctx)
+	}
+}
+
 // TwtxtHandler ...
 func (s *Server) TwtxtHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

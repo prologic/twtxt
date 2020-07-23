@@ -194,8 +194,9 @@ func (s *Server) initRoutes() {
 
 	s.router.POST("/post", s.am.MustAuth(s.PostHandler()))
 
-	s.router.HEAD("/u/:nick", s.TwtxtHandler())
-	s.router.GET("/u/:nick", s.TwtxtHandler())
+	s.router.GET("/u/:nick", s.am.MustAuth(s.ProfileHandler()))
+	s.router.HEAD("/u/:nick/twtxt.txt", s.TwtxtHandler())
+	s.router.GET("/u/:nick/twtxt.txt", s.TwtxtHandler())
 
 	s.router.GET("/login", s.LoginHandler())
 	s.router.POST("/login", s.LoginHandler())

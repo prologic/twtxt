@@ -10,14 +10,17 @@ import (
 )
 
 type Context struct {
+	BaseURL                 string
 	InstanceName            string
 	SoftwareVersion         string
+	TweetsPerPage           int
 	MaxTweetLength          int
 	RegisterDisabled        bool
 	RegisterDisabledMessage string
 
 	Username      string
 	User          *User
+	Profile       *User
 	Authenticated bool
 
 	Error   bool
@@ -32,8 +35,10 @@ type Context struct {
 
 func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	ctx := &Context{
+		BaseURL:          conf.BaseURL,
 		InstanceName:     conf.Name,
 		SoftwareVersion:  FullVersion(),
+		TweetsPerPage:    conf.TweetsPerPage,
 		MaxTweetLength:   conf.MaxTweetLength,
 		RegisterDisabled: !conf.Register,
 
@@ -86,4 +91,8 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	}
 
 	return ctx
+}
+
+func (ctx Context) IsFeed(url string) bool {
+	return !strings.HasPrefix(NormalizeURL(url), NormalizeURL(ctx.BaseURL))
 }

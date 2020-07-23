@@ -19,7 +19,7 @@ also hosts user feeds directly. It also  has a builtin registry and search.~
 
 `twtxt` provides a self-hosted, decentralised micro-blogging platform. No ads, no tracking, your content!
 
-There is also a publically (_free_) service online available at:
+There is also a publicly (_free_) service online available at:
 
 - https://twtxt.net/
 
@@ -37,24 +37,6 @@ go get -u github.com/prologic/twtxt/...
 
 ## Usage
 
-### Deploy with Docker
-
-Run :
-
-```console
-docker-compose up -d
-```
-
-Then visit: http://localhost:8000/
-
-### CLI
-
-Run twt:
-
-```console
-twt
-```
-
 ### Web App
 
 Run twtd:
@@ -64,6 +46,19 @@ twtd
 ```
 
 Then visit: http://localhost:8000/
+
+## Production Deployments
+
+### Docker Swarm
+
+You can deploy `twtxt` to a [Docker Swarm](https://docs.docker.com/engine/swarm/)
+cluster by utilsing the provided `twtxt.yaml` Docker Stack. This also depends on
+and uses the [Traefik](https://docs.traefik.io/) ingres load balancer so you must
+also have that configured and running in your cluster appropriately.
+
+```#!sh
+docker stack deploy -c twtxt.yml
+```
 
 ## Stargazers over time
 

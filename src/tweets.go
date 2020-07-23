@@ -71,6 +71,12 @@ func ExpandMentions(text string, user *User) string {
 	})
 }
 
+func AppendSpecial(path, specialUser, text string) error {
+	user := &User{Username: specialUser}
+	user.Following = make(map[string]string)
+	return AppendTweet(path, text, user)
+}
+
 func AppendTweet(path, text string, user *User) error {
 	p := filepath.Join(path, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {

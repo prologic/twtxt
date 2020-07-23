@@ -12,8 +12,10 @@ type User struct {
 	URL       string
 	CreatedAt time.Time
 
+	Followers map[string]string
 	Following map[string]string
 
+	remotes map[string]string
 	sources map[string]string
 }
 
@@ -22,8 +24,19 @@ func LoadUser(data []byte) (user *User, err error) {
 		return nil, err
 	}
 
+	if user.Followers == nil {
+		user.Followers = make(map[string]string)
+	}
 	if user.Following == nil {
 		user.Following = make(map[string]string)
+	}
+
+	user.remotes = make(map[string]string)
+	for n, u := range user.Followers {
+		if u = NormalizeURL(u); u == "" {
+			continue
+		}
+		user.remotes[u] = n
 	}
 
 	user.sources = make(map[string]string)
@@ -39,6 +52,11 @@ func LoadUser(data []byte) (user *User, err error) {
 
 func (u *User) Is(username string) bool {
 	return NormalizeUsername(u.Username) == NormalizeUsername(username)
+}
+
+func (u *User) FollowedBy(url string) bool {
+	_, ok := u.remotes[NormalizeURL(url)]
+	return ok
 }
 
 func (u *User) Follows(url string) bool {

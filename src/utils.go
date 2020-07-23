@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -15,17 +16,28 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	meSpecialUser      = "me"
+	newsSpecialUser    = "news"
+	helpSpecialUser    = "help"
+	twtxtSpecialUser   = "twtxt"
+	supportSpecialUser = "support"
+)
+
 var (
 	reservedUsernames = []string{
-		"me",
-		"news",
-		"help",
-		"support",
+		meSpecialUser,
+		newsSpecialUser,
+		helpSpecialUser,
+		twtxtSpecialUser,
+		supportSpecialUser,
 	}
 
-	validUsername = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]+$`)
+	validUsername  = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]+$`)
+	userAgentRegex = regexp.MustCompile(`(.*?)\/(.*?) ?\(\+(https?://.*); @(.*)\)`)
 
 	ErrInvalidUsername  = errors.New("error: invalid username")
+	ErrInvalidUserAgent = errors.New("error: invalid twtxt user agent")
 	ErrReservedUsername = errors.New("error: username is reserved")
 )
 
@@ -36,6 +48,26 @@ type URI struct {
 
 func (u *URI) String() string {
 	return fmt.Sprintf("%s://%s", u.Type, u.Path)
+}
+
+type TwtxtUserAgent struct {
+	ClientName    string
+	ClientVersion string
+	Nick          string
+	URL           string
+}
+
+func DetectFollowerFromUserAgent(ua string) (*TwtxtUserAgent, error) {
+	match := userAgentRegex.FindStringSubmatch(ua)
+	if match == nil {
+		return nil, ErrInvalidUserAgent
+	}
+	return &TwtxtUserAgent{
+		ClientName:    match[1],
+		ClientVersion: match[2],
+		URL:           match[3],
+		Nick:          match[4],
+	}, nil
 }
 
 func ParseURI(uri string) (*URI, error) {
@@ -73,6 +105,14 @@ func NormalizeURL(url string) string {
 		return ""
 	}
 	return norm
+}
+
+func URLForUser(baseURL, username string) string {
+	return fmt.Sprintf(
+		"%s/u/%s",
+		strings.TrimSuffix(baseURL, "/"),
+		username,
+	)
 }
 
 // SafeParseInt ...
@@ -136,4 +176,17 @@ func FormatMentions(text string) string {
 		nick, url := parts[1], parts[2]
 		return fmt.Sprintf(`<a href="%s">@%s</a>`, url, nick)
 	})
+}
+
+// FormatRequest generates ascii representation of a request
+func FormatRequest(r *http.Request) string {
+	return fmt.Sprintf(
+		"%s %v %s%v %v (%s)",
+		r.RemoteAddr,
+		r.Method,
+		r.Host,
+		r.URL,
+		r.Proto,
+		r.UserAgent(),
+	)
 }

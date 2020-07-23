@@ -1,4 +1,27 @@
 
+<a name="0.0.6"></a>
+## [0.0.6](https://github.com/prologic/twtxt/compare/0.0.5...0.0.6) (2020-07-23)
+
+### Bug Fixes
+
+* Fix formatting in FormatRequest
+* Fix the session timeout (which was never set0
+* Fix some embarassing typos :)
+* Fix error handling for parsing feeds and feed sources
+
+### Features
+
+* Add bad feed dtection and log possible bad feeds (no action taken yet)
+* Add new feature to detect new followers of feeds on twtxt.net from twtxt User-Agent strings
+* Add twtxt to reserve usernames
+* Add an improved /about page and add a /help page to help new users
+
+### Updates
+
+* Update README and remove references to the non-existent CLI (this will come later)
+* Update default job interval of UpdateFeedSourcesJob
+
+
 <a name="0.0.5"></a>
 ## [0.0.5](https://github.com/prologic/twtxt/compare/0.0.4...0.0.5) (2020-07-21)
 

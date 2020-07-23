@@ -20,7 +20,7 @@ func TestMemStore(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	memstore := NewMemStore(30 * time.Minute)
+	memstore := NewMemoryStore(30 * time.Minute)
 	err = memstore.Save(sid, state)
 	if nil != err {
 		t.Fatal(err)

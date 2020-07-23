@@ -11,8 +11,29 @@
       </form>
 
       <hgroup>
+        <h1>Followers</h1>
+        <h2>List of users following you</h2>
+      </hgroup>
+      {{ if .User.Followers }}
+        <ol>
+          {{ range $Nick, $URL := .User.Followers }}
+            <li>
+              {{ if $.User.Is $Nick }}
+                <a href="{{ $URL }}">me</a>
+              {{ else }}
+                <a href="{{ $URL }}">{{ $Nick }}</a>
+                (<i>{{ $URL }}</i>)&nbsp;[<a href="/unfollow?nick={{ $Nick }}">Unfollow</a>]
+              {{ end }}
+            </li>
+          {{ end }}
+        </oL>
+      {{ else }}
+        <small><i>You have no followers! Try making a post and users might <a href="/discover">/discover</a> you!</i></small>
+      {{ end }}
+
+      <hgroup>
         <h1>Following</h1>
-        <h2>List of feeds you are following</h2>
+        <h2>List of users and feeds you are following</h2>
       </hgroup>
       {{ if .User.Following }}
         <ol>

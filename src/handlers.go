@@ -67,6 +67,34 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 				stat.ModTime().UTC().Format(http.TimeFormat),
 			)
 		} else if r.Method == http.MethodGet {
+			followerClient, err := DetectFollowerFromUserAgent(r.UserAgent())
+			if err != nil {
+				log.WithError(err).Warnf("unable to detect twtxt client from %s", FormatRequest(r))
+			} else {
+				user, err := s.db.GetUser(nick)
+				if err != nil {
+					log.WithError(err).Warnf("error loading user object for %s", nick)
+				} else {
+					if !user.FollowedBy(followerClient.URL) {
+						if err := AppendSpecial(
+							s.config.Data,
+							twtxtSpecialUser,
+							fmt.Sprintf(
+								"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+								nick, URLForUser(s.config.BaseURL, nick),
+								followerClient.Nick, followerClient.URL,
+								followerClient.ClientName, followerClient.ClientVersion,
+							),
+						); err != nil {
+							log.WithError(err).Warnf("error appending special FOLLOW post")
+						}
+						user.Followers[followerClient.Nick] = followerClient.URL
+						if err := s.db.SetUser(nick, user); err != nil {
+							log.WithError(err).Warnf("error updating user object for %s", nick)
+						}
+					}
+				}
+			}
 			http.ServeFile(w, r, path)
 		} else {
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -386,11 +414,7 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			Password:  hash,
 			CreatedAt: time.Now(),
 
-			URL: fmt.Sprintf(
-				"%s/u/%s",
-				strings.TrimSuffix(s.config.BaseURL, "/"),
-				username,
-			),
+			URL: URLForUser(s.config.BaseURL, username),
 		}
 
 		s.db.SetUser(username, user)

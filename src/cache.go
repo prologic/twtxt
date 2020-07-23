@@ -142,6 +142,11 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 			case http.StatusOK: // 200
 				scanner := bufio.NewScanner(resp.Body)
 				tweets, err := ParseFile(scanner, Tweeter{Nick: nick, URL: url})
+				if len(tweets) == 0 {
+					log.WithField("nick", nick).WithField("url", url).Warn("possibly bad feed")
+					tweetsch <- nil
+					return
+				}
 				if err != nil {
 					log.WithError(err).Errorf("error parsing feed %s: %s", nick, url)
 					tweetsch <- nil

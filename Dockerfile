@@ -55,3 +55,4 @@ VOLUME /data
 COPY --from=build /src/twtd /twtd
 
 ENTRYPOINT ["/twtd"]
+CMD [""]

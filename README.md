@@ -30,9 +30,8 @@ There is also a publicly (_free_) service online available at:
 
 ### Source
 
-```console
-cd src
-go get -u github.com/prologic/twtxt/...
+```#!bash
+$ go get -u github.com/prologic/twtxt/...
 ```
 
 ## Usage
@@ -41,8 +40,8 @@ go get -u github.com/prologic/twtxt/...
 
 Run twtd:
 
-```console
-twtd
+```#!bash
+$ twtd
 ```
 
 Then visit: http://localhost:8000/

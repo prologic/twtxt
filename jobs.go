@@ -97,7 +97,7 @@ func (job *UpdateFeedsJob) Run() {
 		return
 	}
 
-	cache.FetchTweets(sources)
+	cache.FetchTweets(job.conf, sources)
 
 	if err := cache.Store(job.conf.Data); err != nil {
 		log.WithError(err).Warn("error saving feed cache")
@@ -184,11 +184,7 @@ func (job *FixUserAccountsJob) Run() {
 			user.Username = normalizedUsername
 
 			// Fix URL
-			user.URL = fmt.Sprintf(
-				"%s/u/%s",
-				strings.TrimSuffix(job.conf.BaseURL, "/"),
-				normalizedUsername,
-			)
+			user.URL = URLForUser(job.conf.BaseURL, normalizedUsername, true)
 
 			if err := job.db.SetUser(normalizedUsername, user); err != nil {
 				log.WithError(err).Errorf("error migrating user %s", normalizedUsername)
@@ -201,11 +197,7 @@ func (job *FixUserAccountsJob) Run() {
 		if user.URL == "" {
 			log.Infof("fixing URL for user %s", user.Username)
 			// Fix URL
-			user.URL = fmt.Sprintf(
-				"%s/u/%s",
-				strings.TrimSuffix(job.conf.BaseURL, "/"),
-				normalizedUsername,
-			)
+			user.URL = URLForUser(job.conf.BaseURL, normalizedUsername, true)
 
 			if err := job.db.SetUser(normalizedUsername, user); err != nil {
 				log.WithError(err).Errorf("error migrating user %s", normalizedUsername)
@@ -235,7 +227,7 @@ func (job *FixUserAccountsJob) Run() {
 			user.Followers = make(map[string]string)
 		}
 		for _, follower := range followers {
-			user.Followers[follower] = URLForUser(job.conf.BaseURL, follower)
+			user.Followers[follower] = URLForUser(job.conf.BaseURL, follower, true)
 		}
 
 		if err := job.db.SetUser(followee, user); err != nil {

@@ -156,7 +156,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 							"twtxt",
 							fmt.Sprintf(
 								"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-								nick, URLForUser(s.config.BaseURL, nick),
+								nick, URLForUser(s.config.BaseURL, nick, true),
 								followerClient.Nick, followerClient.URL,
 								followerClient.ClientName, followerClient.ClientVersion,
 							),
@@ -234,7 +234,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 				return err
 			}
 
-			cache.FetchTweets(sources)
+			cache.FetchTweets(s.config, sources)
 
 			if err := cache.Store(s.config.Data); err != nil {
 				log.WithError(err).Warn("error saving feed cache")
@@ -558,7 +558,7 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			Password:  hash,
 			CreatedAt: time.Now(),
 
-			URL: URLForUser(s.config.BaseURL, username),
+			URL: URLForUser(s.config.BaseURL, username, true),
 		}
 
 		if err := s.db.SetUser(username, user); err != nil {

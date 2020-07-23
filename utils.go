@@ -130,12 +130,16 @@ func NormalizeURL(url string) string {
 	return norm
 }
 
-func URLForUser(baseURL, username string) string {
-	return fmt.Sprintf(
+func URLForUser(baseURL, username string, feed bool) string {
+	url := fmt.Sprintf(
 		"%s/u/%s",
 		strings.TrimSuffix(baseURL, "/"),
 		username,
 	)
+	if feed {
+		url += "/twtxt.txt"
+	}
+	return url
 }
 
 // SafeParseInt ...

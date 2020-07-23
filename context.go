@@ -74,7 +74,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 
 		ctx.Tweeter = Tweeter{
 			Nick: user.Username,
-			URL:  user.URL,
+			URL:  URLForUser(conf.BaseURL, user.Username, false),
 		}
 
 		// Every registered new user follows themselves

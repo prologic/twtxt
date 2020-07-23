@@ -28,7 +28,7 @@
         <hgroup>
           <h2>
             {{ if $.User.Is .Tweeter.Nick }}
-              <a href="{{ $.User.URL }}">
+              <a href="{{ .Tweeter.URL }}">
                 <i class="icss-user"></i>
                 me
               </a>
@@ -42,7 +42,6 @@
                 {{ .Tweeter.Nick }}
               </a>
             {{ end }}
-            &nbsp;({{ .Created | Time }})
           </h2>
           <h3>
             {{ if (and $.Authenticated (not ($.User.Is .Tweeter.Nick))) }}
@@ -56,6 +55,7 @@
               {{ end }}
             {{ end }}
           </h3>
+          <footer>({{ .Created | Time }})</footer>
         </hgroup>
         <p>{{ .Text | FormatTweet }}</p>
       </article>

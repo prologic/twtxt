@@ -122,7 +122,7 @@ func GetAllTweets(conf *Config) (Tweets, error) {
 	for _, info := range files {
 		tweeter := Tweeter{
 			Nick: info.Name(),
-			URL:  fmt.Sprintf("%s/u/%s", strings.TrimSuffix(conf.BaseURL, "/"), info.Name()),
+			URL:  URLForUser(conf.BaseURL, info.Name(), false),
 		}
 		fn := filepath.Join(p, info.Name())
 		f, err := os.Open(fn)

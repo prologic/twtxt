@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -81,7 +82,7 @@ func LoadCache(path string) (Cache, error) {
 
 const maxfetchers = 50
 
-func (cache Cache) FetchTweets(sources map[string]string) {
+func (cache Cache) FetchTweets(conf *Config, sources map[string]string) {
 	var mu sync.RWMutex
 
 	// buffered to let goroutines write without blocking before the main thread
@@ -141,7 +142,13 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 			switch resp.StatusCode {
 			case http.StatusOK: // 200
 				scanner := bufio.NewScanner(resp.Body)
-				tweets, err := ParseFile(scanner, Tweeter{Nick: nick, URL: url})
+				tweeter := Tweeter{Nick: nick}
+				if strings.HasPrefix(url, conf.BaseURL) {
+					tweeter.URL = URLForUser(conf.BaseURL, nick, false)
+				} else {
+					tweeter.URL = url
+				}
+				tweets, err := ParseFile(scanner, tweeter)
 				if len(tweets) == 0 {
 					log.WithField("nick", nick).WithField("url", url).Warn("possibly bad feed")
 					tweetsch <- nil

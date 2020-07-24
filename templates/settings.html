@@ -21,11 +21,18 @@
               {{ if $.User.Is $Nick }}
                 <a href="{{ $URL }}">me</a>
               {{ else }}
-                <a href="{{ $URL }}">{{ $Nick }}</a>
+                <a href="{{ $URL }}">{{ $Nick }}
+                (<i>{{ $URL }}</i>)
                 {{ if $.User.Follows $URL }}
-                  (<i>{{ $URL }}</i>)&nbsp;[<a href="/unfollow?nick={{ $Nick }}">Unfollow</a>]
+                  <a href="/unfollow?nick={{ $Nick }}">
+                    <i class="icss-minus"></i>
+                    Unfollow
+                  </a>
                 {{ else }}
-                  (<i>{{ $URL }}</i>)&nbsp;[<a href="/follow?nick={{ $Nick }}&url={{ $URL }}">Follow</a>]
+                  <a href="/follow?nick={{ $Nick }}&url={{ $URL }}">
+                    <i class="icss-plus"></i>
+                    Follow
+                  </a>
                 {{ end }}
               {{ end }}
             </li>
@@ -47,7 +54,10 @@
                 <a href="{{ $URL }}">me</a>
               {{ else }}
                 <a href="{{ $URL }}">{{ $Nick }}</a>
-                (<i>{{ $URL }}</i>)&nbsp;[<a href="/unfollow?nick={{ $Nick }}">Unfollow</a>]
+                (<i>{{ $URL }}</i>)
+                <a href="/unfollow?nick={{ $Nick }}">
+                  <i class="icss-minus"></i>
+                </a>
               {{ end }}
             </li>
           {{ end }}

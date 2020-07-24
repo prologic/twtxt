@@ -21,21 +21,61 @@
         </a>
       </li>
       {{ if .Authenticated }}
-        <li><a href="/discover"><i class="icss-users"></i>/discover</a></li>
-        <li><a href="/feeds"><i class="icss-rss"></i>/feeds</a></li>
+        <li>
+          <a href="/discover">
+            <i class="icss-users"></i>
+            /discover
+          </a>
+        </li>
+        <li>
+          <a href="/feeds">
+            <i class="icss-rss"></i>
+            /feeds
+          </a>
+        </li>
       {{ end }}
     </ul>
     <ul>
       {{ if .Authenticated }}
-        <li><a href="/follow"><i class="icss-plus"></i>/follow</a></li>
-        <li><a class="secondary" href="/settings"><i class="icss-gear"></i>/settings</a></li>
-        <li><a class="secondary" href="/logout"><i class="icss-exit"></i>/logout</li>
+        <li>
+          <a href="/follow">
+            <i class="icss-plus"></i>
+            /follow
+          </a>
+        </li>
+        <li>
+          <a class="secondary" href="/settings">
+            <i class="icss-gear"></i>
+            /settings
+          </a>
+        </li>
+        <li>
+          <a class="secondary" href="/logout">
+            <i class="icss-exit"></i>
+            /logout
+          </a>
+        </li>
       {{ else }}
-        <li><a href="/login"><i class="icss-key"></i>login</a></li>
+        <li>
+          <a href="/login">
+            <i class="icss-key"></i>
+            /login
+          </a>
+        </li>
         {{ if .RegisterDisabled }}
-          <li><a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">/register</a></li>
+          <li>
+            <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">
+              <i class="icss-warning" style="color:red;"></i>
+              /register
+            </a>
+          </li>
         {{ else }}
-          <li><a href="/register"><i class="icss-smiley"></i>/register</a></li>
+          <li>
+            <a href="/register">
+              <i class="icss-smiley"></i>
+              /register
+            </a>
+          </li>
         {{ end }}
       {{ end }}
     </ul>

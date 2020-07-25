@@ -104,6 +104,9 @@ func (job *FixUserAccountsJob) Run() {
 		return
 	}
 
+	// followee -> list of followers
+	followers := make(map[string][]string)
+
 	for _, user := range users {
 		normalizedUsername := NormalizeUsername(user.Username)
 
@@ -161,5 +164,34 @@ func (job *FixUserAccountsJob) Run() {
 
 			log.Infof("successfully fixed URL for user %s", user.Username)
 		}
+
+		for _, url := range user.Following {
+			url = NormalizeURL(url)
+			if strings.HasPrefix(url, job.conf.BaseURL) {
+				followee := NormalizeUsername(NormalizeUsername(filepath.Base(url)))
+				followers[followee] = append(followers[followee], user.Username)
+			}
+		}
+	}
+
+	for followee, followers := range followers {
+		user, err := job.db.GetUser(followee)
+		if err != nil {
+			log.WithError(err).Warnf("error loading user object for %s", followee)
+			continue
+		}
+
+		if user.Followers == nil {
+			user.Followers = make(map[string]string)
+		}
+		for _, follower := range followers {
+			user.Followers[follower] = URLForUser(job.conf.BaseURL, follower)
+		}
+
+		if err := job.db.SetUser(followee, user); err != nil {
+			log.WithError(err).Warnf("error saving user object for %s", followee)
+			continue
+		}
+		log.Infof("updating %d followers for %s", len(followers), followee)
 	}
 }

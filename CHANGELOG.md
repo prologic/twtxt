@@ -1,4 +1,35 @@
 
+<a name="0.0.7"></a>
+## [0.0.7](https://github.com/prologic/twtxt/compare/0.0.6...0.0.7) (2020-07-24)
+
+### Bug Fixes
+
+* Fix .gitignore for ./data/sources
+* Fix bug updating followee Followers
+* Fix poor spacing between posts on larger devices (Fixes [#28](https://github.com/prologic/twtxt/issues/28))
+* Fix and remove accidently commited data/sources file (data is meant to be empty)
+* Fix bug with Follow/Unfollow and updating Followers, missed using NormalizeUsername()
+* Fix updating Followers on Follow/Unfollow for local users too
+* Fix potential nil map bug
+* Fix user accounts and populate local Followers
+* Fix the settings Followers Follow/Unfollow state
+* Fix build system to permit passing VERSION and COMMIT via --build-arg for docker build
+* Fix the CI builds to actually build the daemon ([#21](https://github.com/prologic/twtxt/issues/21))
+
+### Features
+
+* Add a convenient UI/UX [Reply] feature on posts
+* Add twtxt special feed updates for Follow/Unfollow events from the local instance
+* Add confirmation on account deletion in case of accidental clicks
+* Add support for faster Docker builds by refactoring the Dockerfile ([#20](https://github.com/prologic/twtxt/issues/20))
+* Add Docker Swarmmode Stackfile for production deployments based on https://twtxt.net/ ([#22](https://github.com/prologic/twtxt/issues/22))
+* Add local (non-production) docker-compose.yml for reference and Docker-based development ([#25](https://github.com/prologic/twtxt/issues/25))
+
+### Updates
+
+* Update NewFixUserAccountsJob to 1h schedule
+
+
 <a name="0.0.6"></a>
 ## [0.0.6](https://github.com/prologic/twtxt/compare/0.0.5...0.0.6) (2020-07-23)
 

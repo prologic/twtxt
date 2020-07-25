@@ -22,7 +22,11 @@
                 <a href="{{ $URL }}">me</a>
               {{ else }}
                 <a href="{{ $URL }}">{{ $Nick }}</a>
-                (<i>{{ $URL }}</i>)&nbsp;[<a href="/unfollow?nick={{ $Nick }}">Unfollow</a>]
+                {{ if $.User.Follows $URL }}
+                  (<i>{{ $URL }}</i>)&nbsp;[<a href="/unfollow?nick={{ $Nick }}">Unfollow</a>]
+                {{ else }}
+                  (<i>{{ $URL }}</i>)&nbsp;[<a href="/follow?nick={{ $Nick }}&url={{ $URL }}">Follow</a>]
+                {{ end }}
               {{ end }}
             </li>
           {{ end }}
@@ -60,7 +64,7 @@
         <b>WARNING:</b>&nbsp;This is permanent and cannot be undone!
         (<i>There is no confirmation!</i>)
       </p>
-      <form action="/delete" method="POST">
+      <form action="/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone!');">
         <button type="submit" class="button-red">Delete</button>
       </form>
     </div>

@@ -50,11 +50,40 @@ Then visit: http://localhost:8000/
 
 Run twtd:
 
+<<<<<<< HEAD
 ```console
 twtd
+=======
+```#!bash
+$ twtd -r
+>>>>>>> 08fcf9aa0bc9e221ccf1690207ee05001e4dccbb
 ```
 
+__NOTE:__ Registrations are disabled by default so hence the `-r` flag above.
+
 Then visit: http://localhost:8000/
+
+You can configure other options by specifying them on the command-line:
+
+```#!sh
+$ ./twtd -h
+Usage of ./twtd:
+  -u, --base-url string           base url to use (default "http://0.0.0.0:8000")
+  -b, --bind string               [int]:<port> to bind to (default "0.0.0.0:8000")
+  -S, --cookie-secret string      cookie secret to use (default "PLEASE_CHANGE_ME!!!")
+  -d, --data string               data directory (default "./data")
+  -D, --debug                     enable debug logging
+  -F, --feed-sources strings      external feed sources (default [https://feeds.twtxt.net/we-are-feeds.txt,https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt])
+  -L, --max-tweet-length int      maximum length of posts (default 288)
+  -n, --name string               set the instance's name (default "twtxt.net")
+  -r, --register                  enable user registration
+  -E, --session-expiry duration   session expiry to use (default 24h0m0s)
+  -s, --store string              store to use (default "bitcask://twtxt.db")
+  -t, --theme string              set the default theme (default "dark")
+  -T, --tweets-per-page int       tweets per page to display (default 50)
+  -v, --version                   display version information
+pflag: help requested
+```
 
 ## Production Deployments
 

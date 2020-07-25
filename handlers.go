@@ -88,6 +88,9 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 						); err != nil {
 							log.WithError(err).Warnf("error appending special FOLLOW post")
 						}
+						if user.Followers == nil {
+							user.Followers = make(map[string]string)
+						}
 						user.Followers[followerClient.Nick] = followerClient.URL
 						if err := s.db.SetUser(nick, user); err != nil {
 							log.WithError(err).Warnf("error updating user object for %s", nick)
@@ -430,7 +433,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		nick := strings.TrimSpace(r.FormValue("nick"))
-		url := strings.TrimSpace(r.FormValue("url"))
+		url := NormalizeURL(r.FormValue("url"))
 
 		if r.Method == "GET" && nick == "" && url == "" {
 			s.render("follow", w, ctx)
@@ -456,6 +459,33 @@ func (s *Server) FollowHandler() httprouter.Handle {
 			ctx.Message = fmt.Sprintf("Error following feed %s: %s", nick, url)
 			s.render("error", w, ctx)
 			return
+		}
+
+		if strings.HasPrefix(url, s.config.BaseURL) {
+			followee, err := s.db.GetUser(NormalizeUsername(filepath.Base(url)))
+			if err != nil {
+				log.WithError(err).Warnf("error loading user object for followee %s", NormalizeUsername(filepath.Base(url)))
+			} else {
+				if followee.Followers == nil {
+					followee.Followers = make(map[string]string)
+				}
+				followee.Followers[user.Username] = user.URL
+				if err := s.db.SetUser(followee.Username, followee); err != nil {
+					log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
+				}
+				if err := AppendSpecial(
+					s.config.Data,
+					twtxtSpecialUser,
+					fmt.Sprintf(
+						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
+						user.Username, URLForUser(s.config.BaseURL, user.Username),
+						"twtxt", FullVersion(),
+					),
+				); err != nil {
+					log.WithError(err).Warnf("error appending special FOLLOW post")
+				}
+			}
 		}
 
 		ctx.Error = false
@@ -561,6 +591,32 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 			ctx.Message = fmt.Sprintf("Error unfollowing feed %s: %s", nick, url)
 			s.render("error", w, ctx)
 			return
+		}
+
+		if strings.HasPrefix(url, s.config.BaseURL) {
+			followee, err := s.db.GetUser(NormalizeUsername(filepath.Base(url)))
+			if err != nil {
+				log.WithError(err).Warnf("error loading user object for followee %s", NormalizeUsername(filepath.Base(url)))
+			} else {
+				if followee.Followers != nil {
+					delete(followee.Followers, user.Username)
+					if err := s.db.SetUser(followee.Username, followee); err != nil {
+						log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
+					}
+				}
+				if err := AppendSpecial(
+					s.config.Data,
+					twtxtSpecialUser,
+					fmt.Sprintf(
+						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
+						user.Username, URLForUser(s.config.BaseURL, user.Username),
+						"twtxt", FullVersion(),
+					),
+				); err != nil {
+					log.WithError(err).Warnf("error appending special FOLLOW post")
+				}
+			}
 		}
 
 		ctx.Error = false

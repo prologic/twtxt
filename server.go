@@ -296,6 +296,18 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	server.cron.Start()
 	log.Infof("started background jobs")
 
+	// Log interesting configuration options
+	log.Infof("Instance Name: %s", server.config.Name)
+	log.Infof("Base URL: %s", server.config.BaseURL)
+	log.Infof("User Registrationg: %t", server.config.Register)
+	log.Infof("Max Tweets per Page: %d", server.config.TweetsPerPage)
+	log.Infof("Maximum length of Posts: %d", server.config.MaxTweetLength)
+
+	// Warn about user registration being disabled.
+	if !server.config.Register {
+		log.Warn("User registrations are disabled as per configuration (no -r/--register)")
+	}
+
 	server.initRoutes()
 
 	return server, nil

@@ -13,7 +13,8 @@ type Config struct {
 	Name            string `json:"name"`
 	Store           string `json:"store"`
 	Theme           string
-	BaseURL         string        `json:"base_url"`
+	BaseURL         string `json:"base_url"`
+	AdminUser       string
 	FeedSources     []string      `json:"feed_sources"`
 	Register        bool          `json:"register"`
 	RegisterMessage string        `json:"register_message"`

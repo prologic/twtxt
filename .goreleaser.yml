@@ -1,8 +1,9 @@
 ---
 builds:
-  - binary: twtxtd
+  - binary: twtd
+    main: ./cmd/twtd
     flags: -tags "static_build"
-    ldflags: -w -X main.Version={{.Version}} -X main.Commit={{.Commit}}
+    ldflags: -w -X github.com/prologic/twtxt.Version={{.Version}} -X github.com/prologic/twtxt.Commit={{.Commit}}
     env:
       - CGO_ENABLED=0
     goos:
@@ -14,11 +15,16 @@ builds:
       - i386
       - amd64
       - arm
-      - amd64
+      - arm64
     goarm:
       - 6
       - 7
     hooks:
       pre: rice embed-go
-sign:
-  artifacts: checksum
+signs:
+  - artifacts: checksum
+release:
+  github:
+    owner: prologic
+    name: twtxt
+  draft: true

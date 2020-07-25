@@ -12,6 +12,9 @@ const (
 	// DefaultBaseURL is the default Base URL for the app used to construct feed URLs
 	DefaultBaseURL = "http://0.0.0.0:8000"
 
+	// DefaultAdminUser is the default admin user who has special features
+	DefaultAdminUser = "admin"
+
 	// DefaultName is the default instance name
 	DefaultName = "twtxt.net"
 
@@ -73,6 +76,14 @@ func WithStore(store string) Option {
 func WithBaseURL(baseURL string) Option {
 	return func(cfg *Config) error {
 		cfg.BaseURL = baseURL
+		return nil
+	}
+}
+
+// WithAdminUser sets the Admin user used for granting special features to
+func WithAdminUser(adminUser string) Option {
+	return func(cfg *Config) error {
+		cfg.AdminUser = adminUser
 		return nil
 	}
 }

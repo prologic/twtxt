@@ -1,57 +1,32 @@
-#!/bin/sh
+#!/bin/bash
 
-set -e
+# Get the highest tag number
+VERSION="$(git describe --abbrev=0 --tags)"
+VERSION=${VERSION:-'0.0.0'}
 
-# shellcheck source=./tools/functions.sh
-. "$(dirname "$0")/functions.sh"
+# Get number parts
+MAJOR="${VERSION%%.*}"
+VERSION="${VERSION#*.}"
+MINOR="${VERSION%%.*}"
+VERSION="${VERSION#*.}"
+PATCH="${VERSION%%.*}"
+VERSION="${VERSION#*.}"
 
-TAG="${TAG}"
+# Increase version
+PATCH=$((PATCH + 1))
 
-generate_next_tag() {
-  progress "Generating next tag"
+TAG="${1}"
 
-  if [ -z "$TAG" ]; then
-    version="$(git describe --abbrev=0 --tags)"
-    TAG="$(bump_version "$version")"
-  fi
-}
-
-generate_changelog() {
-  progress "Generating chnagelog for $TAG"
-  (
-    git-chglog --next-tag="${TAG}" --output CHANGELOG.md
-    git ci -a -m "Release ${TAG}"
-    git push -q
-  ) >&2
-}
-
-create_draft_release() {
-  progress "Creating draft release for $TAG"
-  (
-    github-release release \
-      -u prologic \
-      -r twtxt \
-      -t "${TAG}" \
-      -n "${TAG}" \
-      -d "$(git-chglog --next-tag "${TAG}" "${TAG}" | tail -n+5)" \
-      --draft
-  ) >&2
-}
-
-steps="generate_next_tag generate_changelog create_draft_release"
-
-_main() {
-  for step in $steps; do
-    if ! run "$step"; then
-      fail "Release failed"
-    fi
-  done
-
-  echo "🎉 All Done!"
-}
-
-if [ -n "$0" ] && [ x"$0" != x"-bash" ]; then
-  if ! _main "$@"; then
-    fail "Release failed"
-  fi
+if [ "${TAG}" = "" ]; then
+  TAG="${MAJOR}.${MINOR}.${PATCH}"
 fi
+
+echo "Releasing ${TAG} ..."
+
+git-chglog --next-tag="${TAG}" --output CHANGELOG.md
+git commit -a -m "Update CHANGELOG for ${TAG}"
+git tag -a -s -m "Release ${TAG}" "${TAG}"
+git push --tags
+goreleaser release \
+  --rm-dist \
+  --release-notes <(git-chglog --next-tag "${TAG}" "${TAG}" | tail -n+5)

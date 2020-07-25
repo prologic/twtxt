@@ -2,7 +2,9 @@ package twtxt
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -18,6 +20,10 @@ import (
 	"github.com/vcraescu/go-paginator/adapter"
 
 	"github.com/prologic/twtxt/session"
+)
+
+var (
+	ErrFeedImposter = errors.New("error: imposter detected, you do not own this feed")
 )
 
 func (s *Server) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
@@ -51,6 +57,11 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 
 		stat, err := os.Stat(path)
 		if err != nil {
+			if os.IsNotExist(err) {
+				http.Error(w, "Feed Not Found", http.StatusNotFound)
+				return
+			}
+
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -78,7 +89,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 					if !user.FollowedBy(followerClient.URL) {
 						if err := AppendSpecial(
 							s.config.Data,
-							twtxtSpecialUser,
+							"twtxt",
 							fmt.Sprintf(
 								"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 								nick, URLForUser(s.config.BaseURL, nick),
@@ -110,6 +121,8 @@ func (s *Server) PostHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
+		postas := strings.ToLower(strings.TrimSpace(r.FormValue("postas")))
+
 		text := CleanTweet(r.FormValue("text"))
 		if text == "" {
 			ctx.Error = true
@@ -117,8 +130,6 @@ func (s *Server) PostHandler() httprouter.Handle {
 			s.render("error", w, ctx)
 			return
 		}
-
-		log.Debugf("text: #%v", text)
 
 		user, err := s.db.GetUser(ctx.Username)
 		if err != nil {
@@ -129,7 +140,18 @@ func (s *Server) PostHandler() httprouter.Handle {
 			return
 		}
 
-		if err := AppendTweet(s.config.Data, text, user); err != nil {
+		switch postas {
+		case "", "me":
+			err = AppendTweet(s.config.Data, text, user)
+		default:
+			if user.OwnsFeed(postas) {
+				err = AppendSpecial(s.config.Data, postas, text)
+			} else {
+				err = ErrFeedImposter
+			}
+		}
+
+		if err != nil {
 			ctx.Error = true
 			ctx.Message = "Error posting tweet"
 			s.render("error", w, ctx)
@@ -273,6 +295,54 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 	}
 }
 
+// FeedHandler ...
+func (s *Server) FeedHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		name := NormalizeFeedName(r.FormValue("name"))
+
+		if err := ValidateFeedName(s.config.Data, name); err != nil {
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("Invalid feed name: %s", err.Error())
+			s.render("error", w, ctx)
+			return
+		}
+
+		if err := ctx.User.CreateFeed(s.config.Data, name); err != nil {
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("Error creating: %s", err.Error())
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.User.Follow(name, URLForUser(s.config.BaseURL, name))
+
+		if err := s.db.SetUser(ctx.Username, ctx.User); err != nil {
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("Error creating feed: %s", err.Error())
+			s.render("error", w, ctx)
+			return
+		}
+
+		if err := AppendSpecial(
+			s.config.Data,
+			"twtxt",
+			fmt.Sprintf(
+				"FEED: %s from @<%s %s>",
+				name, ctx.User.Username, URLForUser(s.config.BaseURL, ctx.User.Username),
+			),
+		); err != nil {
+			log.WithError(err).Warnf("error appending special FOLLOW post")
+		}
+
+		ctx.Error = false
+		ctx.Message = fmt.Sprintf("Successfully created feed: %s", name)
+		s.render("error", w, ctx)
+		return
+	}
+}
+
 // FeedsHandler ...
 func (s *Server) FeedsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -397,10 +467,17 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			return
 		}
 
-		if _, err := os.Stat(filepath.Join(s.config.Data, feedsDir, username)); err == nil {
+		fn := filepath.Join(s.config.Data, feedsDir, username)
+		if _, err := os.Stat(fn); err == nil {
 			ctx.Error = true
-			ctx.Message = "Delete user with that username already exists! Please pick another!"
+			ctx.Message = "Deleted user with that username already exists! Please pick another!"
 			s.render("error", w, ctx)
+			return
+		}
+
+		if err := ioutil.WriteFile(fn, []byte{}, 0644); err != nil {
+			log.WithError(err).Error("error creating new user feed")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -420,7 +497,11 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			URL: URLForUser(s.config.BaseURL, username),
 		}
 
-		s.db.SetUser(username, user)
+		if err := s.db.SetUser(username, user); err != nil {
+			log.WithError(err).Error("error saving user object for new user")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		log.Infof("user registered: %v", user)
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -475,7 +556,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 				}
 				if err := AppendSpecial(
 					s.config.Data,
-					twtxtSpecialUser,
+					"twtxt",
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
@@ -606,7 +687,7 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 				}
 				if err := AppendSpecial(
 					s.config.Data,
-					twtxtSpecialUser,
+					"twtxt",
 					fmt.Sprintf(
 						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 						followee.Username, URLForUser(s.config.BaseURL, followee.Username),

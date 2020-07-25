@@ -188,7 +188,9 @@ func (s *Server) initRoutes() {
 	s.router.HEAD("/", s.TimelineHandler())
 
 	s.router.GET("/discover", s.am.MustAuth(s.DiscoverHandler()))
+
 	s.router.GET("/feeds", s.am.MustAuth(s.FeedsHandler()))
+	s.router.POST("/feed", s.am.MustAuth(s.FeedHandler()))
 
 	s.router.POST("/post", s.am.MustAuth(s.PostHandler()))
 
@@ -299,6 +301,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	// Log interesting configuration options
 	log.Infof("Instance Name: %s", server.config.Name)
 	log.Infof("Base URL: %s", server.config.BaseURL)
+	log.Infof("Admin User: %s", server.config.AdminUser)
 	log.Infof("User Registrationg: %t", server.config.Register)
 	log.Infof("Max Tweets per Page: %d", server.config.TweetsPerPage)
 	log.Infof("Maximum length of Posts: %d", server.config.MaxTweetLength)

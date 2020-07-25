@@ -2,8 +2,43 @@
   <article class="grid">
     <div>
       <hgroup>
-        <h2>News and Automated Feeds</h2>
+        <h2>Create Feed</h2>
+        <h3>Here you can create your  own <sub>sub</sub>Feed</h3>
+        <footer>
+          <p>
+          </p>
+        </footer>
+      </hgroup>
+      <form action="/feed" method="POST">
+        <input type="text" name="name" placeholder="Name of your feed" aria-label="Username" autofocus required />
+        <button type="submit" class="primary">Create</button>
+      </form>
+    </div>
+  </article>
+  <article class="grid">
+    <div>
+      <hgroup>
+        <h2>External Feeds</h2>
         <h3>Here is a list of external feeds available that you can subscribe to and follow.</h3>
+        <footer>
+          <p>
+            These sources of feeds are externally sourced and configured by the operator of {{ .InstanceName }}.
+            By default <a href="https://twtxt.net">twtxt.net</a> sources feeds  from the following sources:
+            <ul>
+              <li><a href="https://feeds.twtxt.net">feeds.twtxt.net</a> an RSS/Atom to twtxt feed aggregator</li>
+              <li><a href="https://github.com/mdom/we-are-twtxt">we-are-twtxt</a> a sort-of directory of twtxt users users <i>often</i> add themselves to</li>
+            </ul>
+          </p>
+          <p>
+            If you want to add a new external feed source:
+            <ul>
+              <li>First make sure it has a valid RSS or Atom feed.(<i><a href="https://en.wikipedia.org/wiki/Atom_(Web_standard)">What's this?</a></i>)</li>
+              <li>Visit <a href="https://feeds.twtxt.net">feeds.twtxt.net</a> and give the feed a name and enter the RSS/Atom URL and hit Submit</li>
+            </ul>
+            In a few minutes the newly added external feed will show up in
+            <a href="https://twtxt.net/feeds">/feeds</a> here on {{ .InstanceName }}.
+          </p>
+        </footer>
       </hgroup>
       <ul>
         {{ range .Feeds }}

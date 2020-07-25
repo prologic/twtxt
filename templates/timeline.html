@@ -6,6 +6,15 @@
         <div class="grid">
           <textarea id="text" name="text" placeholder="What's on your mind?" rows=2 maxlength={{ .MaxTweetLength }} wrap="soft" autofocus required></textarea>
         </div>
+        <div class="grid">
+          <label for="postas" class="postas">Post as</label>
+          <select id="postas" class="postas" name="postas">
+            <option value="me" selected>me</option>
+            {{ range $index, $Feed := .User.Feeds }}
+              <option value="{{ $Feed }}">{{ $Feed }}</option>
+            {{ end }}
+          </select>
+        </div>
         <button type="submit">Post</button>
       </form>
     </div>

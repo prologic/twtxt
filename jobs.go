@@ -2,6 +2,7 @@ package twtxt
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,13 +15,53 @@ var Jobs map[string]JobFactory
 
 func init() {
 	Jobs = map[string]JobFactory{
-		"@every 15m": NewUpdateFeedSourcesJob,
 		"@every 5m":  NewUpdateFeedsJob,
-		"@every 1h":  NewFixUserAccountsJob,
+		"@every 15m": NewUpdateFeedSourcesJob,
+		"@hourly":    NewFixUserAccountsJob,
+		"@daily":     NewStatsJob,
 	}
 }
 
 type JobFactory func(conf *Config, store Store) cron.Job
+
+type StatsJob struct {
+	conf *Config
+	db   Store
+}
+
+func NewStatsJob(conf *Config, db Store) cron.Job {
+	return &StatsJob{conf: conf, db: db}
+}
+
+func (job *StatsJob) Run() {
+	users, err := job.db.GetAllUsers()
+	if err != nil {
+		log.WithError(err).Warn("unable to get all users from database")
+		return
+	}
+
+	log.Infof("updating stats")
+
+	var feeds int
+	for _, user := range users {
+		feeds += len(user.Feeds)
+	}
+
+	tweets, err := GetAllTweets(job.conf)
+	if err != nil {
+		log.WithError(err).Warnf("error calculating number of tweets")
+		return
+	}
+
+	text := fmt.Sprintf(
+		"🧮  USERS:%d FEEDS:%d POSTS:%d",
+		len(users), feeds, len(tweets),
+	)
+
+	if err := AppendSpecial(job.conf.Data, "stats", text); err != nil {
+		log.WithError(err).Warn("error updating stats feed")
+	}
+}
 
 type UpdateFeedsJob struct {
 	conf *Config
@@ -108,6 +149,15 @@ func (job *FixUserAccountsJob) Run() {
 	followers := make(map[string][]string)
 
 	for _, user := range users {
+		fn := filepath.Join(filepath.Join(job.conf.Data, feedsDir, user.Username))
+		if _, err := os.Stat(fn); os.IsNotExist(err) {
+			if err := ioutil.WriteFile(fn, []byte{}, 0644); err != nil {
+				log.WithError(err).Warnf("error touching feed file for user %s", user.Username)
+			} else {
+				log.Infof("touched feed file for user %s", user.Username)
+			}
+		}
+
 		normalizedUsername := NormalizeUsername(user.Username)
 
 		if normalizedUsername != user.Username {
@@ -193,5 +243,21 @@ func (job *FixUserAccountsJob) Run() {
 			continue
 		}
 		log.Infof("updating %d followers for %s", len(followers), followee)
+	}
+
+	adminUser, err := job.db.GetUser(job.conf.AdminUser)
+	if err != nil {
+		log.WithError(err).Warnf("error loading user object for AdminUser")
+	} else {
+		for _, specialUser := range specialUsernames {
+			if !adminUser.OwnsFeed(specialUser) {
+				adminUser.Feeds = append(adminUser.Feeds, specialUser)
+			}
+		}
+		if err := job.db.SetUser(adminUser.Username, adminUser); err != nil {
+			log.WithError(err).Warn("error saving user object for AdminUser")
+		} else {
+			log.Infof("updated AdminUser %s with %d specialUsername feeds", job.conf.AdminUser, len(specialUsernames))
+		}
 	}
 }

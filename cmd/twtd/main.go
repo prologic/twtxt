@@ -24,6 +24,7 @@ var (
 	theme          string
 	register       bool
 	baseURL        string
+	adminUser      string
 	feedSources    []string
 	cookieSecret   string
 	tweetsPerPage  int
@@ -42,6 +43,7 @@ func init() {
 	flag.StringVarP(&theme, "theme", "t", twtxt.DefaultTheme, "set the default theme")
 	flag.BoolVarP(&register, "register", "r", twtxt.DefaultRegister, "enable user registration")
 	flag.StringVarP(&baseURL, "base-url", "u", twtxt.DefaultBaseURL, "base url to use")
+	flag.StringVarP(&adminUser, "admin-user", "A", twtxt.DefaultAdminUser, "default admin user to use")
 	flag.StringSliceVarP(&feedSources, "feed-sources", "F", twtxt.DefaultFeedSources, "external feed sources")
 	flag.StringVarP(&cookieSecret, "cookie-secret", "S", twtxt.DefaultCookieSecret, "cookie secret to use")
 	flag.IntVarP(&maxTweetLength, "max-tweet-length", "L", twtxt.DefaultMaxTweetLength, "maximum length of posts")
@@ -92,6 +94,7 @@ func main() {
 		twtxt.WithStore(store),
 		twtxt.WithBaseURL(baseURL),
 		twtxt.WithRegister(register),
+		twtxt.WithAdminUser(adminUser),
 		twtxt.WithFeedSources(feedSources),
 		twtxt.WithCookieSecret(cookieSecret),
 		twtxt.WithTweetsPerPage(tweetsPerPage),

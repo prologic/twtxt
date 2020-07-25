@@ -1,6 +1,46 @@
 
+<a name="0.0.8"></a>
+## [0.0.8](https://github.com/prologic/twtxt/compare/0.0.7...0.0.8) (2020-07-26)
+
+### Bug Fixes
+
+* Fix releasee process to generate release-notes via git-chglog which are better than goreleaser's ones
+* Fix goarch in gorelease config (uggh)
+* Fix gorelease config (3rd time's the charm)
+* Fix gorelease config properly (this time)
+* Fix release tools and remove unused shell script
+* Fix goreleaser config
+* Fix binary release tools and process
+* Fix name of twtxt Docker Swarm Stackfile
+* Fix docker stack usage in README (Fixes [#34](https://github.com/prologic/twtxt/issues/34))
+* Fix typo in feeds template
+* Fix error handling for user registrationg and return 404 Feed Not Found for non-existent users/feeds
+* Fix build error (oops)
+* Fix set of reserved vs. special usernames
+* Fix unconstrained no. of user feeds to prevent abuse
+* Fix error message when trying to register an account with a previously deleted user (to preserve feeds)
+* Fix potential abuse of unconstrained username lengths
+* Fix and remove  some useless debugging
+* Fix documentation on configuration options and warn about user registration being disabled (Fixes [#29](https://github.com/prologic/twtxt/issues/29))
+* Fix the annoying greeting workflow and remove it (it's kind of annoying)
+
+### Features
+
+* Add git-chglog to release process to update the ongoing CHANGELOG too
+* Add feed creation event to the twtxt special feed
+* Add FixUserAccounts job logic to touch feed files for users that have never posted
+* Add automated internal special feed
+* Add documentation on using docker-compose ([#26](https://github.com/prologic/twtxt/issues/26))
+* Add new feature for creating sub-feeds / personas allowing users to create topic-based feeds and poast as those topics
+* Add a section to the help page on formatting posts
+
+### Updates
+
+* Update CHANGELOG for 0.0.8
+
+
 <a name="0.0.7"></a>
-## [0.0.7](https://github.com/prologic/twtxt/compare/0.0.6...0.0.7) (2020-07-24)
+## [0.0.7](https://github.com/prologic/twtxt/compare/0.0.6...0.0.7) (2020-07-25)
 
 ### Bug Fixes
 

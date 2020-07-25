@@ -17,29 +17,52 @@ import (
 )
 
 const (
-	meSpecialUser      = "me"
 	newsSpecialUser    = "news"
 	helpSpecialUser    = "help"
-	twtxtSpecialUser   = "twtxt"
 	supportSpecialUser = "support"
+
+	maxUsernameLength = 15 // avg 6 chars / 2 syllables per name commonly
+	maxFeedNameLength = 25 // avg 4.7 chars per word in English so ~5 words
 )
 
 var (
-	reservedUsernames = []string{
-		meSpecialUser,
+	specialUsernames = []string{
 		newsSpecialUser,
 		helpSpecialUser,
-		twtxtSpecialUser,
 		supportSpecialUser,
 	}
+	reservedUsernames = []string{
+		"me", "stats", "twtxt",
+	}
 
+	validFeedName  = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_ ]*$`)
 	validUsername  = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]+$`)
 	userAgentRegex = regexp.MustCompile(`(.*?)\/(.*?) ?\(\+(https?://.*); @(.*)\)`)
 
+	ErrInvalidFeedName  = errors.New("error: invalid feed name")
+	ErrFeedNameTooLong  = errors.New("error: feed name is too long")
 	ErrInvalidUsername  = errors.New("error: invalid username")
+	ErrUsernameTooLong  = errors.New("error: username is too long")
 	ErrInvalidUserAgent = errors.New("error: invalid twtxt user agent")
 	ErrReservedUsername = errors.New("error: username is reserved")
 )
+
+func NormalizeFeedName(name string) string {
+	name = strings.TrimSpace(name)
+	name = strings.ReplaceAll(name, " ", "_")
+	return name
+}
+
+func ValidateFeedName(path string, name string) error {
+	if !validFeedName.MatchString(name) {
+		return ErrInvalidFeedName
+	}
+	if len(name) > maxFeedNameLength {
+		return ErrFeedNameTooLong
+	}
+
+	return nil
+}
 
 type URI struct {
 	Type string
@@ -138,6 +161,10 @@ func ValidateUsername(username string) error {
 		if username == reservedUsername {
 			return ErrReservedUsername
 		}
+	}
+
+	if len(username) > maxUsernameLength {
+		return ErrUsernameTooLong
 	}
 
 	return nil

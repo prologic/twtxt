@@ -8,3 +8,14 @@ services:
             - 8000:8000
         volumes:
             - ./data:/data
+        environment: 
+            NAME: "twtxt.net"
+            BASE_URL: "http://0.0.0.0:8000"
+            BIND: "0.0.0.0:8000"
+            COOKIE_SECRET: "PLEASE_CHANGE_ME_TO_A_64_BYTE_RANDOM_STRING"
+            REGISTER: "true"
+            DEBUG: "false"
+            THEME: "dark"
+            MAX_TWEET_LENGTH: 288
+            TWEETS_PER_PAGE: 50
+            # See more in the documentation

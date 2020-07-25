@@ -6,7 +6,20 @@
         <h2>Update your account settings and password here</h2>
       </hgroup>
       <form action="/settings" method="POST">
-        <input type="password" name="password" placeholder="Updated password" aria-label="Password" autocomplete="current-password">
+        <div class="grid">
+          <div>
+            <label for="tagline">
+              Update tagline:
+              <input id="tagline" type="text" name="tagline" placeholder="A short description, catchphrase or slogan about yourself" aria-label="Tagline" />
+            </label>
+          </div>
+          <div>
+            <label for="password">
+              Change password:
+              <input id="password" type="password" name="password" placeholder="Updated password" aria-label="Password" autocomplete="current-password">
+            </label>
+          </div>
+        </div>
         <button type="submit" class="primary">Update</button>
       </form>
 

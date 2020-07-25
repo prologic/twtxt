@@ -782,6 +782,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		}
 
 		password := r.FormValue("password")
+		tagline := strings.TrimSpace(r.FormValue("tagline"))
 
 		user := ctx.User
 		if user == nil {
@@ -798,6 +799,8 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 
 			user.Password = hash
 		}
+
+		user.Tagline = tagline
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
 			ctx.Error = true

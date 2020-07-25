@@ -22,6 +22,7 @@ var (
 type User struct {
 	Username  string
 	Password  string
+	Tagline   string
 	Email     string
 	URL       string
 	CreatedAt time.Time

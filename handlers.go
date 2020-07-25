@@ -380,7 +380,7 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.User.Follow(name, URLForUser(s.config.BaseURL, name))
+		ctx.User.Follow(name, URLForUser(s.config.BaseURL, name, true))
 
 		if err := s.db.SetUser(ctx.Username, ctx.User); err != nil {
 			ctx.Error = true

@@ -50,13 +50,8 @@ Then visit: http://localhost:8000/
 
 Run twtd:
 
-<<<<<<< HEAD
 ```console
-twtd
-=======
-```#!bash
-$ twtd -r
->>>>>>> 08fcf9aa0bc9e221ccf1690207ee05001e4dccbb
+twtd -r
 ```
 
 __NOTE:__ Registrations are disabled by default so hence the `-r` flag above.
@@ -65,8 +60,8 @@ Then visit: http://localhost:8000/
 
 You can configure other options by specifying them on the command-line:
 
-```#!sh
-$ ./twtd -h
+```console
+./twtd -h
 Usage of ./twtd:
   -u, --base-url string           base url to use (default "http://0.0.0.0:8000")
   -b, --bind string               [int]:<port> to bind to (default "0.0.0.0:8000")

@@ -394,7 +394,7 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			"twtxt",
 			fmt.Sprintf(
 				"FEED: %s from @<%s %s>",
-				name, ctx.User.Username, URLForUser(s.config.BaseURL, ctx.User.Username),
+				name, ctx.User.Username, URLForUser(s.config.BaseURL, ctx.User.Username, false),
 			),
 		); err != nil {
 			log.WithError(err).Warnf("error appending special FOLLOW post")

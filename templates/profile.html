@@ -2,7 +2,7 @@
   <div class="grid">
     <div>
       <hgroup>
-        <h2>{{ .Profile.Username }}&nbsp;(<a href="{{ .Profile.URL }}">{{ .Profile.URL }}</a>)</h2>
+        <h2>{{ .Profile.Username }}</h2>
         <h3>
           {{ if $.User.Follows .Profile.URL }}
             <a href="/unfollow?nick={{ .Profile.Username  }}">
@@ -19,8 +19,9 @@
         <footer>
           <p><i>{{ .Profile.Tagline }}</i></p>
           <ul>
-            <li>Has {{ .Profile.Followers | len }} followers</li>
-            <li>Follows {{ .Profile.Following | len }} feeds </li>
+            <li>TwtURL: <a href="{{ .Profile.URL }}">{{ .Profile.URL }}</a></li>
+            <li>Followers: {{ .Profile.Followers | len }}</li>
+            <li>Following: {{ .Profile.Following | len }}</li>
           </ul>
         </footer>
       </hgroup>

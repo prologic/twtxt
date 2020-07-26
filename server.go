@@ -194,9 +194,14 @@ func (s *Server) initRoutes() {
 
 	s.router.POST("/post", s.am.MustAuth(s.PostHandler()))
 
-	s.router.GET("/u/:nick", s.am.MustAuth(s.ProfileHandler()))
-	s.router.HEAD("/u/:nick/twtxt.txt", s.TwtxtHandler())
-	s.router.GET("/u/:nick/twtxt.txt", s.TwtxtHandler())
+	// Redirect old URIs (twtxt <= v0.0.8) of the form /u/<nick> -> /user/<nick>/twtxt.txt
+	// TODO: Remove this after v1
+	s.router.GET("/u/:nick", s.OldTwtxtHandler())
+	s.router.HEAD("/u/:nick", s.OldTwtxtHandler())
+
+	s.router.GET("/user/:nick", s.am.MustAuth(s.ProfileHandler()))
+	s.router.HEAD("/user/:nick/twtxt.txt", s.TwtxtHandler())
+	s.router.GET("/user/:nick/twtxt.txt", s.TwtxtHandler())
 
 	s.router.GET("/login", s.LoginHandler())
 	s.router.POST("/login", s.LoginHandler())

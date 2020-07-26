@@ -104,6 +104,27 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 	}
 }
 
+// OldTwtxtHandler ...
+// Redirect old URIs (twtxt <= v0.0.8) of the form /u/<nick> -> /user/<nick>/twtxt.txt
+// TODO: Remove this after v1
+func (s *Server) OldTwtxtHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		nick := NormalizeUsername(p.ByName("nick"))
+		if nick == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		newURI := fmt.Sprintf(
+			"%s/user/%s/twtxt.txt",
+			strings.TrimSuffix(s.config.BaseURL, "/"),
+			nick,
+		)
+
+		http.Redirect(w, r, newURI, http.StatusMovedPermanently)
+	}
+}
+
 // TwtxtHandler ...
 func (s *Server) TwtxtHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

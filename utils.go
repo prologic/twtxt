@@ -132,7 +132,7 @@ func NormalizeURL(url string) string {
 
 func URLForUser(baseURL, username string, feed bool) string {
 	url := fmt.Sprintf(
-		"%s/u/%s",
+		"%s/user/%s",
 		strings.TrimSuffix(baseURL, "/"),
 		username,
 	)

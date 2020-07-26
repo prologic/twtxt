@@ -8,15 +8,19 @@
           </textarea>
         </div>
         <div class="grid">
-          <label for="postas" class="postas">Post as</label>
-          <select id="postas" class="postas" name="postas">
-            <option value="me" selected>me</option>
-            {{ range $index, $Feed := .User.Feeds }}
-              <option value="{{ $Feed }}">{{ $Feed }}</option>
-            {{ end }}
-          </select>
+          <div></div>
+          <div>
+            <select id="postas" class="postas" name="postas">
+              <option value="me" selected>Post as me</option>
+              {{ range $index, $Feed := .User.Feeds }}
+                <option value="{{ $Feed }}">{{ $Feed }}</option>
+              {{ end }}
+            </select>
+          </div>
+          <div>
+            <button type="submit">Post</button>
+          </div>
         </div>
-        <button type="submit">Post</button>
       </form>
     </div>
   </div>

@@ -21,7 +21,6 @@ require (
 	github.com/lib/pq v1.7.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.3
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prologic/bitcask v0.3.6
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.6.0
@@ -29,7 +28,7 @@ require (
 	github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8 // indirect
 	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
 	github.com/vcraescu/go-paginator v0.0.0-20200304054438-86d84f27c0b3
-	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899 // indirect
+	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
 	golang.org/x/sys v0.0.0-20200724161237-0e2f3a69832c // indirect

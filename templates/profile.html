@@ -44,7 +44,7 @@
   <div class="grid">
     <div>
       {{ range .Tweets }}
-        <article>
+        <article id="{{ .Hash }}">
           <hgroup>
             <h2>
               {{ if $.User.Is .Tweeter.TwtURL }}
@@ -64,7 +64,7 @@
                 </a>
               {{ end }}
             </h2>
-            <h3>({{ .Created | Time }})</h3>
+            <h3>(<a href="#{{ .Hash }}">{{ .Created | Time }}</a>)</h3>
           </hgroup>
           <p>{{ .Text | FormatTweet }}</p>
         </article>

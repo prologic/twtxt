@@ -4,6 +4,7 @@ package twtxt
 
 import (
 	"bufio"
+	"encoding/base32"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/blake2b"
 )
 
 const (
@@ -29,6 +31,23 @@ type Tweet struct {
 	Tweeter Tweeter
 	Text    string
 	Created time.Time
+
+	hash string
+}
+
+func (tweet Tweet) Hash() string {
+	if tweet.hash != "" {
+		return tweet.hash
+	}
+
+	payload := tweet.Created.String() + "\n" + tweet.Text
+	sum := blake2b.Sum256([]byte(payload))
+
+	// Base32 is URL-safe, unlike Base64, and shorter than hex.
+	encoding := base32.StdEncoding.WithPadding(base32.NoPadding)
+	tweet.hash = strings.ToLower(encoding.EncodeToString(sum[:]))
+
+	return tweet.hash
 }
 
 // typedef to be able to attach sort methods

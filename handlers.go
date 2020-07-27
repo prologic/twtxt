@@ -2,8 +2,10 @@ package twtxt
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
+	"image/png"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -13,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aofei/cameron"
 	securejoin "github.com/cyphar/filepath-securejoin"
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
@@ -115,6 +118,29 @@ func (s *Server) OldTwtxtHandler() httprouter.Handle {
 		)
 
 		http.Redirect(w, r, newURI, http.StatusMovedPermanently)
+	}
+}
+
+// AvatarHandler ...
+func (s *Server) AvatarHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		nick := NormalizeUsername(p.ByName("nick"))
+		if nick == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		if !s.db.HasUser(nick) && !FeedExists(s.config, nick) {
+			http.Error(w, "User or Feed Not Found", http.StatusNotFound)
+			return
+		}
+
+		buf := bytes.Buffer{}
+		img := cameron.Identicon([]byte(nick), 60, 12)
+		png.Encode(&buf, img)
+
+		w.Header().Set("Content-Type", "image/png")
+		w.Write(buf.Bytes())
 	}
 }
 

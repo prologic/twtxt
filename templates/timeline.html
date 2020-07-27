@@ -32,13 +32,13 @@
           <h2>
             {{ if $.User.Is .Tweeter.TwtURL }}
               <a href="{{ $.User.URL }}">
-                <i class="icss-user"></i>
+                <img src="/user/{{ $.User.Username }}/avatar.png" />
                 me
               </a>
             {{ else }}
               {{ if $.IsLocal .Tweeter.TwtURL }}
                 <a href="{{ .Tweeter.URL }}">
-                  <i class="icss-user-circle"></i>
+                  <img src="/user/{{ .Tweeter.Nick }}/avatar.png" />
               {{ else }}
                 <a href="{{ .Tweeter.TwtURL }}">
                   <i class="icss-rss"></i>

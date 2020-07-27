@@ -6,6 +6,7 @@ require (
 	github.com/GeertJohan/go.rice v1.0.0
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/andreadipersio/securecookie v0.0.0-20131119095127-e3c3b33544ec
+	github.com/aofei/cameron v1.1.4
 	github.com/coreos/go-etcd v2.0.0+incompatible // indirect
 	github.com/cpuguy83/go-md2man v1.0.10 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.2
@@ -20,6 +21,7 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/lib/pq v1.7.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.3
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prologic/bitcask v0.3.6
 	github.com/robfig/cron v1.2.0

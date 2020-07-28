@@ -28,9 +28,6 @@ type Store interface {
 
 	GetAllFeeds() ([]*Feed, error)
 	GetAllUsers() ([]*User, error)
-
-	GetSession(sid string) (*Session, error)
-	SetSession(sid string, session *Session) error
 }
 
 func NewStore(store string) (Store, error) {

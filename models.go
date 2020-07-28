@@ -228,26 +228,3 @@ func (u *User) Bytes() ([]byte, error) {
 	}
 	return data, nil
 }
-
-// Session ...
-type Session struct {
-	ID       int
-	User     int
-	Hash     string
-	ExpireAt time.Time
-}
-
-func LoadSession(data []byte) (session *Session, err error) {
-	if err = json.Unmarshal(data, session); err != nil {
-		return nil, err
-	}
-	return
-}
-
-func (s *Session) Bytes() ([]byte, error) {
-	data, err := json.Marshal(s)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
-}

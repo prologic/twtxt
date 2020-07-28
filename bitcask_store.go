@@ -144,23 +144,3 @@ func (bs *BitcaskStore) GetAllUsers() ([]*User, error) {
 
 	return users, nil
 }
-
-func (bs *BitcaskStore) GetSession(sid string) (*Session, error) {
-	data, err := bs.db.Get([]byte(fmt.Sprintf("/sessions/%s", sid)))
-	if err == bitcask.ErrKeyNotFound {
-		return nil, ErrInvalidSession
-	}
-	return LoadSession(data)
-}
-
-func (bs *BitcaskStore) SetSession(sid string, session *Session) error {
-	data, err := session.Bytes()
-	if err != nil {
-		return err
-	}
-
-	if err := bs.db.Put([]byte(fmt.Sprintf("/sessions/%s", sid)), data); err != nil {
-		return err
-	}
-	return nil
-}

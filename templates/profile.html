@@ -3,7 +3,13 @@
     <div>
       <hgroup>
         <h2>
-          <img src="/user/{{ .Profile.Username }}/avatar.png" />
+		<div class="avatar-wrapper">
+			<img class="profile-pic" src="/user/{{ .Profile.Username }}/avatar.png" />
+			<div class="upload-button">
+				<i class="fa fa-arrow-circle-up" aria-hidden="true"></i>
+			</div>
+			<input class="file-upload" type="file" accept="image/*"/>
+		</div>
           {{  if $.User.Is .Profile.TwtURL }}
           me
           {{ else  }}
@@ -98,4 +104,24 @@
       {{ end }}
     </div>
   </div>
+  <script>
+	$(document).ready(function() {	
+		var readURL = function(input) {
+			if (input.files && input.files[0]) {
+				var reader = new FileReader();
+				reader.onload = function (e) {
+					$('.profile-pic').attr('src', e.target.result);
+				}
+				reader.readAsDataURL(input.files[0]);
+			}
+		}
+
+		$(".file-upload").on('change', function(){
+			readURL(this);
+		});
+		$(".upload-button").on('click', function() {
+			$(".file-upload").click();
+		});
+	});
+  </script>
 {{end}}

@@ -4,21 +4,21 @@
       <hgroup>
         <h2>
           <img src="/user/{{ .Profile.Username }}/avatar.png" />
-          {{  if $.User.Is .Profile.TwtURL }}
+          {{  if $.User.Is .Profile.URL }}
           me
           {{ else  }}
             {{ .Profile.Username }}
           {{ end}}
         </h2>
-        {{ if not ($.User.Is .Profile.TwtURL) }}
+        {{ if not ($.User.Is .Profile.URL) }}
           <h3>
-            {{ if $.User.Follows .Profile.TwtURL }}
+            {{ if $.User.Follows .Profile.URL }}
               <a href="/unfollow?nick={{ .Profile.Username  }}">
                 <i class="icss-minus"></i>
                 Unfollow
               </a>
             {{ else }}
-              <a href="/follow?nick={{ .Profile.Username  }}&url={{ .Profile.TwtURL }}">
+              <a href="/follow?nick={{ .Profile.Username  }}&url={{ .Profile.URL }}">
                 <i class="icss-plus"></i>
                 Follow
               </a>
@@ -28,7 +28,6 @@
         <footer>
           <p><i>{{ .Profile.Tagline }}</i></p>
           <ul>
-            <li>TwtURL: <a href="{{ .Profile.TwtURL }}">{{ .Profile.TwtURL }}</a></li>
             <li><a href="/user/{{ .User.Username }}/followers">Followers: {{ .Profile.Followers | len }}</a></li>
             <li>Followers: {{ .Profile.Followers | len }}</li>
             {{ if eq .Profile.Type "User" }}
@@ -51,7 +50,7 @@
         <article id="{{ .Hash }}">
           <hgroup>
             <h2>
-              {{ if $.User.Is .Tweeter.TwtURL }}
+              {{ if $.User.Is .Tweeter.URL }}
                 <a href="{{ .Tweeter.URL }}">
                   <i class="icss-user"></i>
                   me
@@ -61,16 +60,16 @@
                   <a href="{{ .Tweeter.URL }}">
                     <i class="icss-user-circle"></i>
                 {{ else }}
-                  <a href="{{ .Tweeter.TwtURL }}">
+                  <a href="{{ .Tweeter.URL }}">
                     <i class="icss-rss"></i>
                 {{ end }}
                 {{ .Tweeter.Nick }}
                 </a>
               {{ end }}
             </h2>
-            <h3>(<a href="#{{ .Hash }}">{{ .Created | Time }}</a>)</h3>
+            <h3>(<a href="#{{ .Hash }}">{{ .Created | time }}</a>)</h3>
           </hgroup>
-          <p>{{ .Text | FormatTweet }}</p>
+          <p>{{ .Text | formatTweet }}</p>
         </article>
       {{ end }}
 

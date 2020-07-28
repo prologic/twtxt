@@ -75,9 +75,8 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		}
 
 		ctx.Tweeter = Tweeter{
-			Nick:   user.Username,
-			URL:    URLForUser(conf.BaseURL, user.Username, false),
-			TwtURL: URLForUser(conf.BaseURL, user.Username, true),
+			Nick: user.Username,
+			URL:  URLForUser(conf.BaseURL, user.Username),
 		}
 
 		// Every registered new user follows themselves
@@ -85,7 +84,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		if user.Following == nil {
 			user.Following = make(map[string]string)
 		}
-		user.Following[user.Username] = user.TwtURL
+		user.Following[user.Username] = user.URL
 
 		ctx.User = user
 	} else {

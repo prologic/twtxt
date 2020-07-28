@@ -2,6 +2,7 @@ package twtxt
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
@@ -152,79 +153,80 @@ func NewFixUserAccountsJob(conf *Config, db Store) cron.Job {
 }
 
 func (job *FixUserAccountsJob) Run() {
-	/*
-		fixUserURLs := func(user *User) error {
-			baseURL := NormalizeURL(strings.TrimSuffix(job.conf.BaseURL, "/"))
+	fixUserURLs := func(user *User) error {
+		baseURL := NormalizeURL(strings.TrimSuffix(job.conf.BaseURL, "/"))
 
-			// Reset User URL and TwtURL
-			user.URL = URLForUser(baseURL, user.Username, false)
-			user.TwtURL = URLForUser(baseURL, user.Username, true)
+		// Reset User URL
+		user.URL = URLForUser(baseURL, user.Username)
 
-			for nick, url := range user.Following {
-				url = NormalizeURL(url)
-				if strings.HasPrefix(url, fmt.Sprintf("%s/u/", baseURL)) {
-					user.Following[nick] = URLForUser(baseURL, nick, false)
-				}
-			}
-
-			for nick, url := range user.Followers {
-				url = NormalizeURL(url)
-				if strings.HasPrefix(url, fmt.Sprintf("%s/u/", baseURL)) {
-					user.Followers[nick] = URLForUser(baseURL, nick, false)
-				}
-			}
-
-			if err := job.db.SetUser(user.Username, user); err != nil {
-				log.WithError(err).Warnf("error updating user object %s", user.Username)
-				return err
-			}
-
-			log.Infof("fixed URLs for user %s", user.Username)
-
-			return nil
-		}
-
-		fixMissingUserFeeds := func(username string, feeds []string) error {
-			user, err := job.db.GetUser(username)
-			if err != nil {
-				log.WithError(err).Warnf("error loading user object for %s", username)
-				return err
-			}
-
-			user.Feeds = feeds
-
-			if err := job.db.SetUser(username, user); err != nil {
-				log.WithError(err).Warnf("error updating user object %s", username)
-				return err
-			}
-
-			log.Infof("fixed missing feeds for %s", username)
-
-			return nil
-		}
-
-		// Fix missing Feeds for @rob @kt84
-		if err := fixMissingUserFeeds("kt84", []string{"recipes", "local_wonders"}); err != nil {
-			log.WithError(err).Warnf("error fixing missing user feeds")
-		}
-		if err := fixMissingUserFeeds("rob", []string{"off_grid_living"}); err != nil {
-			log.WithError(err).Warnf("error fixing missing user feeds")
-		}
-		if err := fixMissingUserFeeds("prologic", []string{"home_datacenter"}); err != nil {
-			log.WithError(err).Warnf("error fixing missing user feeds")
-		}
-
-		users, err := job.db.GetAllUsers()
-		if err != nil {
-			log.WithError(err).Warnf("error loading all user objects")
-		} else {
-			for _, user := range users {
-				if err := fixUserURLs(user); err != nil {
-					log.WithError(err).Warnf("error fixing user URLs for %s", user.Username)
-				}
+		for nick, url := range user.Following {
+			url = NormalizeURL(url)
+			if strings.HasPrefix(url, baseURL) {
+				user.Following[nick] = URLForUser(baseURL, nick)
 			}
 		}
-	*/
+
+		for nick, url := range user.Followers {
+			url = NormalizeURL(url)
+			if strings.HasPrefix(url, baseURL) {
+				user.Followers[nick] = URLForUser(baseURL, nick)
+			}
+		}
+
+		if err := job.db.SetUser(user.Username, user); err != nil {
+			log.WithError(err).Warnf("error updating user object %s", user.Username)
+			return err
+		}
+
+		log.Infof("fixed URLs for user %s", user.Username)
+
+		return nil
+	}
+
+	fixFeedURLs := func(feed *Feed) error {
+		baseURL := NormalizeURL(strings.TrimSuffix(job.conf.BaseURL, "/"))
+
+		// Reset Feed URL
+		feed.URL = URLForUser(baseURL, feed.Name)
+
+		for nick, url := range feed.Followers {
+			url = NormalizeURL(url)
+			if strings.HasPrefix(url, baseURL) {
+				feed.Followers[nick] = URLForUser(baseURL, nick)
+			}
+		}
+
+		if err := job.db.SetFeed(feed.Name, feed); err != nil {
+			log.WithError(err).Warnf("error updating feeed object %s", feed.Name)
+			return err
+		}
+
+		log.Infof("fixed URLs for feed %s", feed.Name)
+
+		return nil
+	}
+
+	users, err := job.db.GetAllUsers()
+	if err != nil {
+		log.WithError(err).Warnf("error loading all user objects")
+	} else {
+		for _, user := range users {
+			if err := fixUserURLs(user); err != nil {
+				log.WithError(err).Warnf("error fixing user URLs for %s", user.Username)
+			}
+		}
+	}
+
+	feeds, err := job.db.GetAllFeeds()
+	if err != nil {
+		log.WithError(err).Warnf("error loading all feed objects")
+	} else {
+		for _, feed := range feeds {
+			if err := fixFeedURLs(feed); err != nil {
+				log.WithError(err).Warnf("error fixing feed URLs for %s", feed.Name)
+			}
+		}
+	}
 
 	fixAdminUser := func() error {
 		log.Infof("fixing adminUser account %s", job.conf.AdminUser)

@@ -245,7 +245,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		}
 	}
 
-	templates, err := NewTemplates()
+	templates, err := NewTemplates(config)
 	if err != nil {
 		log.WithError(err).Error("error loading templates")
 		return nil, err

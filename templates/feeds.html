@@ -43,7 +43,7 @@
       </hgroup>
       {{ range $Source, $Feeds := .FeedSources }}
         <hgroup>
-          <h3>{{ $Source | StripURISchema }}</h3>
+          <h3>{{ $Source | prettyURL }}</h3>
           <footer>External feeds from <a href="{{ $Source }}">{{ $Source }}</a></h3>
         </hgroup>
         <ul>

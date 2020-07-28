@@ -217,7 +217,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 							twtxtBot,
 							fmt.Sprintf(
 								"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-								nick, URLForUser(s.config.BaseURL, nick, true),
+								nick, URLForUser(s.config.BaseURL, nick),
 								followerClient.Nick, followerClient.URL,
 								followerClient.ClientName, followerClient.ClientVersion,
 							),
@@ -285,7 +285,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		// Update user's own timeline with their own new post.
 		sources := map[string]string{
-			user.Username: user.TwtURL,
+			user.Username: user.URL,
 		}
 
 		if err := func() error {
@@ -441,7 +441,7 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.User.Follow(name, URLForUser(s.config.BaseURL, name, true))
+		ctx.User.Follow(name, URLForUser(s.config.BaseURL, name))
 
 		if err := s.db.SetUser(ctx.Username, ctx.User); err != nil {
 			ctx.Error = true
@@ -455,8 +455,8 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			twtxtBot,
 			fmt.Sprintf(
 				"FEED: @<%s %s> from @<%s %s>",
-				name, URLForUser(s.config.BaseURL, name, false),
-				ctx.User.Username, URLForUser(s.config.BaseURL, ctx.User.Username, false),
+				name, URLForUser(s.config.BaseURL, name),
+				ctx.User.Username, URLForUser(s.config.BaseURL, ctx.User.Username),
 			),
 		); err != nil {
 			log.WithError(err).Warnf("error appending special FOLLOW post")
@@ -618,10 +618,8 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			Username:  username,
 			Email:     email,
 			Password:  hash,
+			URL:       URLForUser(s.config.BaseURL, username),
 			CreatedAt: time.Now(),
-
-			URL:    URLForUser(s.config.BaseURL, username, false),
-			TwtURL: URLForUser(s.config.BaseURL, username, true),
 		}
 
 		if err := s.db.SetUser(username, user); err != nil {
@@ -670,14 +668,16 @@ func (s *Server) FollowHandler() httprouter.Handle {
 		}
 
 		if strings.HasPrefix(url, s.config.BaseURL) {
-			followee, err := s.db.GetUser(NormalizeUsername(filepath.Base(StripTwtURL(url))))
+			url = UserURL(url)
+			nick := NormalizeUsername(filepath.Base(url))
+			followee, err := s.db.GetUser(nick)
 			if err != nil {
 				log.WithError(err).Warnf("error loading user object for followee %s", NormalizeUsername(filepath.Base(url)))
 			} else {
 				if followee.Followers == nil {
 					followee.Followers = make(map[string]string)
 				}
-				followee.Followers[user.Username] = user.TwtURL
+				followee.Followers[user.Username] = user.URL
 				if err := s.db.SetUser(followee.Username, followee); err != nil {
 					log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
 				}
@@ -686,8 +686,8 @@ func (s *Server) FollowHandler() httprouter.Handle {
 					twtxtBot,
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						followee.Username, URLForUser(s.config.BaseURL, followee.Username, false),
-						user.Username, URLForUser(s.config.BaseURL, user.Username, false),
+						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
+						user.Username, URLForUser(s.config.BaseURL, user.Username),
 						"twtxt", FullVersion(),
 					),
 				); err != nil {
@@ -802,9 +802,11 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 		}
 
 		if strings.HasPrefix(url, s.config.BaseURL) {
-			followee, err := s.db.GetUser(NormalizeUsername(filepath.Base(StripTwtURL(url))))
+			url = UserURL(url)
+			nick := NormalizeUsername(filepath.Base(url))
+			followee, err := s.db.GetUser(nick)
 			if err != nil {
-				log.WithError(err).Warnf("error loading user object for followee %s", NormalizeUsername(filepath.Base(url)))
+				log.WithError(err).Warnf("error loading user object for followee %s", nick)
 			} else {
 				if followee.Followers != nil {
 					delete(followee.Followers, user.Username)
@@ -817,8 +819,8 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 					twtxtBot,
 					fmt.Sprintf(
 						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						followee.Username, URLForUser(s.config.BaseURL, followee.Username, false),
-						user.Username, URLForUser(s.config.BaseURL, user.Username, false),
+						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
+						user.Username, URLForUser(s.config.BaseURL, user.Username),
 						"twtxt", FullVersion(),
 					),
 				); err != nil {
@@ -937,7 +939,7 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 			return
 		}
 
-		if !user.IsFollowersPubliclyVisible && !ctx.User.Is(user.TwtURL) {
+		if !user.IsFollowersPubliclyVisible && !ctx.User.Is(user.URL) {
 			s.render("401", w, ctx)
 			return
 		}

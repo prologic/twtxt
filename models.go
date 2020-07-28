@@ -23,7 +23,6 @@ type Feed struct {
 	Name        string
 	Description string
 	URL         string
-	TwtURL      string
 	CreatedAt   time.Time
 
 	Followers map[string]string
@@ -37,7 +36,6 @@ type User struct {
 	Tagline                    string
 	Email                      string
 	URL                        string
-	TwtURL                     string
 	CreatedAt                  time.Time
 	IsFollowersPubliclyVisible bool
 
@@ -78,14 +76,13 @@ func CreateFeed(conf *Config, db Store, user *User, name string, force bool) err
 
 	followers := make(map[string]string)
 	if user != nil {
-		followers[user.Username] = user.TwtURL
+		followers[user.Username] = user.URL
 	}
 
 	f := &Feed{
 		Name:        name,
 		Description: "", // TODO: Make this work
-		URL:         URLForUser(conf.BaseURL, name, false),
-		TwtURL:      URLForUser(conf.BaseURL, name, true),
+		URL:         URLForUser(conf.BaseURL, name),
 		Followers:   followers,
 		CreatedAt:   time.Now(),
 	}
@@ -95,7 +92,7 @@ func CreateFeed(conf *Config, db Store, user *User, name string, force bool) err
 	}
 
 	if user != nil {
-		user.Follow(name, f.TwtURL)
+		user.Follow(name, f.URL)
 	}
 
 	return nil
@@ -162,7 +159,6 @@ func (f *Feed) Profile() Profile {
 		Username: f.Name,
 		Tagline:  f.Description,
 		URL:      f.URL,
-		TwtURL:   f.TwtURL,
 
 		Followers: f.Followers,
 	}
@@ -190,7 +186,7 @@ func (u *User) Is(url string) bool {
 	if NormalizeURL(url) == "" {
 		return false
 	}
-	return u.TwtURL == NormalizeURL(url)
+	return u.URL == NormalizeURL(url)
 }
 
 func (u *User) FollowedBy(url string) bool {
@@ -219,7 +215,6 @@ func (u *User) Profile() Profile {
 		Username: u.Username,
 		Tagline:  u.Tagline,
 		URL:      u.URL,
-		TwtURL:   u.TwtURL,
 
 		Followers: u.Followers,
 		Following: u.Following,

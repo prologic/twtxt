@@ -12,7 +12,7 @@
                     {{ if $.User.Is $Nick }}
                     <a href="{{ $URL }}">me</a>
                     {{ else }}
-                    <a href="{{ $URL | StripTwtURL }}">{{ $Nick }}</a>
+                    <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">{{ $Nick }}</a>
                     (<a href="{{ $URL }}">{{ $URL }}</a>)
                     {{ end }}
                 </li>

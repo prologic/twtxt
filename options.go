@@ -37,7 +37,7 @@ const (
 	DefaultMaxTweetLength = 288
 
 	// DefaultSessionExpiry is the server's default session expiry time
-	DefaultSessionExpiry = 24 * time.Hour
+	DefaultSessionExpiry = 240 * time.Hour // 10 days
 )
 
 var (

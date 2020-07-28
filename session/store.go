@@ -21,12 +21,12 @@ var ErrStateNotFound = errors.New("your session has expired")
 //or more typically in a shared key/value server store like redis.
 type Store interface {
 	//Save associates the provided `state`` data with the provided `sid` in the store.
-	Save(sid SessionID, state interface{}) error
+	Save(sid SessionID, state SessionData) error
 
 	//Get retrieves the previously saved state data for the session id,
 	//and populates the `state` parameter with it. This will also
 	//reset the data's time to live in the store.
-	Get(sid SessionID, state interface{}) error
+	Get(sid SessionID, state SessionData) error
 
 	//Delete deletes all state data associated with the session id from the store.
 	Delete(sid SessionID) error

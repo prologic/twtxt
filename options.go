@@ -45,6 +45,7 @@ var (
 	DefaultFeedSources = []string{
 		"https://feeds.twtxt.net/we-are-feeds.txt",
 		"https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt",
+		"https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt",
 	}
 
 	// DefaultTweetPrompts are the set of default prompts  for tweet text(s)

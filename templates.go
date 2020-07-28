@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	rice "github.com/GeertJohan/go.rice"
+	"github.com/Masterminds/sprig"
 	humanize "github.com/dustin/go-humanize"
 	log "github.com/sirupsen/logrus"
 )
@@ -26,14 +27,15 @@ type Templates struct {
 	templates map[string]*template.Template
 }
 
-func NewTemplates() (*Templates, error) {
+func NewTemplates(conf *Config) (*Templates, error) {
 	templates := make(map[string]*template.Template)
 
-	funcMap := map[string]interface{}{
-		"Time":        humanize.Time,
-		"StripTwtURL": StripTwtURL,
-		"FormatTweet": FormatTweet,
-	}
+	funcMap := sprig.FuncMap()
+
+	funcMap["time"] = humanize.Time
+	funcMap["userURL"] = UserURL
+	funcMap["prettyURL"] = PrettyURL
+	funcMap["formatTweet"] = FormatTweetFactory(conf)
 
 	box, err := rice.FindBox("templates")
 	if err != nil {

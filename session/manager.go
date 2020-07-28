@@ -9,13 +9,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Data ...
-type Data map[string]string
+// SessionData ...
+type SessionData map[string]string
 
 // Session ...
 type Session struct {
 	sid  SessionID
-	data Data
+	data SessionData
 
 	store Store
 }
@@ -39,9 +39,9 @@ func (s *Session) Delete(key string) {
 
 // NewSession ...
 func NewSession(sid SessionID, store Store) *Session {
-	data := make(Data)
+	data := make(SessionData)
 
-	store.Get(sid, &data)
+	store.Get(sid, data)
 
 	return &Session{sid, data, store}
 }

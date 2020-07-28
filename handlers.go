@@ -3,6 +3,7 @@ package twtxt
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"image/png"
@@ -58,18 +59,38 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		nick = NormalizeUsername(nick)
 
-		userProfile, err := s.db.GetUser(nick)
-		if err != nil {
-			log.WithError(err).Errorf("error loading user object for %s", nick)
+		var profile Profile
+
+		if s.db.HasUser(nick) {
+			user, err := s.db.GetUser(nick)
+			if err != nil {
+				log.WithError(err).Errorf("error loading user object for %s", nick)
+				ctx.Error = true
+				ctx.Message = "Error loading profile"
+				s.render("error", w, ctx)
+				return
+			}
+			profile = user.Profile()
+		} else if s.db.HasFeed(nick) {
+			feed, err := s.db.GetFeed(nick)
+			if err != nil {
+				log.WithError(err).Errorf("error loading feed object for %s", nick)
+				ctx.Error = true
+				ctx.Message = "Error loading profile"
+				s.render("error", w, ctx)
+				return
+			}
+			profile = feed.Profile()
+		} else {
 			ctx.Error = true
-			ctx.Message = "Error loading profile"
-			s.render("error", w, ctx)
+			ctx.Message = "User or Feed Not Found"
+			s.render("404", w, ctx)
 			return
 		}
 
-		ctx.Profile = userProfile
+		ctx.Profile = profile
 
-		tweets, err := GetUserTweets(s.config, userProfile.Username)
+		tweets, err := GetUserTweets(s.config, profile.Username)
 		if err != nil {
 			log.WithError(err).Error("error loading tweets")
 			ctx.Error = true
@@ -193,10 +214,10 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 					if !user.FollowedBy(followerClient.URL) {
 						if err := AppendSpecial(
 							s.config, s.db,
-							"twtxt",
+							twtxtBot,
 							fmt.Sprintf(
 								"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-								nick, URLForUser(s.config.BaseURL, nick, true),
+								nick, URLForUser(s.config.BaseURL, nick),
 								followerClient.Nick, followerClient.URL,
 								followerClient.ClientName, followerClient.ClientVersion,
 							),
@@ -264,7 +285,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		// Update user's own timeline with their own new post.
 		sources := map[string]string{
-			user.Username: user.TwtURL,
+			user.Username: user.URL,
 		}
 
 		if err := func() error {
@@ -413,14 +434,14 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			return
 		}
 
-		if err := ctx.User.CreateFeed(s.config.Data, name); err != nil {
+		if err := CreateFeed(s.config, s.db, ctx.User, name, false); err != nil {
 			ctx.Error = true
 			ctx.Message = fmt.Sprintf("Error creating: %s", err.Error())
 			s.render("error", w, ctx)
 			return
 		}
 
-		ctx.User.Follow(name, URLForUser(s.config.BaseURL, name, true))
+		ctx.User.Follow(name, URLForUser(s.config.BaseURL, name))
 
 		if err := s.db.SetUser(ctx.Username, ctx.User); err != nil {
 			ctx.Error = true
@@ -431,10 +452,11 @@ func (s *Server) FeedHandler() httprouter.Handle {
 
 		if err := AppendSpecial(
 			s.config, s.db,
-			"twtxt",
+			twtxtBot,
 			fmt.Sprintf(
-				"FEED: %s from @<%s %s>",
-				name, ctx.User.Username, URLForUser(s.config.BaseURL, ctx.User.Username, false),
+				"FEED: @<%s %s> from @<%s %s>",
+				name, URLForUser(s.config.BaseURL, name),
+				ctx.User.Username, URLForUser(s.config.BaseURL, ctx.User.Username),
 			),
 		); err != nil {
 			log.WithError(err).Warnf("error appending special FOLLOW post")
@@ -452,7 +474,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		feeds, err := LoadFeeds(s.config.Data)
+		feedsources, err := LoadFeedSources(s.config.Data)
 		if err != nil {
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading feed "
@@ -460,7 +482,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Feeds = feeds
+		ctx.FeedSources = feedsources.Sources
 
 		s.render("feeds", w, ctx)
 	}
@@ -564,9 +586,9 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			return
 		}
 
-		if _, err := s.db.GetUser(username); err == nil {
+		if s.db.HasUser(username) || s.db.HasFeed(username) {
 			ctx.Error = true
-			ctx.Message = "User with that username already exists! Please pick another!"
+			ctx.Message = "User or Feed with that name already exists! Please pick another!"
 			s.render("error", w, ctx)
 			return
 		}
@@ -596,10 +618,8 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			Username:  username,
 			Email:     email,
 			Password:  hash,
+			URL:       URLForUser(s.config.BaseURL, username),
 			CreatedAt: time.Now(),
-
-			URL:    URLForUser(s.config.BaseURL, username, false),
-			TwtURL: URLForUser(s.config.BaseURL, username, true),
 		}
 
 		if err := s.db.SetUser(username, user); err != nil {
@@ -648,24 +668,26 @@ func (s *Server) FollowHandler() httprouter.Handle {
 		}
 
 		if strings.HasPrefix(url, s.config.BaseURL) {
-			followee, err := s.db.GetUser(NormalizeUsername(filepath.Base(StripTwtURL(url))))
+			url = UserURL(url)
+			nick := NormalizeUsername(filepath.Base(url))
+			followee, err := s.db.GetUser(nick)
 			if err != nil {
 				log.WithError(err).Warnf("error loading user object for followee %s", NormalizeUsername(filepath.Base(url)))
 			} else {
 				if followee.Followers == nil {
 					followee.Followers = make(map[string]string)
 				}
-				followee.Followers[user.Username] = user.TwtURL
+				followee.Followers[user.Username] = user.URL
 				if err := s.db.SetUser(followee.Username, followee); err != nil {
 					log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
 				}
 				if err := AppendSpecial(
 					s.config, s.db,
-					"twtxt",
+					twtxtBot,
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						followee.Username, URLForUser(s.config.BaseURL, followee.Username, false),
-						user.Username, URLForUser(s.config.BaseURL, user.Username, false),
+						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
+						user.Username, URLForUser(s.config.BaseURL, user.Username),
 						"twtxt", FullVersion(),
 					),
 				); err != nil {
@@ -780,9 +802,11 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 		}
 
 		if strings.HasPrefix(url, s.config.BaseURL) {
-			followee, err := s.db.GetUser(NormalizeUsername(filepath.Base(StripTwtURL(url))))
+			url = UserURL(url)
+			nick := NormalizeUsername(filepath.Base(url))
+			followee, err := s.db.GetUser(nick)
 			if err != nil {
-				log.WithError(err).Warnf("error loading user object for followee %s", NormalizeUsername(filepath.Base(url)))
+				log.WithError(err).Warnf("error loading user object for followee %s", nick)
 			} else {
 				if followee.Followers != nil {
 					delete(followee.Followers, user.Username)
@@ -792,11 +816,11 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 				}
 				if err := AppendSpecial(
 					s.config, s.db,
-					"twtxt",
+					twtxtBot,
 					fmt.Sprintf(
 						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						followee.Username, URLForUser(s.config.BaseURL, followee.Username, false),
-						user.Username, URLForUser(s.config.BaseURL, user.Username, false),
+						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
+						user.Username, URLForUser(s.config.BaseURL, user.Username),
 						"twtxt", FullVersion(),
 					),
 				); err != nil {
@@ -824,6 +848,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 
 		password := r.FormValue("password")
 		tagline := strings.TrimSpace(r.FormValue("tagline"))
+		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
 
 		user := ctx.User
 		if user == nil {
@@ -842,6 +867,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		}
 
 		user.Tagline = tagline
+		user.IsFollowersPubliclyVisible = isFollowersPubliclyVisible
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
 			ctx.Error = true
@@ -881,5 +907,57 @@ func (s *Server) DeleteHandler() httprouter.Handle {
 		ctx.Message = "Successfully deleted account"
 		s.render("error", w, ctx)
 		return
+	}
+}
+
+// FollowersHandler ...
+func (s *Server) FollowersHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		nick := NormalizeUsername(p.ByName("nick"))
+
+		if nick == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		user, err := s.db.GetUser(nick)
+
+		if err != nil {
+			ctx.Error = true
+
+			if err == ErrUserNotFound {
+				ctx.Message = "User not found"
+			} else {
+				log.WithError(err).Errorf("error loading user object for %s", nick)
+				ctx.Message = "Error loading profile"
+			}
+
+			s.render("error", w, ctx)
+
+			return
+		}
+
+		if !user.IsFollowersPubliclyVisible && !ctx.User.Is(user.URL) {
+			s.render("401", w, ctx)
+			return
+		}
+
+		if r.Header.Get("Accept") == "application/json" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+
+			if err := json.NewEncoder(w).Encode(user.Followers); err != nil {
+				log.WithError(err).Error("error encoding user for display")
+				http.Error(w, "Bad Request", http.StatusBadRequest)
+			}
+
+			return
+		}
+
+		ctx.User = user
+
+		s.render("followers", w, ctx)
 	}
 }

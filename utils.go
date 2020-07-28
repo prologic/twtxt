@@ -1,15 +1,20 @@
 package twtxt
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/ast"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/goware/urlx"
 	"github.com/microcosm-cc/bluemonday"
@@ -20,6 +25,10 @@ const (
 	newsSpecialUser    = "news"
 	helpSpecialUser    = "help"
 	supportSpecialUser = "support"
+
+	me       = "me"
+	twtxtBot = "twtxt"
+	statsBot = "stats"
 
 	maxUsernameLength = 15 // avg 6 chars / 2 syllables per name commonly
 	maxFeedNameLength = 25 // avg 4.7 chars per word in English so ~5 words
@@ -32,7 +41,13 @@ var (
 		supportSpecialUser,
 	}
 	reservedUsernames = []string{
-		"me", "stats", "twtxt",
+		me,
+		statsBot,
+		twtxtBot,
+	}
+	twtxtBots = []string{
+		statsBot,
+		twtxtBot,
 	}
 
 	validFeedName  = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_ ]*$`)
@@ -131,23 +146,29 @@ func NormalizeURL(url string) string {
 	return norm
 }
 
-func StripTwtURL(url string) string {
+func PrettyURL(uri string) string {
+	u, err := url.Parse(uri)
+	if err != nil {
+		log.WithError(err).Warn("StripURISchema(): error parsing url: %s", uri)
+		return uri
+	}
+
+	return fmt.Sprintf("%s/%s", u.Hostname(), strings.TrimPrefix(u.EscapedPath(), "/"))
+}
+
+func UserURL(url string) string {
 	if strings.HasSuffix(url, "/twtxt.txt") {
 		return strings.TrimSuffix(url, "/twtxt.txt")
 	}
 	return url
 }
 
-func URLForUser(baseURL, username string, feed bool) string {
-	url := fmt.Sprintf(
-		"%s/user/%s",
+func URLForUser(baseURL, username string) string {
+	return fmt.Sprintf(
+		"%s/user/%s/twtxt.txt",
 		strings.TrimSuffix(baseURL, "/"),
 		username,
 	)
-	if feed {
-		url += "/twtxt.txt"
-	}
-	return url
 }
 
 // SafeParseInt ...
@@ -193,18 +214,62 @@ func CleanTweet(text string) string {
 }
 
 // FormatTweet formats a tweet into a valid HTML snippet
-func FormatTweet(text string) template.HTML {
-	htmlFlags := html.CommonFlags | html.HrefTargetBlank
-	opts := html.RendererOptions{Flags: htmlFlags}
-	renderer := html.NewRenderer(opts)
+func FormatTweetFactory(conf *Config) func(text string) template.HTML {
+	isLocal := func(url string) bool {
+		if NormalizeURL(url) == "" {
+			return false
+		}
+		return strings.HasPrefix(NormalizeURL(url), NormalizeURL(conf.BaseURL))
+	}
 
-	md := []byte(FormatMentions(text))
-	maybeUnsafeHTML := markdown.ToHTML(md, nil, renderer)
-	p := bluemonday.UGCPolicy()
-	p.AllowAttrs("target").OnElements("a")
-	html := p.SanitizeBytes(maybeUnsafeHTML)
+	return func(text string) template.HTML {
+		renderHookProcessURLs := func(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
+			span, ok := node.(*ast.HTMLSpan)
+			if !ok {
+				return ast.GoToNext, false
+			}
 
-	return template.HTML(html)
+			leaf := span.Leaf
+			doc, err := goquery.NewDocumentFromReader(bytes.NewReader(leaf.Literal))
+			if err != nil {
+				log.WithError(err).Warn("error parsing HTMLSpan")
+				return ast.GoToNext, false
+			}
+
+			a := doc.Find("a")
+			href, ok := a.Attr("href")
+			if !ok {
+				return ast.GoToNext, false
+			}
+
+			if isLocal(href) {
+				href = UserURL(href)
+			} else {
+				return ast.GoToNext, false
+			}
+
+			html := fmt.Sprintf(`<a href="%s">`, href)
+
+			io.WriteString(w, html)
+
+			return ast.GoToNext, true
+		}
+
+		htmlFlags := html.CommonFlags | html.HrefTargetBlank
+		opts := html.RendererOptions{
+			Flags:          htmlFlags,
+			RenderNodeHook: renderHookProcessURLs,
+		}
+		renderer := html.NewRenderer(opts)
+
+		md := []byte(FormatMentions(text))
+		maybeUnsafeHTML := markdown.ToHTML(md, nil, renderer)
+		p := bluemonday.UGCPolicy()
+		p.AllowAttrs("target").OnElements("a")
+		html := p.SanitizeBytes(maybeUnsafeHTML)
+
+		return template.HTML(html)
+	}
 }
 
 // FormatMentions turns `@<nick URL>` into `<a href="URL">@nick</a>`

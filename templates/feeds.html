@@ -26,7 +26,8 @@
             By default <a href="https://twtxt.net">twtxt.net</a> sources feeds  from the following sources:
             <ul>
               <li><a href="https://feeds.twtxt.net">feeds.twtxt.net</a> an RSS/Atom to twtxt feed aggregator</li>
-              <li><a href="https://github.com/mdom/we-are-twtxt">we-are-twtxt</a> a sort-of directory of twtxt users users <i>often</i> add themselves to</li>
+              <li><a href="https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt">we-are-bots</a>a directory of twtxt bots (<i>automated feeds</i>)</li>
+              <li><a href="https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt">we-are-twtxt</a>a directory of twtxt users (<i>this is managed by users voluntarily adding themselves to this list</i>)</li>
             </ul>
           </p>
           <p>
@@ -40,19 +41,25 @@
           </p>
         </footer>
       </hgroup>
-      <ul>
-        {{ range .Feeds }}
-          <li>
-            <a href="{{ .URL }}">{{ .Name }}</a>
-            &nbsp;
-            {{ if $.User.Follows .URL }}
-              [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
-            {{ else }}
-              [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
-            {{ end }}
-          </li>
-        {{ end }}
-      </ul>
+      {{ range $Source, $Feeds := .FeedSources }}
+        <hgroup>
+          <h3>{{ $Source | prettyURL }}</h3>
+          <footer>External feeds from <a href="{{ $Source }}">{{ $Source }}</a></h3>
+        </hgroup>
+        <ul>
+          {{ range $Feeds }}
+            <li>
+              <a href="{{ .URL }}">{{ .Name }}</a>
+              &nbsp;
+              {{ if $.User.Follows .URL }}
+                [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
+              {{ else }}
+                [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
+              {{ end }}
+            </li>
+          {{ end }}
+        </ul>
+      {{ end}}
     </div>
   </article>
 {{end}}

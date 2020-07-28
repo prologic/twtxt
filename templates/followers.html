@@ -1,0 +1,26 @@
+{{define "content"}}
+    <article class="grid">
+        <div>
+            <hgroup>
+                <h1>Followers</h1>
+                <h2>List of users following <b>{{ .User.Username }}</b></h2>
+            </hgroup>
+            {{ if .User.Followers }}
+            <ol>
+                {{ range $Nick, $URL := .User.Followers }}
+                <li>
+                    {{ if $.User.Is $Nick }}
+                    <a href="{{ $URL }}">me</a>
+                    {{ else }}
+                    <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">{{ $Nick }}</a>
+                    (<a href="{{ $URL }}">{{ $URL }}</a>)
+                    {{ end }}
+                </li>
+                {{ end }}
+            </oL>
+            {{ else }}
+            <small><i>No followers found</i></small>
+            {{ end }}
+        </div>
+    </article>
+{{ end }}

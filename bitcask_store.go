@@ -43,6 +43,57 @@ func (bs *BitcaskStore) Close() error {
 	return nil
 }
 
+func (bs *BitcaskStore) HasFeed(name string) bool {
+	return bs.db.Has([]byte(fmt.Sprintf("/feeds/%s", name)))
+}
+
+func (bs *BitcaskStore) DelFeed(name string) error {
+	return bs.db.Delete([]byte(fmt.Sprintf("/feeds/%s", name)))
+}
+
+func (bs *BitcaskStore) GetFeed(name string) (*Feed, error) {
+	data, err := bs.db.Get([]byte(fmt.Sprintf("/feeds/%s", name)))
+	if err == bitcask.ErrKeyNotFound {
+		return nil, ErrFeedNotFound
+	}
+	return LoadFeed(data)
+}
+
+func (bs *BitcaskStore) SetFeed(name string, feed *Feed) error {
+	data, err := feed.Bytes()
+	if err != nil {
+		return err
+	}
+
+	if err := bs.db.Put([]byte(fmt.Sprintf("/feeds/%s", name)), data); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (bs *BitcaskStore) GetAllFeeds() ([]*Feed, error) {
+	var feeds []*Feed
+
+	err := bs.db.Scan([]byte("/feeds"), func(key []byte) error {
+		data, err := bs.db.Get(key)
+		if err != nil {
+			return err
+		}
+
+		feed, err := LoadFeed(data)
+		if err != nil {
+			return err
+		}
+		feeds = append(feeds, feed)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return feeds, nil
+}
+
 func (bs *BitcaskStore) HasUser(username string) bool {
 	return bs.db.Has([]byte(fmt.Sprintf("/users/%s", username)))
 }

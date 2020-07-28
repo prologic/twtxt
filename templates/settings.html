@@ -20,6 +20,12 @@
             </label>
           </div>
         </div>
+        <div class="grid">
+          <label for="isFollowersPubliclyVisible">
+              <input id="isFollowersPubliclyVisible" type="checkbox" name="isFollowersPubliclyVisible" aria-label="Show followers to public" role="switch" {{ if .User.IsFollowersPubliclyVisible }}checked{{ end }}>
+              Show followers to public
+          </label>
+        </div>
         <button type="submit" class="primary">Update</button>
       </form>
 
@@ -35,7 +41,7 @@
                 <a href="{{ $.User.URL }}">me</a>
               {{ else }}
                 {{ if $.IsLocal $URL }}
-                  <a href="{{ $URL | StripTwtURL }}">{{ $Nick }}</a>
+                  <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">{{ $Nick }}</a>
                 {{ else }}
                   <a href="{{ $URL }}">{{ $Nick }}</a>
                 {{ end }}
@@ -71,7 +77,7 @@
                 <a href="{{ $URL }}">me</a>
               {{ else }}
                 {{ if $.IsLocal $URL }}
-                  <a href="{{ $URL | StripTwtURL }}">{{ $Nick }}</a>
+                  <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">{{ $Nick }}</a>
                 {{ else }}
                   <a href="{{ $URL }}">{{ $Nick }}</a>
                 {{ end }}

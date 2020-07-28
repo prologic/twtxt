@@ -209,6 +209,7 @@ func (s *Server) initRoutes() {
 	s.router.GET("/user/:nick/avatar.png", s.AvatarHandler())
 	s.router.HEAD("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/twtxt.txt", s.TwtxtHandler())
+	s.router.GET("/user/:nick/followers", s.FollowersHandler())
 
 	s.router.GET("/login", s.LoginHandler())
 	s.router.POST("/login", s.LoginHandler())
@@ -244,7 +245,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		}
 	}
 
-	templates, err := NewTemplates()
+	templates, err := NewTemplates(config)
 	if err != nil {
 		log.WithError(err).Error("error loading templates")
 		return nil, err

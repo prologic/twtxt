@@ -22,9 +22,8 @@ const (
 )
 
 type Tweeter struct {
-	Nick   string
-	URL    string
-	TwtURL string
+	Nick string
+	URL  string
 }
 
 type Tweet struct {
@@ -87,10 +86,9 @@ func ExpandMentions(conf *Config, db Store, user *User, text string) string {
 			}
 		}
 
-		if db.HasUser(mentionedNick) {
-			return fmt.Sprintf("@<%s %s>", mentionedNick, URLForUser(conf.BaseURL, mentionedNick, false))
-		} else if FeedExists(conf, mentionedNick) {
-			return fmt.Sprintf("@<%s %s>", mentionedNick, URLForUser(conf.BaseURL, mentionedNick, true))
+		username := NormalizeUsername(mentionedNick)
+		if db.HasUser(username) || db.HasFeed(username) {
+			return fmt.Sprintf("@<%s %s>", username, URLForUser(conf.BaseURL, username))
 		} else {
 			// Not expanding if we're not following
 			return match
@@ -154,9 +152,8 @@ func GetUserTweets(conf *Config, username string) (Tweets, error) {
 	var tweets Tweets
 
 	tweeter := Tweeter{
-		Nick:   username,
-		URL:    URLForUser(conf.BaseURL, username, false),
-		TwtURL: URLForUser(conf.BaseURL, username, true),
+		Nick: username,
+		URL:  URLForUser(conf.BaseURL, username),
 	}
 	fn := filepath.Join(p, username)
 	f, err := os.Open(fn)
@@ -193,9 +190,8 @@ func GetAllTweets(conf *Config) (Tweets, error) {
 
 	for _, info := range files {
 		tweeter := Tweeter{
-			Nick:   info.Name(),
-			URL:    URLForUser(conf.BaseURL, info.Name(), false),
-			TwtURL: URLForUser(conf.BaseURL, info.Name(), true),
+			Nick: info.Name(),
+			URL:  URLForUser(conf.BaseURL, info.Name()),
 		}
 		fn := filepath.Join(p, info.Name())
 		f, err := os.Open(fn)

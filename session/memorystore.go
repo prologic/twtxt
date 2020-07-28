@@ -27,7 +27,7 @@ func NewMemoryStore(sessionDuration time.Duration) *MemoryStore {
 //Store interface implementation
 
 //Save associates the provided state data with the provided session id in the store.
-func (ms *MemoryStore) Save(sid SessionID, state interface{}) error {
+func (ms *MemoryStore) Save(sid SessionID, state SessionData) error {
 	j, err := json.Marshal(state)
 	if nil != err {
 		return err
@@ -39,12 +39,12 @@ func (ms *MemoryStore) Save(sid SessionID, state interface{}) error {
 //Get retrieves the previously saved state data for the session id,
 //and populates the `data` parameter with it. This will also
 //reset the data's time to live in the store.
-func (ms *MemoryStore) Get(sid SessionID, state interface{}) error {
+func (ms *MemoryStore) Get(sid SessionID, state SessionData) error {
 	j, found := ms.entries.Get(sid.String())
 	if !found {
 		return ErrStateNotFound
 	}
-	return json.Unmarshal(j.([]byte), state)
+	return json.Unmarshal(j.([]byte), &state)
 }
 
 //Delete deletes all state data associated with the session id from the store.

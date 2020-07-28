@@ -16,66 +16,74 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Feed struct {
+type FeedSource struct {
 	Name string
 	URL  string
 }
 
-type Feeds []Feed
+type FeedSourceMap map[string][]FeedSource
 
-func SaveFeeds(feeds Feeds, path string) error {
+type FeedSources struct {
+	Sources FeedSourceMap `"json:sources"`
+}
+
+func SaveFeedSources(feedsources *FeedSources, path string) error {
 	b := new(bytes.Buffer)
 	enc := gob.NewEncoder(b)
-	err := enc.Encode(feeds)
+	err := enc.Encode(feedsources)
 	if err != nil {
-		log.WithError(err).Error("error encoding feeds ")
+		log.WithError(err).Error("error encoding feedsources ")
 		return err
 	}
 
-	f, err := os.OpenFile(filepath.Join(path, "sources"), os.O_CREATE|os.O_WRONLY, 0666)
+	f, err := os.OpenFile(filepath.Join(path, "feedsources"), os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		log.WithError(err).Error("error opening feeds file for writing")
+		log.WithError(err).Error("error opening feed sources file for writing")
 		return err
 	}
 
 	defer f.Close()
 
 	if _, err = f.Write(b.Bytes()); err != nil {
-		log.WithError(err).Error("error writing feeds file")
+		log.WithError(err).Error("error writing feed sources file")
 		return err
 	}
 	return nil
 }
 
-func LoadFeeds(path string) (Feeds, error) {
-	var feeds Feeds
+func LoadFeedSources(path string) (*FeedSources, error) {
+	feedsources := &FeedSources{
+		Sources: make(FeedSourceMap),
+	}
 
-	f, err := os.Open(filepath.Join(path, "sources"))
+	f, err := os.Open(filepath.Join(path, "feedsources"))
 	if err != nil {
 		if !os.IsNotExist(err) {
-			log.WithError(err).Error("error loading feeds, file not found")
+			log.WithError(err).Error("error loading feed sources, file not found")
 			return nil, err
 		}
-		return feeds, nil
+		return feedsources, nil
 	}
 	defer f.Close()
 
 	dec := gob.NewDecoder(f)
-	err = dec.Decode(&feeds)
+	err = dec.Decode(&feedsources)
 	if err != nil {
-		log.WithError(err).Error("error decoding feeds")
+		log.WithError(err).Error("error decoding feed sources")
 		return nil, err
 	}
-	return feeds, nil
+	return feedsources, nil
 }
 
-func FetchFeeds(sources []string) Feeds {
+func FetchFeedSources(sources []string) *FeedSources {
 	var (
 		mu sync.RWMutex
 		wg sync.WaitGroup
-
-		feeds Feeds
 	)
+
+	feedsources := &FeedSources{
+		Sources: make(FeedSourceMap),
+	}
 
 	for _, url := range sources {
 		wg.Add(1)
@@ -113,7 +121,7 @@ func FetchFeeds(sources []string) Feeds {
 				}
 
 				mu.Lock()
-				feeds = append(feeds, fs...)
+				feedsources.Sources[url] = fs
 				mu.Unlock()
 			}
 		}(url)
@@ -121,10 +129,10 @@ func FetchFeeds(sources []string) Feeds {
 
 	wg.Wait()
 
-	return feeds
+	return feedsources
 }
 
-func ParseFeedSource(scanner *bufio.Scanner) (feeds Feeds, err error) {
+func ParseFeedSource(scanner *bufio.Scanner) (feedsources []FeedSource, err error) {
 	re := regexp.MustCompile(`^(.+?)(\s+)(.+)$`) // .+? is ungreedy
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -141,10 +149,10 @@ func ParseFeedSource(scanner *bufio.Scanner) (feeds Feeds, err error) {
 			log.Warnf("could not parse: '%s'", line)
 			continue
 		}
-		feeds = append(feeds, Feed{parts[1], parts[3]})
+		feedsources = append(feedsources, FeedSource{parts[1], parts[3]})
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
-	return feeds, nil
+	return feedsources, nil
 }

@@ -18,14 +18,26 @@ var (
 	ErrTooManyFeeds      = errors.New("error: you have too many feeds")
 )
 
+// Feed ...
+type Feed struct {
+	Name        string
+	Description string
+	URL         string
+	CreatedAt   time.Time
+
+	Followers map[string]string
+
+	remotes map[string]string
+}
+
 type User struct {
-	Username  string
-	Password  string
-	Tagline   string
-	Email     string
-	URL       string
-	TwtURL    string
-	CreatedAt time.Time
+	Username                   string
+	Password                   string
+	Tagline                    string
+	Email                      string
+	URL                        string
+	CreatedAt                  time.Time
+	IsFollowersPubliclyVisible bool
 
 	Feeds []string
 
@@ -34,6 +46,76 @@ type User struct {
 
 	remotes map[string]string
 	sources map[string]string
+}
+
+func CreateFeed(conf *Config, db Store, user *User, name string, force bool) error {
+	if user != nil {
+		if !force && len(user.Feeds) > maxUserFeeds {
+			return ErrTooManyFeeds
+		}
+	}
+
+	fn := filepath.Join(conf.Data, feedsDir, name)
+	stat, err := os.Stat(fn)
+
+	if err == nil && !force {
+		return ErrFeedAlreadyExists
+	}
+
+	if stat == nil {
+		if err := ioutil.WriteFile(fn, []byte{}, 0644); err != nil {
+			return err
+		}
+	}
+
+	if user != nil {
+		if !user.OwnsFeed(name) {
+			user.Feeds = append(user.Feeds, name)
+		}
+	}
+
+	followers := make(map[string]string)
+	if user != nil {
+		followers[user.Username] = user.URL
+	}
+
+	f := &Feed{
+		Name:        name,
+		Description: "", // TODO: Make this work
+		URL:         URLForUser(conf.BaseURL, name),
+		Followers:   followers,
+		CreatedAt:   time.Now(),
+	}
+
+	if err := db.SetFeed(name, f); err != nil {
+		return err
+	}
+
+	if user != nil {
+		user.Follow(name, f.URL)
+	}
+
+	return nil
+}
+
+func LoadFeed(data []byte) (feed *Feed, err error) {
+	if err = json.Unmarshal(data, &feed); err != nil {
+		return nil, err
+	}
+
+	if feed.Followers == nil {
+		feed.Followers = make(map[string]string)
+	}
+
+	feed.remotes = make(map[string]string)
+	for n, u := range feed.Followers {
+		if u = NormalizeURL(u); u == "" {
+			continue
+		}
+		feed.remotes[u] = n
+	}
+
+	return
 }
 
 func LoadUser(data []byte) (user *User, err error) {
@@ -67,6 +149,29 @@ func LoadUser(data []byte) (user *User, err error) {
 	return
 }
 
+func (f *Feed) FollowedBy(url string) bool {
+	_, ok := f.remotes[NormalizeURL(url)]
+	return ok
+}
+
+func (f *Feed) Profile() Profile {
+	return Profile{
+		Username: f.Name,
+		Tagline:  f.Description,
+		URL:      f.URL,
+
+		Followers: f.Followers,
+	}
+}
+
+func (f *Feed) Bytes() ([]byte, error) {
+	data, err := json.Marshal(f)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 func (u *User) OwnsFeed(name string) bool {
 	name = NormalizeFeedName(name)
 	for _, feed := range u.Feeds {
@@ -77,30 +182,11 @@ func (u *User) OwnsFeed(name string) bool {
 	return false
 }
 
-func (u *User) CreateFeed(path, name string) error {
-	if len(u.Feeds) > maxUserFeeds {
-		return ErrTooManyFeeds
-	}
-
-	p := filepath.Join(path, feedsDir, name)
-	if _, err := os.Stat(p); err == nil {
-		return ErrFeedAlreadyExists
-	}
-
-	if err := ioutil.WriteFile(p, []byte{}, 0644); err != nil {
-		return err
-	}
-
-	u.Feeds = append(u.Feeds, name)
-
-	return nil
-}
-
 func (u *User) Is(url string) bool {
 	if NormalizeURL(url) == "" {
 		return false
 	}
-	return u.TwtURL == NormalizeURL(url)
+	return u.URL == NormalizeURL(url)
 }
 
 func (u *User) FollowedBy(url string) bool {
@@ -122,6 +208,17 @@ func (u *User) Follows(url string) bool {
 
 func (u *User) Sources() map[string]string {
 	return u.sources
+}
+
+func (u *User) Profile() Profile {
+	return Profile{
+		Username: u.Username,
+		Tagline:  u.Tagline,
+		URL:      u.URL,
+
+		Followers: u.Followers,
+		Following: u.Following,
+	}
 }
 
 func (u *User) Bytes() ([]byte, error) {

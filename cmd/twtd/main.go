@@ -18,18 +18,23 @@ var (
 	debug   bool
 	version bool
 
-	data           string
-	store          string
-	name           string
-	theme          string
-	register       bool
-	baseURL        string
-	adminUser      string
-	feedSources    []string
-	cookieSecret   string
-	tweetsPerPage  int
-	maxTweetLength int
-	sessionExpiry  time.Duration
+	data            string
+	store           string
+	name            string
+	theme           string
+	register        bool
+	baseURL         string
+	adminUser       string
+	feedSources     []string
+	cookieSecret    string
+	tweetsPerPage   int
+	maxTweetLength  int
+	sessionExpiry   time.Duration
+	magiclinkSecret string
+	smtpHost        string
+	smtpPort        int
+	smtpUser        string
+	smtpPass        string
 )
 
 func init() {
@@ -49,6 +54,13 @@ func init() {
 	flag.IntVarP(&maxTweetLength, "max-tweet-length", "L", twtxt.DefaultMaxTweetLength, "maximum length of posts")
 	flag.IntVarP(&tweetsPerPage, "tweets-per-page", "T", twtxt.DefaultTweetsPerPage, "tweets per page to display")
 	flag.DurationVarP(&sessionExpiry, "session-expiry", "E", twtxt.DefaultSessionExpiry, "session expiry to use")
+
+	flag.StringVar(&magiclinkSecret, "magiclink-secret", twtxt.DefaultMagicLinkSecret, "magiclink secret to use for password reset tokens")
+
+	flag.StringVar(&smtpHost, "smtp-host", twtxt.DefaultSMTPHost, "SMTP Host to use for email sending")
+	flag.IntVar(&smtpPort, "smtp-port", twtxt.DefaultSMTPPort, "SMTP Port to use for email sending")
+	flag.StringVar(&smtpUser, "smtp-user", twtxt.DefaultSMTPUser, "SMTP User to use for email sending")
+	flag.StringVar(&smtpPass, "smtp-pass", twtxt.DefaultSMTPPass, "SMTP Pass to use for email sending")
 }
 
 func flagNameFromEnvironmentName(s string) string {
@@ -100,6 +112,11 @@ func main() {
 		twtxt.WithTweetsPerPage(tweetsPerPage),
 		twtxt.WithSessionExpiry(sessionExpiry),
 		twtxt.WithMaxTweetLength(maxTweetLength),
+		twtxt.WithMagicLinkSecret(magiclinkSecret),
+		twtxt.WithSMTPHost(smtpHost),
+		twtxt.WithSMTPPort(smtpPort),
+		twtxt.WithSMTPUser(smtpUser),
+		twtxt.WithSMTPPass(smtpPass),
 	)
 	if err != nil {
 		log.WithError(err).Fatal("error creating server")

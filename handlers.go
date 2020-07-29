@@ -23,8 +23,8 @@ import (
 	"github.com/vcraescu/go-paginator"
 	"github.com/vcraescu/go-paginator/adapter"
 
-	"github.com/prologic/twtxt/session"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/prologic/twtxt/session"
 )
 
 var (
@@ -991,13 +991,12 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 
 		// Get user object from DB
 		user, err := s.db.GetUser(username)
-			if err != nil {
-				ctx.Error = true
-				ctx.Message = "Error loading user"
-				s.render("error", w, ctx)
-				return
-			}
-
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "Error loading user"
+			s.render("error", w, ctx)
+			return
+		}
 
 		// Create magic link expiry time
 		now := time.Now()
@@ -1009,13 +1008,13 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 		// Create magic link
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"username": username, "expiresAt": expiryTime})
 		tokenString, err := token.SignedString([]byte(s.config.MagicLinkSecret))
-			if err != nil {
-				ctx.Error = true
-				ctx.Message = err.Error()
-				s.render("error", w, ctx)
-				return
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = err.Error()
+			s.render("error", w, ctx)
+			return
 		}
-			
+
 		magicLink := fmt.Sprintf("%s/newPassword?token=%v", s.config.BaseURL, tokenString)
 
 		// Send email
@@ -1024,13 +1023,14 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 		body := magicLink
 
 		if err := s.config.SendEmail(to, subject, body); err != nil {
+			log.WithError(err).Errorf("unable to send reset password email to %s", user.Email)
 			ctx.Error = true
 			ctx.Message = err.Error()
 			s.render("error", w, ctx)
 			return
 		}
-		
-		log.Infof("reset password email sent: %v", user)
+
+		log.Infof("reset password email sent for %s", user.Username)
 
 		// Show success msg
 		ctx.Error = false
@@ -1046,18 +1046,18 @@ func (s *Server) ResetPasswordMagicLinkHandler() httprouter.Handle {
 
 		// Get token from query string
 		tokens, ok := r.URL.Query()["token"]
-	
+
 		// Check if valid token
-    	if !ok || len(tokens[0]) < 1 {
-        	ctx.Error = true
+		if !ok || len(tokens[0]) < 1 {
+			ctx.Error = true
 			ctx.Message = "Invalid token"
 			s.render("error", w, ctx)
 			return
-    	}
+		}
 
 		tokenEmail := tokens[0]
-		ctx.PasswordResetToken = tokenEmail;
-		
+		ctx.PasswordResetToken = tokenEmail
+
 		// Show newPassword page
 		s.render("newPassword", w, ctx)
 	}
@@ -1074,17 +1074,17 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 
 		password := r.FormValue("password")
 		tokenEmail := r.FormValue("token")
-		
+
 		// Check if token is valid
 		token, err := jwt.Parse(tokenEmail, func(token *jwt.Token) (interface{}, error) {
-			
+
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 			}
-		
+
 			return []byte(s.config.MagicLinkSecret), nil
 		})
-		
+
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 
 			var username = fmt.Sprintf("%v", claims["username"])
@@ -1118,9 +1118,9 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 					s.render("error", w, ctx)
 					return
 				}
-	
+
 				user.Password = hash
-				
+
 				// Save user
 				if err := s.db.SetUser(username, user); err != nil {
 					ctx.Error = true
@@ -1143,6 +1143,6 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 			s.render("error", w, ctx)
 			return
 		}
-		
+
 	}
 }

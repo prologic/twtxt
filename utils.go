@@ -318,6 +318,7 @@ func (c *Config) SendEmail(recipients []string, subject string, body string) err
 
 	err := d.DialAndSend(m)
 	if err != nil {
+		log.WithError(err).Error("SendEmail() failed")
 		return ErrSendingEmail
 	}
 

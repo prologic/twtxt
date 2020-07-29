@@ -1,6 +1,41 @@
 
+<a name="0.0.11"></a>
+## [0.0.11](https://github.com/prologic/twtxt/compare/0.0.10...0.0.11) (2020-07-29)
+
+### Bug Fixes
+
+* Fix wording on settings re showing followers publicly
+* Fix bug that incorrectly redirects to the / when you're posting from /discover
+* Fix profile template and profile type to show followers correctly with correct link
+* Fix Profile.Type setting when calling .Profile() on models
+* Fix a few misisng trimSuffix calls in some tempaltes
+* Fix sessino persistence and increase default session timeout to 10days ([#49](https://github.com/prologic/twtxt/issues/49))
+* Fix session unmarshalling caused by 150690c
+* Fix the mess that is User/Feed URL vs. TwtURL ([#47](https://github.com/prologic/twtxt/issues/47))
+* Fix user registration to disallow existing users and feeds
+* Fix the specialUsernames feeds for the adminuser properly on twtxt.net
+* Fix remainder of feeds on twtxt.net (we lost the contents of news oh well)
+* Fix new feed entities on twtxt.net
+* Fix all logging in background jobs  to only output warnings
+* Fix and tidy up dependencies
+
+### Features
+
+* Add Feed model with feed profiles
+* Add link to followers
+* Add random tweet prompts for a nice variance on the text placeholder
+* Add user Avatars to the User Profile view as well
+* Add Identicons and support for Profile Avatars ([#43](https://github.com/prologic/twtxt/issues/43))
+* Add a flag that allows users to set if the public can see who follows them
+
+### Updates
+
+* Update default list of external feeds and add we-are-twtxt
+* Update feed sources, refactor and improve the UI/UX by displaying feed sources by source instead of lumped together
+
+
 <a name="0.0.10"></a>
-## [0.0.10](https://github.com/prologic/twtxt/compare/0.0.9...0.0.10) (2020-07-27)
+## [0.0.10](https://github.com/prologic/twtxt/compare/0.0.9...0.0.10) (2020-07-28)
 
 ### Bug Fixes
 
@@ -42,6 +77,7 @@
 
 ### Updates
 
+* Update CHANGELOG for 0.0.10
 * Update README.md
 * Update README.md
 * Update README.md

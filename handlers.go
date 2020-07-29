@@ -475,14 +475,23 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		feedsources, err := LoadFeedSources(s.config.Data)
+		feeds, err := s.db.GetAllFeeds()
 		if err != nil {
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading feed "
+			ctx.Message = "An error occurred while loading feeds"
 			s.render("error", w, ctx)
 			return
 		}
 
+		feedsources, err := LoadFeedSources(s.config.Data)
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading feeds"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Feeds = feeds
 		ctx.FeedSources = feedsources.Sources
 
 		s.render("feeds", w, ctx)

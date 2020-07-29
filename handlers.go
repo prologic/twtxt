@@ -1020,23 +1020,21 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 
 		// Send email
 		to := []string{user.Email}
-		from := s.config.SMTPEmail
-		msg := fmt.Sprintf("To: %s\r\nSubject: Reset Password - txttxt.net\r\n\r\n%v\r\n", user.Email, magicLink)
+		subject := "Reset Password - txttxt.net"
+		body := magicLink
 
-		msgByte := []byte(msg)
-		if err := SendEmail(to, from, s.config.SMTPPassword, msgByte); err != nil {
+		if err := s.config.SendEmail(to, subject, body); err != nil {
 			ctx.Error = true
 			ctx.Message = err.Error()
 			s.render("error", w, ctx)
 			return
 		}
-
 		
 		log.Infof("reset password email sent: %v", user)
 
 		// Show success msg
 		ctx.Error = false
-		ctx.Message = fmt.Sprintf("Reset password link sent to %s", user.Email)
+		ctx.Message = fmt.Sprintf("Magic Link successfully sent via email to %v", user.Email)
 		s.render("error", w, ctx)
 	}
 }
@@ -1058,7 +1056,7 @@ func (s *Server) ResetPasswordMagicLinkHandler() httprouter.Handle {
     	}
 
 		tokenEmail := tokens[0]
-		ctx.Token = tokenEmail;
+		ctx.PasswordResetToken = tokenEmail;
 		
 		// Show newPassword page
 		s.render("newPassword", w, ctx)

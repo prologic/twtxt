@@ -25,7 +25,9 @@ type Config struct {
 	MaxTweetLength  int           `json:"max_tweet_length"`
 	SessionExpiry   time.Duration `json:"session_expiry"`
 	MagicLinkSecret string        `json:"magiclink_secret"`
-	SMTPEmail 		string        `json:"smtp_email"`
+	SMTPServer 		string        `json:"smtp_server"`
+	SMTPPort 		int        `json:"smtp_port"`
+	SMTPUser 		string        `json:"smtp_user"`
 	SMTPPassword 	string        `json:"smtp_password"`
 }
 

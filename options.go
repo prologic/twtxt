@@ -42,11 +42,11 @@ const (
 	// DefaultMagicLinkSecret is the jwt magic link secret
 	DefaultMagicLinkSecret = "PLEASE_CHANGE_ME!!!"
 
-	// DefaultSMTPEmail is the email used for SMTP
-	DefaultSMTPEmail = ""
-
-	// DefaultSMTPPassword is the password used for SMTP
-	DefaultSMTPPassword = ""
+	// SMTP Configurations
+	SMTP_Server = "smtp.gmail.com"
+	SMTP_Port = 587
+	SMTP_User = "upworktestingpakistan@gmail.com"
+	SMTP_Password = "testupwork"
 )
 
 var (
@@ -83,8 +83,10 @@ func NewConfig() *Config {
 		MaxTweetLength:  DefaultMaxTweetLength,
 		SessionExpiry:   DefaultSessionExpiry,
 		MagicLinkSecret: DefaultMagicLinkSecret,
-		SMTPEmail: 		 DefaultSMTPEmail,
-		SMTPPassword:	 DefaultSMTPPassword,
+		SMTPServer: 	 SMTP_Server,
+		SMTPPort:	 	 SMTP_Port,
+		SMTPUser: 		 SMTP_User,
+		SMTPPassword:	 SMTP_Password,
 	}
 }
 

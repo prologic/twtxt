@@ -11,7 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"net/smtp"
+	"gopkg.in/gomail.v2"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gomarkdown/markdown"
@@ -306,12 +306,16 @@ func FormatRequest(r *http.Request) string {
 	)
 }
 
-func SendEmail(toEmail []string, fromEmail string, password string, msgEmail []byte) error {
-	auth := smtp.PlainAuth("", fromEmail, password, "smtp.gmail.com")
+func (c *Config) SendEmail(recipients []string, subject string, body string) error {
+	m := gomail.NewMessage()
+	m.SetHeader("From", "noreply@mills.io")
+	m.SetHeader("To", recipients...)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
 
-	to := toEmail
-	msg := msgEmail
-	err := smtp.SendMail("smtp.gmail.com:587", auth, fromEmail, to, msg)
+	d := gomail.NewDialer(c.SMTPServer, c.SMTPPort, c.SMTPUser, c.SMTPPassword)
+
+	err := d.DialAndSend(m)
 	if err != nil {
 		return ErrSendingEmail
 	}

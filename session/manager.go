@@ -53,6 +53,8 @@ func (m *Manager) Create(w http.ResponseWriter) (*Session, error) {
 	securecookie.SetSecureCookie(w, m.options.secret, cookie)
 
 	return &Session{
+		store: m.store,
+
 		ID:        sid.String(),
 		Data:      make(Map),
 		CreatedAt: time.Now(),
@@ -112,6 +114,8 @@ func (m *Manager) GetOrCreate(w http.ResponseWriter, r *http.Request) (*Session,
 		log.WithError(err).Errorf("error loading session for %s", sid)
 		return nil, err
 	}
+
+	sess.store = m.store
 
 	return sess, nil
 }

@@ -245,6 +245,12 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		}
 	}
 
+	db, err := NewStore(config.Store)
+	if err != nil {
+		log.WithError(err).Error("error creating store")
+		return nil, err
+	}
+
 	templates, err := NewTemplates(config)
 	if err != nil {
 		log.WithError(err).Error("error loading templates")
@@ -264,7 +270,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 			strings.HasPrefix(config.BaseURL, "https"),
 			config.SessionExpiry,
 		),
-		session.NewMemoryStore(config.SessionExpiry),
+		db,
 	)
 
 	server := &Server{
@@ -285,6 +291,9 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 			),
 		},
 
+		// Store
+		db: db,
+
 		// Schedular
 		cron: cron.New(),
 
@@ -297,13 +306,6 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		// Password Manager
 		pm: pm,
 	}
-
-	db, err := NewStore(server.config.Store)
-	if err != nil {
-		log.WithError(err).Error("error creating store")
-		return nil, err
-	}
-	server.db = db
 
 	if err := server.setupCronJobs(); err != nil {
 		log.WithError(err).Error("error settupt up background jobs")

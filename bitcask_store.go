@@ -5,6 +5,12 @@ import (
 
 	"github.com/prologic/bitcask"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/prologic/twtxt/session"
+)
+
+const (
+	sessionsKeyPrefix = "/sessions"
 )
 
 // BitcaskStore ...
@@ -13,7 +19,10 @@ type BitcaskStore struct {
 }
 
 func newBitcaskStore(path string) (*BitcaskStore, error) {
-	db, err := bitcask.Open(path)
+	db, err := bitcask.Open(
+		path,
+		bitcask.WithMaxKeySize(256),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -143,4 +152,41 @@ func (bs *BitcaskStore) GetAllUsers() ([]*User, error) {
 	}
 
 	return users, nil
+}
+
+func (bs *BitcaskStore) GetSession(sid string) (*session.Session, error) {
+	key := []byte(fmt.Sprintf("%s/%s", sessionsKeyPrefix, sid))
+	data, err := bs.db.Get(key)
+	if err != nil {
+		if err == bitcask.ErrKeyNotFound {
+			return nil, session.ErrSessionNotFound
+		}
+		return nil, err
+	}
+	return session.LoadSession(data)
+}
+
+func (bs *BitcaskStore) SetSession(sid string, sess *session.Session) error {
+	key := []byte(fmt.Sprintf("%s/%s", sessionsKeyPrefix, sid))
+
+	data, err := sess.Bytes()
+	if err != nil {
+		return err
+	}
+
+	return bs.db.Put(key, data)
+}
+
+func (bs *BitcaskStore) HasSession(sid string) bool {
+	key := []byte(fmt.Sprintf("%s/%s", sessionsKeyPrefix, sid))
+	return bs.db.Has(key)
+}
+
+func (bs *BitcaskStore) DelSession(sid string) error {
+	key := []byte(fmt.Sprintf("%s/%s", sessionsKeyPrefix, sid))
+	return bs.db.Delete(key)
+}
+
+func (bs *BitcaskStore) SyncSession(sess *session.Session) error {
+	return bs.SetSession(sess.ID, sess)
 }

@@ -48,3 +48,7 @@ func (s *MemoryStore) DelSession(sid string) error {
 	s.entries.Delete(sid)
 	return nil
 }
+
+func (s *MemoryStore) SyncSession(sess *Session) error {
+	return nil
+}

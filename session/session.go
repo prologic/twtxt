@@ -10,6 +10,8 @@ type Map map[string]string
 
 // Session ...
 type Session struct {
+	store Store
+
 	ID        string    `json:"id"`
 	Data      Map       `json:"data"`
 	CreatedAt time.Time `json:"created"`
@@ -28,8 +30,9 @@ func LoadSession(data []byte) (sess *Session, err error) {
 	return
 }
 
-func (sess *Session) Set(key, val string) {
+func (sess *Session) Set(key, val string) error {
 	sess.Data[key] = val
+	return sess.store.SyncSession(sess)
 }
 
 func (sess *Session) Get(key string) (val string, ok bool) {
@@ -42,8 +45,9 @@ func (sess *Session) Has(key string) bool {
 	return ok
 }
 
-func (sess *Session) Del(key string) {
+func (sess *Session) Del(key string) error {
 	delete(sess.Data, key)
+	return sess.store.SyncSession(sess)
 }
 
 func (sess *Session) Bytes() ([]byte, error) {

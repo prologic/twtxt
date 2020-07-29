@@ -25,4 +25,6 @@ type Store interface {
 	SetSession(sid string, sess *Session) error
 	HasSession(sid string) bool
 	DelSession(sid string) error
+
+	SyncSession(sess *Session) error
 }

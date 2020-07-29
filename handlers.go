@@ -530,7 +530,7 @@ func (s *Server) LoginHandler() httprouter.Handle {
 		log.Infof("login successful: %s", username)
 
 		// Lookup session
-		sess := r.Context().Value("sesssion")
+		sess := r.Context().Value(session.SessionKey)
 		if sess == nil {
 			log.Warn("no session found")
 			http.Redirect(w, r, "/login", http.StatusFound)

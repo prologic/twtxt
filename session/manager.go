@@ -9,6 +9,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Key ...
+type Key int
+
+const (
+	SessionKey Key = iota
+)
+
 // Options ...
 type Options struct {
 	name   string
@@ -122,9 +129,11 @@ func (m *Manager) GetOrCreate(w http.ResponseWriter, r *http.Request) (*Session,
 
 // Delete ...
 func (m *Manager) Delete(w http.ResponseWriter, r *http.Request) {
-	if sess := r.Context().Value("sessin"); sess != nil {
+	if sess := r.Context().Value(SessionKey); sess != nil {
 		sess := sess.(*Session)
-		m.store.DelSession(sess.ID)
+		if err := m.store.DelSession(sess.ID); err != nil {
+			log.WithError(err).Warnf("error deleting session %s", sess.ID)
+		}
 	}
 
 	cookie := &http.Cookie{
@@ -149,7 +158,7 @@ func (m *Manager) Handler(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "sesssion", sess)
+		ctx := context.WithValue(r.Context(), SessionKey, sess)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/prologic/twtxt/session"
 	log "github.com/sirupsen/logrus"
 	"github.com/vcraescu/go-paginator"
+
+	"github.com/prologic/twtxt/session"
 )
 
 type Context struct {
@@ -61,7 +62,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		}
 	}
 
-	if sess := req.Context().Value("sesssion"); sess != nil {
+	if sess := req.Context().Value(session.SessionKey); sess != nil {
 		if username, ok := sess.(*session.Session).Get("username"); ok {
 			ctx.Authenticated = true
 			ctx.Username = username

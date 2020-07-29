@@ -31,7 +31,7 @@ func NewManager(options *Options) *Manager {
 // MustAuth ...
 func (m *Manager) MustAuth(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		if sess := r.Context().Value("sesssion"); sess != nil {
+		if sess := r.Context().Value(session.SessionKey); sess != nil {
 			if _, ok := sess.(*session.Session).Get("username"); ok {
 				next(w, r, p)
 				return

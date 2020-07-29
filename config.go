@@ -24,6 +24,9 @@ type Config struct {
 	TweetsPerPage   int           `json:"tweets_per_page"`
 	MaxTweetLength  int           `json:"max_tweet_length"`
 	SessionExpiry   time.Duration `json:"session_expiry"`
+	MagicLinkSecret string        `json:"magiclink_secret"`
+	SMTPEmail 		string        `json:"smtp_email"`
+	SMTPPassword 	string        `json:"smtp_password"`
 }
 
 // RandomTweetPrompt returns a random  Tweet Prompt for display by the UI

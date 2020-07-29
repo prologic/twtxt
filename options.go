@@ -38,6 +38,15 @@ const (
 
 	// DefaultSessionExpiry is the server's default session expiry time
 	DefaultSessionExpiry = 240 * time.Hour // 10 days
+
+	// DefaultMagicLinkSecret is the jwt magic link secret
+	DefaultMagicLinkSecret = "PLEASE_CHANGE_ME!!!"
+
+	// DefaultSMTPEmail is the email used for SMTP
+	DefaultSMTPEmail = ""
+
+	// DefaultSMTPPassword is the password used for SMTP
+	DefaultSMTPPassword = ""
 )
 
 var (
@@ -73,6 +82,9 @@ func NewConfig() *Config {
 		TweetsPerPage:   DefaultTweetsPerPage,
 		MaxTweetLength:  DefaultMaxTweetLength,
 		SessionExpiry:   DefaultSessionExpiry,
+		MagicLinkSecret: DefaultMagicLinkSecret,
+		SMTPEmail: 		 DefaultSMTPEmail,
+		SMTPPassword:	 DefaultSMTPPassword,
 	}
 }
 

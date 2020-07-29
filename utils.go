@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"net/smtp"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gomarkdown/markdown"
@@ -60,6 +61,7 @@ var (
 	ErrUsernameTooLong  = errors.New("error: username is too long")
 	ErrInvalidUserAgent = errors.New("error: invalid twtxt user agent")
 	ErrReservedUsername = errors.New("error: username is reserved")
+	ErrSendingEmail = errors.New("error: unable to send email")
 )
 
 func NormalizeFeedName(name string) string {
@@ -302,4 +304,17 @@ func FormatRequest(r *http.Request) string {
 		r.Proto,
 		r.UserAgent(),
 	)
+}
+
+func SendEmail(toEmail []string, fromEmail string, password string, msgEmail []byte) error {
+	auth := smtp.PlainAuth("", fromEmail, password, "smtp.gmail.com")
+
+	to := toEmail
+	msg := msgEmail
+	err := smtp.SendMail("smtp.gmail.com:587", auth, fromEmail, to, msg)
+	if err != nil {
+		return ErrSendingEmail
+	}
+
+	return nil
 }

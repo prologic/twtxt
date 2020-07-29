@@ -220,6 +220,12 @@ func (s *Server) initRoutes() {
 	s.router.GET("/register", s.RegisterHandler())
 	s.router.POST("/register", s.RegisterHandler())
 
+	// Reset Password
+	s.router.GET("/resetPassword", s.PageHandler("resetPassword"))
+	s.router.POST("/resetPassword", s.ResetPasswordHandler())
+	s.router.GET("/newPassword", s.ResetPasswordMagicLinkHandler())
+	s.router.POST("/newPassword", s.NewPasswordHandler())
+
 	s.router.GET("/follow", s.am.MustAuth(s.FollowHandler()))
 	s.router.POST("/follow", s.am.MustAuth(s.FollowHandler()))
 

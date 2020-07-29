@@ -33,6 +33,9 @@ type Context struct {
 	Tweets      Tweets
 	FeedSources FeedSourceMap
 	Pager       paginator.Paginator
+
+	// Reset Password Token
+	Token	string
 }
 
 func NewContext(conf *Config, db Store, req *http.Request) *Context {

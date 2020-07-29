@@ -149,7 +149,7 @@ func NormalizeURL(url string) string {
 func PrettyURL(uri string) string {
 	u, err := url.Parse(uri)
 	if err != nil {
-		log.WithError(err).Warn("StripURISchema(): error parsing url: %s", uri)
+		log.WithError(err).Warnf("StripURISchema(): error parsing url: %s", uri)
 		return uri
 	}
 

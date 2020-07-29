@@ -1,7 +1,6 @@
 package session
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/patrickmn/go-cache"
@@ -26,29 +25,26 @@ func NewMemoryStore(sessionDuration time.Duration) *MemoryStore {
 
 //Store interface implementation
 
-//Save associates the provided state data with the provided session id in the store.
-func (ms *MemoryStore) Save(sid SessionID, state SessionData) error {
-	j, err := json.Marshal(state)
-	if nil != err {
-		return err
+func (s *MemoryStore) GetSession(sid string) (*Session, error) {
+	val, found := s.entries.Get(sid)
+	if !found {
+		return nil, ErrSessionNotFound
 	}
-	ms.entries.Set(sid.String(), j, cache.DefaultExpiration)
+	sess := val.(*Session)
+	return sess, nil
+}
+
+func (s *MemoryStore) SetSession(sid string, sess *Session) error {
+	s.entries.Set(sid, sess, cache.DefaultExpiration)
 	return nil
 }
 
-//Get retrieves the previously saved state data for the session id,
-//and populates the `data` parameter with it. This will also
-//reset the data's time to live in the store.
-func (ms *MemoryStore) Get(sid SessionID, state SessionData) error {
-	j, found := ms.entries.Get(sid.String())
-	if !found {
-		return ErrStateNotFound
-	}
-	return json.Unmarshal(j.([]byte), &state)
+func (s *MemoryStore) HasSession(sid string) bool {
+	_, ok := s.entries.Get(sid)
+	return ok
 }
 
-//Delete deletes all state data associated with the session id from the store.
-func (ms *MemoryStore) Delete(sid SessionID) error {
-	ms.entries.Delete(sid.String())
+func (s *MemoryStore) DelSession(sid string) error {
+	s.entries.Delete(sid)
 	return nil
 }

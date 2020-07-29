@@ -1134,15 +1134,13 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 
 			// Show success msg
 			ctx.Error = false
-			ctx.Message = fmt.Sprintf("Password reset successfully.")
+			ctx.Message = "Password reset successfully."
 			s.render("error", w, ctx)
-
 		} else {
 			ctx.Error = true
 			ctx.Message = err.Error()
 			s.render("error", w, ctx)
 			return
 		}
-
 	}
 }

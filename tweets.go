@@ -34,6 +34,27 @@ type Tweet struct {
 	hash string
 }
 
+func (tweet Tweet) Mentions() []string {
+	var mentions []string
+
+	re := regexp.MustCompile(`@<(.*?) .*?>`)
+	matches := re.FindAllStringSubmatch(tweet.Text, -1)
+	for _, match := range matches {
+		mentions = append(mentions, match[1])
+	}
+
+	return mentions
+}
+
+func (tweet Tweet) Subject() string {
+	re := regexp.MustCompile(`^(@<.*>[, ]*)*(\(.*?\))(.*)`)
+	match := re.FindStringSubmatch(tweet.Text)
+	if match != nil {
+		return match[2]
+	}
+	return ""
+}
+
 func (tweet Tweet) Hash() string {
 	if tweet.hash != "" {
 		return tweet.hash

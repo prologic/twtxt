@@ -79,6 +79,32 @@ var (
 	ErrInvalidImageUPload = errors.New("error: invalid or corrupted image uploaded")
 )
 
+func UniqStrings(xs []string) []string {
+	set := make(map[string]bool)
+	for _, x := range xs {
+		if _, ok := set[x]; !ok {
+			set[x] = true
+		}
+	}
+
+	res := []string{}
+	for k := range set {
+		res = append(res, k)
+	}
+	return res
+}
+
+func RemoveString(xs []string, e string) []string {
+	res := []string{}
+	for _, x := range xs {
+		if x == e {
+			continue
+		}
+		res = append(res, x)
+	}
+	return res
+}
+
 func SHA256Sum(fn string) ([]byte, error) {
 	f, err := os.Open(fn)
 	if err != nil {

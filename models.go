@@ -3,9 +3,11 @@ package twtxt
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -224,6 +226,20 @@ func (u *User) Profile() Profile {
 		Followers: u.Followers,
 		Following: u.Following,
 	}
+}
+
+func (u *User) Reply(tweet Tweet) string {
+	mentions := []string{}
+	for _, mention := range RemoveString(UniqStrings(append(tweet.Mentions(), tweet.Tweeter.Nick)), u.Username) {
+		mentions = append(mentions, fmt.Sprintf("@%s", mention))
+	}
+
+	subject := tweet.Subject()
+
+	if subject != "" {
+		return fmt.Sprintf("%s %s ", strings.Join(mentions, " "), subject)
+	}
+	return fmt.Sprintf("%s ", strings.Join(mentions, " "))
 }
 
 func (u *User) Bytes() ([]byte, error) {

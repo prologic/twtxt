@@ -50,7 +50,7 @@
           <h3>
             {{ if (and $.Authenticated (not ($.User.Is .Tweeter.URL))) }}
               &nbsp;
-              [<a class="reply" href="#" data-reply="@{{ .Tweeter.Nick }} ">Reply</a>]
+              [<a class="reply" href="#" data-reply="{{ $.User.Reply . }}">Reply</a>]
               &nbsp;
               {{ if $.User.Follows .Tweeter.URL }}
                 [<a href="/unfollow?nick={{ .Tweeter.Nick }}">Unfollow</a>]

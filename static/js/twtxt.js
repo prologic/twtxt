@@ -29,10 +29,10 @@ function readURL(input) {
 	}
 }
 
-u("input.file-upload").on('change', function(){
+u('input.file-upload').on('change', function(){
 	readURL(this);
 });
 
-u("div.upload-button").on('click', function() {
-	u("input.file-upload").click();
+u('div.upload-button').on('click', function() {
+	u('input.file-upload').trigger('click');
 });

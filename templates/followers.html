@@ -3,11 +3,11 @@
         <div>
             <hgroup>
                 <h1>Followers</h1>
-                <h2>List of users following <b>{{ .User.Username }}</b></h2>
+                <h2>List of users following <b>{{ .Profile.Username }}</b></h2>
             </hgroup>
-            {{ if .User.Followers }}
+            {{ if .Profile.Followers }}
             <ol>
-                {{ range $Nick, $URL := .User.Followers }}
+                {{ range $Nick, $URL := .Profile.Followers }}
                 <li>
                     {{ if $.User.Is $Nick }}
                     <a href="{{ $URL }}">me</a>

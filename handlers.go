@@ -927,30 +927,35 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 
 		nick := NormalizeUsername(p.ByName("nick"))
 
-		if nick == "" {
-			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
-
-		user, err := s.db.GetUser(nick)
-
-		if err != nil {
-			ctx.Error = true
-
-			if err == ErrUserNotFound {
-				ctx.Message = "User not found"
-			} else {
+		if s.db.HasUser(nick) {
+			user, err := s.db.GetUser(nick)
+			if err != nil {
 				log.WithError(err).Errorf("error loading user object for %s", nick)
+				ctx.Error = true
 				ctx.Message = "Error loading profile"
+				s.render("error", w, ctx)
+				return
 			}
 
-			s.render("error", w, ctx)
-
-			return
-		}
-
-		if !user.IsFollowersPubliclyVisible && !ctx.User.Is(user.URL) {
-			s.render("401", w, ctx)
+			if !user.IsFollowersPubliclyVisible && !ctx.User.Is(user.URL) {
+				s.render("401", w, ctx)
+				return
+			}
+			ctx.Profile = user.Profile()
+		} else if s.db.HasFeed(nick) {
+			feed, err := s.db.GetFeed(nick)
+			if err != nil {
+				log.WithError(err).Errorf("error loading feed object for %s", nick)
+				ctx.Error = true
+				ctx.Message = "Error loading profile"
+				s.render("error", w, ctx)
+				return
+			}
+			ctx.Profile = feed.Profile()
+		} else {
+			ctx.Error = true
+			ctx.Message = "User or Feed Not Found"
+			s.render("404", w, ctx)
 			return
 		}
 
@@ -958,15 +963,13 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 
-			if err := json.NewEncoder(w).Encode(user.Followers); err != nil {
+			if err := json.NewEncoder(w).Encode(ctx.Profile.Followers); err != nil {
 				log.WithError(err).Error("error encoding user for display")
 				http.Error(w, "Bad Request", http.StatusBadRequest)
 			}
 
 			return
 		}
-
-		ctx.User = user
 
 		s.render("followers", w, ctx)
 	}

@@ -16,3 +16,23 @@ function reply(e) {
 }
 
 u(".reply").on("click", reply);
+
+function readURL(input) {
+	if (input.files && input.files[0]) {
+		var reader = new FileReader();
+
+		reader.onload = function (e) {
+			u('img.profile-pic').attr('src', e.target.result);
+		}
+
+		reader.readAsDataURL(input.files[0]);
+	}
+}
+
+u("input.file-upload").on('change', function(){
+	readURL(this);
+});
+
+u("div.upload-button").on('click', function() {
+	u("input.file-upload").click();
+});

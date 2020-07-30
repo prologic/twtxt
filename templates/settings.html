@@ -1,8 +1,16 @@
 {{define "content"}}
   <article class="grid">
     <div>
-      <hgroup>
-        <h1>Account settings</h1>
+	<hgroup>
+		<h1>Account settings</h1>
+		<h2>Change your avatar here</h2>
+		<div class="avatar-wrapper">
+			<img class="profile-pic" src="" />
+			<div class="upload-button">
+				<i class="fa fa-arrow-circle-up" aria-hidden="true"></i>
+			</div>
+			<input class="file-upload" type="file" accept="image/*"/>
+		</div>
         <h2>Update your account settings and password here</h2>
       </hgroup>
       <form action="/settings" method="POST">

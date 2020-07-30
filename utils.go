@@ -2,12 +2,21 @@ package twtxt
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"html/template"
+	"image"
+
+	// Blank import so we can handle image/jpeg
+	_ "image/jpeg"
+	"image/png"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -19,11 +28,15 @@ import (
 	"github.com/gomarkdown/markdown/ast"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/goware/urlx"
+	"github.com/h2non/filetype"
 	"github.com/microcosm-cc/bluemonday"
+	"github.com/nfnt/resize"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
+	avatarsDir = "avatars"
+
 	newsSpecialUser    = "news"
 	helpSpecialUser    = "help"
 	supportSpecialUser = "support"
@@ -56,14 +69,147 @@ var (
 	validUsername  = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]+$`)
 	userAgentRegex = regexp.MustCompile(`(.*?)\/(.*?) ?\(\+(https?://.*); @(.*)\)`)
 
-	ErrInvalidFeedName  = errors.New("error: invalid feed name")
-	ErrFeedNameTooLong  = errors.New("error: feed name is too long")
-	ErrInvalidUsername  = errors.New("error: invalid username")
-	ErrUsernameTooLong  = errors.New("error: username is too long")
-	ErrInvalidUserAgent = errors.New("error: invalid twtxt user agent")
-	ErrReservedUsername = errors.New("error: username is reserved")
-	ErrSendingEmail     = errors.New("error: unable to send email")
+	ErrInvalidFeedName    = errors.New("error: invalid feed name")
+	ErrFeedNameTooLong    = errors.New("error: feed name is too long")
+	ErrInvalidUsername    = errors.New("error: invalid username")
+	ErrUsernameTooLong    = errors.New("error: username is too long")
+	ErrInvalidUserAgent   = errors.New("error: invalid twtxt user agent")
+	ErrReservedUsername   = errors.New("error: username is reserved")
+	ErrSendingEmail       = errors.New("error: unable to send email")
+	ErrInvalidImageUPload = errors.New("error: invalid or corrupted image uploaded")
 )
+
+func SHA256Sum(fn string) ([]byte, error) {
+	f, err := os.Open(fn)
+	if err != nil {
+		log.WithError(err).Warnf("error opening file %s", fn)
+		return nil, err
+	}
+	defer f.Close()
+
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		log.WithError(err).Errorf("error reading file %s", fn)
+		return nil, err
+	}
+
+	return h.Sum(nil), nil
+}
+
+func IsImage(fn string) bool {
+	f, err := os.Open(fn)
+	if err != nil {
+		log.WithError(err).Warnf("error opening file %s", fn)
+		return false
+	}
+	defer f.Close()
+
+	head := make([]byte, 261)
+	if _, err := f.Read(head); err != nil {
+		log.WithError(err).Warnf("error reading from file %s", fn)
+		return false
+	}
+
+	if filetype.IsImage(head) {
+		return true
+	}
+
+	return false
+}
+
+type UploadOptions struct {
+	Resize  bool
+	ResizeW int
+	ResizeH int
+}
+
+func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *UploadOptions) (string, error) {
+	tf, err := ioutil.TempFile("", "twtxt-upload-*")
+	if err != nil {
+		log.WithError(err).Error("error creating temporary file")
+		return "", err
+	}
+	defer tf.Close()
+
+	if _, err := io.Copy(tf, f); err != nil {
+		log.WithError(err).Error("error writng temporary file")
+		return "", err
+	}
+
+	if _, err := tf.Seek(0, os.SEEK_SET); err != nil {
+		log.WithError(err).Error("error seeking temporary file")
+		return "", err
+	}
+
+	if !IsImage(tf.Name()) {
+		return "", ErrInvalidImageUPload
+	}
+
+	if _, err := tf.Seek(0, os.SEEK_SET); err != nil {
+		log.WithError(err).Error("error seeking temporary file")
+		return "", err
+	}
+
+	shasum, err := SHA256Sum(tf.Name())
+	if err != nil {
+		log.WithError(err).Error("error computing SHA256SUM of temporary file")
+		return "", err
+	}
+
+	hash := string(shasum)
+
+	p := filepath.Join(conf.Data, avatarsDir)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating avatars directory")
+		return "", err
+	}
+
+	var fn string
+
+	if name == "" {
+		fn = filepath.Join(p, fmt.Sprintf("%s.png", hash))
+	} else {
+		fn = fmt.Sprintf("%s.png", filepath.Join(p, name))
+	}
+
+	of, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		log.WithError(err).Error("error opening output file")
+		return "", err
+	}
+	defer of.Close()
+
+	if _, err := tf.Seek(0, os.SEEK_SET); err != nil {
+		log.WithError(err).Error("error seeking temporary file")
+		return "", err
+	}
+
+	img, _, err := image.Decode(tf)
+	if err != nil {
+		log.WithError(err).Error("error decoding image")
+		return "", err
+	}
+
+	newImg := img
+
+	if opts != nil {
+		if opts.Resize && (opts.ResizeW+opts.ResizeH) > 0 {
+			newImg = resize.Resize(uint(opts.ResizeW), uint(opts.ResizeH), img, resize.Lanczos3)
+		}
+	}
+
+	// Encode uses a Writer, use a Buffer if you need the raw []byte
+	if err := png.Encode(of, newImg); err != nil {
+		log.WithError(err).Error("error reencoding image")
+		return "", err
+	}
+
+	return fmt.Sprintf(
+		"%s/%s/%s",
+		strings.TrimSuffix(conf.BaseURL, "/"),
+		resource, filepath.Base(fn),
+	), nil
+}
 
 func NormalizeFeedName(name string) string {
 	name = strings.TrimSpace(name)

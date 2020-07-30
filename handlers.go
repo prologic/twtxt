@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"image/png"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -154,6 +155,25 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 
 		if !s.db.HasUser(nick) && !FeedExists(s.config, nick) {
 			http.Error(w, "User or Feed Not Found", http.StatusNotFound)
+			return
+		}
+
+		fn := filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.png", nick))
+		if _, err := os.Stat(fn); err == nil {
+			f, err := os.Open(fn)
+			if err != nil {
+				log.WithError(err).Error("error opening avatar file")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			defer f.Close()
+
+			w.Header().Set("Content-Type", "image/png")
+			if _, err := io.Copy(w, f); err != nil {
+				log.WithError(err).Error("error writing avatar response")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
 			return
 		}
 
@@ -861,6 +881,18 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		password := r.FormValue("password")
 		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
 
+		avatarFile, handler, err := r.FormFile("avatar_file")
+		if err != nil {
+			log.WithError(err).Error("error parsing form file")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		log.WithField("Filename", handler.Filename).
+			WithField("Size", handler.Size).
+			WithField("Header", handler.Header).
+			Debug("recieved uploaded file")
+
 		user := ctx.User
 		if user == nil {
 			log.Fatalf("user not found in context")
@@ -875,6 +907,19 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 			}
 
 			user.Password = hash
+		}
+
+		uploadOptions := &UploadOptions{Resize: true, ResizeW: 60, ResizeH: 60}
+		_, err = StoreUploadedImage(
+			s.config, avatarFile,
+			avatarsDir, ctx.Username,
+			uploadOptions,
+		)
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("Error updating user: %s", err)
+			s.render("error", w, ctx)
+			return
 		}
 
 		user.Email = email

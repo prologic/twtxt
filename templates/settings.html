@@ -5,7 +5,22 @@
         <h1>Account settings</h1>
         <h2>Update your account settings and password here</h2>
       </hgroup>
-      <form action="/settings" method="POST">
+      <form action="/settings" enctype="multipart/form-data" method="POST">
+        <div class="grid">
+          <hgroup>
+            <h2>
+              <img id="avatar" src="/user/{{ .User.Username }}/avatar.png" />
+              {{ .Profile.Username }}
+            </h2>
+        </div>
+        <div class="grid">
+          <div>
+            <label for="tagline">
+              Change avatar
+              <input id="avatar_upload" type="file" accept="image/png, image/jpeg" name="avatar_file" aria-label="Upload Avatar" />
+            </label>
+          </div>
+        </div>
         <div class="grid">
           <div>
             <label for="tagline">

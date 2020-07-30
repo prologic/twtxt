@@ -20,6 +20,7 @@ require (
 	github.com/gomarkdown/markdown v0.0.0-20200609195525-3f9352745725
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/goware/urlx v0.3.1
+	github.com/h2non/filetype v1.1.0
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.10 // indirect
 	github.com/jinzhu/gorm v1.9.15 // indirect
@@ -28,6 +29,7 @@ require (
 	github.com/lib/pq v1.7.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.3
 	github.com/mitchellh/copystructure v1.0.0 // indirect
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prologic/bitcask v0.3.6
 	github.com/robfig/cron v1.2.0

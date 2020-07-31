@@ -686,6 +686,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 		user := ctx.User
 		if user == nil {
 			log.Fatalf("user not found in context")
+			return
 		}
 
 		user.Following[nick] = url
@@ -700,23 +701,69 @@ func (s *Server) FollowHandler() httprouter.Handle {
 		if strings.HasPrefix(url, s.config.BaseURL) {
 			url = UserURL(url)
 			nick := NormalizeUsername(filepath.Base(url))
-			followee, err := s.db.GetUser(nick)
-			if err != nil {
-				log.WithError(err).Warnf("error loading user object for followee %s", NormalizeUsername(filepath.Base(url)))
-			} else {
+
+			if s.db.HasUser(nick) {
+				followee, err := s.db.GetUser(nick)
+				if err != nil {
+					log.WithError(err).Errorf("error loading user object for %s", nick)
+					ctx.Error = true
+					ctx.Message = "Error loading profile"
+					s.render("error", w, ctx)
+					return
+				}
+
 				if followee.Followers == nil {
 					followee.Followers = make(map[string]string)
 				}
+
 				followee.Followers[user.Username] = user.URL
+
 				if err := s.db.SetUser(followee.Username, followee); err != nil {
 					log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
+					ctx.Error = true
+					ctx.Message = "Error following user"
+					s.render("error", w, ctx)
+					return
 				}
+
 				if err := AppendSpecial(
 					s.config, s.db,
 					twtxtBot,
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
+						user.Username, URLForUser(s.config.BaseURL, user.Username),
+						"twtxt", FullVersion(),
+					),
+				); err != nil {
+					log.WithError(err).Warnf("error appending special FOLLOW post")
+				}
+			} else if s.db.HasFeed(nick) {
+				feed, err := s.db.GetFeed(nick)
+				if err != nil {
+					log.WithError(err).Errorf("error loading feed object for %s", nick)
+					ctx.Error = true
+					ctx.Message = "Error loading profile"
+					s.render("error", w, ctx)
+					return
+				}
+
+				feed.Followers[user.Username] = user.URL
+
+				if err := s.db.SetFeed(feed.Name, feed); err != nil {
+					log.WithError(err).Warnf("error updating user object for followee %s", feed.Name)
+					ctx.Error = true
+					ctx.Message = "Error following feed"
+					s.render("error", w, ctx)
+					return
+				}
+
+				if err := AppendSpecial(
+					s.config, s.db,
+					twtxtBot,
+					fmt.Sprintf(
+						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+						feed.Name, URLForUser(s.config.BaseURL, feed.Name),
 						user.Username, URLForUser(s.config.BaseURL, user.Username),
 						"twtxt", FullVersion(),
 					),

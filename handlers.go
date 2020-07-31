@@ -881,7 +881,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		password := r.FormValue("password")
 		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
 
-		avatarFile, handler, err := r.FormFile("avatar_file")
+		avatarFile, _, err := r.FormFile("avatar_file")
 		if err != nil {
 			log.WithError(err).Error("error parsing form file")
 			http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -136,7 +136,7 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 		return "", err
 	}
 
-	if _, err := tf.Seek(0, os.SEEK_SET); err != nil {
+	if _, err := tf.Seek(0, io.SeekStart); err != nil {
 		log.WithError(err).Error("error seeking temporary file")
 		return "", err
 	}
@@ -145,7 +145,7 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 		return "", ErrInvalidImageUPload
 	}
 
-	if _, err := tf.Seek(0, os.SEEK_SET); err != nil {
+	if _, err := tf.Seek(0, io.SeekStart); err != nil {
 		log.WithError(err).Error("error seeking temporary file")
 		return "", err
 	}
@@ -179,7 +179,7 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 	}
 	defer of.Close()
 
-	if _, err := tf.Seek(0, os.SEEK_SET); err != nil {
+	if _, err := tf.Seek(0, io.SeekStart); err != nil {
 		log.WithError(err).Error("error seeking temporary file")
 		return "", err
 	}

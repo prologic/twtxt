@@ -888,11 +888,6 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 			return
 		}
 
-		log.WithField("Filename", handler.Filename).
-			WithField("Size", handler.Size).
-			WithField("Header", handler.Header).
-			Debug("recieved uploaded file")
-
 		user := ctx.User
 		if user == nil {
 			log.Fatalf("user not found in context")

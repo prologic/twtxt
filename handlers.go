@@ -707,7 +707,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 				if err != nil {
 					log.WithError(err).Errorf("error loading user object for %s", nick)
 					ctx.Error = true
-					ctx.Message = "Error loading profile"
+					ctx.Message = "Error following user"
 					s.render("error", w, ctx)
 					return
 				}
@@ -743,7 +743,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 				if err != nil {
 					log.WithError(err).Errorf("error loading feed object for %s", nick)
 					ctx.Error = true
-					ctx.Message = "Error loading profile"
+					ctx.Message = "Error following user"
 					s.render("error", w, ctx)
 					return
 				}

@@ -36,7 +36,7 @@ type Context struct {
 	Pager       paginator.Paginator
 
 	// Reset Password Token
-	PasswordResetToken	string
+	PasswordResetToken string
 }
 
 func NewContext(conf *Config, db Store, req *http.Request) *Context {

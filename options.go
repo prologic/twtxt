@@ -36,6 +36,9 @@ const (
 	// DefaultMaxTweetLength is the default maximum length of posts permitted
 	DefaultMaxTweetLength = 288
 
+	// DefaultMaxUploadSize is the default maximum upload size permitted
+	DefaultMaxUploadSize = 1 << 24 // ~16MB (enough for high-res photos)
+
 	// DefaultSessionExpiry is the server's default session expiry time
 	DefaultSessionExpiry = 240 * time.Hour // 10 days
 
@@ -181,6 +184,14 @@ func WithTweetsPerPage(tweetsPerPage int) Option {
 func WithMaxTweetLength(maxTweetLength int) Option {
 	return func(cfg *Config) error {
 		cfg.MaxTweetLength = maxTweetLength
+		return nil
+	}
+}
+
+// WithMaxUploadSize sets the maximum upload size permitted by the server
+func WithMaxUploadSize(maxUploadSize int64) Option {
+	return func(cfg *Config) error {
+		cfg.MaxUploadSize = maxUploadSize
 		return nil
 	}
 }

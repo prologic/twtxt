@@ -29,6 +29,7 @@ var (
 	cookieSecret   string
 	tweetsPerPage  int
 	maxTweetLength int
+	maxUploadSize  int64
 	sessionExpiry  time.Duration
 
 	magiclinkSecret string
@@ -56,6 +57,7 @@ func init() {
 	flag.StringSliceVarP(&feedSources, "feed-sources", "F", twtxt.DefaultFeedSources, "external feed sources")
 	flag.StringVarP(&cookieSecret, "cookie-secret", "S", twtxt.DefaultCookieSecret, "cookie secret to use")
 	flag.IntVarP(&maxTweetLength, "max-tweet-length", "L", twtxt.DefaultMaxTweetLength, "maximum length of posts")
+	flag.Int64VarP(&maxUploadSize, "max-upload-size", "U", twtxt.DefaultMaxUploadSize, "maximum upload size of media")
 	flag.IntVarP(&tweetsPerPage, "tweets-per-page", "T", twtxt.DefaultTweetsPerPage, "tweets per page to display")
 	flag.DurationVarP(&sessionExpiry, "session-expiry", "E", twtxt.DefaultSessionExpiry, "session expiry to use")
 
@@ -119,6 +121,7 @@ func main() {
 		twtxt.WithTweetsPerPage(tweetsPerPage),
 		twtxt.WithSessionExpiry(sessionExpiry),
 		twtxt.WithMaxTweetLength(maxTweetLength),
+		twtxt.WithMaxUploadSize(maxUploadSize),
 		twtxt.WithMagicLinkSecret(magiclinkSecret),
 
 		twtxt.WithSMTPHost(smtpHost),

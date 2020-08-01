@@ -934,8 +934,8 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 			return
 		}
 
-		// Limit request body to ~1MB to prevent OOM
-		r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+		// Limit request body to to abuse
+		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
 
 		email := strings.TrimSpace(r.FormValue("email"))
 		tagline := strings.TrimSpace(r.FormValue("tagline"))
@@ -1262,15 +1262,14 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 	}
 }
 
-
 // UploadMediaHandler ...
 func (s *Server) UploadMediaHandler() httprouter.Handle {
-	return func (w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
-		// Limit request body to ~1MB to prevent OOM
-		r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+		// Limit request body to to abuse
+		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
 
-		mediaFile, _, err := r.FormFile("mediaFile")
+		mediaFile, _, err := r.FormFile("media_file")
 		if err != nil && err != http.ErrMissingFile {
 			log.WithError(err).Error("error parsing form file")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1290,16 +1289,16 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 		uri := URI{"media", mediaPath}
 
 		mediaURI, err := json.Marshal(uri)
-  		if err != nil {
-    		http.Error(w, err.Error(), http.StatusInternalServerError)
-    		return
-		  }
-		  
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		data := []byte(mediaURI)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
-		
+
 		return
 	}
 }

@@ -22,6 +22,7 @@ type Config struct {
 	CookieSecret    string        `json:"cookie_secret"`
 	TweetPrompts    []string      `json:"tweet_prompts"`
 	TweetsPerPage   int           `json:"tweets_per_page"`
+	MaxUploadSize   int64         `json:"max_upload_size"`
 	MaxTweetLength  int           `json:"max_tweet_length"`
 	SessionExpiry   time.Duration `json:"session_expiry"`
 	MagicLinkSecret string        `json:"magiclink_secret"`

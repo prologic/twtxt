@@ -36,7 +36,7 @@ import (
 
 const (
 	avatarsDir = "avatars"
-	mediaDir = "media"
+	mediaDir   = "media"
 
 	newsSpecialUser    = "news"
 	helpSpecialUser    = "help"

@@ -17,7 +17,6 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dustin/go-humanize v1.0.0
 	github.com/elithrar/simple-scrypt v1.3.0
-	github.com/gernest/mention v2.0.0+incompatible
 	github.com/gomarkdown/markdown v0.0.0-20200609195525-3f9352745725
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/goware/urlx v0.3.1

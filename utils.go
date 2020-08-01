@@ -2,7 +2,6 @@ package twtxt
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"errors"
 	"fmt"
 	"html/template"
@@ -29,6 +28,7 @@ import (
 	"github.com/gomarkdown/markdown/html"
 	"github.com/goware/urlx"
 	"github.com/h2non/filetype"
+	shortuuid "github.com/lithammer/shortuuid/v3"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/nfnt/resize"
 	log "github.com/sirupsen/logrus"
@@ -106,23 +106,6 @@ func RemoveString(xs []string, e string) []string {
 	return res
 }
 
-func SHA256Sum(fn string) ([]byte, error) {
-	f, err := os.Open(fn)
-	if err != nil {
-		log.WithError(err).Warnf("error opening file %s", fn)
-		return nil, err
-	}
-	defer f.Close()
-
-	h := sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		log.WithError(err).Errorf("error reading file %s", fn)
-		return nil, err
-	}
-
-	return h.Sum(nil), nil
-}
-
 func IsImage(fn string) bool {
 	f, err := os.Open(fn)
 	if err != nil {
@@ -177,14 +160,6 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 		return "", err
 	}
 
-	shasum, err := SHA256Sum(tf.Name())
-	if err != nil {
-		log.WithError(err).Error("error computing SHA256SUM of temporary file")
-		return "", err
-	}
-
-	hash := string(shasum)
-
 	p := filepath.Join(conf.Data, resource)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating avatars directory")
@@ -194,7 +169,8 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 	var fn string
 
 	if name == "" {
-		fn = filepath.Join(p, fmt.Sprintf("%s.png", hash))
+		uuid := shortuuid.New()
+		fn = filepath.Join(p, fmt.Sprintf("%s.png", uuid))
 	} else {
 		fn = fmt.Sprintf("%s.png", filepath.Join(p, name))
 	}

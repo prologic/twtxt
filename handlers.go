@@ -1281,7 +1281,7 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 			uploadOptions := &UploadOptions{Resize: true, ResizeW: 240, ResizeH: 0}
 			mediaURI, err = StoreUploadedImage(
 				s.config, mediaFile,
-				mediaDir, "MediaFile",
+				mediaDir, "",
 				uploadOptions,
 			)
 		}

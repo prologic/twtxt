@@ -20,7 +20,7 @@ type Router struct {
 // NewRouter ...
 func NewRouter() *Router {
 	return &Router{
-		httprouter.Router{
+		Router: httprouter.Router{
 			RedirectTrailingSlash:  true,
 			RedirectFixedPath:      true,
 			HandleMethodNotAllowed: false,
@@ -44,9 +44,9 @@ func (r *Router) Group(path string, m ...Middleware) *Router {
 		path = path[:len(path)-1]
 	}
 	return &Router{
+		Router:      r.Router,
 		middlewares: append(m, r.middlewares...),
 		path:        r.joinPath(path),
-		router:      r.router,
 	}
 }
 
@@ -61,10 +61,9 @@ func (r *Router) Handle(method, path string, handle httprouter.Handle) {
 	for _, v := range r.middlewares {
 		handle = v(handle)
 	}
-	r.router.Handle(method, r.joinPath(path), handle)
+	r.Router.Handle(method, r.joinPath(path), handle)
 }
 
-/*
 // GET is a shortcut for Router.Handle("GET", path, handle)
 func (r *Router) GET(path string, handle httprouter.Handle) {
 	r.Handle("GET", path, handle)
@@ -133,9 +132,8 @@ func (r *Router) File(path, name string) {
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	r.router.ServeHTTP(w, req)
+	r.Router.ServeHTTP(w, req)
 }
-*/
 
 // ServeFilesWithCacheControl ...
 func (r *Router) ServeFilesWithCacheControl(path string, root http.FileSystem) {

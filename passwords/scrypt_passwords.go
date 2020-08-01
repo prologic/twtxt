@@ -1,4 +1,4 @@
-package password
+package passwords
 
 import (
 	"time"
@@ -8,8 +8,11 @@ import (
 )
 
 const (
-	DefaultMaxTimeout = 500 * time.Millisecond // default max timeout in ms
-	DefaultMaxMemory  = 64                     // default max memory in MB
+	// DefaultMaxTimeout default max timeout in ms
+	DefaultMaxTimeout = 500 * time.Millisecond
+
+	// DefaultMaxMemory default max memory in MB
+	DefaultMaxMemory = 64
 )
 
 // Options ...
@@ -23,14 +26,14 @@ func NewOptions(maxTimeout time.Duration, maxMemory int) *Options {
 	return &Options{maxTimeout, maxMemory}
 }
 
-// Manager ...
-type Manager struct {
+// ScryptPasswords ...
+type ScryptPasswords struct {
 	options *Options
 	params  scrypt.Params
 }
 
-// NewManager ...
-func NewManager(options *Options) *Manager {
+// NewScryptPasswords ...
+func NewScryptPasswords(options *Options) Passwords {
 	if options == nil {
 		options = &Options{}
 	}
@@ -54,19 +57,16 @@ func NewManager(options *Options) *Manager {
 
 	log.WithField("params", params).Info("scrypt params")
 
-	return &Manager{
-		options,
-		params,
-	}
+	return &ScryptPasswords{options, params}
 }
 
-// NewPassword ...
-func (m *Manager) NewPassword(password string) (string, error) {
-	hash, err := scrypt.GenerateFromPassword([]byte(password), m.params)
+// CreatePassword ...
+func (sp *ScryptPasswords) CreatePassword(password string) (string, error) {
+	hash, err := scrypt.GenerateFromPassword([]byte(password), sp.params)
 	return string(hash), err
 }
 
-// Check ...
-func (m *Manager) Check(hash, password string) error {
+// CheckPassword ...
+func (sp *ScryptPasswords) CheckPassword(hash, password string) error {
 	return scrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 }

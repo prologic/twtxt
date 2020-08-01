@@ -39,6 +39,9 @@ var (
 	smtpFrom        string
 
 	maxFetchLimit int64
+
+	apiSessionTime time.Duration
+	apiSigningKey  string
 )
 
 func init() {
@@ -68,6 +71,9 @@ func init() {
 	flag.StringVar(&smtpFrom, "smtp-from", twtxt.DefaultSMTPFrom, "SMTP From address to use for email sending")
 
 	flag.Int64Var(&maxFetchLimit, "max-fetch-limit", twtxt.DefaultMaxFetchLimit, "Maximum feed fetch limit in bytes")
+
+	flag.DurationVar(&apiSessionTime, "api-session-time", twtxt.DefaultAPISessionTime, "Maximum TTL for API tokens")
+	flag.StringVar(&apiSigningKey, "api-signing-key", twtxt.DefaultAPISigningKey, "API JWT signing key for tokens")
 }
 
 func flagNameFromEnvironmentName(s string) string {
@@ -128,6 +134,9 @@ func main() {
 		twtxt.WithSMTPFrom(smtpFrom),
 
 		twtxt.WithMaxFetchLimit(maxFetchLimit),
+
+		twtxt.WithAPISessionTime(apiSessionTime),
+		twtxt.WithAPISigningKey(apiSigningKey),
 	)
 	if err != nil {
 		log.WithError(err).Fatal("error creating server")

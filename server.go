@@ -18,7 +18,7 @@ import (
 	"github.com/unrolled/logger"
 
 	"github.com/prologic/twtxt/auth"
-	"github.com/prologic/twtxt/password"
+	"github.com/prologic/twtxt/passwords"
 	"github.com/prologic/twtxt/session"
 )
 
@@ -42,8 +42,11 @@ type Server struct {
 	// Sessions
 	sm *session.Manager
 
+	// API
+	api *API
+
 	// Passwords
-	pm *password.Manager
+	pm passwords.Passwords
 }
 
 func (s *Server) render(name string, w http.ResponseWriter, ctx *Context) {
@@ -268,7 +271,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	am := auth.NewManager(auth.NewOptions("/login", "/register"))
 
-	pm := password.NewManager(nil)
+	pm := passwords.NewScryptPasswords(nil)
 
 	sm := session.NewManager(
 		session.NewOptions(
@@ -279,6 +282,8 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		),
 		db,
 	)
+
+	api := NewAPI(router, config, db, pm)
 
 	server := &Server{
 		bind:      bind,
@@ -297,6 +302,9 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 				),
 			),
 		},
+
+		// API
+		api: api,
 
 		// Store
 		db: db,
@@ -333,6 +341,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("SMTP User: %s", server.config.SMTPUser)
 	log.Infof("SMTP From: %s", server.config.SMTPFrom)
 	log.Infof("Max Fetch Limit: %s", humanize.Bytes(uint64(server.config.MaxFetchLimit)))
+	log.Infof("API Session Time: %s", (server.config.APISessionTime))
 
 	// Warn about user registration being disabled.
 	if !server.config.Register {
@@ -340,6 +349,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	}
 
 	server.initRoutes()
+	api.initRoutes()
 
 	return server, nil
 }

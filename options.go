@@ -49,8 +49,14 @@ const (
 	DefaultSMTPPass = "PLEASE_CHANGE_ME!!!"
 	DefaultSMTPFrom = "PLEASE_CHANGE_ME!!!"
 
-	// Default maximum fetch fetch limit in bytes
+	// DefaultMaxFetchLimit is the maximum fetch fetch limit in bytes
 	DefaultMaxFetchLimit = 1 << 21 // ~2MB (or more than enough for a year)
+
+	// DefaultAPISessionTime is the server's default session time for API tokens
+	DefaultAPISessionTime = 240 * time.Hour // 10 days
+
+	// DefaultAPISigningKey is the default API JWT signing key for tokens
+	DefaultAPISigningKey = "PLEASE_CHANGE_ME!!!"
 )
 
 var (
@@ -245,6 +251,22 @@ func WithSMTPFrom(from string) Option {
 func WithMaxFetchLimit(limit int64) Option {
 	return func(cfg *Config) error {
 		cfg.MaxFetchLimit = limit
+		return nil
+	}
+}
+
+// WithAPISessionTime sets the API session time for tokens
+func WithAPISessionTime(duration time.Duration) Option {
+	return func(cfg *Config) error {
+		cfg.APISessionTime = duration
+		return nil
+	}
+}
+
+// WithAPISigningKey sets the API JWT signing key for tokens
+func WithAPISigningKey(key string) Option {
+	return func(cfg *Config) error {
+		cfg.APISigningKey = []byte(key)
 		return nil
 	}
 }

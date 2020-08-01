@@ -11,7 +11,7 @@ import (
 )
 
 func TestHandle(t *testing.T) {
-	router := New()
+	router := NewRouter()
 
 	h := func(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 		w.WriteHeader(http.StatusTeapot)
@@ -28,7 +28,7 @@ func TestHandle(t *testing.T) {
 }
 
 func TestHandler(t *testing.T) {
-	router := New()
+	router := NewRouter()
 
 	h := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusTeapot)
@@ -45,7 +45,7 @@ func TestHandler(t *testing.T) {
 }
 
 func TestHandlerFunc(t *testing.T) {
-	router := New()
+	router := NewRouter()
 
 	h := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusTeapot)
@@ -62,7 +62,7 @@ func TestHandlerFunc(t *testing.T) {
 }
 
 func TestMethod(t *testing.T) {
-	router := New()
+	router := NewRouter()
 
 	router.DELETE("/delete", func(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 		w.WriteHeader(http.StatusTeapot)
@@ -113,7 +113,7 @@ func TestMethod(t *testing.T) {
 }
 
 func TestGroup(t *testing.T) {
-	router := New()
+	router := NewRouter()
 	foo := router.Group("/foo")
 	bar := router.Group("/bar")
 	baz := foo.Group("/baz")
@@ -150,7 +150,7 @@ func TestGroup(t *testing.T) {
 func TestMiddleware(t *testing.T) {
 	var use, group bool
 
-	router := New().Use(func(next httprouter.Handle) httprouter.Handle {
+	router := NewRouter().Use(func(next httprouter.Handle) httprouter.Handle {
 		return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			use = true
 			next(w, r, ps)
@@ -194,7 +194,7 @@ func TestStatic(t *testing.T) {
 	}
 
 	pwd, _ := os.Getwd()
-	router := New()
+	router := NewRouter()
 	router.Static("/*filepath", pwd)
 
 	for i := range files {
@@ -222,7 +222,7 @@ func TestFile(t *testing.T) {
 	f.Sync()
 	f.Close()
 
-	router := New()
+	router := NewRouter()
 	router.File("/file", "temp_file")
 
 	r := httptest.NewRequest("GET", "/file", nil)

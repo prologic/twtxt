@@ -40,7 +40,8 @@ type User struct {
 
 	IsFollowersPubliclyVisible bool
 
-	Feeds []string
+	Feeds  []string
+	Tokens []string
 
 	Followers map[string]string
 	Following map[string]string
@@ -173,6 +174,21 @@ func (f *Feed) Bytes() ([]byte, error) {
 		return nil, err
 	}
 	return data, nil
+}
+
+func (u *User) AddToken(token string) {
+	if !u.HasToken(token) {
+		u.Tokens = append(u.Tokens, token)
+	}
+}
+
+func (u *User) HasToken(token string) bool {
+	for _, t := range u.Tokens {
+		if t == token {
+			return true
+		}
+	}
+	return false
 }
 
 func (u *User) OwnsFeed(name string) bool {

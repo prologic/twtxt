@@ -548,7 +548,7 @@ func (s *Server) LoginHandler() httprouter.Handle {
 		}
 
 		// Validate cleartext password against KDF hash
-		err = s.pm.Check(user.Password, password)
+		err = s.pm.CheckPassword(user.Password, password)
 		if err != nil {
 			ctx.Error = true
 			ctx.Message = "Invalid password! Hint: Reset your password?"
@@ -637,7 +637,7 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			return
 		}
 
-		hash, err := s.pm.NewPassword(password)
+		hash, err := s.pm.CreatePassword(password)
 		if err != nil {
 			log.WithError(err).Error("error creating password hash")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -944,7 +944,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		}
 
 		if password != "" {
-			hash, err := s.pm.NewPassword(password)
+			hash, err := s.pm.CreatePassword(password)
 			if err != nil {
 				log.WithError(err).Error("error creating password hash")
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1217,7 +1217,7 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 
 			// Reset password
 			if password != "" {
-				hash, err := s.pm.NewPassword(password)
+				hash, err := s.pm.CreatePassword(password)
 				if err != nil {
 					ctx.Error = true
 					ctx.Message = "Error loading user"

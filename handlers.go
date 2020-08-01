@@ -159,7 +159,16 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 		}
 
 		fn := filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.png", nick))
-		if _, err := os.Stat(fn); err == nil {
+		if fileInfo, err := os.Stat(fn); err == nil {
+			etag := fn + "-" + fileInfo.ModTime().Format(time.RFC3339)
+
+			if match := r.Header.Get("If-None-Match"); match != "" {
+				if strings.Contains(match, etag) {
+					w.WriteHeader(http.StatusNotModified)
+					return
+				}
+			}
+
 			f, err := os.Open(fn)
 			if err != nil {
 				log.WithError(err).Error("error opening avatar file")
@@ -169,11 +178,13 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			defer f.Close()
 
 			w.Header().Set("Content-Type", "image/png")
+			w.Header().Set("Etag", etag)
 			if _, err := io.Copy(w, f); err != nil {
 				log.WithError(err).Error("error writing avatar response")
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
+
 			return
 		}
 

@@ -227,7 +227,8 @@ func (s *Server) initRoutes() {
 	s.router.GET("/newPassword", s.ResetPasswordMagicLinkHandler())
 	s.router.POST("/newPassword", s.NewPasswordHandler())
 
-	// Upload Media
+	// Media Handling
+	s.router.GET("/media", s.MediaHandler())
 	s.router.POST("/upload", s.am.MustAuth(s.UploadMediaHandler()))
 
 	s.router.GET("/follow", s.am.MustAuth(s.FollowHandler()))

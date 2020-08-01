@@ -144,6 +144,49 @@ func (s *Server) OldTwtxtHandler() httprouter.Handle {
 	}
 }
 
+// MediaHandler ...
+func (s *Server) MediaHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		name := p.ByName("name")
+		if name == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		fn := filepath.Join(s.config.Data, mediaDir, name)
+		fileInfo, err := os.Stat(fn)
+		if err != nil {
+			log.WithError(err).Error("error reading media file info")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		etag := fmt.Sprintf("%s-%s", r.RequestURI, fileInfo.ModTime().Format(time.RFC3339))
+		if match := r.Header.Get("If-None-Match"); match != "" {
+			if strings.Contains(match, etag) {
+				w.WriteHeader(http.StatusNotModified)
+				return
+			}
+		}
+
+		f, err := os.Open(fn)
+		if err != nil {
+			log.WithError(err).Error("error opening media file")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		defer f.Close()
+
+		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Etag", etag)
+		if _, err := io.Copy(w, f); err != nil {
+			log.WithError(err).Error("error writing media response")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 // AvatarHandler ...
 func (s *Server) AvatarHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

@@ -75,3 +75,24 @@ u("#post").on("click", function(e) {
   u("#post").attr("disabled", true);
   u("#post").closest("form").first().submit();
 });
+
+
+u('#uploadMedia').on("change", function(e){
+    u('#uploadSubmit').removeClass('invisible')
+});
+
+u('#uploadForm').handle('submit', async e => {
+    e.preventDefault();
+
+    const body = new FormData(e.target);
+    const data = await fetch('/upload', {
+    method: 'POST', body
+  }).then(res => res.json())
+    .then(data => {
+        u("#text").append(" ![](" + data.Path + ") ");
+        u('#uploadSubmit').addClass('invisible')
+
+    }).catch((error) => {
+        console.error('Error:', error);
+    });
+});

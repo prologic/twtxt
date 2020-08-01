@@ -1,0 +1,18 @@
+.invisible {
+    visibility:hidden;
+    width:0;
+    height:0;
+}
+
+.floatRight {
+    float: right;
+}
+
+.uploadImageIcon {
+    height: 3rem;
+}
+
+.uploadSubmit {
+    width: 5rem;
+    margin-right: 10px;
+}

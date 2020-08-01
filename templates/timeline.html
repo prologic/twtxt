@@ -1,13 +1,24 @@
 {{define "content"}}
 {{ if .Authenticated }}
+
+  <form id="tweetForm" action="/post" method="POST"></form>
+  <form id="uploadForm" class="test" action="/upload" enctype="multipart/form-data" method="POST"></form>
+
   <div class="grid">
     <div>
-      <form action="/post" method="POST">
         <div class="grid">
-          <textarea id="text" name="text" placeholder="{{ .TweetPrompt }}" rows=3 maxlength={{ .MaxTweetLength }} wrap="soft" autofocus required></textarea>
+          <textarea form="tweetForm" id="text" name="text" placeholder="{{ .TweetPrompt }}" rows=3 maxlength={{ .MaxTweetLength }} wrap="soft" autofocus required></textarea>
         </div>
         <div class="grid">
-          <div></div>
+          <div class="imageUpload">
+            <label for="uploadMedia">
+              <a>
+                <img src="img/uploadIcon.png" class="floatRight uploadImageIcon" />
+              </a>
+              <button form="uploadForm" id="uploadSubmit" class="invisible uploadSubmit floatRight" type="submit">Add</button>
+            </label>
+            <input form="uploadForm" id="uploadMedia" class="invisible" type="file" accept="image/png, image/jpeg" name="mediaFile" />
+          </div>
           <div>
             <select id="postas" class="postas" name="postas">
               <option value="{{ .User.Username }}" selected>Post as {{ .User.Username }}</option>
@@ -17,10 +28,9 @@
             </select>
           </div>
           <div>
-            <button id="post" type="submit">Post</button>
+            <button form="tweetForm" id="post" type="submit">Post</button>
           </div>
         </div>
-      </form>
     </div>
   </div>
 {{ end }}

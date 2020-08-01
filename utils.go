@@ -36,6 +36,7 @@ import (
 
 const (
 	avatarsDir = "avatars"
+	mediaDir = "media"
 
 	newsSpecialUser    = "news"
 	helpSpecialUser    = "help"
@@ -184,7 +185,7 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 
 	hash := string(shasum)
 
-	p := filepath.Join(conf.Data, avatarsDir)
+	p := filepath.Join(conf.Data, resource)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating avatars directory")
 		return "", err

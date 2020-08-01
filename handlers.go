@@ -1261,3 +1261,45 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 		}
 	}
 }
+
+
+// UploadMediaHandler ...
+func (s *Server) UploadMediaHandler() httprouter.Handle {
+	return func (w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+
+		// Limit request body to ~1MB to prevent OOM
+		r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+
+		mediaFile, _, err := r.FormFile("mediaFile")
+		if err != nil && err != http.ErrMissingFile {
+			log.WithError(err).Error("error parsing form file")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		var mediaPath string
+		if mediaFile != nil {
+			uploadOptions := &UploadOptions{Resize: true, ResizeW: 60, ResizeH: 60}
+			mediaPath, err = StoreUploadedImage(
+				s.config, mediaFile,
+				mediaDir, "MediaFile",
+				uploadOptions,
+			)
+		}
+
+		uri := URI{"media", mediaPath}
+
+		mediaURI, err := json.Marshal(uri)
+  		if err != nil {
+    		http.Error(w, err.Error(), http.StatusInternalServerError)
+    		return
+		  }
+		  
+		data := []byte(mediaURI)
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+		
+		return
+	}
+}

@@ -1265,7 +1265,6 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 // UploadMediaHandler ...
 func (s *Server) UploadMediaHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-
 		// Limit request body to to abuse
 		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
 
@@ -1276,25 +1275,23 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 			return
 		}
 
-		var mediaPath string
+		var mediaURI string
+
 		if mediaFile != nil {
-			uploadOptions := &UploadOptions{Resize: true, ResizeW: 60, ResizeH: 60}
-			mediaPath, err = StoreUploadedImage(
+			uploadOptions := &UploadOptions{Resize: true, ResizeW: 240, ResizeH: 0}
+			mediaURI, err = StoreUploadedImage(
 				s.config, mediaFile,
 				mediaDir, "MediaFile",
 				uploadOptions,
 			)
 		}
 
-		uri := URI{"media", mediaPath}
-
-		mediaURI, err := json.Marshal(uri)
+		uri := URI{"mediaURI", mediaURI}
+		data, err := json.Marshal(uri)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		data := []byte(mediaURI)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)

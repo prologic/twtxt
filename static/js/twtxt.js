@@ -87,11 +87,12 @@ u('#uploadForm').handle('submit', async e => {
     const body = new FormData(e.target);
     const data = await fetch('/upload', {
     method: 'POST', body
-  }).then(res => res.json())
-    .then(data => {
+  }).then(
+    res => res.json()
+  ).then(data => {
+        console.log(data);
         u("#text").append(" ![](" + data.Path + ") ");
-        u('#uploadSubmit').addClass('invisible')
-
+        u('#uploadSubmit').addClass('invisible');
     }).catch((error) => {
         console.error('Error:', error);
     });

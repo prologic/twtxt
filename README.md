@@ -29,8 +29,7 @@ There is also a publicly (_free_) service online available at:
 > the upcoming Mobile App and much more! Or contact [Support](https://twtxt.net)
 > for help with running your own Twtxt!
 
-![Screenshot 1](./screenshot1.png)
-![Screenshot 2](./screenshot2.png)
+![Demo_1](https://user-images.githubusercontent.com/15314237/89133451-30cdb200-d4d9-11ea-8a11-aab67c6fac6a.gif)
 
 ## Installation
 

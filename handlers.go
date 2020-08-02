@@ -167,7 +167,7 @@ func (s *Server) MediaHandler() httprouter.Handle {
 			return
 		}
 
-		etag := fmt.Sprintf("%s-%s", r.RequestURI, fileInfo.ModTime().Format(time.RFC3339))
+		etag := fmt.Sprintf("W/\"%s-%s\"", r.RequestURI, fileInfo.ModTime().Format(time.RFC3339))
 		if match := r.Header.Get("If-None-Match"); match != "" {
 			if strings.Contains(match, etag) {
 				w.WriteHeader(http.StatusNotModified)
@@ -209,7 +209,7 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 
 		fn := filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.png", nick))
 		if fileInfo, err := os.Stat(fn); err == nil {
-			etag := fmt.Sprintf("%s-%s", r.RequestURI, fileInfo.ModTime().Format(time.RFC3339))
+			etag := fmt.Sprintf("W/\"%s-%s\"", r.RequestURI, fileInfo.ModTime().Format(time.RFC3339))
 
 			if match := r.Header.Get("If-None-Match"); match != "" {
 				if strings.Contains(match, etag) {

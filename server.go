@@ -144,17 +144,17 @@ func (s *Server) setupCronJobs() error {
 
 func (s *Server) initRoutes() {
 	s.router.ServeFilesWithCacheControl(
-		"/css/*filepath",
+		"/css/:commit/*filepath",
 		rice.MustFindBox("static/css").HTTPBox(),
 	)
 
 	s.router.ServeFilesWithCacheControl(
-		"/img/*filepath",
+		"/img/:commit/*filepath",
 		rice.MustFindBox("static/img").HTTPBox(),
 	)
 
 	s.router.ServeFilesWithCacheControl(
-		"/js/*filepath",
+		"/js/:commit/*filepath",
 		rice.MustFindBox("static/js").HTTPBox(),
 	)
 

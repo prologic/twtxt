@@ -28,6 +28,7 @@ type Context struct {
 	Error   bool
 	Message string
 	Theme   string
+	Commit  string
 
 	Tweeter     Tweeter
 	Tweets      Tweets
@@ -49,6 +50,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		MaxTweetLength:   conf.MaxTweetLength,
 		RegisterDisabled: !conf.Register,
 
+		Commit: Commit,
 		Theme: conf.Theme,
 	}
 

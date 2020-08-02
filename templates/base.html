@@ -2,10 +2,10 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="{{ .Theme }}">
   <head>
-    <link href="/css/pico.css" rel="stylesheet" />
-    <link href="/css/iconicss.min.css" rel="stylesheet" />
-    <link href="/css/theme-switcher.css" rel="stylesheet" />
-    <link href="/css/twtxt.css" rel="stylesheet" />
+    <link href="/css/{{ .Commit }}/pico.css" rel="stylesheet" />
+    <link href="/css/{{ .Commit }}/iconicss.min.css" rel="stylesheet" />
+    <link href="/css/{{ .Commit }}/theme-switcher.css" rel="stylesheet" />
+    <link href="/css/{{ .Commit }}/twtxt.css" rel="stylesheet" />
     {{ template "stylesheets" . }}
     <meta charset="UTF-8">
     <meta name="description" content="📕 twtxt is a Self-Hosted, Twitter™-like Decentralised microBlogging platform. No ads, no tracking, your content, your data!">
@@ -96,9 +96,9 @@
     </div>
   </footer>
 </body>
-<script type="application/javascript" src="/js/umbrella.min.js"></script>
-<script type="application/javascript" src="/js/theme-switcher.js"></script>
-<script type="application/javascript" src="/js/twtxt.js"></script>
+<script type="application/javascript" src="/js/{{ .Commit }}/umbrella.min.js"></script>
+<script type="application/javascript" src="/js/{{ .Commit }}/theme-switcher.js"></script>
+<script type="application/javascript" src="/js/{{ .Commit }}/twtxt.js"></script>
 {{ template "scripts" . }}
 </html>
 {{end}}

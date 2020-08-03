@@ -102,7 +102,10 @@ func CreateFeed(conf *Config, db Store, user *User, name string, force bool) err
 	return nil
 }
 
-func DetachFeedFromOwner(db Store, user *User, feed *Feed) (err error ) {
+func DetachFeedFromOwner(db Store, user *User, feed *Feed) (err error) {
+	delete(user.Following, feed.Name)
+	delete(user.sources, feed.URL)
+
 	user.Feeds = RemoveString(user.Feeds, feed.Name)
 	if err = db.SetUser(user.Username, user); err != nil {
 		return

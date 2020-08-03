@@ -138,18 +138,18 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 func (s *Server) ManageFeedHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
-		nick := NormalizeUsername(p.ByName("nick"))
+		feedName := NormalizeFeedName(p.ByName("name"))
 
-		if nick == "" {
+		if feedName == "" {
 			ctx.Error = true
 			ctx.Message = "No feed specified"
 			s.render("error", w, ctx)
 			return
 		}
 
-		feed, err := s.db.GetFeed(nick)
+		feed, err := s.db.GetFeed(feedName)
 		if err != nil {
-			log.WithError(err).Errorf("error loading feed object for %s", nick)
+			log.WithError(err).Errorf("error loading feed object for %s", feedName)
 			ctx.Error = true
 			if errors.Is(err, ErrFeedNotFound) {
 				ctx.Message = "Feed not found"
@@ -197,22 +197,22 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 	}
 }
 
-// DeleteFeedHandler...
-func (s *Server) DeleteFeedHandler() httprouter.Handle {
+// ArchiveFeedHandler...
+func (s *Server) ArchiveFeedHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
-		nick := NormalizeUsername(p.ByName("nick"))
+		feedName := NormalizeFeedName(p.ByName("name"))
 
-		if nick == "" {
+		if feedName == "" {
 			ctx.Error = true
 			ctx.Message = "No feed specified"
 			s.render("error", w, ctx)
 			return
 		}
 
-		feed, err := s.db.GetFeed(nick)
+		feed, err := s.db.GetFeed(feedName)
 		if err != nil {
-			log.WithError(err).Errorf("error loading feed object for %s", nick)
+			log.WithError(err).Errorf("error loading feed object for %s", feedName)
 			ctx.Error = true
 			if errors.Is(err, ErrFeedNotFound) {
 				ctx.Message = "Feed not found"
@@ -233,13 +233,13 @@ func (s *Server) DeleteFeedHandler() httprouter.Handle {
 		if err := DetachFeedFromOwner(s.db, ctx.User, feed); err != nil {
 			log.WithError(err).Warnf("Error detaching feed owner %s from feed %s", ctx.User.Username, feed.Name)
 			ctx.Error = true
-			ctx.Message = "Error deleting feed"
+			ctx.Message = "Error archiving feed"
 			s.render("error", w, ctx)
 			return
 		}
 
 		ctx.Error = false
-		ctx.Message = "Successfully deleted feed"
+		ctx.Message = "Successfully archived feed"
 		s.render("error", w, ctx)
 	}
 }

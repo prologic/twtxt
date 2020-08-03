@@ -215,9 +215,10 @@ func (s *Server) initRoutes() {
 	s.router.HEAD("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/followers", s.FollowersHandler())
-	s.router.GET("/user/:nick/manage-feed", s.am.MustAuth(s.ManageFeedHandler()))
-	s.router.POST("/user/:nick/manage-feed", s.am.MustAuth(s.ManageFeedHandler()))
-	s.router.POST("/user/:nick/delete-feed", s.am.MustAuth(s.DeleteFeedHandler()))
+
+	s.router.GET("/feed/:name/manage", s.am.MustAuth(s.ManageFeedHandler()))
+	s.router.POST("/feed/:name/manage", s.am.MustAuth(s.ManageFeedHandler()))
+	s.router.POST("/feed/:name/archive", s.am.MustAuth(s.ArchiveFeedHandler()))
 
 	s.router.GET("/login", s.LoginHandler())
 	s.router.POST("/login", s.LoginHandler())

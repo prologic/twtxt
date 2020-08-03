@@ -134,6 +134,67 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 	}
 }
 
+// ManageProfileHandler...
+func (s *Server) ManageProfileHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+		nick := NormalizeUsername(p.ByName("nick"))
+
+		if nick == "" {
+			ctx.Error = true
+			ctx.Message = "No user specified"
+			s.render("error", w, ctx)
+			return
+		}
+
+		feed, err := s.db.GetFeed(nick)
+		if err != nil {
+			ctx.Error = true
+			if errors.Is(err, ErrFeedNotFound) {
+				ctx.Message = "Feed not found"
+				s.render("404", w, ctx)
+			}
+
+			ctx.Message = "Error loading feed"
+			s.render("error", w, ctx)
+			return
+		}
+
+		if !ctx.User.OwnsFeed(feed.Name) {
+			ctx.Error = true
+			s.render("401", w, ctx)
+			return
+		}
+
+		switch r.Method {
+		case http.MethodGet:
+			ctx.Profile = feed.Profile()
+			s.render("manageFeed", w, ctx)
+			return
+		case http.MethodPost:
+			description := r.FormValue("description")
+			feed.Description = description
+
+			if err := s.db.SetFeed(feed.Name, feed); err != nil {
+				log.WithError(err).Warnf("error updating user object for followee %s", feed.Name)
+				ctx.Error = true
+				ctx.Message = "Error following feed"
+				s.render("error", w, ctx)
+				return
+			}
+
+			ctx.Error = false
+			ctx.Message = "Successfully updated feed"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Error = true
+		ctx.Message = "Not found"
+		s.render("404", w, ctx)
+	}
+}
+
 // OldTwtxtHandler ...
 // Redirect old URIs (twtxt <= v0.0.8) of the form /u/<nick> -> /user/<nick>/twtxt.txt
 // TODO: Remove this after v1

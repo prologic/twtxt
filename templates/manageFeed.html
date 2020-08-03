@@ -1,0 +1,17 @@
+{{define "content"}}
+<article class="grid">
+    <div>
+        <hgroup>
+            <h1>Manage feed</h1>
+            <h2>Manage {{ .Profile.Username}}</h2>
+        </hgroup>
+        <form action="/user/{{  .Profile.Username }}/manage-feed" method="POST">
+            <label for="description">
+                Description
+                <input type="text" id="description" name="description" placeholder="Description" required value="{{ .Profile.Tagline }}">
+            </label>
+            <button type="submit" class="contrast">Update</button>
+        </form>
+    </div>
+</article>
+{{ end }}

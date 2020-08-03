@@ -215,6 +215,8 @@ func (s *Server) initRoutes() {
 	s.router.HEAD("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/followers", s.FollowersHandler())
+	s.router.GET("/user/:nick/manage-feed", s.am.MustAuth(s.ManageProfileHandler()))
+	s.router.POST("/user/:nick/manage-feed", s.am.MustAuth(s.ManageProfileHandler()))
 
 	s.router.GET("/login", s.LoginHandler())
 	s.router.POST("/login", s.LoginHandler())

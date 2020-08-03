@@ -23,6 +23,10 @@
                 Follow
               </a>
             {{ end }}
+
+            {{ if $.User.OwnsFeed .Profile.Username }}
+              | <a href="/user/{{ .Profile.Username  }}/manage-feed">Manage</a>
+            {{ end }}
           </h3>
         {{ end}}
         <footer>

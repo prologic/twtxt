@@ -134,15 +134,15 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 	}
 }
 
-// ManageProfileHandler...
-func (s *Server) ManageProfileHandler() httprouter.Handle {
+// ManageFeedHandler...
+func (s *Server) ManageFeedHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 		nick := NormalizeUsername(p.ByName("nick"))
 
 		if nick == "" {
 			ctx.Error = true
-			ctx.Message = "No user specified"
+			ctx.Message = "No feed specified"
 			s.render("error", w, ctx)
 			return
 		}
@@ -177,8 +177,9 @@ func (s *Server) ManageProfileHandler() httprouter.Handle {
 
 			if err := s.db.SetFeed(feed.Name, feed); err != nil {
 				log.WithError(err).Warnf("error updating user object for followee %s", feed.Name)
+
 				ctx.Error = true
-				ctx.Message = "Error following feed"
+				ctx.Message = "Error updating feed"
 				s.render("error", w, ctx)
 				return
 			}
@@ -192,6 +193,54 @@ func (s *Server) ManageProfileHandler() httprouter.Handle {
 		ctx.Error = true
 		ctx.Message = "Not found"
 		s.render("404", w, ctx)
+	}
+}
+
+// DeleteFeedHandler...
+func (s *Server) DeleteFeedHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+		nick := NormalizeUsername(p.ByName("nick"))
+
+		if nick == "" {
+			ctx.Error = true
+			ctx.Message = "No feed specified"
+			s.render("error", w, ctx)
+			return
+		}
+
+		feed, err := s.db.GetFeed(nick)
+		if err != nil {
+			ctx.Error = true
+			if errors.Is(err, ErrFeedNotFound) {
+				ctx.Message = "Feed not found"
+				s.render("404", w, ctx)
+			}
+
+			ctx.Message = "Error loading feed"
+			s.render("error", w, ctx)
+			return
+		}
+
+		if !ctx.User.OwnsFeed(feed.Name) {
+			ctx.Error = true
+			s.render("401", w, ctx)
+			return
+		}
+
+		delete(feed.Followers, ctx.User.Username)
+
+		if err := s.db.SetFeed(feed.Name, feed); err != nil {
+			log.WithError(err).Warnf("error updating user object for followee %s", feed.Name)
+			ctx.Error = true
+			ctx.Message = "Error deleting feed"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Error = false
+		ctx.Message = "Successfully deleted feed"
+		s.render("error", w, ctx)
 	}
 }
 

@@ -151,7 +151,7 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 		if err != nil {
 			log.WithError(err).Errorf("error loading feed object for %s", feedName)
 			ctx.Error = true
-			if errors.Is(err, ErrFeedNotFound) {
+			if err == ErrFeedNotFound {
 				ctx.Message = "Feed not found"
 				s.render("404", w, ctx)
 			}
@@ -214,7 +214,7 @@ func (s *Server) ArchiveFeedHandler() httprouter.Handle {
 		if err != nil {
 			log.WithError(err).Errorf("error loading feed object for %s", feedName)
 			ctx.Error = true
-			if errors.Is(err, ErrFeedNotFound) {
+			if err == ErrFeedNotFound {
 				ctx.Message = "Feed not found"
 				s.render("404", w, ctx)
 			}

@@ -39,6 +39,10 @@
             {{ else }}
               [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
             {{ end }}
+
+            {{ if $.User.OwnsFeed .Name }}
+              [<a href="/user/{{ .Name  }}/manage-feed">Manage</a>]
+            {{ end }}
           </li>
         {{ end }}
       </ul>

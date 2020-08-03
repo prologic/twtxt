@@ -149,6 +149,7 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 
 		feed, err := s.db.GetFeed(nick)
 		if err != nil {
+			log.WithError(err).Errorf("error loading feed object for %s", nick)
 			ctx.Error = true
 			if errors.Is(err, ErrFeedNotFound) {
 				ctx.Message = "Feed not found"
@@ -211,6 +212,7 @@ func (s *Server) DeleteFeedHandler() httprouter.Handle {
 
 		feed, err := s.db.GetFeed(nick)
 		if err != nil {
+			log.WithError(err).Errorf("error loading feed object for %s", nick)
 			ctx.Error = true
 			if errors.Is(err, ErrFeedNotFound) {
 				ctx.Message = "Feed not found"
@@ -228,10 +230,8 @@ func (s *Server) DeleteFeedHandler() httprouter.Handle {
 			return
 		}
 
-		delete(feed.Followers, ctx.User.Username)
-
-		if err := s.db.SetFeed(feed.Name, feed); err != nil {
-			log.WithError(err).Warnf("error updating user object for followee %s", feed.Name)
+		if err := DetachFeedFromOwner(s.db, ctx.User, feed); err != nil {
+			log.WithError(err).Warnf("Error detaching feed owner %s from feed %s", ctx.User.Username, feed.Name)
 			ctx.Error = true
 			ctx.Message = "Error deleting feed"
 			s.render("error", w, ctx)

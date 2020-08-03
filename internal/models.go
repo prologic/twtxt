@@ -102,6 +102,20 @@ func CreateFeed(conf *Config, db Store, user *User, name string, force bool) err
 	return nil
 }
 
+func DetachFeedFromOwner(db Store, user *User, feed *Feed) (err error ) {
+	user.Feeds = RemoveString(user.Feeds, feed.Name)
+	if err = db.SetUser(user.Username, user); err != nil {
+		return
+	}
+
+	delete(feed.Followers, user.Username)
+	if err = db.SetFeed(feed.Name, feed); err != nil {
+		return
+	}
+
+	return nil
+}
+
 func LoadFeed(data []byte) (feed *Feed, err error) {
 	if err = json.Unmarshal(data, &feed); err != nil {
 		return nil, err

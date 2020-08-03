@@ -3,7 +3,7 @@
     <div>
         <hgroup>
             <h1>Manage feed</h1>
-            <h2>Manage {{ .Profile.Username}} feed details</h2>
+            <h2>Manage <b>{{ .Profile.Username}}</b> details</h2>
         </hgroup>
         <form action="/user/{{  .Profile.Username }}/manage-feed" method="POST">
             <label for="description">

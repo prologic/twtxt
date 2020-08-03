@@ -18,7 +18,7 @@ build: generate
 		./cmd/twtd/...
 
 generate:
-	@rice embed-go
+	@rice -i ./internal embed-go
 
 install: build
 	@go install

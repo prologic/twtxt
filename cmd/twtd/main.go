@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
 
-	"github.com/prologic/twtxt"
+	twtxt "github.com/prologic/twtxt/internal"
 )
 
 var (

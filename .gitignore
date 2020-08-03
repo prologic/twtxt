@@ -18,4 +18,4 @@
 /data/avatars/*
 /data/feedsources
 
-/rice-box.go
+/internal/rice-box.go

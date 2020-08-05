@@ -22,6 +22,7 @@ type Context struct {
 
 	Username      string
 	User          *User
+	LastTweet     Tweet
 	Profile       Profile
 	Authenticated bool
 

@@ -261,6 +261,10 @@ func (u *User) Profile() Profile {
 	}
 }
 
+func (u *User) Tweeter() Tweeter {
+	return Tweeter{Nick: u.Username, URL: u.URL}
+}
+
 func (u *User) Reply(tweet Tweet) string {
 	mentions := []string{}
 	for _, mention := range RemoveString(UniqStrings(append(tweet.Mentions(), tweet.Tweeter.Nick)), u.Username) {

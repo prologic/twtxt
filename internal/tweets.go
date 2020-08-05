@@ -5,6 +5,7 @@ package twtxt
 import (
 	"bufio"
 	"encoding/base32"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -13,12 +14,17 @@ import (
 	"strings"
 	"time"
 
+	read_file_last_line "github.com/prologic/read-file-last-line"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/blake2b"
 )
 
 const (
 	feedsDir = "feeds"
+)
+
+var (
+	ErrInvalidTweetLine = errors.New("error: invalid tweet line parsed")
 )
 
 type Tweeter struct {
@@ -117,13 +123,7 @@ func ExpandMentions(conf *Config, db Store, user *User, text string) string {
 	})
 }
 
-func AppendSpecial(conf *Config, db Store, specialUsername, text string) error {
-	user := &User{Username: specialUsername}
-	user.Following = make(map[string]string)
-	return AppendTweet(conf, db, user, text)
-}
-
-func AppendTweet(conf *Config, db Store, user *User, text string) error {
+func DeleteLastTweet(conf *Config, user *User) error {
 	p := filepath.Join(conf.Data, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
@@ -131,17 +131,48 @@ func AppendTweet(conf *Config, db Store, user *User, text string) error {
 	}
 
 	fn := filepath.Join(p, user.Username)
-	text = strings.TrimSpace(text)
-	if text == "" {
-		return fmt.Errorf("cowardly refusing to tweet empty text, or only spaces")
+
+	_, n, err := GetLastTweet(conf, user)
+	if err != nil {
+		return err
 	}
 
-	text = fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339), ExpandMentions(conf, db, user, text))
 	f, err := os.OpenFile(fn, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
+
+	return f.Truncate(int64(n))
+}
+
+func AppendSpecial(conf *Config, db Store, specialUsername, text string) error {
+	user := &User{Username: specialUsername}
+	user.Following = make(map[string]string)
+	return AppendTweet(conf, db, user, text)
+}
+
+func AppendTweet(conf *Config, db Store, user *User, text string) error {
+	text = strings.TrimSpace(text)
+	if text == "" {
+		return fmt.Errorf("cowardly refusing to tweet empty text, or only spaces")
+	}
+
+	p := filepath.Join(conf.Data, feedsDir)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating feeds directory")
+		return err
+	}
+
+	fn := filepath.Join(p, user.Username)
+
+	f, err := os.OpenFile(fn, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	text = fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339), ExpandMentions(conf, db, user, text))
 
 	if _, err = f.WriteString(text); err != nil {
 		return err
@@ -159,6 +190,25 @@ func FeedExists(conf *Config, username string) bool {
 	}
 
 	return true
+}
+
+func GetLastTweet(conf *Config, user *User) (tweet Tweet, offset int, err error) {
+	p := filepath.Join(conf.Data, feedsDir)
+	if err = os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating feeds directory")
+		return
+	}
+
+	fn := filepath.Join(p, user.Username)
+
+	var data []byte
+	data, offset, err = read_file_last_line.ReadLastLine(fn)
+	if err != nil {
+		return
+	}
+
+	tweet, err = ParseLine(string(data), user.Tweeter())
+	return
 }
 
 func GetUserTweets(conf *Config, username string) (Tweets, error) {
@@ -233,30 +283,44 @@ func GetAllTweets(conf *Config) (Tweets, error) {
 	return tweets, nil
 }
 
+func ParseLine(line string, tweeter Tweeter) (tweet Tweet, err error) {
+	if line == "" {
+		return
+	}
+	if strings.HasPrefix(line, "#") {
+		return
+	}
+
+	re := regexp.MustCompile(`^(.+?)(\s+)(.+)$`) // .+? is ungreedy
+	parts := re.FindStringSubmatch(line)
+	// "Submatch 0 is the match of the entire expression, submatch 1 the
+	// match of the first parenthesized subexpression, and so on."
+	if len(parts) != 4 {
+		err = ErrInvalidTweetLine
+		return
+	}
+
+	tweet = Tweet{
+		Tweeter: tweeter,
+		Created: ParseTime(parts[1]),
+		Text:    parts[3],
+	}
+
+	return
+}
+
 func ParseFile(scanner *bufio.Scanner, tweeter Tweeter) (Tweets, error) {
 	var tweets Tweets
-	re := regexp.MustCompile(`^(.+?)(\s+)(.+)$`) // .+? is ungreedy
+
 	for scanner.Scan() {
 		line := scanner.Text()
-		if line == "" {
-			continue
-		}
-		if strings.HasPrefix(line, "#") {
-			continue
-		}
-		parts := re.FindStringSubmatch(line)
-		// "Submatch 0 is the match of the entire expression, submatch 1 the
-		// match of the first parenthesized subexpression, and so on."
-		if len(parts) != 4 {
+		tweet, err := ParseLine(line, tweeter)
+		if err != nil {
 			log.Warnf("could not parse: '%s' (source:%s)\n", line, tweeter.URL)
 			continue
 		}
-		tweets = append(tweets,
-			Tweet{
-				Tweeter: tweeter,
-				Created: ParseTime(parts[1]),
-				Text:    parts[3],
-			})
+
+		tweets = append(tweets, tweet)
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err

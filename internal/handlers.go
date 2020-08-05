@@ -573,6 +573,15 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			return
 		}
 
+		lastTweet, _, err := GetLastTweet(s.config, ctx.User)
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading the  timeline"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.LastTweet = lastTweet
 		ctx.Tweets = pagedTweets
 		ctx.Pager = pager
 
@@ -608,6 +617,15 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 			return
 		}
 
+		lastTweet, _, err := GetLastTweet(s.config, ctx.User)
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading the  timeline"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.LastTweet = lastTweet
 		ctx.Tweets = pagedTweets
 		ctx.Pager = pager
 

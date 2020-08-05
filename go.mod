@@ -9,6 +9,7 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/PuerkitoBio/goquery v1.5.1
+	github.com/abusizhishen/read-file-last-line v0.0.0-20200717025516-5bf8361f20a5
 	github.com/andreadipersio/securecookie v0.0.0-20131119095127-e3c3b33544ec
 	github.com/aofei/cameron v1.1.4
 	github.com/cyphar/filepath-securejoin v0.2.2
@@ -32,6 +33,7 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prologic/bitcask v0.3.6
+	github.com/prologic/read-file-last-line v0.0.0-20200805221103-a60375b5e037
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/pflag v1.0.5

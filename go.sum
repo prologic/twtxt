@@ -252,8 +252,8 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
 github.com/prologic/bitcask v0.3.6 h1:Eae9KQNPvXatDO/Ucn8noMeyt094FgY5pnjsJ6/wmkw=
 github.com/prologic/bitcask v0.3.6/go.mod h1:lGs61R8cREh1Wq/O+eErqTdGmsaen7cDxu3Zdbs9xBA=
-github.com/prologic/read-file-last-line v0.0.0-20200805221103-a60375b5e037 h1:czOdtTIcdL2i3UkpEFe8BYdT1e6GTuZ3jf76xgx8/Rc=
-github.com/prologic/read-file-last-line v0.0.0-20200805221103-a60375b5e037/go.mod h1:t5ZL5tajhqRldLeY8GpGENXPEl41oaDnpf4LMB5iUM0=
+github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987 h1:xPlhozlqV4y0twz46loB/G98pATrMLDz7BMlb0LGUpU=
+github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987/go.mod h1:t5ZL5tajhqRldLeY8GpGENXPEl41oaDnpf4LMB5iUM0=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=
 github.com/prometheus/client_golang v0.9.3/go.mod h1:/TN21ttK/J9q6uSwhBd54HahCDft0ttaMvbicHlPoso=
 github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910/go.mod h1:MbSGuTsp3dbXC40dX6PRTWyKYBIrTGTE9sqQNg2J8bo=

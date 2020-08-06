@@ -83,7 +83,7 @@ function editTweet(e) {
 
   text.setSelectionRange(size, size);
 
-  u("#tweetForm").attr("method", "PATCH");
+  u("#replaceTweet").first().value = u(e.target).data("hash");
 }
 
 function deleteTweet(e) {
@@ -111,19 +111,7 @@ u("#post").on("click", function(e) {
   e.preventDefault();
   u("#post").html("<i class=\"icss-spinner icss-pulse\"></i>&nbsp;Posting...");
   u("#post").attr("disabled", true);
-
-  if (u("#tweetForm").attr("method") == "PATCH") {
-    Twix.ajax({
-      type: "PATCH",
-      data: serialize(u("#tweetForm").first()),
-      url: u("#tweetForm").attr("action"),
-      success: function(data, res) {
-        window.location = res.getResponseHeader("Location");
-      }
-    });
-  } else {
-    u("#tweetForm").first().submit();
-  }
+  u("#tweetForm").first().submit();
 });
 
 

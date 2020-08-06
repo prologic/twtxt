@@ -452,11 +452,27 @@ func (s *Server) PostHandler() httprouter.Handle {
 			}
 
 			if r.Method != http.MethodDelete {
-				ctx.Error = false
-				ctx.Message = "Successfully deleted last tweet"
-				s.render("error", w, ctx)
 				return
 			}
+		}
+
+		hash := r.FormValue("hash")
+		lastTweet, _, err := GetLastTweet(s.config, ctx.User)
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "Error deleting last tweet"
+			s.render("error", w, ctx)
+			return
+		}
+
+		if hash != "" && lastTweet.Hash() == hash {
+			if err := DeleteLastTweet(s.config, ctx.User); err != nil {
+				ctx.Error = true
+				ctx.Message = "Error deleting last tweet"
+				s.render("error", w, ctx)
+			}
+		} else {
+			log.Warnf("hash mismatch %s != %s", lastTweet.Hash(), hash)
 		}
 
 		text := CleanTweet(r.FormValue("text"))

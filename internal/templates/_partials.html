@@ -1,6 +1,8 @@
 {{ define "post" }}
   {{ if .Authenticated }}
-    <form id="tweetForm" action="/post" method="POST"></form>
+    <form id="tweetForm" action="/post" method="POST">
+      <input type="hidden" id="replaceTweet" name="hash" value="" />
+    </form>
     <form id="uploadForm" class="test" action="/upload" enctype="multipart/form-data" method="POST"></form>
 
     <div class="grid">
@@ -62,7 +64,7 @@
             {{ if $.Authenticated }}
               <h3>
                 {{ if eq $.LastTweet.Hash .Hash }}
-                  [<a class="edit" href="#" data-text="{{ .Text }}">Edit</a>]
+                  [<a class="edit" href="#" data-hash="{{ .Hash }}" data-text="{{ .Text }}">Edit</a>]
                   [<a class="delete" href="#" data-hash="{{ .Hash }}">Delete</a>]
                 {{ end }}
                 {{ if (not ($.User.Is .Tweeter.URL)) }}

@@ -205,6 +205,8 @@ func (s *Server) initRoutes() {
 	s.router.POST("/feed", s.am.MustAuth(s.FeedHandler()))
 
 	s.router.POST("/post", s.am.MustAuth(s.PostHandler()))
+	s.router.PATCH("/post", s.am.MustAuth(s.PostHandler()))
+	s.router.DELETE("/post", s.am.MustAuth(s.PostHandler()))
 
 	// Redirect old URIs (twtxt <= v0.0.8) of the form /u/<nick> -> /user/<nick>/twtxt.txt
 	// TODO: Remove this after v1

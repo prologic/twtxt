@@ -50,7 +50,7 @@ function removeMe(){
 	element.parentNode.removeChild(element);
 }
 
-function reply(e) {
+function replyTo(e) {
   e.preventDefault();
 
   var el = u("textarea#text")
@@ -67,13 +67,63 @@ function reply(e) {
   text.setSelectionRange(size, size);
 }
 
-u(".reply").on("click", reply);
+function editTweet(e) {
+  e.preventDefault();
+
+  var el = u("textarea#text")
+  var text = document.getElementById("text");
+
+  el.empty();
+  el.text(u(e.target).data("text"));
+  el.scroll();
+
+  text.focus();
+
+  var size = el.text().length;
+
+  text.setSelectionRange(size, size);
+
+  u("#tweetForm").attr("method", "PATCH");
+}
+
+function deleteTweet(e) {
+  e.preventDefault();
+
+  if (confirm("Are you sure you want to delete this tweet? This cannot be undone!")) {
+    u("#post").html("<i class=\"icss-spinner icss-pulse\"></i>&nbsp;Deleting...");
+    u("#post").attr("disabled", true);
+    Twix.ajax({
+      type: "DELETE",
+      url: u("#tweetForm").attr("action"),
+      success: function(data) {
+        var hash = u(e.target).data("hash");
+        u("#" + hash).remove();
+      }
+    });
+  }
+};
+
+u(".reply").on("click", replyTo);
+u(".edit").on("click", editTweet);
+u(".delete").on("click", deleteTweet);
 
 u("#post").on("click", function(e) {
   e.preventDefault();
   u("#post").html("<i class=\"icss-spinner icss-pulse\"></i>&nbsp;Posting...");
   u("#post").attr("disabled", true);
-  u("#tweetForm").first().submit();
+
+  if (u("#tweetForm").attr("method") == "PATCH") {
+    Twix.ajax({
+      type: "PATCH",
+      data: serialize(u("#tweetForm").first()),
+      url: u("#tweetForm").attr("action"),
+      success: function(data, res) {
+        window.location = res.getResponseHeader("Location");
+      }
+    });
+  } else {
+    u("#tweetForm").first().submit();
+  }
 });
 
 

@@ -443,6 +443,22 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		postas := strings.ToLower(strings.TrimSpace(r.FormValue("postas")))
 
+		// TODO: Support deleting/patching last feed (`postas`) tweet too.
+		if r.Method == http.MethodDelete || r.Method == http.MethodPatch {
+			if err := DeleteLastTweet(s.config, ctx.User); err != nil {
+				ctx.Error = true
+				ctx.Message = "Error deleting last tweet"
+				s.render("error", w, ctx)
+			}
+
+			if r.Method != http.MethodDelete {
+				ctx.Error = false
+				ctx.Message = "Successfully deleted last tweet"
+				s.render("error", w, ctx)
+				return
+			}
+		}
+
 		text := CleanTweet(r.FormValue("text"))
 		if text == "" {
 			ctx.Error = true
@@ -584,6 +600,11 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		ctx.LastTweet = lastTweet
 		ctx.Tweets = pagedTweets
 		ctx.Pager = pager
+
+		log.Debugf("LastTweet.Hash(): %s", lastTweet.Hash())
+		for _, tweet := range pagedTweets {
+			log.Debugf(" Tweet.Hash(): %s", tweet.Hash())
+		}
 
 		s.render("timeline", w, ctx)
 	}

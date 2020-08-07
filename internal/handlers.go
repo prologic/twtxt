@@ -1615,72 +1615,70 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 // SyndicationHandler ...
 func (s *Server) SyndicationHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		var (
+			twts    Twts
+			profile Profile
+			err     error
+		)
+
 		nick := NormalizeUsername(p.ByName("nick"))
-		if nick == "" {
-			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
-
-		fn, err := securejoin.SecureJoin(filepath.Join(s.config.Data, "feeds"), nick)
-		if err != nil {
-			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
-
-		stat, err := os.Stat(fn)
-		if err != nil {
-			if os.IsNotExist(err) {
+		if nick != "" {
+			if s.db.HasUser(nick) {
+				twts, err = GetUserTwts(s.config, nick)
+				if user, err := s.db.GetUser(nick); err == nil {
+					profile = user.Profile()
+				} else {
+					log.WithError(err).Error("error loading user object")
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+			} else if s.db.HasFeed(nick) {
+				twts, err = GetUserTwts(s.config, nick)
+				if feed, err := s.db.GetFeed(nick); err == nil {
+					profile = feed.Profile()
+				} else {
+					log.WithError(err).Error("error loading user object")
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+			} else {
 				http.Error(w, "Feed Not Found", http.StatusNotFound)
 				return
 			}
+		} else {
+			twts, err = GetAllTwts(s.config)
+			profile = Profile{
+				Type:     "Local",
+				Username: s.config.Name,
+				Tagline:  "", // TODO: Maybe Twtxt Pods should have a configurable description?
+				URL:      s.config.BaseURL,
+			}
+		}
 
+		if err != nil {
+			log.WithError(err).Errorf("errorloading feeds for %s", nick)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
+
+		sort.Sort(sort.Reverse(twts))
 
 		if r.Method == http.MethodHead {
 			defer r.Body.Close()
 			w.Header().Set(
-				"Content-Length",
-				fmt.Sprintf("%d", stat.Size()),
-			)
-			w.Header().Set(
 				"Last-Modified",
-				stat.ModTime().UTC().Format(http.TimeFormat),
+				twts[len(twts)].Created.Format(http.TimeFormat),
 			)
-			return
-		}
-
-		user, err := s.db.GetUser(nick)
-		if err != nil {
-			log.WithError(err).Errorf("error loading user object for %s", nick)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
-		f, err := os.Open(fn)
-		if err != nil {
-			log.WithError(err).Errorf("error opening feed: %s", fn)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-		defer f.Close()
-
-		scanner := bufio.NewScanner(f)
-		twts, err := ParseFile(scanner, user.Twter())
-		if err != nil {
-			log.WithError(err).Errorf("error processing feed %s", fn)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
 		now := time.Now()
 
 		feed := &feeds.Feed{
-			Title:       fmt.Sprintf("%s Twtxt", user.Username),
-			Link:        &feeds.Link{Href: UserURL(user.URL)},
-			Description: user.Tagline,
-			Author:      &feeds.Author{Name: user.Username, Email: user.Email},
+			Title:       fmt.Sprintf("%s Twtxt Atom Feed", profile.Username),
+			Link:        &feeds.Link{Href: profile.URL},
+			Description: profile.Tagline,
+			Author:      &feeds.Author{Name: profile.Username},
 			Created:     now,
 		}
 
@@ -1688,48 +1686,21 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 
 		for _, twt := range twts {
 			items = append(items, &feeds.Item{
-				Title:       twt.Text,
-				Link:        &feeds.Link{Href: fmt.Sprintf("%s/#%s", s.config.BaseURL, twt.Hash())},
-				Description: "",
-				Author:      &feeds.Author{Name: user.Username, Email: user.Email},
-				Created:     now,
+				Id:      twt.Hash(),
+				Title:   twt.Text,
+				Link:    &feeds.Link{Href: fmt.Sprintf("%s/#%s", s.config.BaseURL, twt.Hash())},
+				Author:  &feeds.Author{Name: twt.Twter.Nick},
+				Created: twt.Created,
 			},
 			)
 		}
 		feed.Items = items
 
-		resource := strings.ToLower(filepath.Base(r.URL.Path))
-
-		var data string
-
-		switch resource {
-		case "atom.xml":
-			w.Header().Set("Content-Type", "application/atom+xml")
-			data, err = feed.ToAtom()
-			if err != nil {
-				log.WithError(err).Error("error serializing feed")
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-		case "rss.xml":
-			w.Header().Set("Content-Type", "application/rss+xml")
-			data, err = feed.ToRss()
-			if err != nil {
-				log.WithError(err).Error("error serializing feed")
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-		case "feed.json":
-			w.Header().Set("Content-Type", "application/json")
-			data, err = feed.ToJSON()
-			if err != nil {
-				log.WithError(err).Error("error serializing feed")
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-		default:
-			log.Errorf("invalid syndication feed format: %s", resource)
-			http.Error(w, "Bad Request", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/atom+xml")
+		data, err := feed.ToAtom()
+		if err != nil {
+			log.WithError(err).Error("error serializing feed")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 

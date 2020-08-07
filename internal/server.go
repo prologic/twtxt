@@ -224,12 +224,10 @@ func (s *Server) initRoutes() {
 	s.router.GET("/user/:nick/followers", s.FollowersHandler())
 
 	// Syndication Formats (RSS, Atom, JSON Feed)
+	s.router.HEAD("/atom.xml", s.SyndicationHandler())
 	s.router.HEAD("/user/:nick/atom.xml", s.SyndicationHandler())
+	s.router.GET("/atom.xml", s.SyndicationHandler())
 	s.router.GET("/user/:nick/atom.xml", s.SyndicationHandler())
-	s.router.HEAD("/user/:nick/feed.json", s.SyndicationHandler())
-	s.router.GET("/user/:nick/feed.json", s.SyndicationHandler())
-	s.router.HEAD("/user/:nick/rss.xml", s.SyndicationHandler())
-	s.router.GET("/user/:nick/rss.xml", s.SyndicationHandler())
 
 	s.router.GET("/feed/:name/manage", s.am.MustAuth(s.ManageFeedHandler()))
 	s.router.POST("/feed/:name/manage", s.am.MustAuth(s.ManageFeedHandler()))

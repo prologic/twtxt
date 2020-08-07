@@ -188,7 +188,7 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 				uploadOptions := &UploadOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: 0}
 				_, err = StoreUploadedImage(
 					s.config, avatarFile,
-					avatarsDir, ctx.Username,
+					avatarsDir, feedName,
 					uploadOptions,
 				)
 				if err != nil {

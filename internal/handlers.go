@@ -19,6 +19,7 @@ import (
 
 	"github.com/aofei/cameron"
 	securejoin "github.com/cyphar/filepath-securejoin"
+	"github.com/gorilla/feeds"
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 	"github.com/vcraescu/go-paginator"
@@ -1590,5 +1591,130 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 		w.Write(data)
 
 		return
+	}
+}
+
+// SyndicationHandler ...
+func (s *Server) SyndicationHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		nick := NormalizeUsername(p.ByName("nick"))
+		if nick == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		fn, err := securejoin.SecureJoin(filepath.Join(s.config.Data, "feeds"), nick)
+		if err != nil {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		stat, err := os.Stat(fn)
+		if err != nil {
+			if os.IsNotExist(err) {
+				http.Error(w, "Feed Not Found", http.StatusNotFound)
+				return
+			}
+
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		if r.Method == http.MethodHead {
+			defer r.Body.Close()
+			w.Header().Set(
+				"Content-Length",
+				fmt.Sprintf("%d", stat.Size()),
+			)
+			w.Header().Set(
+				"Last-Modified",
+				stat.ModTime().UTC().Format(http.TimeFormat),
+			)
+			return
+		}
+
+		user, err := s.db.GetUser(nick)
+		if err != nil {
+			log.WithError(err).Errorf("error loading user object for %s", nick)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		f, err := os.Open(fn)
+		if err != nil {
+			log.WithError(err).Errorf("error opening feed: %s", fn)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		defer f.Close()
+
+		scanner := bufio.NewScanner(f)
+		twts, err := ParseFile(scanner, user.Twter())
+		if err != nil {
+			log.WithError(err).Errorf("error processing feed %s", fn)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		now := time.Now()
+
+		feed := &feeds.Feed{
+			Title:       fmt.Sprintf("%s Twtxt", user.Username),
+			Link:        &feeds.Link{Href: UserURL(user.URL)},
+			Description: user.Tagline,
+			Author:      &feeds.Author{Name: user.Username, Email: user.Email},
+			Created:     now,
+		}
+
+		var items []*feeds.Item
+
+		for _, twt := range twts {
+			items = append(items, &feeds.Item{
+				Title:       twt.Text,
+				Link:        &feeds.Link{Href: fmt.Sprintf("%s/#%s", s.config.BaseURL, twt.Hash())},
+				Description: "",
+				Author:      &feeds.Author{Name: user.Username, Email: user.Email},
+				Created:     now,
+			},
+			)
+		}
+		feed.Items = items
+
+		resource := strings.ToLower(filepath.Base(r.URL.Path))
+
+		var data string
+
+		switch resource {
+		case "atom.xml":
+			w.Header().Set("Content-Type", "application/atom+xml")
+			data, err = feed.ToAtom()
+			if err != nil {
+				log.WithError(err).Error("error serializing feed")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+		case "rss.xml":
+			w.Header().Set("Content-Type", "application/rss+xml")
+			data, err = feed.ToRss()
+			if err != nil {
+				log.WithError(err).Error("error serializing feed")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+		case "feed.json":
+			w.Header().Set("Content-Type", "application/json")
+			data, err = feed.ToJSON()
+			if err != nil {
+				log.WithError(err).Error("error serializing feed")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+		default:
+			log.Errorf("invalid syndication feed format: %s", resource)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		w.Write([]byte(data))
 	}
 }

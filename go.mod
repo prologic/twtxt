@@ -18,6 +18,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/elithrar/simple-scrypt v1.3.0
 	github.com/gomarkdown/markdown v0.0.0-20200609195525-3f9352745725
+	github.com/gorilla/feeds v1.1.1
 	github.com/goware/urlx v0.3.1
 	github.com/h2non/filetype v1.1.0
 	github.com/huandu/xstrings v1.3.2 // indirect

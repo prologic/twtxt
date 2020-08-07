@@ -104,6 +104,24 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		ctx.Profile = profile
 
+		ctx.Alternatives = append(ctx.Alternatives, Alternatives{
+			Alternative{
+				Type:  "application/atom+xml",
+				Title: fmt.Sprintf("%s Atom Feed", profile.Username),
+				URL:   fmt.Sprintf("%s/atom.xml", UserURL(profile.URL)),
+			},
+			Alternative{
+				Type:  "application/json",
+				Title: fmt.Sprintf("%s JSON Feed", profile.Username),
+				URL:   fmt.Sprintf("%s/feed.json", UserURL(profile.URL)),
+			},
+			Alternative{
+				Type:  "application/rss+xml",
+				Title: fmt.Sprintf("%s RSS Feed", profile.Username),
+				URL:   fmt.Sprintf("%s/rss.xml", UserURL(profile.URL)),
+			},
+		}...)
+
 		twts, err := GetUserTwts(s.config, profile.Username)
 		if err != nil {
 			log.WithError(err).Error("error loading twts")

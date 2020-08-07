@@ -6,6 +6,11 @@
     <link href="/css/{{ .Commit }}/iconicss.min.css" rel="stylesheet" />
     <link href="/css/{{ .Commit }}/theme-switcher.css" rel="stylesheet" />
     <link href="/css/{{ .Commit }}/twtxt.css" rel="stylesheet" />
+
+    {{ range .Alternatives }}
+      <link rel="alternate" type="{{ .Type }}" title="{{ .Title }}" href="{{ .URL }}" />
+    {{ end }}
+
     {{ template "stylesheets" . }}
     <meta charset="UTF-8">
     <meta name="description" content="📕 twtxt is a Self-Hosted, Twitter™-like Decentralised microBlogging platform. No ads, no tracking, your content, your data!">

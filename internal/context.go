@@ -1,6 +1,7 @@
 package twtxt
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -9,6 +10,14 @@ import (
 
 	"github.com/prologic/twtxt/internal/session"
 )
+
+type Alternative struct {
+	Type  string
+	Title string
+	URL   string
+}
+
+type Alternatives []Alternative
 
 type Context struct {
 	BaseURL                 string
@@ -24,6 +33,7 @@ type Context struct {
 	User          *User
 	LastTwt       Twt
 	Profile       Profile
+	Alternatives  Alternatives
 	Authenticated bool
 
 	Error   bool
@@ -53,6 +63,14 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 
 		Commit: Commit,
 		Theme:  conf.Theme,
+
+		Alternatives: Alternatives{
+			Alternative{
+				Type:  "application/atom+xml",
+				Title: fmt.Sprintf("%s local feed", conf.Name),
+				URL:   fmt.Sprintf("%s/atom.xml", conf.BaseURL),
+			},
+		},
 	}
 
 	// Set the theme based on user-defined perfernece via Cookies

@@ -1,4 +1,4 @@
-package twtxt
+package internal
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vcraescu/go-paginator"
 
+	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/internal/session"
 )
 
@@ -55,13 +56,13 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	ctx := &Context{
 		BaseURL:          conf.BaseURL,
 		InstanceName:     conf.Name,
-		SoftwareVersion:  FullVersion(),
+		SoftwareVersion:  twtxt.FullVersion(),
 		TwtsPerPage:      conf.TwtsPerPage,
 		TwtPrompt:        conf.RandomTwtPrompt(),
 		MaxTwtLength:     conf.MaxTwtLength,
 		RegisterDisabled: !conf.Register,
 
-		Commit: Commit,
+		Commit: twtxt.Commit,
 		Theme:  conf.Theme,
 
 		Alternatives: Alternatives{

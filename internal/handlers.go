@@ -1,4 +1,4 @@
-package twtxt
+package internal
 
 import (
 	"bufio"
@@ -19,13 +19,14 @@ import (
 
 	"github.com/aofei/cameron"
 	securejoin "github.com/cyphar/filepath-securejoin"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/feeds"
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 	"github.com/vcraescu/go-paginator"
 	"github.com/vcraescu/go-paginator/adapter"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/internal/session"
 )
 
@@ -1101,7 +1102,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
 						user.Username, URLForUser(s.config.BaseURL, user.Username),
-						"twtxt", FullVersion(),
+						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
 					log.WithError(err).Warnf("error appending special FOLLOW post")
@@ -1133,7 +1134,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 						feed.Name, URLForUser(s.config.BaseURL, feed.Name),
 						user.Username, URLForUser(s.config.BaseURL, user.Username),
-						"twtxt", FullVersion(),
+						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
 					log.WithError(err).Warnf("error appending special FOLLOW post")
@@ -1266,7 +1267,7 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
 						user.Username, URLForUser(s.config.BaseURL, user.Username),
-						"twtxt", FullVersion(),
+						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
 					log.WithError(err).Warnf("error appending special FOLLOW post")

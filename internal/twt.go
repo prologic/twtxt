@@ -1,6 +1,6 @@
 // -*- tab-width: 4; -*-
 
-package twtxt
+package internal
 
 import (
 	"bufio"

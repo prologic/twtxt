@@ -1,4 +1,4 @@
-package twtxt
+package internal
 
 import (
 	"errors"

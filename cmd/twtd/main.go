@@ -10,7 +10,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
 
-	twtxt "github.com/prologic/twtxt/internal"
+	"github.com/prologic/twtxt"
+	"github.com/prologic/twtxt/internal"
 )
 
 var (
@@ -51,33 +52,33 @@ func init() {
 	flag.BoolVarP(&debug, "debug", "D", false, "enable debug logging")
 	flag.StringVarP(&bind, "bind", "b", "0.0.0.0:8000", "[int]:<port> to bind to")
 
-	flag.StringVarP(&data, "data", "d", twtxt.DefaultData, "data directory")
-	flag.StringVarP(&store, "store", "s", twtxt.DefaultStore, "store to use")
-	flag.StringVarP(&name, "name", "n", twtxt.DefaultName, "set the instance's name")
-	flag.StringVarP(&theme, "theme", "t", twtxt.DefaultTheme, "set the default theme")
-	flag.BoolVarP(&register, "register", "r", twtxt.DefaultRegister, "enable user registration")
-	flag.StringVarP(&baseURL, "base-url", "u", twtxt.DefaultBaseURL, "base url to use")
-	flag.StringVarP(&adminUser, "admin-user", "A", twtxt.DefaultAdminUser, "default admin user to use")
-	flag.StringSliceVarP(&feedSources, "feed-sources", "F", twtxt.DefaultFeedSources, "external feed sources")
-	flag.StringVarP(&cookieSecret, "cookie-secret", "S", twtxt.DefaultCookieSecret, "cookie secret to use")
-	flag.IntVarP(&maxTwtLength, "max-twt-length", "L", twtxt.DefaultMaxTwtLength, "maximum length of posts")
-	flag.BoolVarP(&openProfiles, "open-profiles", "O", twtxt.DefaultOpenProfiles, "whether or not to have open user profiles")
-	flag.Int64VarP(&maxUploadSize, "max-upload-size", "U", twtxt.DefaultMaxUploadSize, "maximum upload size of media")
-	flag.IntVarP(&twtsPerPage, "twts-per-page", "T", twtxt.DefaultTwtsPerPage, "twts per page to display")
-	flag.DurationVarP(&sessionExpiry, "session-expiry", "E", twtxt.DefaultSessionExpiry, "session expiry to use")
+	flag.StringVarP(&data, "data", "d", internal.DefaultData, "data directory")
+	flag.StringVarP(&store, "store", "s", internal.DefaultStore, "store to use")
+	flag.StringVarP(&name, "name", "n", internal.DefaultName, "set the instance's name")
+	flag.StringVarP(&theme, "theme", "t", internal.DefaultTheme, "set the default theme")
+	flag.BoolVarP(&register, "register", "r", internal.DefaultRegister, "enable user registration")
+	flag.StringVarP(&baseURL, "base-url", "u", internal.DefaultBaseURL, "base url to use")
+	flag.StringVarP(&adminUser, "admin-user", "A", internal.DefaultAdminUser, "default admin user to use")
+	flag.StringSliceVarP(&feedSources, "feed-sources", "F", internal.DefaultFeedSources, "external feed sources")
+	flag.StringVarP(&cookieSecret, "cookie-secret", "S", internal.DefaultCookieSecret, "cookie secret to use")
+	flag.IntVarP(&maxTwtLength, "max-twt-length", "L", internal.DefaultMaxTwtLength, "maximum length of posts")
+	flag.BoolVarP(&openProfiles, "open-profiles", "O", internal.DefaultOpenProfiles, "whether or not to have open user profiles")
+	flag.Int64VarP(&maxUploadSize, "max-upload-size", "U", internal.DefaultMaxUploadSize, "maximum upload size of media")
+	flag.IntVarP(&twtsPerPage, "twts-per-page", "T", internal.DefaultTwtsPerPage, "twts per page to display")
+	flag.DurationVarP(&sessionExpiry, "session-expiry", "E", internal.DefaultSessionExpiry, "session expiry to use")
 
-	flag.StringVar(&magiclinkSecret, "magiclink-secret", twtxt.DefaultMagicLinkSecret, "magiclink secret to use for password reset tokens")
+	flag.StringVar(&magiclinkSecret, "magiclink-secret", internal.DefaultMagicLinkSecret, "magiclink secret to use for password reset tokens")
 
-	flag.StringVar(&smtpHost, "smtp-host", twtxt.DefaultSMTPHost, "SMTP Host to use for email sending")
-	flag.IntVar(&smtpPort, "smtp-port", twtxt.DefaultSMTPPort, "SMTP Port to use for email sending")
-	flag.StringVar(&smtpUser, "smtp-user", twtxt.DefaultSMTPUser, "SMTP User to use for email sending")
-	flag.StringVar(&smtpPass, "smtp-pass", twtxt.DefaultSMTPPass, "SMTP Pass to use for email sending")
-	flag.StringVar(&smtpFrom, "smtp-from", twtxt.DefaultSMTPFrom, "SMTP From address to use for email sending")
+	flag.StringVar(&smtpHost, "smtp-host", internal.DefaultSMTPHost, "SMTP Host to use for email sending")
+	flag.IntVar(&smtpPort, "smtp-port", internal.DefaultSMTPPort, "SMTP Port to use for email sending")
+	flag.StringVar(&smtpUser, "smtp-user", internal.DefaultSMTPUser, "SMTP User to use for email sending")
+	flag.StringVar(&smtpPass, "smtp-pass", internal.DefaultSMTPPass, "SMTP Pass to use for email sending")
+	flag.StringVar(&smtpFrom, "smtp-from", internal.DefaultSMTPFrom, "SMTP From address to use for email sending")
 
-	flag.Int64Var(&maxFetchLimit, "max-fetch-limit", twtxt.DefaultMaxFetchLimit, "Maximum feed fetch limit in bytes")
+	flag.Int64Var(&maxFetchLimit, "max-fetch-limit", internal.DefaultMaxFetchLimit, "Maximum feed fetch limit in bytes")
 
-	flag.DurationVar(&apiSessionTime, "api-session-time", twtxt.DefaultAPISessionTime, "Maximum TTL for API tokens")
-	flag.StringVar(&apiSigningKey, "api-signing-key", twtxt.DefaultAPISigningKey, "API JWT signing key for tokens")
+	flag.DurationVar(&apiSessionTime, "api-session-time", internal.DefaultAPISessionTime, "Maximum TTL for API tokens")
+	flag.StringVar(&apiSigningKey, "api-signing-key", internal.DefaultAPISigningKey, "API JWT signing key for tokens")
 }
 
 func flagNameFromEnvironmentName(s string) string {
@@ -116,33 +117,33 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 	}
 
-	svr, err := twtxt.NewServer(bind,
-		twtxt.WithData(data),
-		twtxt.WithName(name),
-		twtxt.WithTheme(theme),
-		twtxt.WithStore(store),
-		twtxt.WithBaseURL(baseURL),
-		twtxt.WithRegister(register),
-		twtxt.WithAdminUser(adminUser),
-		twtxt.WithFeedSources(feedSources),
-		twtxt.WithCookieSecret(cookieSecret),
-		twtxt.WithTwtsPerPage(twtsPerPage),
-		twtxt.WithSessionExpiry(sessionExpiry),
-		twtxt.WithMaxTwtLength(maxTwtLength),
-		twtxt.WithOpenProfiles(openProfiles),
-		twtxt.WithMaxUploadSize(maxUploadSize),
-		twtxt.WithMagicLinkSecret(magiclinkSecret),
+	svr, err := internal.NewServer(bind,
+		internal.WithData(data),
+		internal.WithName(name),
+		internal.WithTheme(theme),
+		internal.WithStore(store),
+		internal.WithBaseURL(baseURL),
+		internal.WithRegister(register),
+		internal.WithAdminUser(adminUser),
+		internal.WithFeedSources(feedSources),
+		internal.WithCookieSecret(cookieSecret),
+		internal.WithTwtsPerPage(twtsPerPage),
+		internal.WithSessionExpiry(sessionExpiry),
+		internal.WithMaxTwtLength(maxTwtLength),
+		internal.WithOpenProfiles(openProfiles),
+		internal.WithMaxUploadSize(maxUploadSize),
+		internal.WithMagicLinkSecret(magiclinkSecret),
 
-		twtxt.WithSMTPHost(smtpHost),
-		twtxt.WithSMTPPort(smtpPort),
-		twtxt.WithSMTPUser(smtpUser),
-		twtxt.WithSMTPPass(smtpPass),
-		twtxt.WithSMTPFrom(smtpFrom),
+		internal.WithSMTPHost(smtpHost),
+		internal.WithSMTPPort(smtpPort),
+		internal.WithSMTPUser(smtpUser),
+		internal.WithSMTPPass(smtpPass),
+		internal.WithSMTPFrom(smtpFrom),
 
-		twtxt.WithMaxFetchLimit(maxFetchLimit),
+		internal.WithMaxFetchLimit(maxFetchLimit),
 
-		twtxt.WithAPISessionTime(apiSessionTime),
-		twtxt.WithAPISigningKey(apiSigningKey),
+		internal.WithAPISessionTime(apiSessionTime),
+		internal.WithAPISigningKey(apiSigningKey),
 	)
 	if err != nil {
 		log.WithError(err).Fatal("error creating server")

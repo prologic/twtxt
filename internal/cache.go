@@ -1,4 +1,4 @@
-package twtxt
+package internal
 
 import (
 	"bufio"
@@ -14,6 +14,8 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/prologic/twtxt"
 )
 
 type Cached struct {
@@ -111,7 +113,7 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 				return
 			}
 
-			req.Header.Set("User-Agent", fmt.Sprintf("twtxt/%s", FullVersion()))
+			req.Header.Set("User-Agent", fmt.Sprintf("twtxt/%s", twtxt.FullVersion()))
 
 			mu.RLock()
 			if cached, ok := cache[url]; ok {

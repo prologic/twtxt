@@ -10,14 +10,24 @@ deps:
 	@go get github.com/GeertJohan/go.rice/rice
 
 dev: build
+	@./twt -v
 	@./twtd -D -O -r
 
-build: generate
+cli:
 	@go build -tags "netgo static_build" -installsuffix netgo \
 		-ldflags "-w \
-		-X $(shell go list)/internal.Version=$(VERSION) \
-		-X $(shell go list)/internal.Commit=$(COMMIT)" \
+		-X $(shell go list).Version=$(VERSION) \
+		-X $(shell go list).Commit=$(COMMIT)" \
+		./cmd/twt/...
+
+server:
+	@go build -tags "netgo static_build" -installsuffix netgo \
+		-ldflags "-w \
+		-X $(shell go list).Version=$(VERSION) \
+		-X $(shell go list).Commit=$(COMMIT)" \
 		./cmd/twtd/...
+
+build: generate cli server
 
 generate:
 	@rice -i ./internal embed-go
@@ -26,7 +36,8 @@ install: build
 	@go install
 
 image:
-	@docker build -t prologic/twtxt .
+	@docker build -f Dockerfile.twt -t prologic/twt .
+	@docker build -f Dockerfile.twtd -t prologic/twtd .
 
 release:
 	@./tools/release.sh

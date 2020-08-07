@@ -5,7 +5,11 @@
             <h1>Manage feed</h1>
             <h2>Manage <b>{{ .Profile.Username}}</b> details</h2>
         </hgroup>
-        <form action="/feed/{{  .Profile.Username }}/manage" method="POST">
+        <form action="/feed/{{  .Profile.Username }}/manage"  enctype="multipart/form-data" method="POST">
+            <label for="avatar_upload">
+              Change avatar
+              <input id="avatar_upload" type="file" accept="image/png, image/jpeg" name="avatar_file" aria-label="Upload Avatar" />
+            </label>
             <label for="description">
                 Description
                 <input type="text" id="description" name="description" placeholder="A short description about the feed" required value="{{ .Profile.Tagline }}">

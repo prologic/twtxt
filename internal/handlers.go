@@ -177,6 +177,28 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 			description := r.FormValue("description")
 			feed.Description = description
 
+			avatarFile, _, err := r.FormFile("avatar_file")
+			if err != nil && err != http.ErrMissingFile {
+				log.WithError(err).Error("error parsing form file")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			if avatarFile != nil {
+				uploadOptions := &UploadOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: 0}
+				_, err = StoreUploadedImage(
+					s.config, avatarFile,
+					avatarsDir, ctx.Username,
+					uploadOptions,
+				)
+				if err != nil {
+					ctx.Error = true
+					ctx.Message = fmt.Sprintf("Error updating user: %s", err)
+					s.render("error", w, ctx)
+					return
+				}
+			}
+
 			if err := s.db.SetFeed(feed.Name, feed); err != nil {
 				log.WithError(err).Warnf("error updating user object for followee %s", feed.Name)
 

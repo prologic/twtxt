@@ -767,11 +767,11 @@ func (s *Server) SearchHandler() httprouter.Handle {
 
 		if tag == "" {
 			ctx.Error = true
-			ctx.Message = "At least 1 search tag is required"
+			ctx.Message = "At least search query is required"
 			s.render("error", w, ctx)
 		}
 
-		getTweetByTag := func() Twts {
+		getTweetsByTag := func() Twts {
 			var result Twts
 			for _, twt := range cache.GetAll() {
 				if HasString(UniqStrings(twt.Tags()), tag) {
@@ -783,12 +783,12 @@ func (s *Server) SearchHandler() httprouter.Handle {
 
 		if err != nil {
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading mentions"
+			ctx.Message = "An error occurred while loading search results"
 			s.render("error", w, ctx)
 			return
 		}
 
-		twts = getTweetByTag()
+		twts = getTweetsByTag()
 
 		sort.Sort(sort.Reverse(twts))
 
@@ -800,7 +800,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 
 		if err = pager.Results(&pagedTwts); err != nil {
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading mentions"
+			ctx.Message = "An error occurred while loading search results"
 			s.render("error", w, ctx)
 			return
 		}

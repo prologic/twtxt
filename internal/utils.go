@@ -464,7 +464,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 		}
 		renderer := html.NewRenderer(opts)
 
-		md := []byte(FormatMentions(text))
+		md := []byte(FormatMentionsAndTags(text))
 		maybeUnsafeHTML := markdown.ToHTML(md, nil, renderer)
 		p := bluemonday.UGCPolicy()
 		p.AllowAttrs("target").OnElements("a")
@@ -474,8 +474,9 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 	}
 }
 
-// FormatMentions turns `@<nick URL>` into `<a href="URL">@nick</a>`
-func FormatMentions(text string) string {
+// FormatMentionsAndTags turns `@<nick URL>` into `<a href="URL">@nick</a>`
+//     and `#<tag URL>` into `<a href="URL">#tag</a>`
+func FormatMentionsAndTags(text string) string {
 	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)

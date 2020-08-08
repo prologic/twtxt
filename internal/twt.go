@@ -135,7 +135,7 @@ func ExpandMentions(conf *Config, db Store, user *User, text string) string {
 	})
 }
 
-// Turns "@nick" into "@<nick URL>" if we're following nick.
+// Turns #tag into "@<tag URL>"
 func ExpandTag(conf *Config, db Store, user *User, text string) string {
 	re := regexp.MustCompile(`#([-\w]+)`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
@@ -195,9 +195,10 @@ func AppendTwt(conf *Config, db Store, user *User, text string) error {
 	}
 	defer f.Close()
 
-	text = fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339), ExpandTag(conf, db, user, ExpandMentions(conf, db, user, text)))
-
-	if _, err = f.WriteString(text); err != nil {
+	if _, err = f.WriteString(
+		fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339),
+			ExpandTag(conf, db, user, ExpandMentions(conf, db, user, text))),
+	); err != nil {
 		return err
 	}
 

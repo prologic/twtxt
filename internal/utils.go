@@ -365,6 +365,14 @@ func URLForUser(baseURL, username string) string {
 	)
 }
 
+func URLForTag(baseURL, tag string) string {
+	return fmt.Sprintf(
+		"%s/search?tag=%s",
+		strings.TrimSuffix(baseURL, "/"),
+		tag,
+	)
+}
+
 // SafeParseInt ...
 func SafeParseInt(s string, d int) int {
 	n, e := strconv.Atoi(s)
@@ -468,11 +476,11 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 
 // FormatMentions turns `@<nick URL>` into `<a href="URL">@nick</a>`
 func FormatMentions(text string) string {
-	re := regexp.MustCompile(`@<([^ ]+) *([^>]+)>`)
+	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
-		nick, url := parts[1], parts[2]
-		return fmt.Sprintf(`<a href="%s">@%s</a>`, url, nick)
+		prefix, nick, url := parts[1], parts[2], parts[3]
+		return fmt.Sprintf(`<a href="%s">%s%s</a>`, url, prefix, nick)
 	})
 }
 

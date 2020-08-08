@@ -39,8 +39,9 @@ article hgroup footer {
   flex-direction: column;
   position: absolute;
   z-index: 1040;
-  background-color: #fff;
+  background-color: var(--background);
   box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--primary-inverse);
 }
 
 .users-list.show {
@@ -57,8 +58,19 @@ article hgroup footer {
   max-width: 350px;
 }
 
+.user-list__user:first-child {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.user-list__user:last-child {
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
 .user-list__user:hover {
   cursor: pointer;
+  background-color: var(--input-border);
 }
 
 .mentioned-list-content {
@@ -81,20 +93,20 @@ article hgroup footer {
 }
 
 .user-list__user .info .name {
-  color: #000;
+  color: var(--text);
   margin-bottom: 5px;
   font-size: 14px;
 }
 
 .user-list__user .info .nickname {
-  color: #000;
+  color: var(--text);
   font-size: 14px;
 }
 
 .user-list__user .nickname {
   font-size: 16px;
   font-weight: bold;
-  color: #000;
+  color: var(--text);
 }
 
 .mentioned-list-content::-webkit-scrollbar  {

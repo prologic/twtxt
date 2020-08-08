@@ -205,18 +205,18 @@ function insertText(selector, text) {
   selector.scroll();
   selector.first().focus();
   selector.first().setSelectionRange(-1 ,-1);
-  var selectorLength = selector.first().value.length
+  var selectorLength = selector.first().value.length;
 
   selector.first().selectionEnd = selector.first().value.substr(-1) === ')'
       ? selectorLength - 1
-      : selectorLength
+      : selectorLength;
 }
 
 function getUsers(searchStr) {
-  let requestUrl = '/lookup'
+  let requestUrl = '/lookup';
 
   if(searchStr) {
-    requestUrl += '?prefix=' + searchStr
+    requestUrl += '?prefix=' + searchStr;
   }
 
   Twix.ajax({
@@ -224,9 +224,9 @@ function getUsers(searchStr) {
     url: requestUrl,
     success: function(data) {
       var nodes = data.map((user) => {
-        return createMentionedUserNode(user)
+        return createMentionedUserNode(user);
       }).join('')
-      $mentionedList.innerHTML = nodes
+      $mentionedList.innerHTML = nodes;
     }
   });
 }
@@ -236,7 +236,7 @@ function getLastMentionIndex(value) {
   while ((result = regex.exec(value)) ) {
     indices.push(result.index);
   }
-  return indices.slice(-1)[0] + 1
+  return indices.slice(-1)[0] + 1;
 }
 
 u('#bBtn').on("click", function(e) {
@@ -275,68 +275,69 @@ u('#usrBtn').on("click", function (e) {
   if(!$mentionedList.classList.contains('show')) {
     insertText(u("textarea#text"), "@");
   } else {
-    $mentionedList.classList.remove('show')
+    $mentionedList.classList.remove('show');
   }
 })
 
 u("textarea#text").on("focus", (e) => {
   if(e.relatedTarget === u('#usrBtn').first()) {
-    u("#mentioned-list").first().style.top = u("textarea#text").first().clientHeight + 2 + 'px'
-    u("#mentioned-list").first().classList.add('show')
-    getUsers()
+    u("#mentioned-list").first().style.top = u("textarea#text").first().clientHeight + 2 + 'px';
+    u("#mentioned-list").first().classList.add('show');
+    getUsers();
   }
 })
 
 u("textarea#text").on("input", (e) => {
-  var value = u("textarea#text").first().value
+  var value = u("textarea#text").first().value;
 
   if($mentionedList.classList.contains('show')) {
-    var lastIndex = getLastMentionIndex(value)
+    var lastIndex = getLastMentionIndex(value);
 
+    console.log(lastSymbol)
     if(e.inputType === 'deleteContentBackward' && lastSymbol === '@') {
-      u("textarea#text").first().value = u("textarea#text").first().value.slice(lastIndex - 1)
-      $mentionedList.classList.remove('show')
+      u("textarea#text").first().value = u("textarea#text").first().value.slice(lastIndex - 1);
+      $mentionedList.classList.remove('show');
     } else {
-      lastSymbol = value.slice(-1)
       var searchStr = value.slice(lastIndex)
       if(searchStr && searchStr !== '@') {
-        getUsers(searchStr)
+        getUsers(searchStr);
       } else {
         getUsers()
       }
     }
   } else {
     if(e.data === '@') {
-      $mentionedList.classList.add('show')
-      u("#mentioned-list").first().style.top = u("textarea#text").first().clientHeight + 2 + 'px'
-      getUsers()
+      $mentionedList.classList.add('show');
+      u("#mentioned-list").first().style.top = u("textarea#text").first().clientHeight + 2 + 'px';
+      getUsers();
     }
   }
+  lastSymbol = value.slice(-1);
 })
 
 
 u("body").on('keyup', function (e) {
   if(e.keyCode === 9 && $mentionedList.classList.contains('show')) {
-    var value = u("textarea#text").first().value
+    var value = u("textarea#text").first().value;
     if(u(".mentioned-list-content").length) {
-      var lastIndex = getLastMentionIndex(value)
-      u("textarea#text").first().value = value.slice(0, lastIndex)
+      var lastIndex = getLastMentionIndex(value);
+      u("textarea#text").first().value = value.slice(0, lastIndex);
 
       insertText(u("textarea#text"), u(".mentioned-list-content").nodes[0].innerText);
-      $mentionedList.classList.remove('show')
+      $mentionedList.classList.remove('show');
     }
   }
 
 })
 
 u("#mentioned-list").on('click', function (e) {
-  var value = u("textarea#text").first().value
+  var value = u("textarea#text").first().value;
 
-  var lastIndex = getLastMentionIndex(value)
-  u("textarea#text").first().value = value.slice(0, lastIndex)
+  var lastIndex = getLastMentionIndex(value);
+  u("textarea#text").first().value = value.slice(0, lastIndex);
 
   insertText(u("textarea#text"), e.target.innerText);
-  u("#mentioned-list").first().classList.remove('show')
+  u("#mentioned-list").first().classList.remove('show');
 })
 
 u('#uploadMedia').on("change", function(e){

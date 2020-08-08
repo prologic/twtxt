@@ -763,6 +763,13 @@ func (s *Server) SearchHandler() httprouter.Handle {
 
 		cache, err := LoadCache(s.config.Data)
 
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading search results"
+			s.render("error", w, ctx)
+			return
+		}
+
 		tag := r.URL.Query().Get("tag")
 
 		if tag == "" {
@@ -779,13 +786,6 @@ func (s *Server) SearchHandler() httprouter.Handle {
 				}
 			}
 			return result
-		}
-
-		if err != nil {
-			ctx.Error = true
-			ctx.Message = "An error occurred while loading search results"
-			s.render("error", w, ctx)
-			return
 		}
 
 		twts = getTweetsByTag()

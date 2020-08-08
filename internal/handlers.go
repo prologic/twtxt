@@ -754,6 +754,64 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 	}
 }
 
+// SearchHandler ...
+func (s *Server) SearchHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		var twts Twts
+
+		cache, err := LoadCache(s.config.Data)
+
+		tag := r.URL.Query().Get("tag")
+
+		if tag == "" {
+			ctx.Error = true
+			ctx.Message = "At least 1 search tag is required"
+			s.render("error", w, ctx)
+		}
+
+		getTweetByTag := func() Twts {
+			var result Twts
+			for _, twt := range cache.GetAll() {
+				if HasString(UniqStrings(twt.Tags()), tag) {
+					result = append(result, twt)
+				}
+			}
+			return result
+		}
+
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading mentions"
+			s.render("error", w, ctx)
+			return
+		}
+
+		twts = getTweetByTag()
+
+		sort.Sort(sort.Reverse(twts))
+
+		var pagedTwts Twts
+
+		page := SafeParseInt(r.FormValue("page"), 1)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
+		pager.SetPage(page)
+
+		if err = pager.Results(&pagedTwts); err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading mentions"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Twts = pagedTwts
+		ctx.Pager = pager
+
+		s.render("timeline", w, ctx)
+	}
+}
+
 // FeedHandler ...
 func (s *Server) FeedHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

@@ -52,6 +52,18 @@ func (twt Twt) Mentions() []string {
 	return mentions
 }
 
+func (twt Twt) Tags() []string {
+	var mentions []string
+
+	re := regexp.MustCompile(`#<(.*?) .*?>`)
+	matches := re.FindAllStringSubmatch(twt.Text, -1)
+	for _, match := range matches {
+		mentions = append(mentions, match[1])
+	}
+
+	return mentions
+}
+
 func (twt Twt) Subject() string {
 	re := regexp.MustCompile(`^(@<.*>[, ]*)*(\(.*?\))(.*)`)
 	match := re.FindStringSubmatch(twt.Text)

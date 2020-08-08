@@ -226,7 +226,7 @@ function getUsers(searchStr) {
       var nodes = data.map((user) => {
         return createMentionedUserNode(user);
       }).join('')
-      $mentionedList.innerHTML = nodes;
+      u('#mentioned-list-content').first().innerHTML = nodes;
     }
   });
 }

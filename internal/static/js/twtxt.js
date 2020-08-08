@@ -274,6 +274,7 @@ u('#usrBtn').on("click", function (e) {
   e.preventDefault();
   if(!$mentionedList.classList.contains('show')) {
     insertText(u("textarea#text"), "@");
+    lastSymbol = u("textarea#text").first().value.slice(-1);
   } else {
     $mentionedList.classList.remove('show');
   }

@@ -172,13 +172,16 @@ function formatText(selector, fmt) {
     var selectedText = selector.getSelection().text;
 
     if (selectedText.length == 0) {
-        finalText = fmt + "text" + fmt;
+        finalText = fmt + fmt;
     } else {
         finalText = fmt + selectedText + fmt;
     }
 
     selector.replaceSelection(finalText , true);
     selector.first().focus();
+    if(!selectedText.length) {
+      selector.first().selectionEnd = selector.first().value.length - fmt.length;
+    }
 }
 
 function insertText(selector, text) {
@@ -186,6 +189,7 @@ function insertText(selector, text) {
   selector.scroll();
   selector.first().focus();
   selector.first().setSelectionRange(-1 ,-1);
+  selector.first().selectionEnd = selector.first().value.length - 1
 }
 
 u('#bBtn').on("click", function(e) {

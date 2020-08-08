@@ -22,7 +22,13 @@
     </nav>
     <form id="twtForm" action="/post" method="POST">
       <input type="hidden" id="replaceTwt" name="hash" value="" />
-      <textarea id="text" name="text" placeholder="{{ .TwtPrompt }}" rows=3 maxlength={{ .MaxTwtLength }} wrap="soft" autofocus required></textarea>
+      <div class="textarea-container">
+        <textarea id="text" name="text" placeholder="{{ .TwtPrompt }}" rows=3 maxlength={{ .MaxTwtLength }} wrap="soft" autofocus required></textarea>
+          <div id="mentioned-list" class="users-list">
+            <div class="mentioned-list-content">
+            </div>
+          </div>
+      </div>
       <div class="grid">
         <div>
           <select id="postas" class="postas" name="postas">

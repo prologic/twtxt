@@ -166,6 +166,19 @@ u.prototype.replaceSelection = function() {
   )();
 }
 
+function createMentionedUserNode(username) {
+  return `
+        <div class="mentioned-list-content">
+              <div class="user-list__user">
+                <div class="avatar" style="background-image: url('/user/${username}/avatar.png')"></div>
+                <div class="info">
+                  <div class="nickname">${username}</div>
+                </div>
+              </div>
+            </div>
+  `
+}
+
 function formatText(selector, fmt) {
     var finalText = "";
 
@@ -189,7 +202,11 @@ function insertText(selector, text) {
   selector.scroll();
   selector.first().focus();
   selector.first().setSelectionRange(-1 ,-1);
-  selector.first().selectionEnd = selector.first().value.length - 1
+  var selectorLength = selector.first().value.length
+
+  selector.first().selectionEnd = selector.first().value.substr(-1) === ')'
+      ? selectorLength - 1
+      : selectorLength
 }
 
 u('#bBtn').on("click", function(e) {
@@ -222,6 +239,83 @@ u('#imgBtn').on("click", function(e) {
   e.preventDefault();
   insertText(u("textarea#text"), "![](https://)");
 });
+
+u('#usrBtn').on("click", function (e) {
+  e.preventDefault();
+  if(!u("#mentioned-list").first().classList.contains('show')) {
+    insertText(u("textarea#text"), "@");
+  } else {
+    u("#mentioned-list").first().classList.remove('show')
+  }
+})
+
+u("textarea#text").on("focus", (e) => {
+  if(e.relatedTarget === u('#usrBtn').first()) {
+    u("#mentioned-list").first().style.top = u("textarea#text").first().clientHeight + 2 + 'px'
+    u("#mentioned-list").first().classList.add('show')
+
+    fetch('/lookup').then((res) => res.json()).then(res => {
+      return res.map((user) => {
+        return createMentionedUserNode(user)
+      })
+    }).then(nodes => {
+      u("#mentioned-list").first().innerHTML = nodes.join('')
+    })
+
+  }
+})
+
+var previousSymbol = ''
+
+u("textarea#text").on("input", (e) => {
+  if(u("#mentioned-list").first().classList.contains('show')) {
+    var value = e.target.value
+    var regex = /@/gi, result, indices = [];
+    while ((result = regex.exec(value)) ) {
+      indices.push(result.index);
+    }
+    var lastIndex = indices.slice(-1)[0] + 1
+
+    if(e.inputType === 'deleteContentBackward' && previousSymbol === '@') {
+      u("textarea#text").first().value = u("textarea#text").first().value.slice(lastIndex - 1)
+      u("#mentioned-list").first().classList.remove('show')
+    } else {
+      previousSymbol = e.target.value.slice(-1)
+      var searchStr = value.slice(lastIndex)
+      if(searchStr && searchStr !== '@') {
+        fetch(`/lookup?prefix=${searchStr}`).then((res) => res.json()).then(res => {
+          return res.map((user) => {
+            return createMentionedUserNode(user)
+          })
+        }).then(nodes => {
+          u("#mentioned-list").first().innerHTML = nodes.join('')
+        })
+      } else {
+        fetch('/lookup').then((res) => res.json()).then(res => {
+          return res.map((user) => {
+            return createMentionedUserNode(user)
+          })
+        }).then(nodes => {
+          u("#mentioned-list").first().innerHTML = nodes.join('')
+        })
+      }
+    }
+  }
+})
+
+u("#mentioned-list").on('click', function (e) {
+
+  var value = u("textarea#text").first().value
+  var regex = /@/gi, result, indices = [];
+  while ((result = regex.exec(value)) ) {
+    indices.push(result.index);
+  }
+  var lastIndex = indices.slice(-1)[0] + 1
+  u("textarea#text").first().value = value.slice(0, lastIndex)
+
+  insertText(u("textarea#text"), e.target.innerText);
+  u("#mentioned-list").first().classList.remove('show')
+})
 
 u('#uploadMedia').on("change", function(e){
     u("#uploadMediaButton").removeClass("icss-camera");

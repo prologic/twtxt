@@ -278,7 +278,7 @@ u('#usrBtn').on("click", function (e) {
   }
 })
 
-u("textarea#text").on("focus", (e) => {
+u("textarea#text").on("focus", function (e) {
   if(e.relatedTarget === u('#usrBtn').first()) {
     u("#mentioned-list").first().style.top = u("textarea#text").first().clientHeight + 2 + 'px';
     u("#mentioned-list").first().classList.add('show');
@@ -286,7 +286,7 @@ u("textarea#text").on("focus", (e) => {
   }
 })
 
-u("textarea#text").on("input", (e) => {
+u("textarea#text").on("input", function (e) {
   var value = u("textarea#text").first().value;
 
   if($mentionedList.classList.contains('show')) {

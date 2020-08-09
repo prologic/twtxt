@@ -80,6 +80,9 @@ func (c *Client) newRequest(method, path string, body interface{}) (*http.Reques
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", c.UserAgent)
+	if c.Config.Token != "" {
+		req.Header.Set("Token", c.Config.Token)
+	}
 	return req, nil
 }
 
@@ -105,6 +108,16 @@ func (c *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
 // Login ...
 func (c *Client) Login(username, password string) (res internal.AuthResponse, err error) {
 	req, err := c.newRequest("POST", "/auth", internal.AuthRequest{username, password})
+	if err != nil {
+		return internal.AuthResponse{}, err
+	}
+	_, err = c.do(req, &res)
+	return
+}
+
+// Post ...
+func (c *Client) Post(text string) (res internal.AuthResponse, err error) {
+	req, err := c.newRequest("POST", "/post", internal.PostRequest{Text: text})
 	if err != nil {
 		return internal.AuthResponse{}, err
 	}

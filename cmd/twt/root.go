@@ -45,9 +45,9 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	RootCmd.PersistentFlags().StringVar(
-		&configFile, "config", "",
-		"config file (default is $HOME/.twt.yaml)",
+	RootCmd.PersistentFlags().StringVarP(
+		&configFile, "config", "c", "$HOME/.twt.yaml",
+		"config file",
 	)
 
 	RootCmd.PersistentFlags().BoolP(
@@ -60,8 +60,16 @@ func init() {
 		"twt API endpoint URI to connect to",
 	)
 
+	RootCmd.PersistentFlags().StringP(
+		"token", "t", "$TWT_TOKEN",
+		"twt API token to use to authenticate to endpoints",
+	)
+
 	viper.BindPFlag("uri", RootCmd.PersistentFlags().Lookup("uri"))
 	viper.SetDefault("uri", client.DefaultURI)
+
+	viper.BindPFlag("token", RootCmd.PersistentFlags().Lookup("token"))
+	viper.SetDefault("token", os.Getenv("TWT_TOKEN"))
 
 	viper.BindPFlag("debug", RootCmd.PersistentFlags().Lookup("debug"))
 	viper.SetDefault("debug", false)
@@ -90,7 +98,8 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		log.WithError(err).Errorf("Using config file: %s", viper.ConfigFileUsed())
+	if err := viper.ReadInConfig(); err != nil {
+		log.WithError(err).Errorf("error loading config file")
 	}
+	log.Infof("Using config file: %s", viper.ConfigFileUsed())
 }

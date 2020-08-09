@@ -171,14 +171,12 @@ u.prototype.replaceSelection = function() {
 
 function createMentionedUserNode(username) {
   return `
-        <div class="mentioned-list-content">
               <div class="user-list__user">
                 <div class="avatar" style="background-image: url('/user/${username}/avatar.png')"></div>
                 <div class="info">
                   <div class="nickname">${username}</div>
                 </div>
               </div>
-            </div>
   `
 }
 
@@ -201,10 +199,10 @@ function formatText(selector, fmt) {
 }
 
 function insertText(selector, text) {
-  selector.replaceSelection(selector.text() + text, true);
-  selector.scroll();
+  selector.replaceSelection(text, true);
+  // selector.scroll();
   selector.first().focus();
-  selector.first().setSelectionRange(-1 ,-1);
+  // selector.first().setSelectionRange(-1 ,-1);
   var selectorLength = selector.first().value.length;
 
   selector.first().selectionEnd = selector.first().value.substr(-1) === ')'
@@ -293,8 +291,6 @@ u("textarea#text").on("input", (e) => {
 
   if($mentionedList.classList.contains('show')) {
     var lastIndex = getLastMentionIndex(value);
-
-    console.log(lastSymbol)
     if(e.inputType === 'deleteContentBackward' && lastSymbol === '@') {
       u("textarea#text").first().value = u("textarea#text").first().value.slice(lastIndex - 1);
       $mentionedList.classList.remove('show');
@@ -307,7 +303,7 @@ u("textarea#text").on("input", (e) => {
       }
     }
   } else {
-    if(e.data === '@') {
+    if(e.target.value.slice(-1) === '@') {
       $mentionedList.classList.add('show');
       u("#mentioned-list").first().style.top = u("textarea#text").first().clientHeight + 2 + 'px';
       getUsers();
@@ -324,7 +320,7 @@ u("body").on('keyup', function (e) {
       var lastIndex = getLastMentionIndex(value);
       u("textarea#text").first().value = value.slice(0, lastIndex);
 
-      insertText(u("textarea#text"), u(".mentioned-list-content").nodes[0].innerText);
+      insertText(u("textarea#text"), u(".mentioned-list-content .user-list__user").nodes[0].innerText.trim());
       $mentionedList.classList.remove('show');
     }
   }
@@ -337,7 +333,7 @@ u("#mentioned-list").on('click', function (e) {
   var lastIndex = getLastMentionIndex(value);
   u("textarea#text").first().value = value.slice(0, lastIndex);
 
-  insertText(u("textarea#text"), e.target.innerText);
+  insertText(u("textarea#text"), e.target.innerText.trim());
   u("#mentioned-list").first().classList.remove('show');
 })
 

@@ -221,7 +221,7 @@ function getUsers(searchStr) {
     type: "GET",
     url: requestUrl,
     success: function(data) {
-      var nodes = data.map((user) => {
+      var nodes = data.map(function (user) {
         return createMentionedUserNode(user);
       }).join('')
       u('#mentioned-list-content').first().innerHTML = nodes;

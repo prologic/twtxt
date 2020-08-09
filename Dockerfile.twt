@@ -15,24 +15,16 @@ COPY go.mod .
 COPY go.sum .
 
 # Install deps
-RUN go get github.com/GeertJohan/go.rice/rice
 RUN go mod download
-
-# Copy static assets
-COPY ./internal/static/css/* ./internal/static/css/
-COPY ./internal/static/img/* ./internal/static/img/
-COPY ./internal/static/js/* ./internal/static/js/
-
-# Copy templates
-COPY ./internal/templates/* ./internal/templates/
 
 # Copy sources
 COPY *.go ./
+COPY ./client/*.go ./client/
 COPY ./internal/*.go ./internal/
 COPY ./internal/auth/*.go ./internal/auth/
 COPY ./internal/session/*.go ./internal/session/
 COPY ./internal/passwords/*.go ./internal/passwords/
-COPY ./cmd/twtd/*.go ./cmd/twtd/
+COPY ./cmd/twt/*.go ./cmd/twt/
 
 # Version/Commit (there there is no .git in Docker build context)
 # NOTE: This is fairly low down in the Dockerfile instructions so
@@ -42,8 +34,8 @@ COPY ./cmd/twtd/*.go ./cmd/twtd/
 ARG VERSION="0.0.0"
 ARG COMMIT="HEAD"
 
-# Build server binary
-RUN make server VERSION=$VERSION COMMIT=$COMMIT
+# Build cli binary
+RUN make cli VERSION=$VERSION COMMIT=$COMMIT
 
 # Runtime
 FROM alpine:latest
@@ -51,9 +43,8 @@ FROM alpine:latest
 RUN apk --no-cache -U add ca-certificates
 
 WORKDIR /
-VOLUME /data
 
-COPY --from=build /src/twtd /twtd
+COPY --from=build /src/twt /twt
 
-ENTRYPOINT ["/twtd"]
+ENTRYPOINT ["/twt"]
 CMD [""]

@@ -367,3 +367,14 @@ u('#uploadMedia').on("change", function(e){
       }
     });
 });
+
+u('#burgerMenu').on("click", function(e){
+    e.preventDefault();
+    
+    if(u('#mainNav').hasClass('responsive')) {
+        u('#mainNav').removeClass('responsive');
+    }
+    else {
+        u('#mainNav').addClass('responsive');
+    }
+});

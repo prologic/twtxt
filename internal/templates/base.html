@@ -6,7 +6,7 @@
     <link href="/css/{{ .Commit }}/iconicss.min.css" rel="stylesheet" />
     <link href="/css/{{ .Commit }}/theme-switcher.css" rel="stylesheet" />
     <link href="/css/{{ .Commit }}/twtxt.css" rel="stylesheet" />
-
+    
     {{ range .Alternatives }}
       <link rel="alternate" type="{{ .Type }}" title="{{ .Title }}" href="{{ .URL }}" />
     {{ end }}
@@ -21,66 +21,85 @@
     <title>twtxt :: {{ .InstanceName }}</title>
   </head>
 <body>
-  <div class="nav">
-    <input type="checkbox" id="nav-check">
-    <div class="nav-header">
-      <div class="nav-title">
-        <a href="/"><i class="icss-home"></i>twtxt</a>
-      </div>
-    </div>
-    <div class="nav-btn">
-      <label for="nav-check">
-        <span></span>
-        <span></span>
-        <span></span>
-      </label>
-    </div>    
-    <div class="nav-links">
+  <nav id="mainNav" class="container-fluid">
+    <ul>
+      <li>
+        <a id="burgerMenu" href="javascript:void(0);">
+          <i class="icss-bars"></i>
+        </a>
+      </li>
+      <li>
+        <a href="/">
+          <i class="icss-home"></i>
+          twtxt
+        </a>
+      </li>
       {{ if .Authenticated }}
-        <a href="/discover">
-          <i class="icss-users"></i>
-          /discover
-        </a>
-        <a href="/mentions">
-          <i class="icss-smiley"></i>
-          /mentions
-        </a>
-        <a href="/feeds">
-          <i class="icss-rss"></i>
-          /feeds
-        </a>
-        <a href="/follow">
-          <i class="icss-plus"></i>
-          /follow
-        </a>   
-        <a class="secondary" href="/settings">
-          <i class="icss-gear"></i>
-          /settings
-        </a>   
-        <a class="secondary" href="/logout">
-          <i class="icss-exit"></i>
-          /logout
-        </a>
-      {{ else }}
-        <a href="/login">
-          <i class="icss-key"></i>
-          /login
-        </a>
-        {{ if .RegisterDisabled }}
-          <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">
-            <i class="icss-warning" style="color:red;"></i>
-            /register
+        <li>
+          <a href="/discover">
+            <i class="icss-users"></i>
+            /discover
           </a>
-        {{ else }}
-          <a href="/register">
+        </li>
+        <li>
+          <a href="/mentions">
             <i class="icss-smiley"></i>
-            /register
+            /mentions
           </a>
+        </li>
+        <li>
+          <a href="/feeds">
+            <i class="icss-rss"></i>
+            /feeds
+          </a>
+        </li>
+      {{ end }}
+    </ul>
+    <ul>
+      {{ if .Authenticated }}
+        <li>
+          <a href="/follow">
+            <i class="icss-plus"></i>
+            /follow
+          </a>
+        </li>
+        <li>
+          <a class="secondary" href="/settings">
+            <i class="icss-gear"></i>
+            /settings
+          </a>
+        </li>
+        <li>
+          <a class="secondary" href="/logout">
+            <i class="icss-exit"></i>
+            /logout
+          </a>
+        </li>
+      {{ else }}
+        <li>
+          <a href="/login">
+            <i class="icss-key"></i>
+            /login
+          </a>
+        </li>
+        {{ if .RegisterDisabled }}
+          <li>
+            <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">
+              <i class="icss-warning" style="color:red;"></i>
+              /register
+            </a>
+          </li>
+        {{ else }}
+          <li>
+            <a href="/register">
+              <i class="icss-smiley"></i>
+              /register
+            </a>
+          </li>
         {{ end }}
       {{ end }}
-    </div>
-  </div>
-
+    </ul>
+  </nav>
   <main class="container">
     {{template "content" .}}
   </main>
@@ -97,15 +116,14 @@
       </small>
     </div>
   </footer>
-  <script type="application/javascript" src="/js/{{ .Commit }}/umbrella.min.js"></script>
-  <script type="application/javascript" src="/js/{{ .Commit }}/twix.min.js"></script>
-  <script type="application/javascript" src="/js/{{ .Commit }}/serialize.min.js"></script>
-  <script type="application/javascript" src="/js/{{ .Commit }}/theme-switcher.js"></script>
-  <script type="application/javascript" src="/js/{{ .Commit }}/twtxt.js"></script>
-  {{ template "scripts" . }}
 </body>
+<script type="application/javascript" src="/js/{{ .Commit }}/umbrella.min.js"></script>
+<script type="application/javascript" src="/js/{{ .Commit }}/theme-switcher.js"></script>
+<script type="application/javascript" src="/js/{{ .Commit }}/twtxt.js"></script>
+{{ template "scripts" . }}
 </html>
 {{end}}
 {{ define "css" }}{{ end }}
 {{ define "scripts" }}{{ end }}
 {{ define "stylesheets" }}{{ end }}
+

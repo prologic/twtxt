@@ -39,15 +39,15 @@ func (twt Twt) Mentions() []string {
 
 // Tags ...
 func (twt Twt) Tags() []string {
-	var mentions []string
+	var tags []string
 
 	re := regexp.MustCompile(`#<(.*?) .*?>`)
 	matches := re.FindAllStringSubmatch(twt.Text, -1)
 	for _, match := range matches {
-		mentions = append(mentions, match[1])
+		tags = append(tags, match[1])
 	}
 
-	return mentions
+	return tags
 }
 
 // Subject ...

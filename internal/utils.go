@@ -485,6 +485,16 @@ func FormatMentionsAndTags(text string) string {
 	})
 }
 
+// FormatMentionsAndTagsForSubject turns `@<nick URL>` into `@nick`
+func FormatMentionsAndTagsForSubject(text string) string {
+	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
+	return re.ReplaceAllStringFunc(text, func(match string) string {
+		parts := re.FindStringSubmatch(match)
+		prefix, nick := parts[1], parts[2]
+		return fmt.Sprintf(`%s%s`, prefix, nick)
+	})
+}
+
 // FormatRequest generates ascii representation of a request
 func FormatRequest(r *http.Request) string {
 	return fmt.Sprintf(

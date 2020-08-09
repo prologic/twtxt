@@ -10,7 +10,7 @@
     {{ range .Alternatives }}
       <link rel="alternate" type="{{ .Type }}" title="{{ .Title }}" href="{{ .URL }}" />
     {{ end }}
-
+    
     {{ template "stylesheets" . }}
     <meta charset="UTF-8">
     <meta name="description" content="📕 twtxt is a Self-Hosted, Twitter™-like Decentralised microBlogging platform. No ads, no tracking, your content, your data!">
@@ -116,11 +116,13 @@
       </small>
     </div>
   </footer>
+  <script type="application/javascript" src="/js/{{ .Commit }}/umbrella.min.js"></script>
+  <script type="application/javascript" src="/js/{{ .Commit }}/twix.min.js"></script>
+  <script type="application/javascript" src="/js/{{ .Commit }}/serialize.min.js"></script>
+  <script type="application/javascript" src="/js/{{ .Commit }}/theme-switcher.js"></script>
+  <script type="application/javascript" src="/js/{{ .Commit }}/twtxt.js"></script>
+  {{ template "scripts" . }}
 </body>
-<script type="application/javascript" src="/js/{{ .Commit }}/umbrella.min.js"></script>
-<script type="application/javascript" src="/js/{{ .Commit }}/theme-switcher.js"></script>
-<script type="application/javascript" src="/js/{{ .Commit }}/twtxt.js"></script>
-{{ template "scripts" . }}
 </html>
 {{end}}
 {{ define "css" }}{{ end }}

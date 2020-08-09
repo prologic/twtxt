@@ -474,32 +474,11 @@ func (s *Server) PostHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		defer func() {
-			if err := func() error {
-				cache, err := LoadCache(s.config.Data)
-				if err != nil {
-					log.WithError(err).Warn("error loading feed cache")
-					return err
-				}
-
-				// Update user's own timeline with their own new post.
-				sources := map[string]string{
-					ctx.User.Username: ctx.User.URL,
-				}
-
-				cache.FetchTwts(s.config, sources)
-
-				if err := cache.Store(s.config.Data); err != nil {
-					log.WithError(err).Warn("error saving feed cache")
-					return err
-				}
-				return nil
-			}(); err != nil {
-				log.WithError(err).Error("error updating feed cache")
-				ctx.Error = true
-				ctx.Message = "Error updating feed cache and timeline"
-				s.render("error", w, ctx)
-				return
+			// Update user's own timeline with their own new post.
+			sources := map[string]string{
+				ctx.User.Username: ctx.User.URL,
 			}
+			s.cache.FetchTwts(s.config, sources)
 		}()
 
 		postas := strings.ToLower(strings.TrimSpace(r.FormValue("postas")))
@@ -598,21 +577,17 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		var (
-			twts  Twts
-			cache Cache
-			err   error
+			twts Twts
+			err  error
 		)
 
 		if !ctx.Authenticated {
 			twts, err = GetAllTwts(s.config)
 		} else {
-			cache, err = LoadCache(s.config.Data)
-			if err == nil {
-				user := ctx.User
-				if user != nil {
-					for _, url := range user.Following {
-						twts = append(twts, cache.GetByURL(url)...)
-					}
+			user := ctx.User
+			if user != nil {
+				for _, url := range user.Following {
+					twts = append(twts, s.cache.GetByURL(url)...)
 				}
 			}
 		}
@@ -716,16 +691,8 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 
 		var twts Twts
 
-		cache, err := LoadCache(s.config.Data)
-		if err != nil {
-			ctx.Error = true
-			ctx.Message = "An error occurred while loading mentions"
-			s.render("error", w, ctx)
-			return
-		}
-
 		for _, url := range ctx.User.Following {
-			for _, twt := range cache.GetByURL(url) {
+			for _, twt := range s.cache.GetByURL(url) {
 				if HasString(UniqStrings(twt.Mentions()), ctx.User.Username) {
 					twts = append(twts, twt)
 				}
@@ -740,7 +707,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
-		if err = pager.Results(&pagedTwts); err != nil {
+		if err := pager.Results(&pagedTwts); err != nil {
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading mentions"
 			s.render("error", w, ctx)
@@ -761,15 +728,6 @@ func (s *Server) SearchHandler() httprouter.Handle {
 
 		var twts Twts
 
-		cache, err := LoadCache(s.config.Data)
-
-		if err != nil {
-			ctx.Error = true
-			ctx.Message = "An error occurred while loading search results"
-			s.render("error", w, ctx)
-			return
-		}
-
 		tag := r.URL.Query().Get("tag")
 
 		if tag == "" {
@@ -780,7 +738,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 
 		getTweetsByTag := func() Twts {
 			var result Twts
-			for _, twt := range cache.GetAll() {
+			for _, twt := range s.cache.GetAll() {
 				if HasString(UniqStrings(twt.Tags()), tag) {
 					result = append(result, twt)
 				}
@@ -798,7 +756,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
-		if err = pager.Results(&pagedTwts); err != nil {
+		if err := pager.Results(&pagedTwts); err != nil {
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading search results"
 			s.render("error", w, ctx)

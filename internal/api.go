@@ -159,13 +159,14 @@ func NewFollowRequest(r io.Reader) (req FollowRequest, err error) {
 type API struct {
 	router *Router
 	config *Config
+	cache  Cache
 	db     Store
 	pm     passwords.Passwords
 }
 
 // NewAPI ...
-func NewAPI(router *Router, config *Config, db Store, pm passwords.Passwords) *API {
-	api := &API{router, config, db, pm}
+func NewAPI(router *Router, config *Config, cache Cache, db Store, pm passwords.Passwords) *API {
+	api := &API{router, config, cache, db, pm}
 
 	api.initRoutes()
 
@@ -390,26 +391,9 @@ func (a *API) PostEndpoint() httprouter.Handle {
 		user := r.Context().Value(UserContextKey).(*User)
 
 		defer func() {
-			if err := func() error {
-				cache, err := LoadCache(a.config.Data)
-				if err != nil {
-					log.WithError(err).Warn("error loading feed cache")
-					return err
-				}
-
-				// Update user's own timeline with their own new post.
-				sources := map[string]string{user.Username: user.URL}
-
-				cache.FetchTwts(a.config, sources)
-
-				if err := cache.Store(a.config.Data); err != nil {
-					log.WithError(err).Warn("error saving feed cache")
-					return err
-				}
-				return nil
-			}(); err != nil {
-				log.WithError(err).Error("error updating feed cache")
-			}
+			// Update user's own timeline with their own new post.
+			sources := map[string]string{user.Username: user.URL}
+			a.cache.FetchTwts(a.config, sources)
 		}()
 
 		req, err := NewPostRequest(r.Body)
@@ -447,31 +431,6 @@ func (a *API) PostEndpoint() httprouter.Handle {
 			return
 		}
 
-		// Update user's own timeline with their own new post.
-		sources := map[string]string{
-			user.Username: user.URL,
-		}
-
-		if err := func() error {
-			cache, err := LoadCache(a.config.Data)
-			if err != nil {
-				log.WithError(err).Warn("error loading feed cache")
-				return err
-			}
-
-			cache.FetchTwts(a.config, sources)
-
-			if err := cache.Store(a.config.Data); err != nil {
-				log.WithError(err).Warn("error saving feed cache")
-				return err
-			}
-			return nil
-		}(); err != nil {
-			log.WithError(err).Error("error updating feed cache")
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{}`))
@@ -491,17 +450,10 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 			return
 		}
 
-		cache, err := LoadCache(a.config.Data)
-		if err != nil {
-			log.WithError(err).Error("error loading cache")
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
 		var twts Twts
 
 		for _, url := range user.Following {
-			twts = append(twts, cache.GetByURL(url)...)
+			twts = append(twts, a.cache.GetByURL(url)...)
 		}
 
 		sort.Sort(sort.Reverse(twts))

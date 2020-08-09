@@ -23,21 +23,23 @@ func init() {
 	Jobs = map[string]JobSpec{
 		"SyncStore":         NewJobSpec("@every 1m", NewSyncStoreJob),
 		"UpdateFeeds":       NewJobSpec("@every 5m", NewUpdateFeedsJob),
+		"SyncCache":         NewJobSpec("@every 10m", NewSyncCacheJob),
 		"UpdateFeedSources": NewJobSpec("@every 15m", NewUpdateFeedSourcesJob),
 		"FixUserAccounts":   NewJobSpec("@hourly", NewFixUserAccountsJob),
 		"Stats":             NewJobSpec("@daily", NewStatsJob),
 	}
 }
 
-type JobFactory func(conf *Config, store Store) cron.Job
+type JobFactory func(conf *Config, cache Cache, store Store) cron.Job
 
 type SyncStoreJob struct {
-	conf *Config
-	db   Store
+	conf  *Config
+	cache Cache
+	db    Store
 }
 
-func NewSyncStoreJob(conf *Config, db Store) cron.Job {
-	return &SyncStoreJob{conf: conf, db: db}
+func NewSyncStoreJob(conf *Config, cache Cache, db Store) cron.Job {
+	return &SyncStoreJob{conf: conf, cache: cache, db: db}
 }
 
 func (job *SyncStoreJob) Run() {
@@ -48,12 +50,13 @@ func (job *SyncStoreJob) Run() {
 }
 
 type StatsJob struct {
-	conf *Config
-	db   Store
+	conf  *Config
+	cache Cache
+	db    Store
 }
 
-func NewStatsJob(conf *Config, db Store) cron.Job {
-	return &StatsJob{conf: conf, db: db}
+func NewStatsJob(conf *Config, cache Cache, db Store) cron.Job {
+	return &StatsJob{conf: conf, cache: cache, db: db}
 }
 
 func (job *StatsJob) Run() {
@@ -105,12 +108,13 @@ func (job *StatsJob) Run() {
 }
 
 type UpdateFeedsJob struct {
-	conf *Config
-	db   Store
+	conf  *Config
+	cache Cache
+	db    Store
 }
 
-func NewUpdateFeedsJob(conf *Config, db Store) cron.Job {
-	return &UpdateFeedsJob{conf: conf, db: db}
+func NewUpdateFeedsJob(conf *Config, cache Cache, db Store) cron.Job {
+	return &UpdateFeedsJob{conf: conf, cache: cache, db: db}
 }
 
 func (job *UpdateFeedsJob) Run() {
@@ -132,28 +136,38 @@ func (job *UpdateFeedsJob) Run() {
 
 	log.Infof("updating %d sources", len(sources))
 
-	cache, err := LoadCache(job.conf.Data)
-	if err != nil {
-		log.WithError(err).Warn("error loading feed cache")
+	job.cache.FetchTwts(job.conf, sources)
+
+	log.Info("updated feed cache")
+}
+
+type SyncCacheJob struct {
+	conf  *Config
+	cache Cache
+	db    Store
+}
+
+func NewSyncCacheJob(conf *Config, cache Cache, db Store) cron.Job {
+	return &SyncCacheJob{conf: conf, cache: cache, db: db}
+}
+
+func (job *SyncCacheJob) Run() {
+	if err := job.cache.Store(job.conf.Data); err != nil {
+		log.WithError(err).Warn("error saving feed cache")
 		return
 	}
 
-	cache.FetchTwts(job.conf, sources)
-
-	if err := cache.Store(job.conf.Data); err != nil {
-		log.WithError(err).Warn("error saving feed cache")
-	} else {
-		log.Info("updated feed cache")
-	}
+	log.Info("synced feed cache")
 }
 
 type UpdateFeedSourcesJob struct {
-	conf *Config
-	db   Store
+	conf  *Config
+	cache Cache
+	db    Store
 }
 
-func NewUpdateFeedSourcesJob(conf *Config, db Store) cron.Job {
-	return &UpdateFeedSourcesJob{conf: conf, db: db}
+func NewUpdateFeedSourcesJob(conf *Config, cache Cache, db Store) cron.Job {
+	return &UpdateFeedSourcesJob{conf: conf, cache: cache, db: db}
 }
 
 func (job *UpdateFeedSourcesJob) Run() {
@@ -171,12 +185,13 @@ func (job *UpdateFeedSourcesJob) Run() {
 }
 
 type FixUserAccountsJob struct {
-	conf *Config
-	db   Store
+	conf  *Config
+	cache Cache
+	db    Store
 }
 
-func NewFixUserAccountsJob(conf *Config, db Store) cron.Job {
-	return &FixUserAccountsJob{conf: conf, db: db}
+func NewFixUserAccountsJob(conf *Config, cache Cache, db Store) cron.Job {
+	return &FixUserAccountsJob{conf: conf, cache: cache, db: db}
 }
 
 func (job *FixUserAccountsJob) Run() {

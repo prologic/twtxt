@@ -30,7 +30,10 @@ type Server struct {
 	router    *Router
 	server    *http.Server
 
-	// Database
+	// Feed Cache
+	cache Cache
+
+	// Data Store
 	db Store
 
 	// Scheduler
@@ -130,7 +133,7 @@ func (s *Server) AddCronJob(spec string, job cron.Job) error {
 
 func (s *Server) setupCronJobs() error {
 	for name, jobSpec := range Jobs {
-		job := jobSpec.Factory(s.config, s.db)
+		job := jobSpec.Factory(s.config, s.cache, s.db)
 		if err := s.cron.AddJob(jobSpec.Schedule, job); err != nil {
 			return err
 		}
@@ -138,7 +141,7 @@ func (s *Server) setupCronJobs() error {
 	}
 
 	log.Info("running FixUserAccountsJob now...")
-	NewFixUserAccountsJob(s.config, s.db).Run()
+	NewFixUserAccountsJob(s.config, s.cache, s.db).Run()
 
 	return nil
 }
@@ -281,6 +284,12 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		}
 	}
 
+	cache, err := LoadCache(config.Data)
+	if err != nil {
+		log.WithError(err).Error("error loading feed cache")
+		return nil, err
+	}
+
 	db, err := NewStore(config.Store)
 	if err != nil {
 		log.WithError(err).Error("error creating store")
@@ -309,7 +318,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		db,
 	)
 
-	api := NewAPI(router, config, db, pm)
+	api := NewAPI(router, config, cache, db, pm)
 
 	server := &Server{
 		bind:      bind,
@@ -332,7 +341,11 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		// API
 		api: api,
 
-		// Store
+		// Feed Cache
+
+		cache: cache,
+
+		// Data Store
 		db: db,
 
 		// Schedular

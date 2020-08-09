@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/prologic/twtxt"
-	"github.com/prologic/twtxt/internal"
+	"github.com/prologic/twtxt/types"
 )
 
 var (
@@ -106,20 +106,20 @@ func (c *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
 }
 
 // Login ...
-func (c *Client) Login(username, password string) (res internal.AuthResponse, err error) {
-	req, err := c.newRequest("POST", "/auth", internal.AuthRequest{username, password})
+func (c *Client) Login(username, password string) (res types.AuthResponse, err error) {
+	req, err := c.newRequest("POST", "/auth", types.AuthRequest{username, password})
 	if err != nil {
-		return internal.AuthResponse{}, err
+		return types.AuthResponse{}, err
 	}
 	_, err = c.do(req, &res)
 	return
 }
 
 // Post ...
-func (c *Client) Post(text string) (res internal.AuthResponse, err error) {
-	req, err := c.newRequest("POST", "/post", internal.PostRequest{Text: text})
+func (c *Client) Post(text string) (res types.AuthResponse, err error) {
+	req, err := c.newRequest("POST", "/post", types.PostRequest{Text: text})
 	if err != nil {
-		return internal.AuthResponse{}, err
+		return types.AuthResponse{}, err
 	}
 	_, err = c.do(req, &res)
 	return

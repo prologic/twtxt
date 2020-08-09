@@ -10,6 +10,7 @@ import (
 
 	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/internal/session"
+	"github.com/prologic/twtxt/types"
 )
 
 type Alternative struct {
@@ -32,7 +33,7 @@ type Context struct {
 
 	Username      string
 	User          *User
-	LastTwt       Twt
+	LastTwt       types.Twt
 	Profile       Profile
 	Alternatives  Alternatives
 	Authenticated bool
@@ -42,8 +43,8 @@ type Context struct {
 	Theme   string
 	Commit  string
 
-	Twter       Twter
-	Twts        Twts
+	Twter       types.Twter
+	Twts        types.Twts
 	Feeds       []*Feed
 	FeedSources FeedSourceMap
 	Pager       paginator.Paginator
@@ -99,7 +100,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 			log.WithError(err).Warnf("error loading user object for %s", ctx.Username)
 		}
 
-		ctx.Twter = Twter{
+		ctx.Twter = types.Twter{
 			Nick: user.Username,
 			URL:  URLForUser(conf.BaseURL, user.Username),
 		}
@@ -114,7 +115,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		ctx.User = user
 	} else {
 		ctx.User = &User{}
-		ctx.Twter = Twter{}
+		ctx.Twter = types.Twter{}
 	}
 
 	return ctx

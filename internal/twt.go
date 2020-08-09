@@ -4,7 +4,6 @@ package internal
 
 import (
 	"bufio"
-	"encoding/base32"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -16,7 +15,8 @@ import (
 
 	read_file_last_line "github.com/prologic/read-file-last-line"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/blake2b"
+
+	"github.com/prologic/twtxt/types"
 )
 
 const (
@@ -26,91 +26,6 @@ const (
 var (
 	ErrInvalidTwtLine = errors.New("error: invalid twt line parsed")
 )
-
-type Twter struct {
-	Nick string
-	URL  string
-}
-
-type Twt struct {
-	Twter   Twter
-	Text    string
-	Created time.Time
-
-	hash string
-}
-
-func (twt Twt) Mentions() []string {
-	var mentions []string
-
-	re := regexp.MustCompile(`@<(.*?) .*?>`)
-	matches := re.FindAllStringSubmatch(twt.Text, -1)
-	for _, match := range matches {
-		mentions = append(mentions, match[1])
-	}
-
-	return mentions
-}
-
-func (twt Twt) Tags() []string {
-	var mentions []string
-
-	re := regexp.MustCompile(`#<(.*?) .*?>`)
-	matches := re.FindAllStringSubmatch(twt.Text, -1)
-	for _, match := range matches {
-		mentions = append(mentions, match[1])
-	}
-
-	return mentions
-}
-
-func (twt Twt) Subject() string {
-	re := regexp.MustCompile(`^(@<.*>[, ]*)*(\(.*?\))(.*)`)
-	match := re.FindStringSubmatch(twt.Text)
-	if match != nil {
-		return match[2]
-	}
-	return ""
-}
-
-func (twt Twt) Hash() string {
-	if twt.hash != "" {
-		return twt.hash
-	}
-
-	payload := twt.Created.String() + "\n" + twt.Text
-	sum := blake2b.Sum256([]byte(payload))
-
-	// Base32 is URL-safe, unlike Base64, and shorter than hex.
-	encoding := base32.StdEncoding.WithPadding(base32.NoPadding)
-	twt.hash = strings.ToLower(encoding.EncodeToString(sum[:]))
-
-	return twt.hash
-}
-
-// typedef to be able to attach sort methods
-type Twts []Twt
-
-func (twts Twts) Len() int {
-	return len(twts)
-}
-func (twts Twts) Less(i, j int) bool {
-	return twts[i].Created.Before(twts[j].Created)
-}
-func (twts Twts) Swap(i, j int) {
-	twts[i], twts[j] = twts[j], twts[i]
-}
-
-func (twts Twts) Tags() map[string]int {
-	tags := make(map[string]int)
-	re := regexp.MustCompile(`#[-\w]+`)
-	for _, twt := range twts {
-		for _, tag := range re.FindAllString(twt.Text, -1) {
-			tags[strings.TrimLeft(tag, "#")]++
-		}
-	}
-	return tags
-}
 
 // Turns "@nick" into "@<nick URL>" if we're following nick.
 func ExpandMentions(conf *Config, db Store, user *User, text string) string {
@@ -216,7 +131,7 @@ func FeedExists(conf *Config, username string) bool {
 	return true
 }
 
-func GetLastTwt(conf *Config, user *User) (twt Twt, offset int, err error) {
+func GetLastTwt(conf *Config, user *User) (twt types.Twt, offset int, err error) {
 	p := filepath.Join(conf.Data, feedsDir)
 	if err = os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
@@ -235,7 +150,7 @@ func GetLastTwt(conf *Config, user *User) (twt Twt, offset int, err error) {
 	return
 }
 
-func GetUserTwts(conf *Config, username string) (Twts, error) {
+func GetUserTwts(conf *Config, username string) (types.Twts, error) {
 	p := filepath.Join(conf.Data, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
@@ -244,9 +159,9 @@ func GetUserTwts(conf *Config, username string) (Twts, error) {
 
 	username = NormalizeUsername(username)
 
-	var twts Twts
+	var twts types.Twts
 
-	twter := Twter{
+	twter := types.Twter{
 		Nick: username,
 		URL:  URLForUser(conf.BaseURL, username),
 	}
@@ -268,7 +183,7 @@ func GetUserTwts(conf *Config, username string) (Twts, error) {
 	return twts, nil
 }
 
-func GetAllTwts(conf *Config) (Twts, error) {
+func GetAllTwts(conf *Config) (types.Twts, error) {
 	p := filepath.Join(conf.Data, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
@@ -281,10 +196,10 @@ func GetAllTwts(conf *Config) (Twts, error) {
 		return nil, err
 	}
 
-	var twts Twts
+	var twts types.Twts
 
 	for _, info := range files {
-		twter := Twter{
+		twter := types.Twter{
 			Nick: info.Name(),
 			URL:  URLForUser(conf.BaseURL, info.Name()),
 		}
@@ -307,7 +222,7 @@ func GetAllTwts(conf *Config) (Twts, error) {
 	return twts, nil
 }
 
-func ParseLine(line string, twter Twter) (twt Twt, err error) {
+func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
 	if line == "" {
 		return
 	}
@@ -324,7 +239,7 @@ func ParseLine(line string, twter Twter) (twt Twt, err error) {
 		return
 	}
 
-	twt = Twt{
+	twt = types.Twt{
 		Twter:   twter,
 		Created: ParseTime(parts[1]),
 		Text:    parts[3],
@@ -333,8 +248,8 @@ func ParseLine(line string, twter Twter) (twt Twt, err error) {
 	return
 }
 
-func ParseFile(scanner *bufio.Scanner, twter Twter) (Twts, error) {
-	var twts Twts
+func ParseFile(scanner *bufio.Scanner, twter types.Twter) (types.Twts, error) {
+	var twts types.Twts
 
 	for scanner.Scan() {
 		line := scanner.Text()

@@ -28,6 +28,7 @@ import (
 
 	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/internal/session"
+	"github.com/prologic/twtxt/types"
 )
 
 const (
@@ -124,7 +125,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(twts))
 
-		var pagedTwts Twts
+		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
@@ -578,7 +579,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		var (
-			twts Twts
+			twts types.Twts
 			err  error
 		)
 
@@ -603,7 +604,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(twts))
 
-		var pagedTwts Twts
+		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
@@ -652,7 +653,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(twts))
 
-		var pagedTwts Twts
+		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
@@ -690,7 +691,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		var twts Twts
+		var twts types.Twts
 
 		for _, url := range ctx.User.Following {
 			for _, twt := range s.cache.GetByURL(url) {
@@ -702,7 +703,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(twts))
 
-		var pagedTwts Twts
+		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
@@ -727,7 +728,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		var twts Twts
+		var twts types.Twts
 
 		tag := r.URL.Query().Get("tag")
 
@@ -737,8 +738,8 @@ func (s *Server) SearchHandler() httprouter.Handle {
 			s.render("error", w, ctx)
 		}
 
-		getTweetsByTag := func() Twts {
-			var result Twts
+		getTweetsByTag := func() types.Twts {
+			var result types.Twts
 			for _, twt := range s.cache.GetAll() {
 				if HasString(UniqStrings(twt.Tags()), tag) {
 					result = append(result, twt)
@@ -751,7 +752,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(twts))
 
-		var pagedTwts Twts
+		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
@@ -1662,7 +1663,7 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 func (s *Server) SyndicationHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var (
-			twts    Twts
+			twts    types.Twts
 			profile Profile
 			err     error
 		)

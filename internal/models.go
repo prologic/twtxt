@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/prologic/twtxt/types"
 )
 
 const (
@@ -261,11 +263,11 @@ func (u *User) Profile() Profile {
 	}
 }
 
-func (u *User) Twter() Twter {
-	return Twter{Nick: u.Username, URL: u.URL}
+func (u *User) Twter() types.Twter {
+	return types.Twter{Nick: u.Username, URL: u.URL}
 }
 
-func (u *User) Reply(twt Twt) string {
+func (u *User) Reply(twt types.Twt) string {
 	mentions := []string{}
 	for _, mention := range RemoveString(UniqStrings(append(twt.Mentions(), twt.Twter.Nick)), u.Username) {
 		mentions = append(mentions, fmt.Sprintf("@%s", mention))

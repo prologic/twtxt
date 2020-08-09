@@ -2,10 +2,8 @@ package internal
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -22,6 +20,7 @@ import (
 
 	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/internal/passwords"
+	"github.com/prologic/twtxt/types"
 )
 
 // ContextKey ...
@@ -39,122 +38,6 @@ var (
 	// ErrInvalidToken is returned for expired or invalid tokens used in Authorizeation headers
 	ErrInvalidToken = errors.New("error: invalid token")
 )
-
-// AuthRequest ...
-type AuthRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-// NewAuthRequest ...
-func NewAuthRequest(r io.Reader) (req AuthRequest, err error) {
-	body, err := ioutil.ReadAll(r)
-	if err != nil {
-		return
-	}
-	err = json.Unmarshal(body, &req)
-	return
-}
-
-// AuthResponse ...
-type AuthResponse struct {
-	Token string `json:"token"`
-}
-
-// Bytes ...
-func (res AuthResponse) Bytes() ([]byte, error) {
-	body, err := json.Marshal(res)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
-}
-
-// RegisterRequest ...
-type RegisterRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
-}
-
-// NewRegisterRequest ...
-func NewRegisterRequest(r io.Reader) (req RegisterRequest, err error) {
-	body, err := ioutil.ReadAll(r)
-	if err != nil {
-		return
-	}
-	err = json.Unmarshal(body, &req)
-	return
-}
-
-// PostRequest ...
-type PostRequest struct {
-	PostAs string `json:"post_as"`
-	Text   string `json:"text"`
-}
-
-// NewPostRequest ...
-func NewPostRequest(r io.Reader) (req PostRequest, err error) {
-	body, err := ioutil.ReadAll(r)
-	if err != nil {
-		return
-	}
-	err = json.Unmarshal(body, &req)
-	return
-}
-
-// TimelineRequest ...
-type TimelineRequest struct {
-	Page int `json:"page"`
-}
-
-// NewTimelineRequest ...
-func NewTimelineRequest(r io.Reader) (req TimelineRequest, err error) {
-	body, err := ioutil.ReadAll(r)
-	if err != nil {
-		return
-	}
-	err = json.Unmarshal(body, &req)
-	return
-}
-
-// PagerResponse ...
-type PagerResponse struct {
-	Current   int `json:"current_page"`
-	MaxPages  int `json:"max_pages"`
-	TotalTwts int `json:"total_twts"`
-}
-
-// TimelineResponse ...
-type TimelineResponse struct {
-	Twts  []Twt `json:"twts"`
-	Pager PagerResponse
-}
-
-// Bytes ...
-func (res TimelineResponse) Bytes() ([]byte, error) {
-	body, err := json.Marshal(res)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
-}
-
-// FollowRequest ...
-type FollowRequest struct {
-	Nick string `json:"nick"`
-	URL  string `json:"url"`
-}
-
-// NewFollowRequest ...
-func NewFollowRequest(r io.Reader) (req FollowRequest, err error) {
-	body, err := ioutil.ReadAll(r)
-	if err != nil {
-		return
-	}
-	err = json.Unmarshal(body, &req)
-	return
-}
 
 // API ...
 type API struct {
@@ -261,7 +144,7 @@ func (a *API) PingEndpoint() httprouter.Handle {
 // RegisterEndpoint ...
 func (a *API) RegisterEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		req, err := NewRegisterRequest(r.Body)
+		req, err := types.NewRegisterRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing register request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -322,7 +205,7 @@ func (a *API) RegisterEndpoint() httprouter.Handle {
 // AuthEndpoint ...
 func (a *API) AuthEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		req, err := NewAuthRequest(r.Body)
+		req, err := types.NewAuthRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing auth request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -372,7 +255,7 @@ func (a *API) AuthEndpoint() httprouter.Handle {
 			return
 		}
 
-		res := AuthResponse{Token: token}
+		res := types.AuthResponse{Token: token}
 
 		body, err := res.Bytes()
 		if err != nil {
@@ -397,7 +280,7 @@ func (a *API) PostEndpoint() httprouter.Handle {
 			a.cache.FetchTwts(a.config, sources)
 		}()
 
-		req, err := NewPostRequest(r.Body)
+		req, err := types.NewPostRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing post request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -444,14 +327,14 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		user := r.Context().Value(UserContextKey).(*User)
 
-		req, err := NewTimelineRequest(r.Body)
+		req, err := types.NewTimelineRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing post request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
-		var twts Twts
+		var twts types.Twts
 
 		for _, url := range user.Following {
 			twts = append(twts, a.cache.GetByURL(url)...)
@@ -459,7 +342,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(twts))
 
-		var pagedTwts Twts
+		var pagedTwts types.Twts
 
 		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.TwtsPerPage)
 		pager.SetPage(req.Page)
@@ -470,9 +353,9 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 			return
 		}
 
-		res := TimelineResponse{
+		res := types.TimelineResponse{
 			Twts: pagedTwts,
-			Pager: PagerResponse{
+			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
 				TotalTwts: pager.Nums(),
@@ -494,7 +377,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 // DiscoverEndpoint ...
 func (a *API) DiscoverEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		req, err := NewTimelineRequest(r.Body)
+		req, err := types.NewTimelineRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing post request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -510,7 +393,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(twts))
 
-		var pagedTwts Twts
+		var pagedTwts types.Twts
 
 		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.TwtsPerPage)
 		pager.SetPage(req.Page)
@@ -521,9 +404,9 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 			return
 		}
 
-		res := TimelineResponse{
+		res := types.TimelineResponse{
 			Twts: pagedTwts,
-			Pager: PagerResponse{
+			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
 				TotalTwts: pager.Nums(),
@@ -547,7 +430,7 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		user := r.Context().Value(UserContextKey).(*User)
 
-		req, err := NewFollowRequest(r.Body)
+		req, err := types.NewFollowRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing follow request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)

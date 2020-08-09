@@ -20,10 +20,7 @@ RUN go mod download
 # Copy sources
 COPY *.go ./
 COPY ./client/*.go ./client/
-COPY ./internal/*.go ./internal/
-COPY ./internal/auth/*.go ./internal/auth/
-COPY ./internal/session/*.go ./internal/session/
-COPY ./internal/passwords/*.go ./internal/passwords/
+COPY ./types/*.go ./types/
 COPY ./cmd/twt/*.go ./cmd/twt/
 
 # Version/Commit (there there is no .git in Docker build context)

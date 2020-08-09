@@ -65,5 +65,8 @@ func login(cli *client.Client, args []string) {
 	}
 
 	cli.Config.Token = res.Token
-	cli.Config.Save(filepath.Join(home, ".twt.yaml"))
+	if err := cli.Config.Save(filepath.Join(home, ".twt.yaml")); err != nil {
+		log.WithError(err).Error("error saving config")
+		os.Exit(1)
+	}
 }

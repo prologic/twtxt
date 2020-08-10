@@ -205,6 +205,8 @@ func (s *Server) initRoutes() {
 	s.router.GET("/mentions", s.am.MustAuth(s.MentionsHandler()))
 	s.router.GET("/search", s.SearchHandler())
 
+	s.router.GET("/permalink/:hash", s.PermalinkHandler())
+
 	s.router.GET("/feeds", s.am.MustAuth(s.FeedsHandler()))
 	s.router.POST("/feed", s.am.MustAuth(s.FeedHandler()))
 

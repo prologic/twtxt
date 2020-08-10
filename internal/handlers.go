@@ -657,6 +657,69 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 	}
 }
 
+// PermalinkHandler ...
+func (s *Server) PermalinkHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		var (
+			twts types.Twts
+			err  error
+		)
+
+		hash := p.ByName("hash")
+		if hash == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		localTwts, err := GetAllTwts(s.config)
+		if err != nil {
+			log.WithError(err).Error("error loading twts")
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading permalink"
+			s.render("error", w, ctx)
+			return
+		}
+
+		cachedTwts := s.cache.GetAll()
+		if err != nil {
+			log.WithError(err).Error("error loading twts")
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading permalink"
+			s.render("error", w, ctx)
+			return
+		}
+
+		for _, twt := range localTwts {
+			if twt.Hash() == hash {
+				twts = append(twts, twt)
+			}
+		}
+
+		for _, twt := range cachedTwts {
+			if twt.Hash() == hash {
+				twts = append(twts, twt)
+			}
+		}
+
+		if len(twts) == 0 {
+			ctx.Error = true
+			ctx.Message = "No matching twt found!"
+			s.render("404", w, ctx)
+			return
+		} else if len(twts) == 1 {
+			ctx.Twts = twts
+			s.render("timeline", w, ctx)
+			return
+		} else {
+			log.Warn("duplicate twts found with same hash %s", hash)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 // DiscoverHandler ...
 func (s *Server) DiscoverHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

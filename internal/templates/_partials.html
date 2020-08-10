@@ -91,7 +91,7 @@
                 {{ end }}
               </h3>
             {{ end }}
-            <footer>(<a href="#{{ .Hash }}">{{ .Created | time }}</a>)</footer>
+            <footer>(<a href="/permalink/{{ .Hash }}">{{ .Created | time }}</a>)</footer>
           </hgroup>
           <p>{{ .Text | formatTwt }}</p>
         </article>

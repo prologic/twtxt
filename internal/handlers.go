@@ -396,7 +396,7 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			return
 		}
 
-		etag := fmt.Sprintf("W/\"%s-%s\"", r.RequestURI, time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC))
+		etag := fmt.Sprintf("W/\"%s\"", r.RequestURI)
 
 		if match := r.Header.Get("If-None-Match"); match != "" {
 			if strings.Contains(match, etag) {

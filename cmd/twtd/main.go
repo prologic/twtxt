@@ -45,6 +45,8 @@ var (
 
 	apiSessionTime time.Duration
 	apiSigningKey  string
+
+	whitelistedDomains []string
 )
 
 func init() {
@@ -79,6 +81,8 @@ func init() {
 
 	flag.DurationVar(&apiSessionTime, "api-session-time", internal.DefaultAPISessionTime, "Maximum TTL for API tokens")
 	flag.StringVar(&apiSigningKey, "api-signing-key", internal.DefaultAPISigningKey, "API JWT signing key for tokens")
+
+	flag.StringSliceVar(&whitelistedDomains, "whitelist-domain", internal.DefaultWhitelistedDomains, "List of domains to whitelist and permit for external image")
 }
 
 func flagNameFromEnvironmentName(s string) string {
@@ -144,6 +148,8 @@ func main() {
 
 		internal.WithAPISessionTime(apiSessionTime),
 		internal.WithAPISigningKey(apiSigningKey),
+
+		internal.WithWhitelistedDomains(whitelistedDomains),
 	)
 	if err != nil {
 		log.WithError(err).Fatal("error creating server")

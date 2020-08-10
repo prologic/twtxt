@@ -713,7 +713,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			s.render("timeline", w, ctx)
 			return
 		} else {
-			log.Warn("duplicate twts found with same hash %s", hash)
+			log.Warnf("duplicate twts found with same hash %s", hash)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}

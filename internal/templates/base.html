@@ -7,6 +7,7 @@
     <link href="/css/{{ .Commit }}/icons.css" rel="stylesheet" />
     <link href="/css/{{ .Commit }}/theme-switcher.css" rel="stylesheet" />
     <link href="/css/{{ .Commit }}/twtxt.css" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="/img/{{ .Commit}}/favicon.png" />
     
     {{ range .Alternatives }}
       <link rel="alternate" type="{{ .Type }}" title="{{ .Title }}" href="{{ .URL }}" />
@@ -30,9 +31,20 @@
         </a>
       </li>
       <li>
-        <a href="/">
-          <i class="icss-home"></i>
-          twtxt
+        <a href="/" class="contrast">
+          <svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 449 249.1" style="enable-background:new 0 0 449 249.1;" height="3.5rem">
+            <style type="text/css">
+              .st0{fill:#FFFFFF;}
+              .st1{fill:none;stroke:#231F20;stroke-width:4;stroke-miterlimit:10;}
+              .st2{opacity:0.34;}
+              .st3{font-family:'NeuropoliticalRg-Regular';}
+              .st4{font-size:56.6447px;}
+              .st5{letter-spacing:-4;}
+            </style>
+            <path fill="currentColor" d="M95.9,165.9V58.4H40V32.8h141.5v25.6h-55.8v107.6H95.9z M311.5,60.1l-32,71.3l-28.7-63.2c-1.7-3.8-3.7-6.5-6.1-8.3c-2.3-1.8-5.6-2.6-9.8-2.6c-4.3,0-7.6,0.9-9.9,2.8 c-2.3,1.9-4.3,4.6-6.1,8.1l-30.3,63.2l-26.1-61h-29.4l38,88c1.4,3.3,3.3,5.8,5.6,7.7c2.3,1.9,5.6,2.8,10.1,2.8 c3.9,0,7.2-0.9,9.9-2.8c2.7-1.9,4.8-4.5,6.3-7.7l31.4-65.2l29.9,65.2c1.4,3,3.5,5.5,6.1,7.5c2.7,2,5.9,3,9.7,3c3.9,0,7.2-1,9.9-3 c2.7-2,4.7-4.5,6.1-7.5l44.3-98.2H311.5z M345.9,165.9V83.7H327l4.1-23.6h14.8V30.2h29.7v29.9H409v23.6h-33.4v82.2H345.9z"></path>
+            <text fill="currentColor" transform="matrix(1 0 0 1 92.4794 217.7874)" class="st3 st4 st5">s o c i a l</text>
+            <circle fill="currentColor" cx="381" cy="211.8" r="6"/>
+          </svg>
         </a>
       </li>
       {{ if .Authenticated }}

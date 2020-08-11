@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,7 +11,6 @@ import (
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/NYTimes/gziphandler"
 	humanize "github.com/dustin/go-humanize"
-	"github.com/julienschmidt/httprouter"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
 	"github.com/unrolled/logger"
@@ -161,35 +159,6 @@ func (s *Server) initRoutes() {
 		"/js/:commit/*filepath",
 		rice.MustFindBox("static/js").HTTPBox(),
 	)
-
-	s.router.GET("/favicon.ico", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		box, err := rice.FindBox("static")
-		if err != nil {
-			http.Error(w, "404 file not found", http.StatusNotFound)
-			return
-		}
-
-		buf, err := box.Bytes("favicon.ico")
-		if err != nil {
-			msg := fmt.Sprintf("error reading favicon: %s", err)
-			http.Error(w, msg, http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "image/x-icon")
-		w.Header().Set("Vary", "Accept-Encoding")
-		w.Header().Set("Cache-Control", "public, max-age=7776000")
-
-		n, err := w.Write(buf)
-		if err != nil {
-			log.Errorf("error writing response for favicon: %s", err)
-		} else if n != len(buf) {
-			log.Warnf(
-				"not all bytes of favicon response were written: %d/%d",
-				n, len(buf),
-			)
-		}
-	})
 
 	s.router.NotFound = http.HandlerFunc(s.NotFoundHandler)
 

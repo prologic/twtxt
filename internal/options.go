@@ -88,7 +88,10 @@ var (
 
 	// DefaultWhitelistedDomains is the default list of domains to whitelist for external images
 	DefaultWhitelistedDomains = []string{
-		"imgur.com",
+		`imgur\.com`,
+		`giphy\.com`,
+		`reactiongifs\.com`,
+		`githubusercontent\.com`,
 	}
 )
 

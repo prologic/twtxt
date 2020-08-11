@@ -44,7 +44,7 @@ available on the [Releases](https://github.com/prologic/twtxt/releases) page.
 
 ### Using Homebrew
 
-We provide [Homewbrew](https://brew.sh) formulae for macOS users for both the
+We provide [Homebrew](https://brew.sh) formulae for macOS users for both the
 command-line client (`twt`) as well as the server (`twtd`).
 
 ```console

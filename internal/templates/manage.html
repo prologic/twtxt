@@ -1,0 +1,24 @@
+{{define "content"}}
+  <article class="grid">
+    <div>
+      {{ if isAdminUser .User }}
+        <details>
+          <summary>Pod Configuration</summary>
+          <form action="/manage" method="POST">
+            <div class="grid">
+              <div>
+                <label for="configYAML">
+                  Update configuration:
+                  <textarea id="configYAML" name="yaml" rows=24 cols=80 />{{ .Config }}</textarea>
+                </label>
+              </div>
+            </div>
+            <button type="submit" class="primary">Update</button>
+          </form>
+        </details>
+      {{ else }}
+        <p><small>You are not an administrator of this pod! Sorry.</small></p>
+      {{ end }}
+    </div>
+  </article>
+{{end}}

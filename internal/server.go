@@ -383,6 +383,9 @@ func (s *Server) initRoutes() {
 	s.router.POST("/settings", s.am.MustAuth(s.SettingsHandler()))
 
 	s.router.POST("/delete", s.am.MustAuth(s.DeleteHandler()))
+
+	s.router.GET("/manage", s.am.MustAuth(s.ManageHandler()))
+	s.router.POST("/manage", s.am.MustAuth(s.ManageHandler()))
 }
 
 // NewServer ...

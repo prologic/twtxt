@@ -1608,6 +1608,44 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 	}
 }
 
+// ManagerHandler ...
+func (s *Server) ManageHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		if r.Method == "GET" {
+			ctx.Config = s.config.String()
+			s.render("manage", w, ctx)
+			return
+		}
+
+		// Limit request body to to abuse
+		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
+
+		cfg, err := ConfigFromReader(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing new config")
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("Error saving pod configuration: %s", err)
+			s.render("error", w, ctx)
+			return
+		}
+
+		if err := cfg.Save(s.config.path); err != nil {
+			log.WithError(err).Error("error writing new config")
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("Error saving pod configuration: %s", err)
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Error = false
+		ctx.Message = "Successfully updated pod configuration"
+		s.render("error", w, ctx)
+		return
+	}
+}
+
 // DeleteHandler ...
 func (s *Server) DeleteHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

@@ -563,3 +563,38 @@ i.icss-paper-plane {
     top: -.68em;
     left: .36em;
   }
+
+i.icss-gears {
+    width: .5em;
+    height: .5em;
+    position: relative;
+    border-radius: 100%;
+    border-width: .063em;
+    border-style: solid;
+    border-color: transparent;
+    margin: .36em .532em .08em .1em;
+    box-shadow: .51em -.32em 0 -.06em;
+}
+i.icss-gears:before {
+    width: .7em;
+    height: .7em;
+    border-radius: 100%;
+    background: linear-gradient(0deg,transparent 39%,currentcolor 39%,currentcolor 61%, transparent 61%),
+        linear-gradient(60deg,transparent 42%, currentcolor 42%,currentcolor 58%, transparent 58%),
+        linear-gradient(120deg,transparent 42%, currentcolor 42%,currentcolor 58%, transparent 58%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+i.icss-gears:after {
+    width: .55em;
+    height: .55em;
+    border-radius: 100%;
+    background: linear-gradient(0deg,transparent 37%,currentcolor 37%,currentcolor 63%, transparent 63%),
+        linear-gradient(60deg,transparent 40%, currentcolor 40%,currentcolor 60%, transparent 60%),
+        linear-gradient(120deg,transparent 40%, currentcolor 40%,currentcolor 60%, transparent 60%);
+    top: -.135em;
+    left: .695em;
+    transform: translate(-50%, -50%) rotate(25deg);
+}

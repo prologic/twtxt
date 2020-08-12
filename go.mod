@@ -23,6 +23,7 @@ require (
 	github.com/disintegration/imageorient v0.0.0-20180920195336-8147d86e83ec
 	github.com/dustin/go-humanize v1.0.0
 	github.com/elithrar/simple-scrypt v1.3.0
+	github.com/goccy/go-yaml v1.8.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gomarkdown/markdown v0.0.0-20200609195525-3f9352745725
 	github.com/gorilla/feeds v1.1.1

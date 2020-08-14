@@ -194,7 +194,9 @@ function formatText(selector, fmt) {
     selector.replaceSelection(finalText , true);
     selector.first().focus();
     if(!selectedText.length) {
-      selector.first().selectionEnd = selector.first().value.length - fmt.length;
+      var selectionRange = selector.first().value.length - fmt.length
+      selector.first().setSelectionRange(selectionRange, selectionRange)
+      // selector.first().selectionEnd = selector.first().value.length - fmt.length;
     }
 }
 
@@ -202,31 +204,51 @@ function insertText(selector, text) {
   selector.replaceSelection(text, true);
   // selector.scroll();
   selector.first().focus();
-  // selector.first().setSelectionRange(-1 ,-1);
+  selector.first().setSelectionRange(-1 ,-1);
   var selectorLength = selector.first().value.length;
+  var selectionRange = selector.first().value.substr(-1) === ')'
+    ? selectorLength - 1
+    : selectorLength;
 
-  selector.first().selectionEnd = selector.first().value.substr(-1) === ')'
-      ? selectorLength - 1
-      : selectorLength;
+  selector.first().setSelectionRange(selectionRange, selectionRange)
 }
 
+function iOS() {
+  return [
+      'iPad Simulator',
+      'iPhone Simulator',
+      'iPod Simulator',
+      'iPad',
+      'iPhone',
+      'iPod'
+    ].includes(navigator.platform)
+    // iPad on iOS 13 detection
+    || (navigator.userAgent.includes("Mac") && "ontouchend" in document)
+}
+
+var deBounce = 300
+var fetchUsersTimeout = null
+
 function getUsers(searchStr) {
-  let requestUrl = '/lookup';
+    clearTimeout(fetchUsersTimeout)
+    fetchUsersTimeout = setTimeout(() => {
+      let requestUrl = '/lookup';
 
-  if(searchStr) {
-    requestUrl += '?prefix=' + searchStr;
-  }
+        if (searchStr) {
+          requestUrl += '?prefix=' + searchStr;
+        }
 
-  Twix.ajax({
-    type: "GET",
-    url: requestUrl,
-    success: function(data) {
-      var nodes = data.map(function (user) {
-        return createMentionedUserNode(user);
-      }).join('')
-      u('#mentioned-list-content').first().innerHTML = nodes;
-    }
-  });
+        Twix.ajax({
+          type: "GET",
+          url: requestUrl,
+          success: function (data) {
+            var nodes = data.map(function (user) {
+              return createMentionedUserNode(user);
+            }).join('')
+            u('#mentioned-list-content').first().innerHTML = nodes;
+          }
+        });
+    }, deBounce)
 }
 
 function getLastMentionIndex(value) {
@@ -273,12 +295,18 @@ u('#usrBtn').on("click", function (e) {
   if(!$mentionedList.classList.contains('show')) {
     insertText(u("textarea#text"), "@");
     lastSymbol = u("textarea#text").first().value.slice(-1);
+    if(iOS()) {
+      u("#mentioned-list").first().style.top = u("textarea#text").first().clientHeight + 2 + 'px';
+      u("#mentioned-list").first().classList.add('show');
+      getUsers();
+    }
   } else {
     $mentionedList.classList.remove('show');
   }
 })
 
 u("textarea#text").on("focus", (e) => {
+  console.error(e.relatedTarget)
   if(e.relatedTarget === u('#usrBtn').first()) {
     u("#mentioned-list").first().style.top = u("textarea#text").first().clientHeight + 2 + 'px';
     u("#mentioned-list").first().classList.add('show');

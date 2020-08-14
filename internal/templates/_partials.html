@@ -65,7 +65,7 @@
                   <a href="{{ .Twter.URL | trimSuffix "/twtxt.txt" }}">
                     <img class="avatar" src="/user/{{ .Twter.Nick }}/avatar.png" />
                 {{ else }}
-                  <a href="{{ .Twter.URL }}">
+                  <a href="/external/?url={{ .Twter.URL }}&nick= {{  .Twter.Nick  }}">
                     <i class="icss-rss" style="font-size:1.5em"></i>
                 {{ end }}
                   {{ .Twter.Nick }}

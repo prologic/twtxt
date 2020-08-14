@@ -1579,6 +1579,58 @@ func (s *Server) FollowingHandler() httprouter.Handle {
 	}
 }
 
+// FollowingHandler ...
+func (s *Server) ExternalHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+		query := r.URL.Query()
+
+		nick := query.Get("nick")
+		if nick == "" {
+			ctx.Error = true
+			ctx.Message = "Cannot find external feed"
+			s.render("error", w, ctx)
+		}
+
+		url := query.Get("url")
+		if url == "" {
+			ctx.Error = true
+			ctx.Message = "Cannot find external feed"
+			s.render("error", w, ctx)
+		}
+
+		twtxttURL := string(url)
+
+		twts := s.cache.GetByURL(twtxttURL)
+
+		sort.Sort(sort.Reverse(twts))
+
+		var pagedTwts types.Twts
+
+		page := SafeParseInt(r.FormValue("page"), 1)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
+		pager.SetPage(page)
+
+		if err := pager.Results(&pagedTwts); err != nil {
+			log.WithError(err).Error("error sorting and paging twts")
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading the timeline"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Twts = pagedTwts
+		ctx.Pager = pager
+		ctx.Profile = Profile{
+			Username: nick,
+			TwtURL:   url,
+			URL:      url,
+		}
+
+		s.render("externalProfile", w, ctx)
+	}
+}
+
 // ResetPasswordHandler ...
 func (s *Server) ResetPasswordHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

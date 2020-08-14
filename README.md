@@ -17,6 +17,8 @@
 
 📕 twtxt is a Self-Hosted, Twitter™-like Decentralised micro-Blogging platform. No ads, no tracking, your content, your data!
 
+![](https://twtxt.net/media/XsLsDHuisnXcL6NuUkYguK.png)
+
 Technically `twtxt` is a [twtxt](https://twtxt.readthedocs.io/en/latest/) client in the form
 of a web application. It supports multiple users and
 also hosts user feeds directly.
@@ -39,6 +41,28 @@ There is also a publicly (_free_) service online available at:
 
 As a first point, please try to use one of the pre-built binaries  that are
 available on the [Releases](https://github.com/prologic/twtxt/releases) page.
+
+### Using Homebrew
+
+We provide [Homebrew](https://brew.sh) formulae for macOS users for both the
+command-line client (`twt`) as well as the server (`twtd`).
+
+```console
+brew tap prologic/twtxt
+brew install twtxt
+```
+
+Run the server:
+
+```console
+twtd
+```
+
+Run the commanad-line client:
+
+```console
+twt
+```
 
 ### Building from source
 
@@ -161,6 +185,11 @@ you can contribute:
 
 Please see the [Contributing Guidelines](/CONTRIBUTING.md) and checkout the
 [Developer Documentation](https://dev.twtxt.net) or over at [/docs](/docs).
+
+> __Please note:__ If you wish to contribute to this proejct off-[Github](https://github.com)
+> please get in touch with us and let us know! We have this project mirroed to
+> private Git hosting using [Gitea](https://gitea.io/en-us/) and can fully support
+> external collaborator this way (_even via email!_).
 
 ## Contributors
 

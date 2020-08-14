@@ -1,26 +1,46 @@
 {{define "content"}}
-    <article class="grid">
-        <div>
-            <hgroup>
-                <h1>Followers</h1>
-                <h2>List of users following <b>{{ .Profile.Username }}</b></h2>
-            </hgroup>
-            {{ if .Profile.Followers }}
-            <ol>
-                {{ range $Nick, $URL := .Profile.Followers }}
-                <li>
-                    {{ if $.User.Is $Nick }}
-                    <a href="{{ $URL }}">me</a>
-                    {{ else }}
-                    <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">{{ $Nick }}</a>
-                    (<a href="{{ $URL }}">{{ $URL }}</a>)
-                    {{ end }}
-                </li>
+  <article class="grid">
+    <div>
+      <hgroup>
+        <h2>Followers</h2>
+        <footer>
+          {{ if $.User.Is .Profile.URL }}
+            List of users following you
+          {{ else }}
+            List of users following <b>{{ .Profile.Username }}</b>
+          {{ end }}
+        </footer>
+      </hgroup>
+      {{ if .Profile.Followers }}
+        <ol>
+          {{ range $Nick, $URL := .Profile.Followers }}
+            <li>
+              {{ if $.User.Is $Nick }}
+                <a href="{{ $URL }}">me</a>
+              {{ else }}
+                <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">{{ $Nick }}</a>
+                (<a href="{{ $URL }}">{{ $URL }}</a>)
+                {{ if $.Authenticated }}
+                  {{ if $.User.Follows $URL }}
+                    [<a href="/unfollow?nick={{ $Nick }}">Unfollow</a>]
+                  {{ else }}
+                    [<a href="/follow?nick={{ $Nick }}&url={{ $URL }}">Follow</a>]
+                  {{ end }}
                 {{ end }}
-            </oL>
-            {{ else }}
-            <small><i>No followers found</i></small>
-            {{ end }}
-        </div>
-    </article>
+              {{ end }}
+            </li>
+          {{ end }}
+        </oL>
+      {{ else }}
+        <small>
+          {{ if $.User.Is .Profile.URL }}
+            You have not followers! Make a twt and it will appear on the
+            <a href="/discover">discover</a> for users of {{ .InstanceName }}
+            to <a href="/follow">follow</a>.
+          {{ else }}
+            <b>{{ .Profile.Username }}</b> has no followers!</i>
+          {{ end }}
+      {{ end }}
+    </div>
+  </article>
 {{ end }}

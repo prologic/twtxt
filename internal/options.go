@@ -1,6 +1,10 @@
-package twtxt
+package internal
 
-import "time"
+import (
+	"net/url"
+	"regexp"
+	"time"
+)
 
 const (
 	// DefaultData is the default data directory for storage
@@ -81,6 +85,14 @@ var (
 		`Did something cool lately? Share it!`,
 		`Hi! 👋 Don't forget to post a Twt today!`,
 	}
+
+	// DefaultWhitelistedDomains is the default list of domains to whitelist for external images
+	DefaultWhitelistedDomains = []string{
+		`imgur\.com`,
+		`giphy\.com`,
+		`reactiongifs\.com`,
+		`githubusercontent\.com`,
+	}
 )
 
 func NewConfig() *Config {
@@ -129,7 +141,12 @@ func WithStore(store string) Option {
 // WithBaseURL sets the Base URL used for constructing feed URLs
 func WithBaseURL(baseURL string) Option {
 	return func(cfg *Config) error {
+		u, err := url.Parse(baseURL)
+		if err != nil {
+			return err
+		}
 		cfg.BaseURL = baseURL
+		cfg.baseURL = u
 		return nil
 	}
 }
@@ -290,6 +307,20 @@ func WithAPISessionTime(duration time.Duration) Option {
 func WithAPISigningKey(key string) Option {
 	return func(cfg *Config) error {
 		cfg.APISigningKey = []byte(key)
+		return nil
+	}
+}
+
+// WithWhitelistedDomains sets the list of domains whitelisted and permitted for external iamges
+func WithWhitelistedDomains(whitelistedDomains []string) Option {
+	return func(cfg *Config) error {
+		for _, whitelistedDomain := range whitelistedDomains {
+			re, err := regexp.Compile(whitelistedDomain)
+			if err != nil {
+				return err
+			}
+			cfg.whitelistedDomains = append(cfg.whitelistedDomains, re)
+		}
 		return nil
 	}
 }

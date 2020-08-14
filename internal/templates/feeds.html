@@ -1,11 +1,13 @@
 {{define "content"}}
-  <article class="grid">
+  <article id="create" class="grid">
     <div>
       <hgroup>
         <h2>Create Feed</h2>
-        <h3>Here you can create your  own <sub>sub</sub>Feed</h3>
         <footer>
           <p>
+            Create your  own feed or topic of interest you want to share
+            with others. This allows you to "post as" this new feed and
+            create a series of twts (<i>posts</i>) about a "thing".
           </p>
         </footer>
       </hgroup>
@@ -15,48 +17,77 @@
       </form>
     </div>
   </article>
-  <article class="grid">
+  <article id="myfeeds" class="grid">
+    <div>
+      <hgroup>
+        <h2>My Feeds</h2>
+        <footer><p>Here are all your feeds that you can view or manage</p></footer>
+      </hgroup>
+      {{ if .User.Feeds }}
+        <ul>
+          {{ range .Feeds }}
+            {{ if $.User.OwnsFeed .Name }}
+              <li>
+                <a href="{{ .URL | trimSuffix "/twtxt.txt" }}">{{ .Name }}</a>
+                &nbsp;
+                {{ if $.User.Follows .URL }}
+                  [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
+                {{ else }}
+                  [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
+                {{ end }}
+
+                [<a href="/feed/{{ .Name  }}/manage">Manage</a>]
+              </li>
+            {{ end }}
+          {{ end }}
+        </ul>
+      {{ else }}
+        <p><small>You do not have any feeds. <a href="#create">Create</a>one?</small></p>
+      {{ end }}
+    </div>
+  </article>
+  <article id="localfeeds" class="grid">
     <div>
       <hgroup>
         <h2>Local Feeds</h2>
-        <h3>Here is a list of local (sub)Feeds available that you can subscribe to and follow.</h3>
         <footer>
           <p>
-            These are feeds created by users on {{ .InstanceName }} that are
-            effectively "special interest", "topic" or "group" whereby users
-            that create sub feeds can post as <i>that</i> feed as a sort of
+            Here is a list of local feeds available that you can subscribe to
+            and follow. These are feeds created by users on {{ .InstanceName }}
+            that are effectively "special interest", "topic" or "group" whereby
+            users posts interesting things as <i>that</i> feed as a sort of
             "Persona".
           </p>
         </footer>
       </hgroup>
       <ul>
         {{ range .Feeds }}
-          <li>
-            <a href="{{ .URL | trimSuffix "/twtxt.txt" }}">{{ .Name }}</a>
-            &nbsp;
-            {{ if $.User.Follows .URL }}
-              [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
-            {{ else }}
-              [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
-            {{ end }}
-
-            {{ if $.User.OwnsFeed .Name }}
-              [<a href="/feed/{{ .Name  }}/manage">Manage</a>]
-            {{ end }}
-          </li>
+          {{ if not ($.User.OwnsFeed .Name) }}
+            <li>
+              <a href="{{ .URL | trimSuffix "/twtxt.txt" }}">{{ .Name }}</a>
+              &nbsp;
+              {{ if $.User.Follows .URL }}
+                [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
+              {{ else }}
+                [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
+              {{ end }}
+            </li>
+          {{ end }}
         {{ end }}
       </ul>
     </div>
   </article>
-  <article class="grid">
+  <article id="externalfeeds" class="grid">
     <div>
       <hgroup>
         <h2>External Feeds</h2>
-        <h3>Here is a list of external feeds available that you can subscribe to and follow.</h3>
         <footer>
           <p>
-            These sources of feeds are externally sourced and configured by the operator of {{ .InstanceName }}.
-            By default <a href="https://twtxt.net">twtxt.net</a> sources feeds  from the following sources:
+            Here is a list of external feeds available that you can subscribe
+            to and follow. These sources of feeds are externally sourced and
+            configured by the operator of {{ .InstanceName }}. By default
+            <a href="https://twtxt.net">twtxt.net</a> sources feeds from the
+            following sources:
             <ul>
               <li><a href="https://feeds.twtxt.net">feeds.twtxt.net</a> an RSS/Atom to twtxt feed aggregator</li>
               <li><a href="https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt">we-are-bots</a>a directory of twtxt bots (<i>automated feeds</i>)</li>
@@ -82,7 +113,7 @@
         <ul>
           {{ range $Feeds }}
             <li>
-              <a href="{{ .URL }}">{{ .Name }}</a>
+              <a href="/external?nick={{ .Name  }}&url={{ .URL }}">{{ .Name }}</a>
               &nbsp;
               {{ if $.User.Follows .URL }}
                 [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]

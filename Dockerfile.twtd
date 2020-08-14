@@ -27,11 +27,12 @@ COPY ./internal/static/js/* ./internal/static/js/
 COPY ./internal/templates/* ./internal/templates/
 
 # Copy sources
-COPY *.go .
+COPY *.go ./
 COPY ./internal/*.go ./internal/
 COPY ./internal/auth/*.go ./internal/auth/
 COPY ./internal/session/*.go ./internal/session/
 COPY ./internal/passwords/*.go ./internal/passwords/
+COPY ./types/*.go ./types/
 COPY ./cmd/twtd/*.go ./cmd/twtd/
 
 # Version/Commit (there there is no .git in Docker build context)
@@ -42,8 +43,8 @@ COPY ./cmd/twtd/*.go ./cmd/twtd/
 ARG VERSION="0.0.0"
 ARG COMMIT="HEAD"
 
-# Build binary
-RUN make build VERSION=$VERSION COMMIT=$COMMIT
+# Build server binary
+RUN make server VERSION=$VERSION COMMIT=$COMMIT
 
 # Runtime
 FROM alpine:latest

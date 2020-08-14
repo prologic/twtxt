@@ -57,15 +57,15 @@
             <h2>
               {{ if $.User.Is .Twter.URL }}
                 <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}">
-                  <img src="/user/{{ $.User.Username }}/avatar.png" />
+                  <img class="avatar" src="/user/{{ $.User.Username }}/avatar.png" />
                   me
                 </a>
               {{ else }}
                 {{ if $.IsLocal .Twter.URL }}
                   <a href="{{ .Twter.URL | trimSuffix "/twtxt.txt" }}">
-                    <img src="/user/{{ .Twter.Nick }}/avatar.png" />
+                    <img class="avatar" src="/user/{{ .Twter.Nick }}/avatar.png" />
                 {{ else }}
-                  <a href="{{ .Twter.URL }}">
+                  <a href="/external/?url={{ .Twter.URL }}&nick= {{  .Twter.Nick  }}">
                     <i class="icss-rss" style="font-size:1.5em"></i>
                 {{ end }}
                   {{ .Twter.Nick }}
@@ -91,7 +91,7 @@
                 {{ end }}
               </h3>
             {{ end }}
-            <footer>(<a href="#{{ .Hash }}">{{ .Created | time }}</a>)</footer>
+            <footer>(<a href="/twt/{{ .Hash }}">{{ .Created | time }}</a>)</footer>
           </hgroup>
           <p>{{ .Text | formatTwt }}</p>
         </article>

@@ -1,10 +1,13 @@
-package twtxt
+package internal
 
 import (
 	"encoding/json"
 	"io/ioutil"
 	"math/rand"
+	"net/url"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -39,6 +42,29 @@ type Config struct {
 
 	APISessionTime time.Duration `json:"api_session_time"`
 	APISigningKey  []byte        `json:"api_signing_key"`
+
+	baseURL *url.URL
+
+	WhitelistedDomains []string `json:"whitelisted_domains"`
+	whitelistedDomains []*regexp.Regexp
+}
+
+// WhitelistedDomain returns true if the domain provided is a whiltelisted
+// domain as per the configuration
+func (c *Config) WhitelistedDomain(domain string) (bool, bool) {
+	// Always per mit our own domain
+	ourDomain := strings.TrimPrefix(strings.ToLower(c.baseURL.Hostname()), "www.")
+	if domain == ourDomain {
+		return true, true
+	}
+
+	// Check against list of whitelistedDomains (regexes)
+	for _, re := range c.whitelistedDomains {
+		if re.MatchString(domain) {
+			return true, false
+		}
+	}
+	return false, false
 }
 
 // RandomTwtPrompt returns a random  Twt Prompt for display by the UI

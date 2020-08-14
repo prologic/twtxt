@@ -1,4 +1,4 @@
-package twtxt
+package internal
 
 import (
 	"bufio"
@@ -14,10 +14,13 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/prologic/twtxt"
+	"github.com/prologic/twtxt/types"
 )
 
 type Cached struct {
-	Twts         Twts
+	Twts         types.Twts
 	Lastmodified string
 }
 
@@ -88,7 +91,7 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 
 	// buffered to let goroutines write without blocking before the main thread
 	// begins reading
-	twtsch := make(chan Twts, len(sources))
+	twtsch := make(chan types.Twts, len(sources))
 
 	var wg sync.WaitGroup
 	// max parallel http fetchers
@@ -111,7 +114,7 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 				return
 			}
 
-			req.Header.Set("User-Agent", fmt.Sprintf("twtxt/%s", FullVersion()))
+			req.Header.Set("User-Agent", fmt.Sprintf("twtxt/%s", twtxt.FullVersion()))
 
 			mu.RLock()
 			if cached, ok := cache[url]; ok {
@@ -138,13 +141,13 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 				url = actualurl
 			}
 
-			var twts Twts
+			var twts types.Twts
 
 			switch resp.StatusCode {
 			case http.StatusOK: // 200
 				limitedReader := &io.LimitedReader{R: resp.Body, N: conf.MaxFetchLimit}
 				scanner := bufio.NewScanner(limitedReader)
-				twter := Twter{Nick: nick}
+				twter := types.Twter{Nick: nick}
 				if strings.HasPrefix(url, conf.BaseURL) {
 					twter.URL = URLForUser(conf.BaseURL, nick)
 				} else {
@@ -185,17 +188,17 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 	}
 }
 
-func (cache Cache) GetAll() Twts {
-	var alltwts Twts
+func (cache Cache) GetAll() types.Twts {
+	var alltwts types.Twts
 	for _, cached := range cache {
 		alltwts = append(alltwts, cached.Twts...)
 	}
 	return alltwts
 }
 
-func (cache Cache) GetByURL(url string) Twts {
+func (cache Cache) GetByURL(url string) types.Twts {
 	if cached, ok := cache[url]; ok {
 		return cached.Twts
 	}
-	return Twts{}
+	return types.Twts{}
 }

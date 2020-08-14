@@ -10,6 +10,10 @@ article hgroup footer {
     margin-left: 60px;
 }
 
+.avatar {
+  border-radius: 50%;
+}
+
 .invisible {
     visibility:hidden;
     width:0;

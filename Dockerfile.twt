@@ -1,0 +1,47 @@
+# Build
+FROM golang:alpine AS build
+
+RUN apk add --no-cache -U build-base git make
+
+RUN mkdir -p /src
+
+WORKDIR /src
+
+# Copy Makefile
+COPY Makefile ./
+
+# Copy go.mod and go.sum and install and cache dependencies
+COPY go.mod .
+COPY go.sum .
+
+# Install deps
+RUN go mod download
+
+# Copy sources
+COPY *.go ./
+COPY ./client/*.go ./client/
+COPY ./types/*.go ./types/
+COPY ./cmd/twt/*.go ./cmd/twt/
+
+# Version/Commit (there there is no .git in Docker build context)
+# NOTE: This is fairly low down in the Dockerfile instructions so
+#       we don't break the Docker build cache just be changing
+#       unrelated files that actually haven't changed but caused the
+#       COMMIT value to change.
+ARG VERSION="0.0.0"
+ARG COMMIT="HEAD"
+
+# Build cli binary
+RUN make cli VERSION=$VERSION COMMIT=$COMMIT
+
+# Runtime
+FROM alpine:latest
+
+RUN apk --no-cache -U add ca-certificates
+
+WORKDIR /
+
+COPY --from=build /src/twt /twt
+
+ENTRYPOINT ["/twt"]
+CMD [""]

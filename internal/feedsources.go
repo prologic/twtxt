@@ -1,4 +1,4 @@
-package twtxt
+package internal
 
 import (
 	"bufio"
@@ -14,6 +14,8 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/prologic/twtxt"
 )
 
 type FeedSource struct {
@@ -99,7 +101,7 @@ func FetchFeedSources(sources []string) *FeedSources {
 				return
 			}
 
-			req.Header.Set("User-Agent", fmt.Sprintf("twtxt/%s", FullVersion()))
+			req.Header.Set("User-Agent", fmt.Sprintf("twtxt/%s", twtxt.FullVersion()))
 
 			client := http.Client{
 				Timeout: time.Second * 15,

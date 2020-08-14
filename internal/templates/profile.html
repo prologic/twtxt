@@ -3,7 +3,7 @@
     <div>
       <hgroup>
         <h2>
-          <img src="/user/{{ .Profile.Username }}/avatar.png" />
+          <img class="avatar" src="/user/{{ .Profile.Username }}/avatar.png" />
           {{  if $.User.Is .Profile.URL }}
           me
           {{ else  }}
@@ -32,9 +32,11 @@
         <footer>
           <p><i>{{ .Profile.Tagline }}</i></p>
           <ul>
+            <li><a href="{{ .Profile.URL }}">Twtxt<i class="icss-link"></i></a></li>
+            <li><a href="{{ .Profile.URL | trimSuffix "/twtxt.txt" }}/atom.xml">Atom<i class="icss-rss"></i></a></li>
             <li><a href="/user/{{ .Profile.Username }}/followers">Followers: {{ .Profile.Followers | len }}</a></li>
             {{ if eq .Profile.Type "User" }}
-              <li>Following: {{ .Profile.Following | len }}</li>
+              <li><a href="/user/{{ .Profile.Username }}/following">Following: {{ .Profile.Following | len }}</a></li>
             {{ end}}
           </ul>
         </footer>
@@ -43,8 +45,8 @@
   </div>
   <div class="container">
     <hgroup>
-      <h2>Latest Posts</h2>
-      <h3>Latest {{ .TwtsPerPage }} posts from {{ .Profile.Username }}</h3>
+      <h2>Recent Twts</h2>
+      <footer>Recent twts from {{ .Profile.Username }}</footer>
     </hgroup>
   </div>
   {{ template "posts"  .}}

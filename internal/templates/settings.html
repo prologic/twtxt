@@ -9,8 +9,8 @@
         <div class="grid">
           <hgroup>
             <h2>
-              <img id="avatar" src="/user/{{ .User.Username }}/avatar.png" />
-              {{ .Profile.Username }}
+              <img id="avatar" class="avatar" src="/user/{{ .User.Username }}/avatar.png" />
+              <a href="/user/{{ .User.Username }}" data-tooltip="View profile">{{ .User.Username }}</a>
             </h2>
         </div>
         <div class="grid">
@@ -47,86 +47,26 @@
               <input id="isFollowersPubliclyVisible" type="checkbox" name="isFollowersPubliclyVisible" aria-label="Show followers publicly" role="switch" {{ if .User.IsFollowersPubliclyVisible }}checked{{ end }}>
               Show my followers publicly
             </label>
+
+            <label for="isFollowingPubliclyVisible">
+              <input id="isFollowingPubliclyVisible" type="checkbox" name="isFollowingPubliclyVisible" aria-label="Show user/feed followings publicly" role="switch" {{ if .User.IsFollowingPubliclyVisible }}checked{{ end }}>
+              Show users and feed I follow publicly
+            </label>
           </div>
         </div>
         <button type="submit" class="primary">Update</button>
       </form>
 
-      <hgroup>
-        <h1>Followers</h1>
-        <h2>List of users following you</h2>
-      </hgroup>
-      {{ if .User.Followers }}
-        <ol>
-          {{ range $Nick, $URL := .User.Followers }}
-            <li>
-              {{ if $.User.Is $URL }}
-                <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}">me</a>
-              {{ else }}
-                {{ if $.IsLocal $URL }}
-                  <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">{{ $Nick }}</a>
-                {{ else }}
-                  <a href="{{ $URL }}">{{ $Nick }}</a>
-                {{ end }}
-                (<a href="{{ $URL }}">{{ $URL }}</a>)
-                {{ if $.User.Follows $URL }}
-                  <a href="/unfollow?nick={{ $Nick }}">
-                    <i class="icss-minus"></i>
-                    Unfollow
-                  </a>
-                {{ else }}
-                  <a href="/follow?nick={{ $Nick }}&url={{ $URL }}">
-                    <i class="icss-plus"></i>
-                    Follow
-                  </a>
-                {{ end }}
-              {{ end }}
-            </li>
-          {{ end }}
-        </oL>
-      {{ else }}
-        <small><i>You have no followers! Try making a post and users might <a href="/discover">/discover</a> you!</i></small>
-      {{ end }}
-
-      <hgroup>
-        <h1>Following</h1>
-        <h2>List of users and feeds you are following</h2>
-      </hgroup>
-      {{ if .User.Following }}
-        <ol>
-          {{ range $Nick, $URL := .User.Following }}
-            <li>
-              {{ if $.User.Is $URL }}
-                <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">me</a>
-              {{ else }}
-                {{ if $.IsLocal $URL }}
-                  <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">{{ $Nick }}</a>
-                {{ else }}
-                  <a href="{{ $URL }}">{{ $Nick }}</a>
-                {{ end }}
-                (<a href="{{ $URL }}">{{ $URL }}</a>)
-                <a href="/unfollow?nick={{ $Nick }}">
-                  <i class="icss-minus"></i>
-                </a>
-              {{ end }}
-            </li>
-          {{ end }}
-        </oL>
-      {{ else }}
-        <small><i>You are following zero feeds! Click <a href="/follow">/follow</a> to start following feeds.</i></small>
-      {{ end }}
-
-      <hgroup>
-        <h1>Delete account</h1>
-        <h2>Here you may delete your account.</h2>
-      </hgroup>
-      <p>
-        <b>WARNING:</b>&nbsp;This is permanent and cannot be undone!
-        (<i>There is no confirmation!</i>)
-      </p>
-      <form action="/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone!');">
-        <button type="submit" class="button-red">Delete</button>
-      </form>
+      <details>
+        <summary>Delete account</summary>
+        <p>
+          <b>WARNING:</b>&nbsp;This is permanent and cannot be undone!
+          (<i>There is no confirmation!</i>)
+        </p>
+        <form action="/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone!');">
+          <button type="submit" class="contrast">Delete</button>
+        </form>
+      </details>
     </div>
   </article>
 {{end}}

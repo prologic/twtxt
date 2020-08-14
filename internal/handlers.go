@@ -1,4 +1,4 @@
-package twtxt
+package internal
 
 import (
 	"bufio"
@@ -19,14 +19,16 @@ import (
 
 	"github.com/aofei/cameron"
 	securejoin "github.com/cyphar/filepath-securejoin"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/feeds"
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 	"github.com/vcraescu/go-paginator"
 	"github.com/vcraescu/go-paginator/adapter"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/internal/session"
+	"github.com/prologic/twtxt/types"
 )
 
 const (
@@ -106,8 +108,13 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		ctx.Alternatives = append(ctx.Alternatives, Alternatives{
 			Alternative{
+				Type:  "text/plain",
+				Title: fmt.Sprintf("%s's Twtxt Feed", profile.Username),
+				URL:   profile.URL,
+			},
+			Alternative{
 				Type:  "application/atom+xml",
-				Title: fmt.Sprintf("%s's feed", profile.Username),
+				Title: fmt.Sprintf("%s's Atom Feed", profile.Username),
 				URL:   fmt.Sprintf("%s/atom.xml", UserURL(profile.URL)),
 			},
 		}...)
@@ -123,7 +130,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(twts))
 
-		var pagedTwts Twts
+		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
@@ -194,7 +201,11 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 			}
 
 			if avatarFile != nil {
-				uploadOptions := &UploadOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: 0}
+				uploadOptions := &UploadOptions{
+					Resize:  true,
+					ResizeW: AvatarResolution,
+					ResizeH: AvatarResolution,
+				}
 				_, err = StoreUploadedImage(
 					s.config, avatarFile,
 					avatarsDir, feedName,
@@ -385,9 +396,20 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			return
 		}
 
+		etag := fmt.Sprintf("W/\"%s\"", r.RequestURI)
+
+		if match := r.Header.Get("If-None-Match"); match != "" {
+			if strings.Contains(match, etag) {
+				w.WriteHeader(http.StatusNotModified)
+				return
+			}
+		}
+
 		buf := bytes.Buffer{}
 		img := cameron.Identicon([]byte(nick), 60, 12)
 		png.Encode(&buf, img)
+
+		w.Header().Set("Etag", etag)
 		w.Write(buf.Bytes())
 	}
 }
@@ -534,10 +556,18 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		switch postas {
 		case "", user.Username:
-			err = AppendTwt(s.config, s.db, user, text)
+			if hash != "" && lastTwt.Hash() == hash {
+				err = AppendTwt(s.config, s.db, user, text, lastTwt.Created)
+			} else {
+				err = AppendTwt(s.config, s.db, user, text)
+			}
 		default:
 			if user.OwnsFeed(postas) {
-				err = AppendSpecial(s.config, s.db, postas, text)
+				if hash != "" && lastTwt.Hash() == hash {
+					err = AppendSpecial(s.config, s.db, postas, text, lastTwt.Created)
+				} else {
+					err = AppendSpecial(s.config, s.db, postas, text)
+				}
 			} else {
 				err = ErrFeedImposter
 			}
@@ -577,7 +607,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		var (
-			twts Twts
+			twts types.Twts
 			err  error
 		)
 
@@ -602,7 +632,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(twts))
 
-		var pagedTwts Twts
+		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
@@ -635,6 +665,68 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 	}
 }
 
+// PermalinkHandler ...
+func (s *Server) PermalinkHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		var (
+			twts types.Twts
+			err  error
+		)
+
+		hash := p.ByName("hash")
+		if hash == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		localTwts, err := GetAllTwts(s.config)
+		if err != nil {
+			log.WithError(err).Error("error loading twts")
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading permalink"
+			s.render("error", w, ctx)
+			return
+		}
+
+		cachedTwts := s.cache.GetAll()
+		if err != nil {
+			log.WithError(err).Error("error loading twts")
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading permalink"
+			s.render("error", w, ctx)
+			return
+		}
+
+		for _, twt := range cachedTwts {
+			if twt.Hash() == hash {
+				twts = append(twts, twt)
+			}
+		}
+
+		// If the twt is not in the cache look for it across all local users
+		if len(twts) == 0 {
+			for _, twt := range localTwts {
+				if twt.Hash() == hash {
+					twts = append(twts, twt)
+				}
+			}
+		}
+
+		if len(twts) == 0 {
+			ctx.Error = true
+			ctx.Message = "No matching twt found!"
+			s.render("404", w, ctx)
+			return
+		}
+
+		ctx.Twts = twts
+		s.render("timeline", w, ctx)
+		return
+	}
+}
+
 // DiscoverHandler ...
 func (s *Server) DiscoverHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -651,7 +743,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(twts))
 
-		var pagedTwts Twts
+		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
@@ -689,7 +781,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		var twts Twts
+		var twts types.Twts
 
 		for _, url := range ctx.User.Following {
 			for _, twt := range s.cache.GetByURL(url) {
@@ -701,7 +793,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(twts))
 
-		var pagedTwts Twts
+		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
@@ -726,7 +818,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		var twts Twts
+		var twts types.Twts
 
 		tag := r.URL.Query().Get("tag")
 
@@ -736,8 +828,8 @@ func (s *Server) SearchHandler() httprouter.Handle {
 			s.render("error", w, ctx)
 		}
 
-		getTweetsByTag := func() Twts {
-			var result Twts
+		getTweetsByTag := func() types.Twts {
+			var result types.Twts
 			for _, twt := range s.cache.GetAll() {
 				if HasString(UniqStrings(twt.Tags()), tag) {
 					result = append(result, twt)
@@ -750,7 +842,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(twts))
 
-		var pagedTwts Twts
+		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
@@ -973,13 +1065,12 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			return
 		}
 
-		user := &User{
-			Username:  username,
-			Email:     email,
-			Password:  hash,
-			URL:       URLForUser(s.config.BaseURL, username),
-			CreatedAt: time.Now(),
-		}
+		user := NewUser()
+		user.Username = username
+		user.Email = email
+		user.Password = hash
+		user.URL = URLForUser(s.config.BaseURL, username)
+		user.CreatedAt = time.Now()
 
 		if err := s.db.SetUser(username, user); err != nil {
 			log.WithError(err).Error("error saving user object for new user")
@@ -1101,7 +1192,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
 						user.Username, URLForUser(s.config.BaseURL, user.Username),
-						"twtxt", FullVersion(),
+						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
 					log.WithError(err).Warnf("error appending special FOLLOW post")
@@ -1133,7 +1224,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 						feed.Name, URLForUser(s.config.BaseURL, feed.Name),
 						user.Username, URLForUser(s.config.BaseURL, user.Username),
-						"twtxt", FullVersion(),
+						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
 					log.WithError(err).Warnf("error appending special FOLLOW post")
@@ -1266,7 +1357,7 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
 						user.Username, URLForUser(s.config.BaseURL, user.Username),
-						"twtxt", FullVersion(),
+						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
 					log.WithError(err).Warnf("error appending special FOLLOW post")
@@ -1298,6 +1389,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		tagline := strings.TrimSpace(r.FormValue("tagline"))
 		password := r.FormValue("password")
 		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
+		isFollowingPubliclyVisible := r.FormValue("isFollowingPubliclyVisible") == "on"
 
 		avatarFile, _, err := r.FormFile("avatar_file")
 		if err != nil && err != http.ErrMissingFile {
@@ -1323,7 +1415,11 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		}
 
 		if avatarFile != nil {
-			uploadOptions := &UploadOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: 0}
+			uploadOptions := &UploadOptions{
+				Resize:  true,
+				ResizeW: AvatarResolution,
+				ResizeH: AvatarResolution,
+			}
 			_, err = StoreUploadedImage(
 				s.config, avatarFile,
 				avatarsDir, ctx.Username,
@@ -1340,6 +1436,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		user.Email = email
 		user.Tagline = tagline
 		user.IsFollowersPubliclyVisible = isFollowersPubliclyVisible
+		user.IsFollowingPubliclyVisible = isFollowingPubliclyVisible
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
 			ctx.Error = true
@@ -1434,6 +1531,103 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 		}
 
 		s.render("followers", w, ctx)
+	}
+}
+
+// FollowingHandler ...
+func (s *Server) FollowingHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		nick := NormalizeUsername(p.ByName("nick"))
+
+		if s.db.HasUser(nick) {
+			user, err := s.db.GetUser(nick)
+			if err != nil {
+				log.WithError(err).Errorf("error loading user object for %s", nick)
+				ctx.Error = true
+				ctx.Message = "Error loading profile"
+				s.render("error", w, ctx)
+				return
+			}
+
+			if !user.IsFollowingPubliclyVisible && !ctx.User.Is(user.URL) {
+				s.render("401", w, ctx)
+				return
+			}
+			ctx.Profile = user.Profile()
+		} else {
+			ctx.Error = true
+			ctx.Message = "User Not Found"
+			s.render("404", w, ctx)
+			return
+		}
+
+		if r.Header.Get("Accept") == "application/json" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+
+			if err := json.NewEncoder(w).Encode(ctx.Profile.Followers); err != nil {
+				log.WithError(err).Error("error encoding user for display")
+				http.Error(w, "Bad Request", http.StatusBadRequest)
+			}
+
+			return
+		}
+
+		s.render("following", w, ctx)
+	}
+}
+
+// ExternalHandler ...
+func (s *Server) ExternalHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+		query := r.URL.Query()
+
+		nick := query.Get("nick")
+		if nick == "" {
+			ctx.Error = true
+			ctx.Message = "Cannot find external feed"
+			s.render("error", w, ctx)
+		}
+
+		url := query.Get("url")
+		if url == "" {
+			ctx.Error = true
+			ctx.Message = "Cannot find external feed"
+			s.render("error", w, ctx)
+		}
+
+		twtxttURL := string(url)
+
+		twts := s.cache.GetByURL(twtxttURL)
+
+		sort.Sort(sort.Reverse(twts))
+
+		var pagedTwts types.Twts
+
+		page := SafeParseInt(r.FormValue("page"), 1)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
+		pager.SetPage(page)
+
+		if err := pager.Results(&pagedTwts); err != nil {
+			log.WithError(err).Error("error sorting and paging twts")
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading the timeline"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Twts = pagedTwts
+		ctx.Pager = pager
+		ctx.Profile = Profile{
+			Username: nick,
+			TwtURL:   url,
+			URL:      url,
+		}
+
+		s.render("externalProfile", w, ctx)
 	}
 }
 
@@ -1661,7 +1855,7 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 func (s *Server) SyndicationHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var (
-			twts    Twts
+			twts    types.Twts
 			profile Profile
 			err     error
 		)
@@ -1733,7 +1927,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 			items = append(items, &feeds.Item{
 				Id:      twt.Hash(),
 				Title:   twt.Text,
-				Link:    &feeds.Link{Href: fmt.Sprintf("%s/#%s", s.config.BaseURL, twt.Hash())},
+				Link:    &feeds.Link{Href: URLForTwt(s.config.BaseURL, twt.Hash())},
 				Author:  &feeds.Author{Name: twt.Twter.Nick},
 				Created: twt.Created,
 			},

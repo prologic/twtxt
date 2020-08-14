@@ -6,21 +6,19 @@
             <i class="icss-rss" style="font-size:1.5em"></i>
             {{ .Profile.Username }}
         </h2>
-        {{ if not ($.User.Is .Profile.URL) }}
-          <h3>
-            {{ if $.User.Follows .Profile.URL }}
-              <a href="/unfollow?nick={{ .Profile.Username  }}">
-                <i class="icss-minus"></i>
-                Unfollow
-              </a>
-            {{ else }}
-              <a href="/follow?nick={{ .Profile.Username  }}&url={{ .Profile.URL }}">
-                <i class="icss-plus"></i>
-                Follow
-              </a>
-            {{ end }}
-          </h3>
-        {{ end}}
+        <h3>
+        {{ if $.User.Follows .Profile.URL }}
+            <a href="/unfollow?nick={{ .Profile.Username  }}">
+            <i class="icss-minus"></i>
+            Unfollow
+            </a>
+        {{ else }}
+            <a href="/follow?nick={{ .Profile.Username  }}&url={{ .Profile.URL }}">
+            <i class="icss-plus"></i>
+            Follow
+            </a>
+        {{ end }}
+        </h3>
         <footer>
           <p><i>{{ .Profile.Tagline }}</i></p>
           <ul>

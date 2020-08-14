@@ -1579,7 +1579,7 @@ func (s *Server) FollowingHandler() httprouter.Handle {
 	}
 }
 
-// FollowingHandler ...
+// ExternalHandler ...
 func (s *Server) ExternalHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)

@@ -20,6 +20,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dustin/go-humanize v1.0.0
 	github.com/elithrar/simple-scrypt v1.3.0
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gomarkdown/markdown v0.0.0-20200609195525-3f9352745725
 	github.com/gorilla/feeds v1.1.1
 	github.com/goware/urlx v0.3.1
@@ -39,12 +40,12 @@ require (
 	github.com/prologic/bitcask v0.3.6
 	github.com/prologic/observe v0.0.0-20181231082615-747b185a0928
 	github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987
-	github.com/prometheus/client_golang v0.9.3
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/cobra v0.0.7
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.0
+	github.com/steambap/captcha v1.3.0
 	github.com/tebeka/selenium v0.9.9
 	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
 	github.com/vcraescu/go-paginator v0.0.0-20200304054438-86d84f27c0b3

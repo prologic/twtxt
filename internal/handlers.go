@@ -2013,14 +2013,14 @@ func (s *Server) supportHandler() httprouter.Handle {
 		captchaText, isCaptchaTextAvailable := sess.(*session.Session).Get("captchaText")
 		if isCaptchaTextAvailable == false {
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("no captcha text found.")
+			ctx.Message = "no captcha text found"
 			s.render("error", w, ctx)
 			return
 		}
 
 		if captchaInput != captchaText {
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("Unable to match captcha text. Please try again.")
+			ctx.Message = "Unable to match captcha text. Please try again."
 			s.render("error", w, ctx)
 			return
 		}
@@ -2028,7 +2028,7 @@ func (s *Server) supportHandler() httprouter.Handle {
 		// Save form data here
 
 		ctx.Error = false
-		ctx.Message = fmt.Sprintf("Thank you for getting in touch! One of our colleagues will get back in touch with you soon!")
+		ctx.Message = "Thank you for getting in touch! One of our colleagues will get back to you soon!"
 		s.render("error", w, ctx)
 	}
 }

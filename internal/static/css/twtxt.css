@@ -124,3 +124,7 @@ article hgroup footer {
 .mentioned-list-content::-webkit-scrollbar-thumb {
   color: #ccc;
 }
+
+.captchaInput {
+  width: 50% !important;
+}

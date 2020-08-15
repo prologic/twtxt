@@ -29,6 +29,7 @@ import (
 	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/internal/session"
 	"github.com/prologic/twtxt/types"
+	"github.com/steambap/captcha"
 )
 
 const (
@@ -1981,5 +1982,80 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 		}
 
 		w.Write([]byte(data))
+	}
+}
+
+func (s *Server) supportHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		if r.Method == "GET" {
+			return
+		}
+
+		// Uncomment following lines when saving data
+		/*name := r.FormValue("name")
+		email := r.FormValue("email")
+		subject := r.FormValue("subject")
+		message := r.FormValue("message")*/
+
+		captchaInput := r.FormValue("captchaInput")
+
+		// Get session
+		sess := r.Context().Value(session.SessionKey)
+		if sess == nil {
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("no session found.")
+			s.render("error", w, ctx)
+			return
+		}
+		// Get captcha text from session
+		captchaText, isCaptchaTextAvailable := sess.(*session.Session).Get("captchaText")
+		if isCaptchaTextAvailable == false {
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("no captcha text found.")
+			s.render("error", w, ctx)
+			return
+		}
+
+		if captchaInput != captchaText {
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("Unable to match captcha text. Please try again.")
+			s.render("error", w, ctx)
+			return
+		}
+
+		// Save form data here
+		
+		ctx.Error = false
+		ctx.Message = fmt.Sprintf("Thank you for getting in touch! One of our colleagues will get back in touch with you soon!")
+		s.render("error", w, ctx)
+	}
+}
+
+// GetCaptchaHandler ...
+func (s *Server) getCaptchaHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+
+		if r.Method == "POST" {
+			return
+		}
+
+		img, err := captcha.New(150, 50)
+		if err != nil {
+			log.WithError(err).Errorf("unable to get captcha image")
+			return
+		}
+
+		// Save captcha text in session
+		sess := r.Context().Value(session.SessionKey)
+		if sess == nil {
+			log.Warn("no session found")
+			return
+		}
+		sess.(*session.Session).Set("captchaText", img.Text)
+
+		w.Header().Set("Content-Type", "image/png")
+		img.WriteImage(w)
 	}
 }

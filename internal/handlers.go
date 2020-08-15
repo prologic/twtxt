@@ -2026,7 +2026,7 @@ func (s *Server) supportHandler() httprouter.Handle {
 		}
 
 		// Save form data here
-		
+
 		ctx.Error = false
 		ctx.Message = fmt.Sprintf("Thank you for getting in touch! One of our colleagues will get back in touch with you soon!")
 		s.render("error", w, ctx)
@@ -2041,7 +2041,7 @@ func (s *Server) getCaptchaHandler() httprouter.Handle {
 			return
 		}
 
-		img, err := captcha.New(150, 50)
+		img, err := captcha.NewMathExpr(150, 50)
 		if err != nil {
 			log.WithError(err).Errorf("unable to get captcha image")
 			return

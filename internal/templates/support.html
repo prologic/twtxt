@@ -6,12 +6,12 @@
         <h2>How can we help you?</h2>
       </hgroup>
       <form action="/support" method="POST">
-
         <input type="text" name="name" placeholder="Name" aria-label="Name" autofocus required>
         <input type="email" name="email" placeholder="Email address" aria-label="Email" required>
         <input type="text" name="subject" placeholder="Subject" aria-label="Subject" required>
         <textarea name="message" placeholder="Message" aria-label="Message" rows="4" cols="50" required></textarea>
 
+        <small>Please solve this simple math problem below so we know you're a human!</small>
         <img id="captcha" src="/captcha" alt="captcha" height="50" width="150" />
         <input type="text" name="captchaInput" class="captchaInput" placeholder="Captcha" aria-label="Captcha" required>
 

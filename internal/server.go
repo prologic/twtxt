@@ -2,7 +2,9 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"strings"
@@ -11,8 +13,10 @@ import (
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/NYTimes/gziphandler"
+	"github.com/andyleap/microformats"
 	humanize "github.com/dustin/go-humanize"
 	"github.com/prologic/observe"
+	"github.com/prologic/webmention"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
 	"github.com/unrolled/logger"
@@ -23,7 +27,8 @@ import (
 )
 
 var (
-	metrics *observe.Metrics
+	metrics     *observe.Metrics
+	webmentions *webmention.WebMention
 )
 
 func init() {
@@ -171,6 +176,88 @@ func (s *Server) setupMetrics() error {
 	return nil
 }
 
+func (s *Server) processWebMention(source, target *url.URL, sourceData *microformats.Data) error {
+	log.
+		WithField("source", source).
+		WithField("target", target).
+		Infof("received webmention from %s to %s", source.String(), target.String())
+
+	var hEntry *microformats.MicroFormat
+
+	for _, item := range sourceData.Items {
+		if HasString(item.Type, "h-entry") {
+			hEntry = item
+		}
+	}
+
+	var author *microformats.MicroFormat
+
+	authors := hEntry.Properties["author"]
+	if len(authors) > 0 {
+		if v, ok := authors[0].(*microformats.MicroFormat); ok {
+			author = v
+		}
+	}
+
+	var authorName string
+
+	if author != nil {
+		authorName = strings.TrimSpace(author.Value)
+	}
+
+	var sourceFeed string
+
+	for _, alternate := range sourceData.Alternates {
+		if alternate.Type == "text/plain" {
+			sourceFeed = alternate.URL
+		}
+	}
+
+	user, err := GetUserFromURL(s.config, s.db, target.String())
+	if err != nil {
+		log.WithError(err).WithField("target", target.String()).Warn("unable to get used from webmention target")
+		return err
+	}
+
+	if authorName != "" && sourceFeed != "" {
+		if _, err := AppendSpecial(
+			s.config, s.db,
+			twtxtBot,
+			fmt.Sprintf(
+				"MENTION: @<%s %s> from @<%s %s> on %s",
+				user.Username, user.URL, authorName, sourceFeed,
+				source.String(),
+			),
+		); err != nil {
+			log.WithError(err).Warnf("error appending special MENTION post")
+			return err
+		}
+
+	} else {
+		if _, err := AppendSpecial(
+			s.config, s.db,
+			twtxtBot,
+			fmt.Sprintf(
+				"WEBMENTION: @<%s %s> from %s on %s",
+				user.Username, user.URL,
+				source.String(), target.String(),
+			),
+		); err != nil {
+			log.WithError(err).Warnf("error appending special MENTION post")
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *Server) setupWebMentions() error {
+	webmentions = webmention.New()
+	webmentions.Mention = s.processWebMention
+
+	return nil
+}
+
 func (s *Server) setupCronJobs() error {
 	for name, jobSpec := range Jobs {
 		job := jobSpec.Factory(s.config, s.cache, s.db)
@@ -244,6 +331,11 @@ func (s *Server) initRoutes() {
 	s.router.GET("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/followers", s.FollowersHandler())
 	s.router.GET("/user/:nick/following", s.FollowingHandler())
+
+	// WebMentions
+	s.router.POST("/user/:nick/webmention", s.WebMentionHandler())
+
+	// External Feeds
 	s.router.GET("/external", s.ExternalHandler())
 
 	// Syndication Formats (RSS, Atom, JSON Feed)
@@ -386,6 +478,12 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	}
 	server.cron.Start()
 	log.Infof("started background jobs")
+
+	if err := server.setupWebMentions(); err != nil {
+		log.WithError(err).Error("error setting up webmentions processor")
+		return nil, err
+	}
+	log.Infof("started webmentions processor")
 
 	if err := server.setupMetrics(); err != nil {
 		log.WithError(err).Error("error setting up metrics")

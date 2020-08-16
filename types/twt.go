@@ -29,13 +29,13 @@ type Twt struct {
 }
 
 // Mentions ...
-func (twt Twt) Mentions() []string {
-	var mentions []string
+func (twt Twt) Mentions() []Twter {
+	var mentions []Twter
 
-	re := regexp.MustCompile(`@<(.*?) .*?>`)
+	re := regexp.MustCompile(`@<(.*?) (.*?)>`)
 	matches := re.FindAllStringSubmatch(twt.Text, -1)
 	for _, match := range matches {
-		mentions = append(mentions, match[1])
+		mentions = append(mentions, Twter{match[1], match[2]})
 	}
 
 	return mentions

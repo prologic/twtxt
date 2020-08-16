@@ -296,10 +296,10 @@ func (a *API) PostEndpoint() httprouter.Handle {
 
 		switch req.PostAs {
 		case "", me:
-			err = AppendTwt(a.config, a.db, user, text)
+			_, err = AppendTwt(a.config, a.db, user, text)
 		default:
 			if user.OwnsFeed(req.PostAs) {
-				err = AppendSpecial(a.config, a.db, req.PostAs, text)
+				_, err = AppendSpecial(a.config, a.db, req.PostAs, text)
 			} else {
 				err = ErrFeedImposter
 			}
@@ -477,7 +477,7 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 					return
 				}
 
-				if err := AppendSpecial(
+				if _, err := AppendSpecial(
 					a.config, a.db,
 					twtxtBot,
 					fmt.Sprintf(
@@ -505,7 +505,7 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 					return
 				}
 
-				if err := AppendSpecial(
+				if _, err := AppendSpecial(
 					a.config, a.db,
 					twtxtBot,
 					fmt.Sprintf(

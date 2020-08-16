@@ -52,23 +52,23 @@
       {{ template "pager" . }}
       
       {{ range .Twts }}
-        <article id="{{ .Hash }}">
+        <article id="{{ .Hash }}" class="h-entry">
           <hgroup>
-            <h2>
+            <h2 class="u-author h-card">
               {{ if $.User.Is .Twter.URL }}
-                <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}">
-                  <img class="avatar" src="/user/{{ $.User.Username }}/avatar.png" />
-                  me
+                <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
+                  <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar.png" />
+                  <span class="p-name">me</span>
                 </a>
               {{ else }}
                 {{ if $.IsLocal .Twter.URL }}
-                  <a href="{{ .Twter.URL | trimSuffix "/twtxt.txt" }}">
-                    <img class="avatar" src="/user/{{ .Twter.Nick }}/avatar.png" />
+                  <a href="{{ .Twter.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
+                    <img class="avatar u-photo" src="/user/{{ .Twter.Nick }}/avatar.png" />
                 {{ else }}
-                  <a href="/external/?url={{ .Twter.URL }}&nick= {{  .Twter.Nick  }}">
+                  <a href="/external/?url={{ .Twter.URL }}&nick= {{  .Twter.Nick  }}" class="u-url">
                     <i class="icss-rss" style="font-size:1.5em"></i>
                 {{ end }}
-                  {{ .Twter.Nick }}
+                  <span class="p-name">{{ .Twter.Nick }}</span>
                 </a>
               {{ end }}
             </h2>

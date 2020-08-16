@@ -77,6 +77,23 @@ var (
 	ErrInvalidImageUPload = errors.New("error: invalid or corrupted image uploaded")
 )
 
+func GetUserFromURL(conf *Config, db Store, url string) (*User, error) {
+	if !strings.HasPrefix(url, conf.BaseURL) {
+		return nil, fmt.Errorf("error: %s does not match our base url of %s", url, conf.BaseURL)
+	}
+
+	userURL := UserURL(url)
+	username := filepath.Base(userURL)
+
+	return db.GetUser(username)
+}
+
+func WebMention(target, source string) {
+	targetURL, _ := url.Parse(target)
+	sourceURL, _ := url.Parse(source)
+	webmentions.SendNotification(targetURL, sourceURL)
+}
+
 func StringKeys(kv map[string]string) []string {
 	var res []string
 	for k := range kv {

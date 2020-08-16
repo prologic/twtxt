@@ -84,29 +84,29 @@ func DeleteLastTwt(conf *Config, user *User) error {
 	return f.Truncate(int64(n))
 }
 
-func AppendSpecial(conf *Config, db Store, specialUsername, text string, args ...interface{}) error {
+func AppendSpecial(conf *Config, db Store, specialUsername, text string, args ...interface{}) (types.Twt, error) {
 	user := &User{Username: specialUsername}
 	user.Following = make(map[string]string)
 	return AppendTwt(conf, db, user, text, args)
 }
 
-func AppendTwt(conf *Config, db Store, user *User, text string, args ...interface{}) error {
+func AppendTwt(conf *Config, db Store, user *User, text string, args ...interface{}) (types.Twt, error) {
 	text = strings.TrimSpace(text)
 	if text == "" {
-		return fmt.Errorf("cowardly refusing to twt empty text, or only spaces")
+		return types.Twt{}, fmt.Errorf("cowardly refusing to twt empty text, or only spaces")
 	}
 
 	p := filepath.Join(conf.Data, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
-		return err
+		return types.Twt{}, err
 	}
 
 	fn := filepath.Join(p, user.Username)
 
 	f, err := os.OpenFile(fn, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		return err
+		return types.Twt{}, err
 	}
 	defer f.Close()
 
@@ -118,14 +118,22 @@ func AppendTwt(conf *Config, db Store, user *User, text string, args ...interfac
 		}
 	}
 
-	if _, err = f.WriteString(
-		fmt.Sprintf("%s\t%s\n", now.Format(time.RFC3339),
-			ExpandTag(conf, db, user, ExpandMentions(conf, db, user, text))),
-	); err != nil {
-		return err
+	line := fmt.Sprintf(
+		"%s\t%s\n",
+		now.Format(time.RFC3339),
+		ExpandTag(conf, db, user, ExpandMentions(conf, db, user, text)),
+	)
+
+	if _, err = f.WriteString(line); err != nil {
+		return types.Twt{}, err
 	}
 
-	return nil
+	twt, err := ParseLine(strings.TrimSpace(line), user.Twter())
+	if err != nil {
+		return types.Twt{}, err
+	}
+
+	return twt, nil
 }
 
 func FeedExists(conf *Config, username string) bool {
@@ -267,7 +275,9 @@ func ParseFile(scanner *bufio.Scanner, twter types.Twter) (types.Twts, error) {
 			continue
 		}
 
-		twts = append(twts, twt)
+		if (types.Twt{}) != twt {
+			twts = append(twts, twt)
+		}
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err

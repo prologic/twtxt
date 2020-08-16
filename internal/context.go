@@ -14,6 +14,11 @@ import (
 	"github.com/theplant-retired/timezones"
 )
 
+type Link struct {
+	Href string
+	Rel  string
+}
+
 type Alternative struct {
 	Type  string
 	Title string
@@ -21,6 +26,7 @@ type Alternative struct {
 }
 
 type Alternatives []Alternative
+type Links []Link
 
 type Meta struct {
 	Title       string
@@ -45,7 +51,6 @@ type Context struct {
 	User          *User
 	LastTwt       types.Twt
 	Profile       Profile
-	Alternatives  Alternatives
 	Authenticated bool
 
 	Error   bool
@@ -53,8 +58,11 @@ type Context struct {
 	Theme   string
 	Commit  string
 
-	Title       string
-	Meta        Meta
+	Title        string
+	Meta         Meta
+	Links        Links
+	Alternatives Alternatives
+
 	Twter       types.Twter
 	Twts        types.Twts
 	Feeds       []*Feed

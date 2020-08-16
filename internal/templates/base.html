@@ -12,6 +12,10 @@
     {{ range .Alternatives }}
       <link rel="alternate" type="{{ .Type }}" title="{{ .Title }}" href="{{ .URL }}" />
     {{ end }}
+
+    {{ range .Links }}
+      <link href="{{ .Href }}" rel="{{ .Rel }}" />
+    {{ end }}
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />

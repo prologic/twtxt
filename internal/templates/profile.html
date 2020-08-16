@@ -2,13 +2,23 @@
   <div class="grid">
     <div>
       <hgroup>
-        <h2>
-          <img class="avatar" src="/user/{{ .Profile.Username }}/avatar.png" />
-          {{  if $.User.Is .Profile.URL }}
-          me
-          {{ else  }}
-            {{ .Profile.Username }}
-          {{ end}}
+        <h2 class="u-author h-card">
+          {{ if $.User.Is .Profile.URL }}
+            <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
+              <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar.png" />
+              <span class="p-name">me</span>
+            </a>
+          {{ else }}
+            {{ if $.IsLocal .Profile.URL }}
+              <a href="{{ .Profile.URL | trimSuffix "/twtxt.txt" }}" class="u-url p-name">
+                <img class="avatar u-photo" src="/user/{{ .Profile.Username }}/avatar.png" />
+            {{ else }}
+              <a href="/external/?url={{ .Profile.URL }}&nick= {{  .Profile.Username  }}" class="u-url p-name">
+                <i class="icss-rss" style="font-size:1.5em"></i>
+            {{ end }}
+              <span class="p-name">{{ .Profile.Username }}</span>
+            </a>
+          {{ end }}
         </h2>
         {{ if not ($.User.Is .Profile.URL) }}
           <h3>

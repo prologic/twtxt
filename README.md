@@ -33,7 +33,7 @@ There is also a publicly (_free_) service online available at:
 > the upcoming Mobile App and much more! Or contact [Support](https://twtxt.net)
 > for help with running your own Twtxt!
 
-![Demo_1](https://user-images.githubusercontent.com/15314237/89133451-30cdb200-d4d9-11ea-8a11-aab67c6fac6a.gif)
+![Demo_1](https://user-images.githubusercontent.com/15314237/90351548-cac74b80-dffd-11ea-8288-b347af548465.gif)
 
 ## Installation
 

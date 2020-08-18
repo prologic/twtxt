@@ -10,7 +10,7 @@ jobs:
     name: Build and Test
     strategy:
       matrix:
-        go-version: [1.12.x, 1.13.x, 1.14.x]
+        go-version: [1.14.x]
         platform: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.platform }}
     steps:

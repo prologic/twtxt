@@ -93,7 +93,7 @@
             {{ end }}
             <footer>
               <a class="u-url" href="/twt/{{ .Hash }}">
-                <time datetime="{{ .Created | date "2006-01-02T15:04:05Z07:00" }}">
+                <time class="dt-published" datetime="{{ .Created | date "2006-01-02T15:04:05Z07:00" }}">
                   {{ dateInZone "Mon, Jan 2 3:04PM 2006" .Created $.User.DisplayDatesInTimezone }}
                 </time>
               </a>

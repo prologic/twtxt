@@ -615,7 +615,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 				task := func(ctx context.Context) error {
 					err := WebMention(twter.URL, fmt.Sprintf("%s/twt/%s", s.config.BaseURL, twt.Hash()))
 					if err != nil {
-						log.WithError(err).Error("error sending webmention to %s", twter.URL)
+						log.WithError(err).Errorf("error sending webmention to %s", twter.URL)
 						return err
 					}
 					return nil

@@ -47,7 +47,7 @@
 {{ end }}
 
 {{ define "posts" }}
-  <div class="grid">
+  <div class="grid h-feed">
     <div>
       {{ template "pager" . }}
       
@@ -92,7 +92,7 @@
               </h3>
             {{ end }}
             <footer>
-              <a href="/twt/{{ .Hash }}">
+              <a class="u-url" href="/twt/{{ .Hash }}">
                 <time datetime="{{ .Created | date "2006-01-02T15:04:05Z07:00" }}">
                   {{ dateInZone "Mon, Jan 2 3:04PM 2006" .Created $.User.DisplayDatesInTimezone }}
                 </time>

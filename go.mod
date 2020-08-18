@@ -10,6 +10,7 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/PuerkitoBio/goquery v1.5.1
+	github.com/StudioSol/async v1.0.0
 	github.com/andreadipersio/securecookie v0.0.0-20131119095127-e3c3b33544ec
 	github.com/andyleap/microformats v0.0.0-20150523144534-25ae286f528b
 	github.com/aofei/cameron v1.1.4
@@ -41,7 +42,7 @@ require (
 	github.com/prologic/bitcask v0.3.6
 	github.com/prologic/observe v0.0.0-20181231082615-747b185a0928
 	github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987
-	github.com/prologic/webmention v0.0.0-20200817162331-b7f5904b0709
+	github.com/prologic/webmention v0.0.0-20200818004448-ca766414c4b1
 	github.com/robfig/cron v1.2.0
 	github.com/securisec/go-keywords v0.0.0-20200619134240-769e7273f2ed
 	github.com/sirupsen/logrus v1.6.0

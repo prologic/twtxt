@@ -3,6 +3,7 @@ package internal
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/StudioSol/async"
 	"github.com/aofei/cameron"
 	securejoin "github.com/cyphar/filepath-securejoin"
 	"github.com/dgrijalva/jwt-go"
@@ -36,6 +38,8 @@ import (
 const (
 	MediaResolution  = 640 // 640x480
 	AvatarResolution = 60  // 60x60
+	AsyncTaskLimit   = 5
+	MaxAsyncTime     = 5 * time.Second
 )
 
 var (
@@ -605,11 +609,25 @@ func (s *Server) PostHandler() httprouter.Handle {
 		}
 
 		// WebMentions ...
+		var tasks []async.Task
 		for _, twter := range twt.Mentions() {
-			WebMention(
-				twter.URL,
-				fmt.Sprintf("%s/twt/%s", s.config.BaseURL, twt.Hash()),
-			)
+			if !strings.HasPrefix(twter.URL, s.config.BaseURL) {
+				task := func(ctx context.Context) error {
+					err := WebMention(twter.URL, fmt.Sprintf("%s/twt/%s", s.config.BaseURL, twt.Hash()))
+					if err != nil {
+						log.WithError(err).Error("error sending webmention to %s", twter.URL)
+						return err
+					}
+					return nil
+				}
+				tasks = append(tasks, async.Task(task))
+			}
+		}
+		runner := async.NewRunner(tasks...).WithLimit(AsyncTaskLimit)
+		asyncContext, cancel := context.WithTimeout(context.Background(), MaxAsyncTime)
+		defer cancel()
+		if err := runner.Run(asyncContext); err != nil {
+			log.WithError(err).Warn("error sending webmentions")
 		}
 
 		http.Redirect(w, r, RedirectURL(r, s.config, "/"), http.StatusFound)

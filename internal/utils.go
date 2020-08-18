@@ -88,10 +88,18 @@ func GetUserFromURL(conf *Config, db Store, url string) (*User, error) {
 	return db.GetUser(username)
 }
 
-func WebMention(target, source string) {
-	targetURL, _ := url.Parse(target)
-	sourceURL, _ := url.Parse(source)
-	webmentions.SendNotification(targetURL, sourceURL)
+func WebMention(target, source string) error {
+	targetURL, err := url.Parse(target)
+	if err != nil {
+		log.WithError(err).Error("error parsing target url")
+		return err
+	}
+	sourceURL, err := url.Parse(source)
+	if err != nil {
+		log.WithError(err).Error("error parsing source url")
+		return err
+	}
+	return webmentions.SendNotification(targetURL, sourceURL)
 }
 
 func StringKeys(kv map[string]string) []string {

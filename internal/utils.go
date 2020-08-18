@@ -77,6 +77,15 @@ var (
 	ErrInvalidImageUPload = errors.New("error: invalid or corrupted image uploaded")
 )
 
+func IsLocalFactory(conf *Config) func(url string) bool {
+	return func(url string) bool {
+		if NormalizeURL(url) == "" {
+			return false
+		}
+		return strings.HasPrefix(NormalizeURL(url), NormalizeURL(conf.BaseURL))
+	}
+}
+
 func GetUserFromURL(conf *Config, db Store, url string) (*User, error) {
 	if !strings.HasPrefix(url, conf.BaseURL) {
 		return nil, fmt.Errorf("error: %s does not match our base url of %s", url, conf.BaseURL)
@@ -477,13 +486,7 @@ func PreprocessImage(conf *Config, u *url.URL, alt string) string {
 
 // FormatTwtFactory formats a twt into a valid HTML snippet
 func FormatTwtFactory(conf *Config) func(text string) template.HTML {
-	isLocal := func(url string) bool {
-		if NormalizeURL(url) == "" {
-			return false
-		}
-		return strings.HasPrefix(NormalizeURL(url), NormalizeURL(conf.BaseURL))
-	}
-
+	isLocal := IsLocalFactory(conf)
 	return func(text string) template.HTML {
 		renderHookProcessURLs := func(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
 			// Ensure only whitelisted ![](url) images

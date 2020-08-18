@@ -36,6 +36,7 @@ func NewTemplates(conf *Config) (*Templates, error) {
 	funcMap["time"] = humanize.Time
 	funcMap["prettyURL"] = PrettyURL
 	funcMap["formatTwt"] = FormatTwtFactory(conf)
+	funcMap["isLocal"] = IsLocalFactory(conf)
 
 	box, err := rice.FindBox("templates")
 	if err != nil {

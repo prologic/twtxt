@@ -1,5 +1,3 @@
 {{define "content"}}
-  <div class="container">
-    {{ template "posts"  .}}
-  </div>
+  {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" ( $.Twts | first) ) }}
 {{end}}

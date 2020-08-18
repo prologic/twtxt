@@ -834,7 +834,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 		}
 
 		ctx.Twts = twts
-		s.render("timeline", w, ctx)
+		s.render("permalink", w, ctx)
 		return
 	}
 }

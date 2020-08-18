@@ -46,62 +46,67 @@
   {{ end }}
 {{ end }}
 
-{{ define "posts" }}
+{{ define "twt" }}
+  <article id="{{ $.Twt.Hash }}" class="h-entry">
+    <hgroup>
+      <h2 class="u-author h-card">
+        {{ if $.User.Is $.Twt.Twter.URL }}
+          <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
+            <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar.png" />
+            <span class="p-name">me</span>
+          </a>
+        {{ else }}
+          {{ if isLocal $.Twt.Twter.URL }}
+            <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
+              <img class="avatar u-photo" src="/user/{{ $.Twt.Twter.Nick }}/avatar.png" />
+          {{ else }}
+            <a href="/external/?url={{ $.Twt.Twter.URL }}&nick= {{ $.Twt.Twter.Nick  }}" class="u-url">
+              <i class="icss-rss" style="font-size:1.5em"></i>
+          {{ end }}
+            <span class="p-name">{{ $.Twt.Twter.Nick }}</span>
+          </a>
+        {{ end }}
+      </h2>
+      {{ if $.Authenticated }}
+        <h3>
+          {{ if eq $.LastTwt.Hash $.Twt.Hash }}
+            [<a class="edit" href="#" data-hash="{{ $.Twt.Hash }}" data-text="{{ $.Twt.Text }}">Edit</a>]
+            [<a class="delete" href="#" data-hash="{{ $.Twt.Hash }}">Delete</a>]
+          {{ end }}
+          {{ if (not ($.User.Is $.Twt.Twter.URL)) }}
+            {{ with $.Profile.Type }}
+            {{ else }}
+              [<a class="reply" href="#" data-reply="{{ $.User.Reply . }}">Reply</a>]
+            {{ end }}
+            {{ if $.User.Follows $.Twt.Twter.URL }}
+              [<a href="/unfollow?nick={{ $.Twt.Twter.Nick }}">Unfollow</a>]
+            {{ else }}
+              [<a href="/follow?nick={{ $.Twt.Twter.Nick }}&url={{ $.Twt.Twter.URL }}">Follow</a>]
+            {{ end }}
+          {{ end }}
+        </h3>
+      {{ end }}
+      <footer>
+        <a class="u-url" href="/twt/{{ $.Twt.Hash }}">
+          <time class="dt-published" datetime="{{ $.Twt.Created | date "2006-01-02T15:04:05Z07:00" }}">
+            {{ dateInZone "Mon, Jan 2 3:04PM 2006" $.Twt.Created $.User.DisplayDatesInTimezone }}
+          </time>
+        </a>
+        &nbsp;({{ $.Twt.Created | time }})
+      </footer>
+    </hgroup>
+    <div class="p-summary">
+      {{ $.Twt.Text | formatTwt }}
+    </div>
+  </article>
+{{ end }}
+
+{{ define "feed" }}
   <div class="grid h-feed">
     <div>
       {{ template "pager" . }}
-      
-      {{ range .Twts }}
-        <article id="{{ .Hash }}" class="h-entry">
-          <hgroup>
-            <h2 class="u-author h-card">
-              {{ if $.User.Is .Twter.URL }}
-                <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
-                  <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar.png" />
-                  <span class="p-name">me</span>
-                </a>
-              {{ else }}
-                {{ if $.IsLocal .Twter.URL }}
-                  <a href="{{ .Twter.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
-                    <img class="avatar u-photo" src="/user/{{ .Twter.Nick }}/avatar.png" />
-                {{ else }}
-                  <a href="/external/?url={{ .Twter.URL }}&nick= {{  .Twter.Nick  }}" class="u-url">
-                    <i class="icss-rss" style="font-size:1.5em"></i>
-                {{ end }}
-                  <span class="p-name">{{ .Twter.Nick }}</span>
-                </a>
-              {{ end }}
-            </h2>
-            {{ if $.Authenticated }}
-              <h3>
-                {{ if eq $.LastTwt.Hash .Hash }}
-                  [<a class="edit" href="#" data-hash="{{ .Hash }}" data-text="{{ .Text }}">Edit</a>]
-                  [<a class="delete" href="#" data-hash="{{ .Hash }}">Delete</a>]
-                {{ end }}
-                {{ if (not ($.User.Is .Twter.URL)) }}
-                  {{ with $.Profile.Type }}
-                  {{ else }}
-                    [<a class="reply" href="#" data-reply="{{ $.User.Reply . }}">Reply</a>]
-                  {{ end }}
-                  {{ if $.User.Follows .Twter.URL }}
-                    [<a href="/unfollow?nick={{ .Twter.Nick }}">Unfollow</a>]
-                  {{ else }}
-                    [<a href="/follow?nick={{ .Twter.Nick }}&url={{ .Twter.URL }}">Follow</a>]
-                  {{ end }}
-                {{ end }}
-              </h3>
-            {{ end }}
-            <footer>
-              <a class="u-url" href="/twt/{{ .Hash }}">
-                <time class="dt-published" datetime="{{ .Created | date "2006-01-02T15:04:05Z07:00" }}">
-                  {{ dateInZone "Mon, Jan 2 3:04PM 2006" .Created $.User.DisplayDatesInTimezone }}
-                </time>
-              </a>
-              &nbsp;({{ .Created | time }})
-            </footer>
-          </hgroup>
-          {{ .Text | formatTwt }}
-        </article>
+      {{ range $_, $Twt := .Twts }}
+        {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" $Twt) }}
       {{ end }}
       {{ template "pager" . }}
     </div>

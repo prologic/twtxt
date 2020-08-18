@@ -300,12 +300,17 @@ func (u *User) Twter() types.Twter {
 }
 
 func (u *User) Reply(twt types.Twt) string {
-	mentions := []string{}
-	/* FIXME
-	for _, mention := range RemoveString(UniqStrings(append(twt.Mentions(), twt.Twter.Nick)), u.Username) {
-		mentions = append(mentions, fmt.Sprintf("@%s", mention))
+	mentionsSet := make(map[string]bool)
+	for _, twter := range twt.Mentions() {
+		if _, ok := mentionsSet[twter.Nick]; !ok && twter.Nick != u.Username {
+			mentionsSet[twter.Nick] = true
+		}
 	}
-	*/
+
+	mentions := []string{fmt.Sprintf("@%s", twt.Twter.Nick)}
+	for nick := range mentionsSet {
+		mentions = append(mentions, fmt.Sprintf("@%s", nick))
+	}
 
 	subject := twt.Subject()
 

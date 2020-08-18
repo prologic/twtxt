@@ -76,7 +76,7 @@
           {{ if (not ($.User.Is $.Twt.Twter.URL)) }}
             {{ with $.Profile.Type }}
             {{ else }}
-              [<a class="reply" href="#" data-reply="{{ $.User.Reply . }}">Reply</a>]
+              [<a class="reply" href="#" data-reply="{{ $.User.Reply $.Twt }}">Reply</a>]
             {{ end }}
             {{ if $.User.Follows $.Twt.Twter.URL }}
               [<a href="/unfollow?nick={{ $.Twt.Twter.Nick }}">Unfollow</a>]
@@ -105,8 +105,10 @@
   <div class="grid h-feed">
     <div>
       {{ template "pager" . }}
-      {{ range $Twt := .Twts }}
-        {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" $Twt) }}
+      {{ range $idx, $twt := $.Twts }}
+        {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" $twt) }}
+      {{ else }}
+        <small><i>There are no twts yet... Comd back again later!</i></small>
       {{ end }}
       {{ template "pager" . }}
     </div>

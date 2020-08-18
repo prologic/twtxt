@@ -881,6 +881,10 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 			ctx.LastTwt = lastTwt
 		}
 
+		for i, twt := range pagedTwts {
+			log.WithField("i", i).WithField("twt", twt).Debugf("%#d %#v", i, twt)
+		}
+
 		ctx.Title = "Local timeline"
 		ctx.Twts = pagedTwts
 		ctx.Pager = pager

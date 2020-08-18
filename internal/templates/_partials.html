@@ -105,7 +105,7 @@
   <div class="grid h-feed">
     <div>
       {{ template "pager" . }}
-      {{ range $_, $Twt := .Twts }}
+      {{ range $Twt := .Twts }}
         {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" $Twt) }}
       {{ end }}
       {{ template "pager" . }}

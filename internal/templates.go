@@ -56,7 +56,7 @@ func NewTemplates(conf *Config) (*Templates, error) {
 			}
 
 			name := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
-			t := template.New(name)
+			t := template.New(name).Option("missingkey=error")
 			t.Funcs(funcMap)
 			template.Must(t.Parse(box.MustString(info.Name())))
 			template.Must(t.Parse(box.MustString(partialsTemplate)))

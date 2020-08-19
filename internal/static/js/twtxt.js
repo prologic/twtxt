@@ -439,6 +439,10 @@ u("#burgerMenu").on("click", function (e) {
 document.documentElement.addEventListener("keydown", function (e) {
   if (u("#mentioned-list").first()) {
     if (u("#mentioned-list").first().classList.contains("show")) {
+      if (e.key === "Escape") {
+        clearMentionedList();
+      }
+
       if (e.key === "ArrowUp" || e.key === "ArrowDown") {
         e.preventDefault();
 

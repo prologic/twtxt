@@ -355,8 +355,6 @@ u("textarea#text").on("keyup", function (e) {
       showMentionedList();
     }
 
-    console.log("startMention", startMention);
-
     if ($mentionedList.classList.contains("show")) {
       var searchStr = e.target.value.slice(startMention, idx);
 

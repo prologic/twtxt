@@ -45,6 +45,10 @@ article hgroup footer {
   position: relative;
 }
 
+#text {
+  resize: none;
+}
+
 .users-list {
   border-radius: 10px;
   display: none;
@@ -52,8 +56,7 @@ article hgroup footer {
   position: absolute;
   z-index: 1040;
   background-color: var(--background);
-  box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.25);
-  border: 1px solid var(--primary-inverse);
+  box-shadow: 0 0 2px var(--text);
 }
 
 .users-list.show {
@@ -68,6 +71,7 @@ article hgroup footer {
   padding: 0 20px;
   box-sizing: border-box;
   max-width: 350px;
+  transition: all ease-in-out .2s;
 }
 
 .user-list__user:first-child {
@@ -80,7 +84,7 @@ article hgroup footer {
   border-bottom-right-radius: 10px;
 }
 
-.user-list__user:hover {
+.user-list__user.selected {
   cursor: pointer;
   background-color: var(--input-border);
 }
@@ -88,6 +92,9 @@ article hgroup footer {
 .mentioned-list-content {
   max-height: 180px;
   overflow: auto;
+  cursor: pointer;
+  width: 100%;
+  width: calc(100% + 2px);
 }
 
 .user-list__user .avatar {
@@ -97,28 +104,33 @@ article hgroup footer {
   margin-right: 15px;
   border-radius: 50%;
   background-size: cover;
+  pointer-events: none;
 }
 
 .user-list__user .info {
   display: flex;
   flex-direction: column;
+  pointer-events: none;
 }
 
 .user-list__user .info .name {
   color: var(--text);
   margin-bottom: 5px;
   font-size: 14px;
+  pointer-events: none;
 }
 
 .user-list__user .info .nickname {
   color: var(--text);
   font-size: 14px;
+  pointer-events: none;
 }
 
 .user-list__user .nickname {
   font-size: 16px;
   font-weight: bold;
   color: var(--text);
+  pointer-events: none;
 }
 
 .mentioned-list-content::-webkit-scrollbar  {

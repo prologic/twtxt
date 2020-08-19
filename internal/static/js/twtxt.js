@@ -347,7 +347,7 @@ u("textarea#text").on("focus", function (e) {
 var startMention = null;
 
 u("textarea#text").on("keyup", function (e) {
-  if (e.key.length === 1) {
+  if (e.key.length === 1 || e.key === "Backspace") {
     var idx = e.target.selectionStart;
     var prevSymbol = e.target.value.slice(idx - 1, idx);
 
@@ -358,7 +358,6 @@ u("textarea#text").on("keyup", function (e) {
 
     if ($mentionedList.classList.contains("show")) {
       var searchStr = e.target.value.slice(startMention, idx);
-
       if (!prevSymbol.trim()) {
         clearMentionedList();
         startMention = null;
@@ -494,6 +493,16 @@ document.documentElement.addEventListener("keydown", function (e) {
           .first()
           .setSelectionRange(startMention, startMention);
         insertText(u("textarea#text"), selectedNode.innerText.trim());
+        clearMentionedList();
+      }
+
+      var caret = u("textarea#text").first().selectionStart;
+      var prevSymbol = u("textarea#text")
+        .first()
+        .value.slice(caret - 1, 1);
+
+      if (e.key === "Backspace" && prevSymbol === "@") {
+        console.log("remove @");
         clearMentionedList();
       }
     }

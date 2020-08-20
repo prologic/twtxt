@@ -263,6 +263,10 @@ function iOS() {
   );
 }
 
+function IE() {
+  return !!window.MSInputMethodContext && !!document.documentMode;
+}
+
 var deBounce = 300;
 var fetchUsersTimeout = null;
 
@@ -328,7 +332,7 @@ u("#usrBtn").on("click", function (e) {
   if (!$mentionedList.classList.contains("show")) {
     startMention = u("textarea#text").first().selectionStart + 1;
     insertText(u("textarea#text"), "@");
-    if (iOS()) {
+    if (iOS() || IE()) {
       showMentionedList();
       getUsers();
     }

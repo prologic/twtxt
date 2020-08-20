@@ -16,6 +16,78 @@ function createDiv() {
   createCookie(window.cookieName, window.cookieValue, window.cookieDuration); // Create the cookie
 }
 
+// Array.findIndex polyfill
+if (!Array.prototype.findIndex) {
+  Array.prototype.findIndex = function (predicate) {
+    if (this == null) {
+      throw new TypeError(
+        "Array.prototype.findIndex called on null or undefined"
+      );
+    }
+    if (typeof predicate !== "function") {
+      throw new TypeError("predicate must be a function");
+    }
+    var list = Object(this);
+    var length = list.length >>> 0;
+    var thisArg = arguments[1];
+    var value;
+
+    for (var i = 0; i < length; i++) {
+      value = list[i];
+      if (predicate.call(thisArg, value, i, list)) {
+        return i;
+      }
+    }
+    return -1;
+  };
+}
+
+if (!Array.prototype.find) {
+  Object.defineProperty(Array.prototype, "find", {
+    value: function (predicate) {
+      // 1. Let O be ? ToObject(this value).
+      if (this == null) {
+        throw new TypeError('"this" is null or not defined');
+      }
+
+      var o = Object(this);
+
+      // 2. Let len be ? ToLength(? Get(O, "length")).
+      var len = o.length >>> 0;
+
+      // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+      if (typeof predicate !== "function") {
+        throw new TypeError("predicate must be a function");
+      }
+
+      // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+      var thisArg = arguments[1];
+
+      // 5. Let k be 0.
+      var k = 0;
+
+      // 6. Repeat, while k < len
+      while (k < len) {
+        // a. Let Pk be ! ToString(k).
+        // b. Let kValue be ? Get(O, Pk).
+        // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
+        // d. If testResult is true, return kValue.
+        var kValue = o[k];
+        if (predicate.call(thisArg, kValue, k, o)) {
+          return kValue;
+        }
+        // e. Increase k by 1.
+        k++;
+      }
+
+      // 7. Return undefined.
+      return undefined;
+    },
+    configurable: true,
+    writable: true,
+  });
+}
+
 function createCookie(name, value, days) {
   if (days) {
     var date = new Date();
@@ -214,6 +286,8 @@ function createMentionedUserNode(username) {
 }
 
 function formatText(selector, fmt) {
+  selector.first().focus();
+
   var finalText = "";
 
   var start = selector.first().selectionStart;
@@ -240,6 +314,7 @@ function insertText(selector, text) {
   selector.first().value.slice(startMention, start);
   selector.replaceSelection(text, false);
   selector.first().focus();
+
   var selectionRange =
     selector.first().value.substr(start + text.length - 1, 1) === ")"
       ? start + text.length - 1
@@ -257,9 +332,9 @@ function iOS() {
       "iPad",
       "iPhone",
       "iPod",
-    ].includes(navigator.platform) ||
+    ].indexOf(navigator.platform) !== -1 ||
     // iPad on iOS 13 detection
-    (navigator.userAgent.includes("Mac") && "ontouchend" in document)
+    (navigator.userAgent.indexOf("Mac") !== -1 && "ontouchend" in document)
   );
 }
 
@@ -330,6 +405,7 @@ u("#imgBtn").on("click", function (e) {
 u("#usrBtn").on("click", function (e) {
   e.preventDefault();
   if (!$mentionedList.classList.contains("show")) {
+    u("textarea#text").first().focus();
     startMention = u("textarea#text").first().selectionStart + 1;
     insertText(u("textarea#text"), "@");
     if (iOS() || IE()) {
@@ -362,6 +438,7 @@ u("textarea#text").on("keyup", function (e) {
 
     if ($mentionedList.classList.contains("show")) {
       var searchStr = e.target.value.slice(startMention, idx);
+      console.log("searchStr", searchStr);
       if (!prevSymbol.trim()) {
         clearMentionedList();
         startMention = null;
@@ -440,14 +517,19 @@ u("#burgerMenu").on("click", function (e) {
   }
 });
 
-document.documentElement.addEventListener("keydown", function (e) {
+u("body").on("keydown", function (e) {
   if (u("#mentioned-list").first()) {
     if (u("#mentioned-list").first().classList.contains("show")) {
       if (e.key === "Escape") {
         clearMentionedList();
       }
 
-      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      if (
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown" ||
+        e.key === "Up" ||
+        e.key === "Down"
+      ) {
         e.preventDefault();
 
         var selectedIdx = u(".user-list__user").nodes.findIndex(function (
@@ -459,12 +541,12 @@ document.documentElement.addEventListener("keydown", function (e) {
         var nextIdx;
         var scrollOffset;
 
-        if (e.key === "ArrowDown") {
+        if (e.key === "ArrowDown" || e.key === "Down") {
           nextIdx =
             selectedIdx + 1 === u(".user-list__user").length
               ? 0
               : selectedIdx + 1;
-        } else if (e.key === "ArrowUp") {
+        } else if (e.key === "ArrowUp" || e.key === "Up") {
           nextIdx =
             selectedIdx - 1 < 0
               ? u(".user-list__user").length - 1
@@ -487,9 +569,13 @@ document.documentElement.addEventListener("keydown", function (e) {
       if (e.key === "Tab" || e.key === "Enter") {
         e.preventDefault();
 
-        var selectedNode = u(".user-list__user").nodes.find(function (item) {
+        var selectedNodeIdx = u(".user-list__user").nodes.findIndex(function (
+          item
+        ) {
           return item.classList.contains("selected");
         });
+
+        var selectedNode = u(".user-list__user").nodes[selectedNodeIdx];
 
         var value = u("textarea#text").first().value;
 

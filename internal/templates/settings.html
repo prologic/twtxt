@@ -95,6 +95,36 @@
         </div>
         <button type="submit" class="primary">Update</button>
       </form>
+      
+        
+      <details>
+        <summary>API Tokens</summary>
+        <table>
+          <thead>
+            <th>Client</th>
+            <th>Created</th>
+            <th>Expiry</th>
+            <th>Delete</th>
+          </thead>
+          <tbody>
+            {{range $val := .User.Tokens}}
+            <tr>
+              <td>{{$val.UserAgent}}</td>
+              <td>{{$val.CreatedAt}}</td>
+              <td>{{$val.ExpiresAt}}</td>
+              <td>
+                <form action="/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this token? This cannot be undone!');">
+                  <button type="submit" data-tooltip="Delete" class="outline secondary">
+                    <i class="icss-x"></i>
+                  </button>
+                </form>              
+              </td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </details>  
+      
 
       <details>
         <summary>Delete account</summary>

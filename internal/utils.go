@@ -118,7 +118,7 @@ func ImageToWebP(fn string) error {
 	}
 
 	if err := os.Remove(fn); err != nil {
-		log.WithError(err).Warn("error removing old PNG media %s", fn)
+		log.WithError(err).Warnf("error removing old PNG media %s", fn)
 	}
 
 	return nil

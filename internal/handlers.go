@@ -551,7 +551,11 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 
 		buf := bytes.Buffer{}
 		img := cameron.Identicon([]byte(nick), 60, 12)
-		webp.Encode(&buf, img, &webp.Options{Lossless: true})
+		if err := webp.Encode(&buf, img, &webp.Options{Lossless: true}); err != nil {
+			log.WithError(err).Error("error encoding auto generated avatar")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 
 		w.Write(buf.Bytes())
 	}

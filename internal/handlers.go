@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	"image/png"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -22,6 +21,7 @@ import (
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/StudioSol/async"
 	"github.com/aofei/cameron"
+	"github.com/chai2010/webp"
 	securejoin "github.com/cyphar/filepath-securejoin"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gomarkdown/markdown"
@@ -457,8 +457,17 @@ func (s *Server) MediaHandler() httprouter.Handle {
 		}
 		defer f.Close()
 
-		w.Header().Set("Content-Type", "image/png")
+		if filepath.Ext(fn) == ".png" {
+			metrics.Counter("media", "old_media").Inc()
+			w.Header().Set("Content-Type", "image/png")
+		} else if filepath.Ext(fn) == ".webp" {
+			w.Header().Set("Content-Type", "image/webp")
+		} else {
+			log.Warnf("unknown image type %s", fn)
+		}
+
 		w.Header().Set("Etag", etag)
+
 		if _, err := io.Copy(w, f); err != nil {
 			log.WithError(err).Error("error writing media response")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -470,7 +479,7 @@ func (s *Server) MediaHandler() httprouter.Handle {
 // AvatarHandler ...
 func (s *Server) AvatarHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Content-Type", "image/webp")
 		w.Header().Set("Cache-Control", "public, no-cache, must-revalidate")
 
 		nick := NormalizeUsername(p.ByName("nick"))
@@ -484,7 +493,16 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			return
 		}
 
-		fn := filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.png", nick))
+		oldAvatarPng := filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.png", nick))
+		if FileExists(oldAvatarPng) {
+			metrics.Counter("media", "old_avatar").Inc()
+			if err := ImageToWebP(oldAvatarPng); err != nil {
+				log.WithError(err).Error("error converting old avatar PNG to WebP")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+		}
+
+		fn := filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.webp", nick))
 		if fileInfo, err := os.Stat(fn); err == nil {
 			etag := fmt.Sprintf("W/\"%s-%s\"", r.RequestURI, fileInfo.ModTime().Format(time.RFC3339))
 
@@ -533,7 +551,7 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 
 		buf := bytes.Buffer{}
 		img := cameron.Identicon([]byte(nick), 60, 12)
-		png.Encode(&buf, img)
+		webp.Encode(&buf, img, &webp.Options{Lossless: true})
 
 		w.Write(buf.Bytes())
 	}
@@ -589,7 +607,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 							twtxtBot,
 							fmt.Sprintf(
 								"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-								nick, URLForUser(s.config.BaseURL, nick),
+								nick, URLForUser(s.config, nick),
 								followerClient.Nick, followerClient.URL,
 								followerClient.ClientName, followerClient.ClientVersion,
 							),
@@ -614,7 +632,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 			}
 			defer f.Close()
 			w.Write([]byte(fmt.Sprintf("# nick = %s\n", nick)))
-			w.Write([]byte(fmt.Sprintf("# url = %s\n", URLForUser(s.config.BaseURL, nick))))
+			w.Write([]byte(fmt.Sprintf("# url = %s\n", URLForUser(s.config, nick))))
 			if _, err := io.Copy(w, f); err != nil {
 				log.WithError(err).Error("error sending feed response")
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -1088,7 +1106,7 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.User.Follow(name, URLForUser(s.config.BaseURL, name))
+		ctx.User.Follow(name, URLForUser(s.config, name))
 
 		if err := s.db.SetUser(ctx.Username, ctx.User); err != nil {
 			ctx.Error = true
@@ -1102,8 +1120,8 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			twtxtBot,
 			fmt.Sprintf(
 				"FEED: @<%s %s> from @<%s %s>",
-				name, URLForUser(s.config.BaseURL, name),
-				ctx.User.Username, URLForUser(s.config.BaseURL, ctx.User.Username),
+				name, URLForUser(s.config, name),
+				ctx.User.Username, URLForUser(s.config, ctx.User.Username),
 			),
 		); err != nil {
 			log.WithError(err).Warnf("error appending special FOLLOW post")
@@ -1275,7 +1293,7 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 		user.Username = username
 		user.Email = email
 		user.Password = hash
-		user.URL = URLForUser(s.config.BaseURL, username)
+		user.URL = URLForUser(s.config, username)
 		user.CreatedAt = time.Now()
 
 		if err := s.db.SetUser(username, user); err != nil {
@@ -1399,8 +1417,8 @@ func (s *Server) FollowHandler() httprouter.Handle {
 					twtxtBot,
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
-						user.Username, URLForUser(s.config.BaseURL, user.Username),
+						followee.Username, URLForUser(s.config, followee.Username),
+						user.Username, URLForUser(s.config, user.Username),
 						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
@@ -1431,8 +1449,8 @@ func (s *Server) FollowHandler() httprouter.Handle {
 					twtxtBot,
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						feed.Name, URLForUser(s.config.BaseURL, feed.Name),
-						user.Username, URLForUser(s.config.BaseURL, user.Username),
+						feed.Name, URLForUser(s.config, feed.Name),
+						user.Username, URLForUser(s.config, user.Username),
 						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
@@ -1565,8 +1583,8 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 					twtxtBot,
 					fmt.Sprintf(
 						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
-						user.Username, URLForUser(s.config.BaseURL, user.Username),
+						followee.Username, URLForUser(s.config, followee.Username),
+						user.Username, URLForUser(s.config, user.Username),
 						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
@@ -1859,7 +1877,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 // ExternalAvatarHandler ...
 func (s *Server) ExternalAvatarHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Content-Type", "image/webp")
 		w.Header().Set("Cache-Control", "public, no-cache, must-revalidate")
 
 		slug := p.ByName("slug")

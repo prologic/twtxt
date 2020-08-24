@@ -142,12 +142,12 @@ func (job *UpdateFeedsJob) Run() {
 
 	// Ensure all specialUsername feeds are in the cache
 	for _, username := range specialUsernames {
-		sources[username] = URLForUser(job.conf.BaseURL, username)
+		sources[username] = URLForUser(job.conf, username)
 	}
 
 	// Ensure all twtxtBots feeds are in the cache
 	for _, bot := range twtxtBots {
-		sources[bot] = URLForUser(job.conf.BaseURL, bot)
+		sources[bot] = URLForUser(job.conf, bot)
 	}
 
 	for _, feed := range feeds {

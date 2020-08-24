@@ -188,7 +188,7 @@ func (a *API) RegisterEndpoint() httprouter.Handle {
 			Username:  username,
 			Email:     email,
 			Password:  hash,
-			URL:       URLForUser(a.config.BaseURL, username),
+			URL:       URLForUser(a.config, username),
 			CreatedAt: time.Now(),
 		}
 
@@ -477,8 +477,8 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 					twtxtBot,
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						followee.Username, URLForUser(a.config.BaseURL, followee.Username),
-						user.Username, URLForUser(a.config.BaseURL, user.Username),
+						followee.Username, URLForUser(a.config, followee.Username),
+						user.Username, URLForUser(a.config, user.Username),
 						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
@@ -505,8 +505,8 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 					twtxtBot,
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						feed.Name, URLForUser(a.config.BaseURL, feed.Name),
-						user.Username, URLForUser(a.config.BaseURL, user.Username),
+						feed.Name, URLForUser(a.config, feed.Name),
+						user.Username, URLForUser(a.config, user.Username),
 						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {

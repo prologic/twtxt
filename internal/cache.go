@@ -173,8 +173,8 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 				scanner := bufio.NewScanner(limitedReader)
 				twter := types.Twter{Nick: nick}
 				if strings.HasPrefix(url, conf.BaseURL) {
-					twter.URL = URLForUser(conf.BaseURL, nick)
-					twter.Avatar = URLForAvatar(conf.BaseURL, nick)
+					twter.URL = URLForUser(conf, nick)
+					twter.Avatar = URLForAvatar(conf, nick)
 				} else {
 					twter.URL = url
 					twter.Avatar = GetExternalAvatar(conf, url)

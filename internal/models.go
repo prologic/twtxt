@@ -93,7 +93,7 @@ func CreateFeed(conf *Config, db Store, user *User, name string, force bool) err
 
 	feed := NewFeed()
 	feed.Name = name
-	feed.URL = URLForUser(conf.BaseURL, name)
+	feed.URL = URLForUser(conf, name)
 	feed.Followers = followers
 	feed.CreatedAt = time.Now()
 

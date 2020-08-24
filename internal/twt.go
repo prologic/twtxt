@@ -41,7 +41,7 @@ func ExpandMentions(conf *Config, db Store, user *User, text string) string {
 
 		username := NormalizeUsername(mentionedNick)
 		if db.HasUser(username) || db.HasFeed(username) {
-			return fmt.Sprintf("@<%s %s>", username, URLForUser(conf.BaseURL, username))
+			return fmt.Sprintf("@<%s %s>", username, URLForUser(conf, username))
 		} else {
 			// Not expanding if we're not following
 			return match
@@ -178,7 +178,7 @@ func GetUserTwts(conf *Config, username string) (types.Twts, error) {
 
 	twter := types.Twter{
 		Nick: username,
-		URL:  URLForUser(conf.BaseURL, username),
+		URL:  URLForUser(conf, username),
 	}
 	fn := filepath.Join(p, username)
 	f, err := os.Open(fn)

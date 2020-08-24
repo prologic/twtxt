@@ -15,6 +15,7 @@ require (
 	github.com/andyleap/microformats v0.0.0-20150523144534-25ae286f528b
 	github.com/aofei/cameron v1.1.4
 	github.com/apex/log v1.8.0
+	github.com/chai2010/webp v1.1.0
 	github.com/creasty/defaults v1.5.0
 	github.com/cyphar/filepath-securejoin v0.2.2
 	github.com/daaku/go.zipexe v1.0.1 // indirect
@@ -45,6 +46,7 @@ require (
 	github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987
 	github.com/prologic/webmention v0.0.0-20200818004448-ca766414c4b1
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
+	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0
 	github.com/robfig/cron v1.2.0
 	github.com/securisec/go-keywords v0.0.0-20200619134240-769e7273f2ed
 	github.com/sirupsen/logrus v1.6.0

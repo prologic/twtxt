@@ -186,6 +186,17 @@ func (s *Server) setupMetrics() {
 			"commit":       twtxt.Commit,
 		}).Set(1)
 
+	// old avatars
+	metrics.NewCounter(
+		"media", "old_avatar",
+		"Count of old Avtar (PNG) conversions",
+	)
+	// old media
+	metrics.NewCounter(
+		"media", "old_media",
+		"Count of old Media (PNG) served",
+	)
+
 	s.AddRoute("GET", "/metrics", metrics.Handler())
 }
 
@@ -350,6 +361,7 @@ func (s *Server) initRoutes() {
 		s.router.GET("/user/:nick", s.am.MustAuth(s.ProfileHandler()))
 		s.router.GET("/user/:nick/config.yaml", s.am.MustAuth(s.UserConfigHandler()))
 	}
+	s.router.GET("/user/:nick/avatar.webp", s.AvatarHandler())
 	s.router.GET("/user/:nick/avatar.png", s.AvatarHandler())
 	s.router.HEAD("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/twtxt.txt", s.TwtxtHandler())

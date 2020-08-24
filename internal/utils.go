@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"html/template"
 	"image"
-	"image/png"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -20,8 +19,10 @@ import (
 	// Blank import so we can handle image/jpeg
 	_ "image/gif"
 	_ "image/jpeg"
+	_ "image/png"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/chai2010/webp"
 	"github.com/disintegration/imageorient"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
@@ -81,8 +82,50 @@ var (
 	ErrInvalidImage     = errors.New("error: invalid image")
 )
 
+func ReplaceExt(fn, newExt string) string {
+	oldExt := filepath.Ext(fn)
+	return fmt.Sprintf("%s%s", strings.TrimSuffix(fn, oldExt), newExt)
+}
+
+func ImageToWebP(fn string) error {
+	if !IsImage(fn) {
+		return ErrInvalidImage
+	}
+
+	f, err := os.Open(fn)
+	if err != nil {
+		log.WithError(err).Errorf("error opening image  %s", fn)
+		return err
+	}
+	defer f.Close()
+
+	img, _, err := image.Decode(f)
+	if err != nil {
+		log.WithError(err).Error("image.Decode failed")
+		return err
+	}
+
+	of, err := os.OpenFile(ReplaceExt(fn, ".webp"), os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		log.WithError(err).Error("error opening output file")
+		return err
+	}
+	defer of.Close()
+
+	if err := webp.Encode(of, img, &webp.Options{Lossless: true}); err != nil {
+		log.WithError(err).Error("error reencoding image")
+		return err
+	}
+
+	if err := os.Remove(fn); err != nil {
+		log.WithError(err).Warn("error removing old PNG media %s", fn)
+	}
+
+	return nil
+}
+
 func GetExternalAvatar(conf *Config, uri string) string {
-	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.png", slug.Make(uri)))
+	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.webp", slug.Make(uri)))
 	if FileExists(fn) {
 		return fmt.Sprintf(
 			"%s/external/%s",
@@ -103,34 +146,25 @@ func GetExternalAvatar(conf *Config, uri string) string {
 
 	name := slug.Make(base.String())
 
-	// Look for <url>/../avatar.png
-	source, _ := base.Parse("../avatar.png")
-	if ResourceExists(source.String()) {
-		opts := &ImageOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: AvatarResolution}
-		avatar, err := DownloadImage(conf, source.String(), externalDir, name, opts)
-		if err != nil {
-			log.WithError(err).
-				WithField("base", base.String()).
-				WithField("source", source.String()).
-				Error("error downloading external avatar")
-			return ""
-		}
-		return avatar
+	candidates := []string{
+		"../avatar.png", "./avatar.png",
+		"../avatar.webp", "./avatar.webp",
 	}
 
-	// Look for <url>/avatar.png
-	source, _ = base.Parse("./avatar.png")
-	if ResourceExists(source.String()) {
-		opts := &ImageOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: AvatarResolution}
-		avatar, err := DownloadImage(conf, source.String(), externalDir, name, opts)
-		if err != nil {
-			log.WithError(err).
-				WithField("base", base.String()).
-				WithField("source", source.String()).
-				Error("error downloading external avatar")
-			return ""
+	for _, candidate := range candidates {
+		source, _ := base.Parse(candidate)
+		if ResourceExists(source.String()) {
+			opts := &ImageOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: AvatarResolution}
+			avatar, err := DownloadImage(conf, source.String(), externalDir, name, opts)
+			if err != nil {
+				log.WithError(err).
+					WithField("base", base.String()).
+					WithField("source", source.String()).
+					Error("error downloading external avatar")
+				return ""
+			}
+			return avatar
 		}
-		return avatar
 	}
 
 	log.Warnf("unable to find a suitable avatar for %s", uri)
@@ -353,9 +387,9 @@ func DownloadImage(conf *Config, url string, resource, name string, opts *ImageO
 
 	if name == "" {
 		uuid := shortuuid.New()
-		fn = filepath.Join(p, fmt.Sprintf("%s.png", uuid))
+		fn = filepath.Join(p, fmt.Sprintf("%s.webp", uuid))
 	} else {
-		fn = fmt.Sprintf("%s.png", filepath.Join(p, name))
+		fn = fmt.Sprintf("%s.webp", filepath.Join(p, name))
 	}
 
 	of, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE, 0644)
@@ -365,8 +399,7 @@ func DownloadImage(conf *Config, url string, resource, name string, opts *ImageO
 	}
 	defer of.Close()
 
-	// Encode uses a Writer, use a Buffer if you need the raw []byte
-	if err := png.Encode(of, newImg); err != nil {
+	if err := webp.Encode(of, newImg, &webp.Options{Lossless: true}); err != nil {
 		log.WithError(err).Error("error reencoding image")
 		return "", err
 	}
@@ -415,9 +448,9 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 
 	if name == "" {
 		uuid := shortuuid.New()
-		fn = filepath.Join(p, fmt.Sprintf("%s.png", uuid))
+		fn = filepath.Join(p, fmt.Sprintf("%s.webp", uuid))
 	} else {
-		fn = fmt.Sprintf("%s.png", filepath.Join(p, name))
+		fn = fmt.Sprintf("%s.webp", filepath.Join(p, name))
 	}
 
 	of, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE, 0644)
@@ -446,8 +479,7 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 		}
 	}
 
-	// Encode uses a Writer, use a Buffer if you need the raw []byte
-	if err := png.Encode(of, newImg); err != nil {
+	if err := webp.Encode(of, newImg, &webp.Options{Lossless: true}); err != nil {
 		log.WithError(err).Error("error reencoding image")
 		return "", err
 	}
@@ -577,18 +609,26 @@ func URLForTwt(baseURL, hash string) string {
 	)
 }
 
-func URLForUser(baseURL, username string) string {
+func URLForUser(conf *Config, username string) string {
 	return fmt.Sprintf(
 		"%s/user/%s/twtxt.txt",
-		strings.TrimSuffix(baseURL, "/"),
+		strings.TrimSuffix(conf.BaseURL, "/"),
 		username,
 	)
 }
 
-func URLForAvatar(baseURL, username string) string {
+func URLForAvatar(conf *Config, username string) string {
+	// Support the old .png avatar(s)
+	if !FileExists(filepath.Join(conf.Data, avatarsDir, fmt.Sprintf("%s.webp", username))) {
+		return fmt.Sprintf(
+			"%s/user/%s/avatar.png",
+			strings.TrimSuffix(conf.BaseURL, "/"),
+			username,
+		)
+	}
 	return fmt.Sprintf(
-		"%s/user/%s/avatar.png",
-		strings.TrimSuffix(baseURL, "/"),
+		"%s/user/%s/avatar.webp",
+		strings.TrimSuffix(conf.BaseURL, "/"),
 		username,
 	)
 }

@@ -60,6 +60,15 @@ type User struct {
 	sources map[string]string
 }
 
+// Token ...
+type Token struct {
+	Value     string    // -- The actual JWT token value which stored encrypted/signed data as given to the client using it.
+	UserAgent string    // -- The name of the client and version number that initially created the token.
+	CreatedAt time.Time // -- The date/time the token was created
+	ExpiresAt time.Time // -- The date/time the token expires (if ever)
+
+}
+
 func CreateFeed(conf *Config, db Store, user *User, name string, force bool) error {
 	if user != nil {
 		if !force && len(user.Feeds) > maxUserFeeds {

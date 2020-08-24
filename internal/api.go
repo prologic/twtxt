@@ -256,7 +256,7 @@ func (a *API) AuthEndpoint() httprouter.Handle {
 			return
 		}
 
-		user.AddToken(token.Value)
+		user.AddToken(token)
 		if err := a.db.SetUser(user.Username, user); err != nil {
 			log.WithError(err).Error("error saving user object")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)

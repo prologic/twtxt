@@ -51,7 +51,7 @@ type User struct {
 	IsFollowingPubliclyVisible bool   `default:"true"`
 
 	Feeds  []string `default:"[]"`
-	Tokens []string `default:"[]"`
+	Tokens []*Token `default:"[]"`
 
 	Followers map[string]string `default:"{}"`
 	Following map[string]string `default:"{}"`
@@ -239,15 +239,17 @@ func (f *Feed) Bytes() ([]byte, error) {
 	return data, nil
 }
 
-func (u *User) AddToken(token string) {
-	if !u.HasToken(token) {
+// HasToken will add a token to a user if it doesn't exist already
+func (u *User) AddToken(token *Token) {
+	if !u.HasToken(token.Value) {
 		u.Tokens = append(u.Tokens, token)
 	}
 }
 
+// HasToken will compare a token value with stored tokens
 func (u *User) HasToken(token string) bool {
 	for _, t := range u.Tokens {
-		if t == token {
+		if t.Value == token {
 			return true
 		}
 	}

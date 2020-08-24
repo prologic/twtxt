@@ -71,16 +71,24 @@ func (a *API) initRoutes() {
 }
 
 // CreateToken ...
-func (a *API) CreateToken(user *User) (string, error) {
+func (a *API) CreateToken(user *User, r *http.Request) (*Token, error) {
 	claims := jwt.MapClaims{}
 	claims["username"] = user.Username
+	createdAt := time.Now()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(a.config.APISigningKey)
 	if err != nil {
 		log.WithError(err).Error("error creating signed token")
-		return "", err
+		return nil, err
 	}
-	return tokenString, nil
+
+	tkn := &Token{
+		Value:     tokenString,
+		UserAgent: r.UserAgent(),
+		CreatedAt: createdAt,
+	}
+
+	return tkn, nil
 }
 
 func (a *API) isAuthorized(endpoint httprouter.Handle) httprouter.Handle {
@@ -241,21 +249,21 @@ func (a *API) AuthEndpoint() httprouter.Handle {
 		// Login successful
 		log.WithField("username", username).Info("login successful")
 
-		token, err := a.CreateToken(user)
+		token, err := a.CreateToken(user, r)
 		if err != nil {
 			log.WithError(err).Error("error creating token")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
-		user.AddToken(token)
+		user.AddToken(token.Value)
 		if err := a.db.SetUser(user.Username, user); err != nil {
 			log.WithError(err).Error("error saving user object")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
-		res := types.AuthResponse{Token: token}
+		res := types.AuthResponse{Token: token.Value}
 
 		body, err := res.Bytes()
 		if err != nil {

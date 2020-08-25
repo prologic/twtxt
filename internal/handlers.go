@@ -459,6 +459,7 @@ func (s *Server) MediaHandler() httprouter.Handle {
 
 		w.Header().Set("Content-Type", "image/png")
 		w.Header().Set("Etag", etag)
+		w.Header().Set("Cache-Control", "public, max-age=7776000")
 		if _, err := io.Copy(w, f); err != nil {
 			log.WithError(err).Error("error writing media response")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)

@@ -367,6 +367,7 @@ func (s *Server) initRoutes() {
 		s.router.GET("/user/:nick/config.yaml", s.am.MustAuth(s.UserConfigHandler()))
 	}
 	s.router.GET("/user/:nick/avatar", s.AvatarHandler())
+	s.router.HEAD("/user/:nick/avatar", s.AvatarHandler())
 	s.router.HEAD("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/followers", s.FollowersHandler())
@@ -406,6 +407,7 @@ func (s *Server) initRoutes() {
 
 	// Media Handling
 	s.router.GET("/media/:name", s.MediaHandler())
+	s.router.HEAD("/media/:name", s.MediaHandler())
 	s.router.POST("/upload", s.am.MustAuth(s.UploadMediaHandler()))
 
 	// User/Feed Lookups

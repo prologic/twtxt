@@ -121,39 +121,6 @@ func ImageToPng(fn string) error {
 	return nil
 }
 
-func ImageToWebP(fn string) error {
-	if !IsImage(fn) {
-		return ErrInvalidImage
-	}
-
-	f, err := os.Open(fn)
-	if err != nil {
-		log.WithError(err).Errorf("error opening image  %s", fn)
-		return err
-	}
-	defer f.Close()
-
-	img, _, err := image.Decode(f)
-	if err != nil {
-		log.WithError(err).Error("image.Decode failed")
-		return err
-	}
-
-	of, err := os.OpenFile(ReplaceExt(fn, ".webp"), os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		log.WithError(err).Error("error opening output file")
-		return err
-	}
-	defer of.Close()
-
-	if err := webp.Encode(of, img, &webp.Options{Lossless: true}); err != nil {
-		log.WithError(err).Error("error reencoding image")
-		return err
-	}
-
-	return nil
-}
-
 func GetExternalAvatar(conf *Config, uri string) string {
 	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.webp", slug.Make(uri)))
 	if FileExists(fn) {

@@ -94,9 +94,9 @@ func (c *Client) do(req *http.Request, v interface{}) error {
 	defer res.Body.Close()
 
 	switch res.StatusCode {
-	case 401:
+	case http.StatusUnauthorized:
 		return ErrUnauthorized
-	case 500:
+	case http.StatusInternalServerError:
 		return ErrServerError
 	}
 

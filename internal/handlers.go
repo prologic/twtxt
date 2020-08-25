@@ -497,6 +497,7 @@ func (s *Server) MediaHandler() httprouter.Handle {
 		defer f.Close()
 
 		w.Header().Set("Etag", etag)
+    w.Header().Set("Cache-Control", "public, max-age=7776000")
 
 		if r.Method == http.MethodHead {
 			return

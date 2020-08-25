@@ -19,6 +19,7 @@ import (
 	// Blank import so we can handle image/jpeg
 	_ "image/gif"
 	_ "image/jpeg"
+	"image/png"
 	_ "image/png"
 
 	"github.com/PuerkitoBio/goquery"
@@ -87,6 +88,39 @@ func ReplaceExt(fn, newExt string) string {
 	return fmt.Sprintf("%s%s", strings.TrimSuffix(fn, oldExt), newExt)
 }
 
+func ImageToPng(fn string) error {
+	if !IsImage(fn) {
+		return ErrInvalidImage
+	}
+
+	f, err := os.Open(fn)
+	if err != nil {
+		log.WithError(err).Errorf("error opening image  %s", fn)
+		return err
+	}
+	defer f.Close()
+
+	img, _, err := image.Decode(f)
+	if err != nil {
+		log.WithError(err).Error("image.Decode failed")
+		return err
+	}
+
+	of, err := os.OpenFile(ReplaceExt(fn, ".png"), os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		log.WithError(err).Error("error opening output file")
+		return err
+	}
+	defer of.Close()
+
+	if err := png.Encode(of, img); err != nil {
+		log.WithError(err).Error("error reencoding image")
+		return err
+	}
+
+	return nil
+}
+
 func ImageToWebP(fn string) error {
 	if !IsImage(fn) {
 		return ErrInvalidImage
@@ -115,10 +149,6 @@ func ImageToWebP(fn string) error {
 	if err := webp.Encode(of, img, &webp.Options{Lossless: true}); err != nil {
 		log.WithError(err).Error("error reencoding image")
 		return err
-	}
-
-	if err := os.Remove(fn); err != nil {
-		log.WithError(err).Warnf("error removing old PNG media %s", fn)
 	}
 
 	return nil
@@ -404,6 +434,14 @@ func DownloadImage(conf *Config, url string, resource, name string, opts *ImageO
 		return "", err
 	}
 
+	// Re-encode to PNG (for older browsers)
+	if err := of.Close(); err != nil {
+		log.WithError(err).Warnf("error cloding file %s", fn)
+	}
+	if err := ImageToPng(fn); err != nil {
+		log.WithError(err).Warnf("error reencoding image to PNG (for older browsers: %s", fn)
+	}
+
 	return fmt.Sprintf(
 		"%s/%s/%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
@@ -484,10 +522,18 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 		return "", err
 	}
 
+	// Re-encode to PNG (for older browsers)
+	if err := of.Close(); err != nil {
+		log.WithError(err).Warnf("error cloding file %s", fn)
+	}
+	if err := ImageToPng(fn); err != nil {
+		log.WithError(err).Warnf("error reencoding image to PNG (for older browsers: %s", fn)
+	}
+
 	return fmt.Sprintf(
 		"%s/%s/%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
-		resource, filepath.Base(fn),
+		resource, strings.TrimSuffix(filepath.Base(fn), filepath.Ext(fn)),
 	), nil
 }
 

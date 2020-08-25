@@ -29,6 +29,7 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/gorilla/feeds"
 	"github.com/julienschmidt/httprouter"
+	"github.com/rickb777/accept"
 	"github.com/securisec/go-keywords"
 	log "github.com/sirupsen/logrus"
 	"github.com/vcraescu/go-paginator"
@@ -424,6 +425,27 @@ func (s *Server) OldTwtxtHandler() httprouter.Handle {
 	}
 }
 
+// OldAvatarHandler ...
+// Redirect old URIs (twtxt <= v0.1.0) of the form /user/<nick>/avatar.png -> /user/<nick>/avatar
+// TODO: Remove this after v1
+func (s *Server) OldAvatarHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		nick := NormalizeUsername(p.ByName("nick"))
+		if nick == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		newURI := fmt.Sprintf(
+			"%s/user/%s/avatar",
+			strings.TrimSuffix(s.config.BaseURL, "/"),
+			nick,
+		)
+
+		http.Redirect(w, r, newURI, http.StatusMovedPermanently)
+	}
+}
+
 // MediaHandler ...
 func (s *Server) MediaHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -433,7 +455,24 @@ func (s *Server) MediaHandler() httprouter.Handle {
 			return
 		}
 
-		fn := filepath.Join(s.config.Data, mediaDir, name)
+		var fn string
+
+		if strings.HasSuffix(name, ".png") {
+			metrics.Counter("media", "old_media").Inc()
+			w.Header().Set("Content-Type", "image/png")
+			fn = filepath.Join(s.config.Data, mediaDir, name)
+		} else {
+			if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+				w.Header().Set("Content-Type", "image/webp")
+				fn = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.webp", name))
+			} else {
+				// Support older browsers like IE11 that don't support WebP :/
+				metrics.Counter("media", "old_media").Inc()
+				w.Header().Set("Content-Type", "image/png")
+				fn = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.png", name))
+			}
+		}
+
 		fileInfo, err := os.Stat(fn)
 		if err != nil {
 			log.WithError(err).Error("error reading media file info")
@@ -457,16 +496,11 @@ func (s *Server) MediaHandler() httprouter.Handle {
 		}
 		defer f.Close()
 
-		if filepath.Ext(fn) == ".png" {
-			metrics.Counter("media", "old_media").Inc()
-			w.Header().Set("Content-Type", "image/png")
-		} else if filepath.Ext(fn) == ".webp" {
-			w.Header().Set("Content-Type", "image/webp")
-		} else {
-			log.Warnf("unknown image type %s", fn)
-		}
-
 		w.Header().Set("Etag", etag)
+
+		if r.Method == http.MethodHead {
+			return
+		}
 
 		if _, err := io.Copy(w, f); err != nil {
 			log.WithError(err).Error("error writing media response")
@@ -479,7 +513,6 @@ func (s *Server) MediaHandler() httprouter.Handle {
 // AvatarHandler ...
 func (s *Server) AvatarHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		w.Header().Set("Content-Type", "image/webp")
 		w.Header().Set("Cache-Control", "public, no-cache, must-revalidate")
 
 		nick := NormalizeUsername(p.ByName("nick"))
@@ -493,16 +526,18 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			return
 		}
 
-		oldAvatarPng := filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.png", nick))
-		if FileExists(oldAvatarPng) {
+		var fn string
+
+		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+			fn = filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.webp", nick))
+			w.Header().Set("Content-Type", "image/webp")
+		} else {
+			// Support older browsers like IE11 that don't support WebP :/
 			metrics.Counter("media", "old_avatar").Inc()
-			if err := ImageToWebP(oldAvatarPng); err != nil {
-				log.WithError(err).Error("error converting old avatar PNG to WebP")
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			}
+			fn = filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.png", nick))
+			w.Header().Set("Content-Type", "image/png")
 		}
 
-		fn := filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.webp", nick))
 		if fileInfo, err := os.Stat(fn); err == nil {
 			etag := fmt.Sprintf("W/\"%s-%s\"", r.RequestURI, fileInfo.ModTime().Format(time.RFC3339))
 
@@ -551,9 +586,26 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 
 		buf := bytes.Buffer{}
 		img := cameron.Identicon([]byte(nick), 60, 12)
-		if err := webp.Encode(&buf, img, &webp.Options{Lossless: true}); err != nil {
-			log.WithError(err).Error("error encoding auto generated avatar")
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+
+		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+			w.Header().Set("Content-Type", "image/webp")
+			if err := webp.Encode(&buf, img, &webp.Options{Lossless: true}); err != nil {
+				log.WithError(err).Error("error encoding auto generated avatar")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+		} else {
+			// Support older browsers like IE11 that don't support WebP :/
+			metrics.Counter("media", "old_avatar").Inc()
+			w.Header().Set("Content-Type", "image/png")
+			if err := webp.Encode(&buf, img, &webp.Options{Lossless: true}); err != nil {
+				log.WithError(err).Error("error encoding auto generated avatar")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		if r.Method == http.MethodHead {
 			return
 		}
 

@@ -47,6 +47,7 @@ require (
 	github.com/prologic/webmention v0.0.0-20200818004448-ca766414c4b1
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0
+	github.com/rickb777/accept v0.0.0-20170318132422-d5183c44530d
 	github.com/robfig/cron v1.2.0
 	github.com/securisec/go-keywords v0.0.0-20200619134240-769e7273f2ed
 	github.com/sirupsen/logrus v1.6.0

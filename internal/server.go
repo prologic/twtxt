@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -47,6 +48,9 @@ type Server struct {
 
 	// Feed Cache
 	cache Cache
+
+	// Feed Archiver
+	archive Archiver
 
 	// Data Store
 	db Store
@@ -305,7 +309,7 @@ func (s *Server) setupWebMentions() {
 
 func (s *Server) setupCronJobs() error {
 	for name, jobSpec := range Jobs {
-		job := jobSpec.Factory(s.config, s.cache, s.db)
+		job := jobSpec.Factory(s.config, s.cache, s.archive, s.db)
 		if err := s.cron.AddJob(jobSpec.Schedule, job); err != nil {
 			return err
 		}
@@ -320,7 +324,7 @@ func (s *Server) runStartupJobs() {
 	log.Info("running startup jobs")
 
 	for name, jobSpec := range StartupJobs {
-		job := jobSpec.Factory(s.config, s.cache, s.db)
+		job := jobSpec.Factory(s.config, s.cache, s.archive, s.db)
 		log.Infof("running %s now...", name)
 		job.Run()
 	}
@@ -468,6 +472,12 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		return nil, err
 	}
 
+	archive, err := NewDiskArchiver(filepath.Join(config.Data, archiveDir))
+	if err != nil {
+		log.WithError(err).Error("error creating feed archiver")
+		return nil, err
+	}
+
 	db, err := NewStore(config.Store)
 	if err != nil {
 		log.WithError(err).Error("error creating store")
@@ -501,7 +511,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		db,
 	)
 
-	api := NewAPI(router, config, cache, db, pm)
+	api := NewAPI(router, config, cache, archive, db, pm)
 
 	server := &Server{
 		bind:      bind,
@@ -525,8 +535,10 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		api: api,
 
 		// Feed Cache
-
 		cache: cache,
+
+		// Feed Archiver
+		archive: archive,
 
 		// Data Store
 		db: db,

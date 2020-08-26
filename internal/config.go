@@ -28,6 +28,7 @@ type Config struct {
 	TwtsPerPage       int           `json:"twts_per_page"`
 	MaxUploadSize     int64         `json:"max_upload_size"`
 	MaxTwtLength      int           `json:"max_twt_length"`
+	MaxCacheTTL       time.Duration `json:"max_cache_ttl"`
 	OpenProfiles      bool          `json:"open_profiles"`
 	OpenRegistrations bool          `json:"open_registrations"`
 	SessionExpiry     time.Duration `json:"session_expiry"`

@@ -41,16 +41,17 @@ var (
 
 // API ...
 type API struct {
-	router *Router
-	config *Config
-	cache  Cache
-	db     Store
-	pm     passwords.Passwords
+	router  *Router
+	config  *Config
+	cache   Cache
+	archive Archiver
+	db      Store
+	pm      passwords.Passwords
 }
 
 // NewAPI ...
-func NewAPI(router *Router, config *Config, cache Cache, db Store, pm passwords.Passwords) *API {
-	api := &API{router, config, cache, db, pm}
+func NewAPI(router *Router, config *Config, cache Cache, archive Archiver, db Store, pm passwords.Passwords) *API {
+	api := &API{router, config, cache, archive, db, pm}
 
 	api.initRoutes()
 
@@ -277,7 +278,7 @@ func (a *API) PostEndpoint() httprouter.Handle {
 		defer func() {
 			// Update user's own timeline with their own new post.
 			sources := map[string]string{user.Username: user.URL}
-			a.cache.FetchTwts(a.config, sources)
+			a.cache.FetchTwts(a.config, a.archive, sources)
 		}()
 
 		req, err := types.NewPostRequest(r.Body)

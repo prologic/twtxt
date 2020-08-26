@@ -21,6 +21,10 @@ type Twter struct {
 	Tagline string
 }
 
+func (twter Twter) IsZero() bool {
+	return twter.Nick == "" && twter.URL == ""
+}
+
 // Twt ...
 type Twt struct {
 	Twter   Twter
@@ -81,6 +85,10 @@ func (twt Twt) Hash() string {
 	twt.hash = hash[len(hash)-HashLength:]
 
 	return twt.hash
+}
+
+func (twt Twt) IsZero() bool {
+	return twt.Twter.IsZero() && twt.Created.IsZero() && twt.Text == ""
 }
 
 // Twts typedef to be able to attach sort methods

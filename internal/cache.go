@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -92,7 +93,7 @@ func LoadCache(path string) (Cache, error) {
 const maxfetchers = 50
 
 // FetchTwts ...
-func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
+func (cache Cache) FetchTwts(conf *Config, archive Archiver, sources map[string]string) {
 	var mu sync.RWMutex
 
 	stime := time.Now()
@@ -182,15 +183,27 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 						twter.Avatar = URLForExternalAvatar(conf, url)
 					}
 				}
-				twts, err := ParseFile(scanner, twter)
+				twts, old, err := ParseFile(scanner, twter, conf.MaxCacheTTL)
 				if err != nil {
 					log.WithError(err).Errorf("error parsing feed %s: %s", nick, url)
 					twtsch <- nil
 					return
 				}
 
+				// Archive old twts
+				sort.Sort(sort.Reverse(old))
+				for _, twt := range old {
+					if archive.Has(twt.Hash()) {
+						// assume we have archived this twt and all older ones
+						break
+					}
+					if err := archive.Archive(twt); err != nil {
+						log.WithError(err).Error("error arching twt %s aborting", twt.Hash())
+						break
+					}
+				}
+
 				if len(twts) == 0 {
-					log.WithField("nick", nick).WithField("url", url).Warn("no twts parsed, possibly bad feed")
 					twtsch <- nil
 					return
 				}

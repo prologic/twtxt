@@ -48,6 +48,9 @@ const (
 	// DefaultMaxTwtLength is the default maximum length of posts permitted
 	DefaultMaxTwtLength = 288
 
+	// DefaultMaxCacheTTL is the default maximum cache ttl of twts in memory
+	DefaultMaxCacheTTL = time.Hour * 100
+
 	// DefaultOpenProfiles is the default for whether or not to have open user profiles
 	DefaultOpenProfiles = false
 
@@ -235,6 +238,14 @@ func WithTwtsPerPage(twtsPerPage int) Option {
 func WithMaxTwtLength(maxTwtLength int) Option {
 	return func(cfg *Config) error {
 		cfg.MaxTwtLength = maxTwtLength
+		return nil
+	}
+}
+
+// WithMaxCacheTTL sets the maximum cache ttl of twts in memory
+func WithMaxCacheTTL(maxCacheTTL time.Duration) Option {
+	return func(cfg *Config) error {
+		cfg.MaxCacheTTL = maxCacheTTL
 		return nil
 	}
 }

@@ -714,7 +714,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 			sources := map[string]string{
 				ctx.User.Username: ctx.User.URL,
 			}
-			s.cache.FetchTwts(s.config, sources)
+			s.cache.FetchTwts(s.config, s.archive, sources)
 		}()
 
 		postas := strings.ToLower(strings.TrimSpace(r.FormValue("postas")))
@@ -919,12 +919,18 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			}
 		}
 
-		// If the twt is not in the cache look for it across all local users
+		// If the twt is not in the cache look for it in the archive
 		if len(twts) == 0 {
-			for _, twt := range s.cache.GetByPrefix(s.config.BaseURL, false) {
-				if twt.Hash() == hash {
-					twts = append(twts, twt)
+			if s.archive.Has(hash) {
+				twt, err := s.archive.Get(hash)
+				if err != nil {
+					ctx.Error = true
+					ctx.Message = "Error loading twt from archive, please try again"
+					s.render("error", w, ctx)
+					return
 				}
+
+				twts = append(twts, twt)
 			}
 		}
 
@@ -1885,7 +1891,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 
 		if !s.cache.IsCached(url) {
 			sources := map[string]string{nick: url}
-			s.cache.FetchTwts(s.config, sources)
+			s.cache.FetchTwts(s.config, s.archive, sources)
 		}
 
 		twts := s.cache.GetByURL(url)

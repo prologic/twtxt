@@ -15,6 +15,7 @@
 /data/cache
 /data/feeds/*
 /data/media/*
+/data/archive/*
 /data/avatars/*
 /data/external/*
 /data/feedsources

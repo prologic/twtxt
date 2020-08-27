@@ -92,9 +92,6 @@ func (a *DiskArchiver) makePath(hash string) string {
 
 func (a *DiskArchiver) fileExists(fn string) bool {
 	if _, err := os.Stat(fn); err != nil {
-		if os.IsNotExist(err) {
-			return false
-		}
 		return false
 	}
 	return true

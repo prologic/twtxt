@@ -53,7 +53,7 @@ type Archiver interface {
 	Archive(twt types.Twt) error
 }
 
-// NullArchiver implements Archiver using dummy implementaiton stubs
+// NullArchiver implements Archiver using dummy implementation stubs
 type NullArchiver struct{}
 
 func NewNullArchiver() (Archiver, error) {

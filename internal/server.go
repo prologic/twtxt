@@ -582,6 +582,8 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("Admin Name: %s", server.config.AdminName)
 	log.Infof("Admin Email: %s", server.config.AdminEmail)
 	log.Infof("Max Twts per Page: %d", server.config.TwtsPerPage)
+	log.Infof("Max Cache TTL: %s", server.config.MaxCacheTTL)
+	log.Infof("Max Cache Items: %d", server.config.MaxCacheItems)
 	log.Infof("Maximum length of Posts: %d", server.config.MaxTwtLength)
 	log.Infof("Open User Profiles: %t", server.config.OpenProfiles)
 	log.Infof("Open Registrations: %t", server.config.OpenRegistrations)
@@ -591,7 +593,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("SMTP From: %s", server.config.SMTPFrom)
 	log.Infof("Max Fetch Limit: %s", humanize.Bytes(uint64(server.config.MaxFetchLimit)))
 	log.Infof("Max Upload Size: %s", humanize.Bytes(uint64(server.config.MaxUploadSize)))
-	log.Infof("API Session Time: %s", (server.config.APISessionTime))
+	log.Infof("API Session Time: %s", server.config.APISessionTime)
 
 	// Warn about user registration being disabled.
 	if !server.config.OpenRegistrations {

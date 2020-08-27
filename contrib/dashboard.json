@@ -476,7 +476,7 @@
       "renderer": "flot",
       "seriesOverrides": [
         {
-          "alias": "old",
+          "alias": "twts_archived/s",
           "yaxis": 2
         }
       ],
@@ -581,7 +581,7 @@
       "renderer": "flot",
       "seriesOverrides": [
         {
-          "alias": "twts",
+          "alias": "cahced_twts",
           "yaxis": 2
         }
       ],
@@ -1434,5 +1434,5 @@
   "timezone": "",
   "title": "Twtxt",
   "uid": "ukIHxwIMz",
-  "version": 31
+  "version": 32
 }

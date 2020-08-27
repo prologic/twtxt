@@ -11,5 +11,5 @@ func init() {
 	   Set a sane timeout duration for the http.DefaultClient, to ensure idle connections are terminated.
 	   Reference: https://stackoverflow.com/questions/37454236/net-http-server-too-many-open-files-error
 	*/
-	http.DefaultClient.Timeout = time.Minute * 10
+	http.DefaultClient.Timeout = time.Minute * 5 // Default TCP timeout
 }

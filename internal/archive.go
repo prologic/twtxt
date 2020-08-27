@@ -1,11 +1,14 @@
 package internal
 
 import (
+	"encoding/base32"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -13,35 +16,13 @@ import (
 )
 
 const (
-	archiveDir    = "archive"
-	hashChunkSize = 4
+	archiveDir = "archive"
 )
 
 var (
 	ErrTwtAlreadyArchived = errors.New("error: twt already archived")
 	ErrTwtNotArchived     = errors.New("error: twt not found in archived")
 )
-
-func Chunks(s string, chunkSize int) []string {
-	if chunkSize >= len(s) {
-		return []string{s}
-	}
-	var chunks []string
-	chunk := make([]rune, chunkSize)
-	len := 0
-	for _, r := range s {
-		chunk[len] = r
-		len++
-		if len == chunkSize {
-			chunks = append(chunks, string(chunk))
-			len = 0
-		}
-	}
-	if len > 0 {
-		chunks = append(chunks, string(chunk[:len]))
-	}
-	return chunks
-}
 
 // Archiver is an interface for retrieving old twts from an archive storage
 // such as an on-disk hash layout with one directory per 2-letter part of
@@ -79,9 +60,19 @@ func NewDiskArchiver(p string) (Archiver, error) {
 	return &DiskArchiver{path: p}, nil
 }
 
-func (a *DiskArchiver) makePath(hash string) string {
-	chunks := Chunks(hash, hashChunkSize)
-	return filepath.Join(append([]string{a.path}, append(chunks, "twt.json")...)...)
+func (a *DiskArchiver) makePath(hash string) (string, error) {
+	encoding := base32.StdEncoding.WithPadding(base32.NoPadding)
+	bs, err := encoding.DecodeString(strings.ToUpper(hash))
+	if err != nil {
+		log.WithError(err).Warnf("error decoding hash %s", hash)
+		return "", err
+	}
+
+	// Produces a path structure of:
+	// ./data/archive/[0-9a-f]{2,}0/[0-9a-f]+.json
+	components := []string{a.path, fmt.Sprintf("%x", bs[0:1]), fmt.Sprintf("%x.json", bs[1:])}
+
+	return filepath.Join(components...), nil
 }
 
 func (a *DiskArchiver) fileExists(fn string) bool {
@@ -92,11 +83,22 @@ func (a *DiskArchiver) fileExists(fn string) bool {
 }
 
 func (a *DiskArchiver) Has(hash string) bool {
-	return a.fileExists(a.makePath(hash))
+	fn, err := a.makePath(hash)
+	if err != nil {
+		log.WithError(err).Errorf("error computing archive file for twt %s", hash)
+		return false
+	}
+
+	return a.fileExists(fn)
 }
 
 func (a *DiskArchiver) Get(hash string) (types.Twt, error) {
-	fn := a.makePath(hash)
+	fn, err := a.makePath(hash)
+	if err != nil {
+		log.WithError(err).Errorf("error computing archive file for twt %s", hash)
+		return types.Twt{}, err
+	}
+
 	if !a.fileExists(fn) {
 		log.Warnf("twt %s not found in archive", hash)
 		return types.Twt{}, ErrTwtNotArchived
@@ -119,7 +121,12 @@ func (a *DiskArchiver) Get(hash string) (types.Twt, error) {
 }
 
 func (a *DiskArchiver) Archive(twt types.Twt) error {
-	fn := a.makePath(twt.Hash())
+	fn, err := a.makePath(twt.Hash())
+	if err != nil {
+		log.WithError(err).Errorf("error computing archive file for twt %s", twt.Hash())
+		return err
+	}
+
 	if a.fileExists(fn) {
 		log.Warnf("archived twt %s already exists", twt.Hash())
 		return ErrTwtAlreadyArchived

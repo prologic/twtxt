@@ -3,7 +3,6 @@ package internal
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -82,12 +81,6 @@ func NewDiskArchiver(p string) (Archiver, error) {
 
 func (a *DiskArchiver) makePath(hash string) string {
 	chunks := Chunks(hash, hashChunkSize)
-	for _, chunk := range chunks {
-		if len(chunk) != hashChunkSize {
-			chunk = fmt.Sprintf("0%s", chunk)
-		}
-	}
-
 	return filepath.Join(append([]string{a.path}, append(chunks, "twt.json")...)...)
 }
 

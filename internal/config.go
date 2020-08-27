@@ -29,6 +29,7 @@ type Config struct {
 	MaxUploadSize     int64         `json:"max_upload_size"`
 	MaxTwtLength      int           `json:"max_twt_length"`
 	MaxCacheTTL       time.Duration `json:"max_cache_ttl"`
+	MaxCacheItems     int           `json:"max_cache_items"`
 	OpenProfiles      bool          `json:"open_profiles"`
 	OpenRegistrations bool          `json:"open_registrations"`
 	SessionExpiry     time.Duration `json:"session_expiry"`

@@ -183,7 +183,7 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, sources map[string]
 						twter.Avatar = URLForExternalAvatar(conf, url)
 					}
 				}
-				twts, old, err := ParseFile(scanner, twter, conf.MaxCacheTTL)
+				twts, old, err := ParseFile(scanner, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
 				if err != nil {
 					log.WithError(err).Errorf("error parsing feed %s: %s", nick, url)
 					twtsch <- nil

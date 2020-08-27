@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	archiveDir = "archive"
+	archiveDir    = "archive"
+	hashChunkSize = 4
 )
 
 var (
@@ -80,9 +81,9 @@ func NewDiskArchiver(p string) (Archiver, error) {
 }
 
 func (a *DiskArchiver) makePath(hash string) string {
-	chunks := Chunks(hash, 2)
+	chunks := Chunks(hash, hashChunkSize)
 	for _, chunk := range chunks {
-		if len(chunk) != 2 {
+		if len(chunk) != hashChunkSize {
 			chunk = fmt.Sprintf("0%s", chunk)
 		}
 	}

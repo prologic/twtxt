@@ -440,7 +440,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "Cache Performance such as last processing time",
+      "description": "Cache and Archive perf (such as cache last processing time in seconds and rate of archival)",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -474,7 +474,12 @@
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "seriesOverrides": [],
+      "seriesOverrides": [
+        {
+          "alias": "old",
+          "yaxis": 2
+        }
+      ],
       "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
@@ -482,15 +487,21 @@
         {
           "expr": "twtd_cache_last_processed_seconds",
           "interval": "",
-          "legendFormat": "s",
+          "legendFormat": "cache_update_duration",
           "refId": "A"
+        },
+        {
+          "expr": "rate(twtd_archive_size[5m])",
+          "interval": "",
+          "legendFormat": "twts_archived/s",
+          "refId": "B"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Cache Performance",
+      "title": "Cache/Archive Perf",
       "tooltip": {
         "shared": false,
         "sort": 0,
@@ -534,7 +545,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "Database / Cache Statistics (such as no. of users, feeds, sessions, cache size, etc)",
+      "description": "Database / Cache Sizes (such as no. of users, feeds, sessions, cache size, etc)",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -572,10 +583,6 @@
         {
           "alias": "twts",
           "yaxis": 2
-        },
-        {
-          "alias": "old",
-          "yaxis": 2
         }
       ],
       "spaceLength": 10,
@@ -585,39 +592,33 @@
         {
           "expr": "twtd_db_feeds",
           "interval": "",
-          "legendFormat": "feeds",
+          "legendFormat": "db_feeds",
           "refId": "A"
         },
         {
           "expr": "twtd_db_sessions",
           "interval": "",
-          "legendFormat": "sessions",
+          "legendFormat": "db_sessions",
           "refId": "B"
         },
         {
           "expr": "twtd_db_users",
           "interval": "",
-          "legendFormat": "users",
+          "legendFormat": "db_users",
           "refId": "C"
         },
         {
           "expr": "twtd_cache_size",
           "interval": "",
-          "legendFormat": "twts",
+          "legendFormat": "cahced_twts",
           "refId": "D"
-        },
-        {
-          "expr": "twtd_archive_size",
-          "interval": "",
-          "legendFormat": "old",
-          "refId": "E"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "DB/Cache Stats",
+      "title": "DB/Cache Size",
       "tooltip": {
         "shared": false,
         "sort": 0,
@@ -1402,7 +1403,7 @@
     "list": []
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {
@@ -1433,5 +1434,5 @@
   "timezone": "",
   "title": "Twtxt",
   "uid": "ukIHxwIMz",
-  "version": 29
+  "version": 31
 }

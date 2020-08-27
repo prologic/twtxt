@@ -631,3 +631,17 @@ function showMentionedList() {
   u("#mentioned-list").first().style.top =
     u("textarea#text").first().clientHeight + 2 + "px";
 }
+
+if (
+  window.performance.getEntriesByType("navigation")[0].type === "back_forward"
+) {
+  window.scrollTo(0, Number(localStorage.getItem("prevOffset")));
+}
+
+window.onbeforeunload = function () {
+  localStorage.setItem(
+    "prevOffset",
+    localStorage.getItem("currentOffset") || String(window.scrollY)
+  );
+  localStorage.setItem("currentOffset", String(window.scrollY));
+};

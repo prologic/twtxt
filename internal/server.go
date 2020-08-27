@@ -200,6 +200,12 @@ func (s *Server) setupMetrics() {
 		"Number of seconds for a feed cache cycle",
 	)
 
+	// archive size
+	metrics.NewCounter(
+		"archive", "size",
+		"Number of items inserted into the global feed archive",
+	)
+
 	// server info
 	metrics.NewGaugeVec(
 		"server", "info",

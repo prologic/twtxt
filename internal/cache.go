@@ -201,6 +201,7 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, sources map[string]
 						log.WithError(err).Errorf("error arching twt %s aborting", twt.Hash())
 						break
 					}
+					metrics.Counter("archive", "size").Inc()
 				}
 
 				if len(twts) == 0 {

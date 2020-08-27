@@ -107,20 +107,20 @@ func (a *DiskArchiver) Has(hash string) bool {
 func (a *DiskArchiver) Get(hash string) (types.Twt, error) {
 	fn := a.makePath(hash)
 	if !a.fileExists(fn) {
-		log.Warn("twt %s not found in archive", hash)
+		log.Warnf("twt %s not found in archive", hash)
 		return types.Twt{}, ErrTwtNotArchived
 	}
 
 	data, err := ioutil.ReadFile(fn)
 	if err != nil {
-		log.WithError(err).Error("error reading archived twt %s", hash)
+		log.WithError(err).Errorf("error reading archived twt %s", hash)
 		return types.Twt{}, err
 	}
 
 	var twt types.Twt
 
 	if err := json.Unmarshal(data, &twt); err != nil {
-		log.WithError(err).Error("error decoding archived twt %s", hash)
+		log.WithError(err).Errorf("error decoding archived twt %s", hash)
 		return types.Twt{}, err
 	}
 
@@ -130,23 +130,23 @@ func (a *DiskArchiver) Get(hash string) (types.Twt, error) {
 func (a *DiskArchiver) Archive(twt types.Twt) error {
 	fn := a.makePath(twt.Hash())
 	if a.fileExists(fn) {
-		log.Warn("archived twt %s already exists", twt.Hash())
+		log.Warnf("archived twt %s already exists", twt.Hash())
 		return ErrTwtAlreadyArchived
 	}
 
 	if err := os.MkdirAll(filepath.Dir(fn), 0755); err != nil {
-		log.WithError(err).Error("error creating archive directory for twt %s", twt.Hash())
+		log.WithError(err).Errorf("error creating archive directory for twt %s", twt.Hash())
 		return err
 	}
 
 	data, err := json.Marshal(&twt)
 	if err != nil {
-		log.WithError(err).Error("error encoding twt %s", twt.Hash())
+		log.WithError(err).Errorf("error encoding twt %s", twt.Hash())
 		return err
 	}
 
 	if err := ioutil.WriteFile(fn, data, 0644); err != nil {
-		log.WithError(err).Error("error writing twt %s to archive", twt.Hash())
+		log.WithError(err).Errorf("error writing twt %s to archive", twt.Hash())
 		return err
 	}
 

@@ -49,7 +49,7 @@ const (
 	DefaultMaxTwtLength = 288
 
 	// DefaultMaxCacheTTL is the default maximum cache ttl of twts in memory
-	DefaultMaxCacheTTL = time.Hour * 100
+	DefaultMaxCacheTTL = time.Hour * 24 * 10 // 10 days 28 days 28 days 28 days
 
 	// DefaultMaxCacheItems is the default maximum cache items (per feed source)
 	// of twts in memory

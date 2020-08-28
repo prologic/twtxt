@@ -51,7 +51,7 @@ type User struct {
 	IsFollowingPubliclyVisible bool   `default:"true"`
 
 	Feeds  []string `default:"[]"`
-	Tokens []*Token `default:"[]"`
+	Tokens []string `default:"[]"`
 
 	Followers map[string]string `default:"{}"`
 	Following map[string]string `default:"{}"`
@@ -62,10 +62,12 @@ type User struct {
 
 // Token ...
 type Token struct {
-	Value     string    // -- The actual JWT token value which stored encrypted/signed data as given to the client using it.
-	UserAgent string    // -- The name of the client and version number that initially created the token.
-	CreatedAt time.Time // -- The date/time the token was created
-	ExpiresAt time.Time // -- The date/time the token expires (if ever)
+	Signature string
+	Value     string
+	UserAgent string
+	CreatedAt time.Time
+	ExpiresAt time.Time
+}
 
 func (t *Token) Bytes() ([]byte, error) {
 	data, err := json.Marshal(t)
@@ -247,15 +249,15 @@ func (f *Feed) Bytes() ([]byte, error) {
 
 // HasToken will add a token to a user if it doesn't exist already
 func (u *User) AddToken(token *Token) {
-	if !u.HasToken(token.Value) {
-		u.Tokens = append(u.Tokens, token)
+	if !u.HasToken(token.Signature) {
+		u.Tokens = append(u.Tokens, token.Signature)
 	}
 }
 
 // HasToken will compare a token value with stored tokens
 func (u *User) HasToken(token string) bool {
 	for _, t := range u.Tokens {
-		if t.Value == token {
+		if t == token {
 			return true
 		}
 	}

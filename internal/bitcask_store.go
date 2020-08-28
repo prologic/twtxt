@@ -255,9 +255,11 @@ func (bs *BitcaskStore) GetAllSessions() ([]*session.Session, error) {
 func (bs *BitcaskStore) GetUserTokens(user *User) ([]*Token, error) {
 	tokens := []*Token{}
 	for _, signature := range user.Tokens {
-		data, err := bs.db.Get([]byte(fmt.Sprintf("/tokens/%s", signature)))
+
+		fmt.Printf("looking up %s\n", signature)
+		data, err := bs.db.Get([]byte(fmt.Sprintf("/token/%s", signature)))
 		if err == bitcask.ErrKeyNotFound {
-			return nil, ErrUserNotFound
+			return nil, ErrTokenNotFound
 		}
 		tkn, err := LoadToken(data)
 
@@ -272,6 +274,7 @@ func (bs *BitcaskStore) GetUserTokens(user *User) ([]*Token, error) {
 }
 
 func (bs *BitcaskStore) SetToken(signature string, tkn *Token) error {
+
 	data, err := tkn.Bytes()
 	if err != nil {
 		return err

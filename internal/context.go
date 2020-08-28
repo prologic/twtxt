@@ -139,7 +139,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 
 		tokens, err := db.GetUserTokens(user)
 		if err != nil {
-			log.WithError(err).Warnf("error loading user object for %s", ctx.Username)
+			log.WithError(err).Warnf("error loading tokens for %s", ctx.Username)
 		}
 		ctx.Tokens = tokens
 

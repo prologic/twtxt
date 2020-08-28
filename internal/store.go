@@ -40,6 +40,8 @@ type Store interface {
 	DelSession(sid string) error
 	SyncSession(sess *session.Session) error
 	GetAllSessions() ([]*session.Session, error)
+
+	SetToken(signature string, token *Token) error
 }
 
 func NewStore(store string) (Store, error) {

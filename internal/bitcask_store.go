@@ -251,3 +251,15 @@ func (bs *BitcaskStore) GetAllSessions() ([]*session.Session, error) {
 
 	return sessions, nil
 }
+
+func (bs *BitcaskStore) SetToken(signature string, tkn *Token) error {
+	data, err := tkn.Bytes()
+	if err != nil {
+		return err
+	}
+
+	if err := bs.db.Put([]byte(fmt.Sprintf("/token/%s", signature)), data); err != nil {
+		return err
+	}
+	return nil
+}

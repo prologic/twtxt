@@ -67,6 +67,12 @@ type Token struct {
 	CreatedAt time.Time // -- The date/time the token was created
 	ExpiresAt time.Time // -- The date/time the token expires (if ever)
 
+func (t *Token) Bytes() ([]byte, error) {
+	data, err := json.Marshal(t)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 func CreateFeed(conf *Config, db Store, user *User, name string, force bool) error {

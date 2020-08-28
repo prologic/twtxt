@@ -285,3 +285,7 @@ func (bs *BitcaskStore) SetToken(signature string, tkn *Token) error {
 	}
 	return nil
 }
+
+func (bs *BitcaskStore) DelToken(signature string) error {
+	return bs.db.Delete([]byte(fmt.Sprintf("/token/%s", signature)))
+}

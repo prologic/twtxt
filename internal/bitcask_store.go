@@ -252,6 +252,25 @@ func (bs *BitcaskStore) GetAllSessions() ([]*session.Session, error) {
 	return sessions, nil
 }
 
+func (bs *BitcaskStore) GetUserTokens(user *User) ([]*Token, error) {
+	tokens := []*Token{}
+	for _, signature := range user.Tokens {
+		data, err := bs.db.Get([]byte(fmt.Sprintf("/tokens/%s", signature)))
+		if err == bitcask.ErrKeyNotFound {
+			return nil, ErrUserNotFound
+		}
+		tkn, err := LoadToken(data)
+
+		if err != nil {
+			return tokens, err
+		}
+
+		tokens = append(tokens, tkn)
+	}
+
+	return tokens, nil
+}
+
 func (bs *BitcaskStore) SetToken(signature string, tkn *Token) error {
 	data, err := tkn.Bytes()
 	if err != nil {

@@ -69,6 +69,19 @@ type Token struct {
 	ExpiresAt time.Time
 }
 
+func LoadToken(data []byte) (token *Token, err error) {
+	token = &Token{}
+	if err := defaults.Set(token); err != nil {
+		return nil, err
+	}
+
+	if err = json.Unmarshal(data, &token); err != nil {
+		return nil, err
+	}
+
+	return
+}
+
 func (t *Token) Bytes() ([]byte, error) {
 	data, err := json.Marshal(t)
 	if err != nil {

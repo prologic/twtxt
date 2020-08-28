@@ -41,6 +41,7 @@ type Store interface {
 	SyncSession(sess *session.Session) error
 	GetAllSessions() ([]*session.Session, error)
 
+	GetUserTokens(user *User) ([]*Token, error)
 	SetToken(signature string, token *Token) error
 }
 

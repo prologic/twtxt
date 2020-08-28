@@ -50,6 +50,7 @@ type Context struct {
 
 	Username      string
 	User          *User
+	Tokens        []*Token
 	LastTwt       types.Twt
 	Profile       Profile
 	Authenticated bool
@@ -135,6 +136,13 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		user.Following[user.Username] = user.URL
 
 		ctx.User = user
+
+		tokens, err := db.GetUserTokens(user)
+		if err != nil {
+			log.WithError(err).Warnf("error loading user object for %s", ctx.Username)
+		}
+		ctx.Tokens = tokens
+
 	} else {
 		ctx.User = &User{}
 		ctx.Twter = types.Twter{}

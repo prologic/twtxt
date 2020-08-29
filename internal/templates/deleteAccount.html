@@ -1,0 +1,34 @@
+{{define "content"}}
+  <article class="grid">
+    <div>
+      <hgroup>
+        <h1>Delete Account</h1>
+        <h2>Your account will be deleted permanently!</h2>
+      </hgroup>
+    </div>
+  </article>
+  <article>
+    <div id="myfeeds" class="grid">
+      {{ if .User.Feeds }}
+        <ul>
+          {{ range .Feeds }}
+            {{ if $.User.OwnsFeed .Name }}
+              <li>
+                <p><i>{{ .Name }}</i></p>
+              </li>
+            {{ end }}
+          {{ end }}
+        </ul>
+      {{ else }}
+        <p><small>You do not have any feeds.</small></p>
+      {{ end }}
+    </div>
+    <div class="grid">
+        <div>
+            <form action="/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete your account and all feeds? This cannot be undone!');">
+                <button type="submit" class="contrast">Delete All</button>
+            </form>
+        </div>
+    </div>
+  </article> 
+{{end}}

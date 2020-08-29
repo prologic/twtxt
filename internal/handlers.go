@@ -1756,33 +1756,6 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 	}
 }
 
-// DeleteHandler ...
-func (s *Server) DeleteHandler() httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		ctx := NewContext(s.config, s.db, r)
-
-		user := ctx.User
-		if user == nil {
-			log.Fatalf("user not found in context")
-		}
-
-		if err := s.db.DelUser(ctx.Username); err != nil {
-			ctx.Error = true
-			ctx.Message = "Error deleting account"
-			s.render("error", w, ctx)
-			return
-		}
-
-		s.sm.Delete(w, r)
-		ctx.Authenticated = false
-
-		ctx.Error = false
-		ctx.Message = "Successfully deleted account"
-		s.render("error", w, ctx)
-		return
-	}
-}
-
 // DeleteTokenHandler ...
 func (s *Server) DeleteTokenHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -2454,5 +2427,144 @@ func (s *Server) CaptchaHandler() httprouter.Handle {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+// DeleteAllFeedsHandler ...
+func (s *Server) DeleteAllHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		// Get all user feeds
+		feeds, err := s.db.GetAllFeeds()
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading feeds"
+			s.render("error", w, ctx)
+			return
+		}
+
+		for _, feed := range feeds {
+
+			// Get user's owned feeds
+			if ctx.User.OwnsFeed(feed.Name) {
+
+				// Get twts in a feed
+				nick := feed.Name
+				if nick != "" {
+					if s.db.HasFeed(nick) {
+						// Fetch feed twts
+						twts, err := GetUserTwts(s.config, nick)
+						if err != nil {
+							ctx.Error = true
+							ctx.Message = "Twt not found! Please try again."
+							s.render("error", w, ctx)
+							return
+						}
+
+						// Parse twts to search and remove uploaded media
+						for _, twt := range twts {
+
+							mediaPaths := GetMediaNamesFromText(twt.Text)
+
+							// Remove all uploaded media in a twt
+							for _, mediaPath := range mediaPaths {
+
+								// Delete .png
+								path := filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.png", mediaPath))
+								os.Remove(path)
+
+								// Delete .webp
+								path = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.webp", mediaPath))
+								os.Remove(path)
+							}
+						}
+					}
+				}
+
+				// Delete feed
+				if err := s.db.DelFeed(nick); err != nil {
+					ctx.Error = true
+					ctx.Message = "Error deleting feed! Please try again."
+					s.render("error", w, ctx)
+					return
+				}
+
+			}
+		}
+
+		// Get user's primary feed twts
+		twts, err := GetUserTwts(s.config, ctx.User.Username)
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "Primary feed not found! Please try again."
+			s.render("error", w, ctx)
+			return
+		}
+
+		// Parse twts to search and remove primary feed uploaded media
+		for _, twt := range twts {
+
+			mediaPaths := GetMediaNamesFromText(twt.Text)
+
+			// Remove all uploaded media in a twt
+			for _, mediaPath := range mediaPaths {
+
+				// Delete .png
+				path := filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.png", mediaPath))
+				os.Remove(path)
+
+				// Delete .webp
+				path = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.webp", mediaPath))
+				os.Remove(path)
+			}
+		}
+
+		// Delete user's primary feed
+		if err := s.db.DelFeed(ctx.User.Username); err != nil {
+			ctx.Error = true
+			ctx.Message = "Primary feed not found! Please try again."
+			s.render("error", w, ctx)
+			return
+		}
+
+		// Delete user
+		user := ctx.User
+		if user == nil {
+			log.Fatalf("user not found in context")
+		}
+
+		if err := s.db.DelUser(ctx.Username); err != nil {
+			ctx.Error = true
+			ctx.Message = "Error deleting account"
+			s.render("error", w, ctx)
+			return
+		}
+
+		s.sm.Delete(w, r)
+		ctx.Authenticated = false
+
+		ctx.Error = false
+		ctx.Message = "Successfully deleted account"
+		s.render("error", w, ctx)
+		return
+	}
+}
+
+// DeleteAccountHandler ...
+func (s *Server) DeleteAccountHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		feeds, err := s.db.GetAllFeeds()
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading feeds"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Feeds = feeds
+		s.render("deleteAccount", w, ctx)
 	}
 }

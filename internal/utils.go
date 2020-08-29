@@ -1069,3 +1069,27 @@ func FormatRequest(r *http.Request) string {
 		r.UserAgent(),
 	)
 }
+
+func GetMediaNamesFromText(text string) []string {
+	
+	var mediaNames []string
+
+	textSplit := strings.Split(text, "![](")
+	
+	for i, textSplitItem := range textSplit {
+		if i > 0 {
+			mediaEndIndex := strings.Index(textSplitItem, ")")
+			mediaURL := textSplitItem[:mediaEndIndex]
+
+			mediaURLSplit := strings.Split(mediaURL, "media/")
+			for j, mediaURLSplitItem := range mediaURLSplit {
+				if j > 0 {
+					mediaPath := mediaURLSplitItem
+					mediaNames = append(mediaNames, mediaPath)
+				}
+			}
+		}
+	}
+
+	return mediaNames
+}

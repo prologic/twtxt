@@ -2562,6 +2562,81 @@ func (s *Server) PodAvatarHandler() httprouter.Handle {
 	}
 }
 
+// TransferFeedHandler...
+func (s *Server) TransferFeedHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+		feedName := NormalizeFeedName(p.ByName("name"))
+		transferToName := NormalizeFeedName(p.ByName("transferTo"))
+
+		if feedName == "" {
+			ctx.Error = true
+			ctx.Message = "No feed specified"
+			s.render("error", w, ctx)
+			return
+		}
+
+		if transferToName == "" {
+			// Get feed followers list
+			if s.db.HasFeed(feedName) {
+				feed, err := s.db.GetFeed(feedName)
+				if err != nil {
+					log.WithError(err).Errorf("Error loading feed object for %s", feedName)
+					ctx.Error = true
+					ctx.Message = "Error loading profile"
+					s.render("error", w, ctx)
+					return
+				}
+
+				ctx.Profile = feed.Profile()
+				s.render("transferFeed", w, ctx)
+				return
+			}
+		}
+
+		// Get feed
+		if s.db.HasFeed(feedName) {
+
+			feed, err := s.db.GetFeed(feedName)
+			if err != nil {
+				log.WithError(err).Errorf("Error loading feed object for %s", feedName)
+				ctx.Error = true
+				ctx.Message = "Error loading profile"
+				s.render("error", w, ctx)
+				return
+			}
+
+			// Get FromUser
+			fromUser, err := s.db.GetUser(ctx.User.Username)
+			if err != nil {
+				log.WithError(err).Errorf("Error loading user")
+				ctx.Error = true
+				ctx.Message = "Error loading user"
+				s.render("error", w, ctx)
+				return
+			}
+
+			// Get ToUser
+			toUser, err := s.db.GetUser(transferToName)
+			if err != nil {
+				log.WithError(err).Errorf("Error loading user")
+				ctx.Error = true
+				ctx.Message = "Error loading user"
+				s.render("error", w, ctx)
+				return
+			}
+
+			// Transfer ownerships
+			RemoveFeedOwnership(s.db, fromUser, feed)
+			AddFeedOwnership(s.db, toUser, feed)
+
+			ctx.Error = false
+			ctx.Message = "Feed ownership changed successfully."
+			s.render("error", w, ctx)
+		}
+	}
+}
+
 // CaptchaHandler ...
 func (s *Server) CaptchaHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

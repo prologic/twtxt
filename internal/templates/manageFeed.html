@@ -9,25 +9,35 @@
       <label for="avatar_upload">
         Change avatar
         <input id="avatar_upload" type="file" accept="image/png, image/jpeg" name="avatar_file" aria-label="Upload Avatar" />
-     </label>
-     <label for="description">
-       Description
-       <input type="text" id="description" name="description" placeholder="A short description about the feed" required value="{{ .Profile.Tagline }}">
-     </label>
-     <button type="submit">Update</button>
-   </form>
+      </label>
+      <label for="description">
+        Description
+        <input type="text" id="description" name="description" placeholder="A short description about the feed" required value="{{ .Profile.Tagline }}">
+      </label>
+      <button type="submit">Update</button>
+    </form>
 
-   <hgroup>
-     <h2>Archive feed</h3>
-     <h3>Here you may archive your custom feed</h3>
-   </hgroup>
-   <p>
-     <b>WARNING:</b>&nbsp;This is permanent and cannot be undone!
-     (<i>There is no confirmation!</i>)
-   </p>
-   <form action="/feed/{{  .Profile.Username }}/archive" method="POST" onsubmit="return confirm('Are you sure you want to archive this feed? This cannot be undone!');">
-    <button type="submit" class="contrast">Archive</button>
-   </form>
+    <hgroup>
+      <h2>Archive feed</h3>
+      <h3>Here you may archive your custom feed</h3>
+    </hgroup>
+    <p>
+      <b>WARNING:</b>&nbsp;This is permanent and cannot be undone! (<i>There is no confirmation!</i>)
+    </p>
+    <form action="/feed/{{  .Profile.Username }}/archive" method="POST" onsubmit="return confirm('Are you sure you want to archive this feed? This cannot be undone!');">
+      <button type="submit" class="contrast">Archive</button>
+    </form>
+
+    <hgroup>
+      <h2>Transfer feed</h2>
+      <h3>Change your feed's ownership</h3>
+    </hgroup>
+    <p>
+      <b>WARNING:</b>&nbsp;This is permanent and cannot be undone!
+    </p>
+    <form action="/transferFeed/{{  .Profile.Username }}" method="GET">
+      <button type="submit" class="contrast">Transfer Feed</button>
+    </form>
   </div>
 </article>
 {{ end }}

@@ -157,6 +157,24 @@ func DetachFeedFromOwner(db Store, user *User, feed *Feed) (err error) {
 	return nil
 }
 
+func RemoveFeedOwnership(db Store, user *User, feed *Feed) (err error) {
+	user.Feeds = RemoveString(user.Feeds, feed.Name)
+	if err = db.SetUser(user.Username, user); err != nil {
+		return
+	}
+
+	return nil
+}
+
+func AddFeedOwnership(db Store, user *User, feed *Feed) (err error) {
+	user.Feeds = append(user.Feeds, feed.Name)
+	if err = db.SetUser(user.Username, user); err != nil {
+		return
+	}
+
+	return nil
+}
+
 // NewFeed ...
 func NewFeed() *Feed {
 	feed := &Feed{}

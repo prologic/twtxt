@@ -1,0 +1,34 @@
+{{define "content"}}
+<article class="grid">
+    <div>
+        <hgroup>
+            <h1>Transfer feed</h1>
+            <h2>Change ownership of <b>{{ .Profile.Username }}</b></h2>
+        </hgroup>
+        {{ if .Profile.Followers }}
+        <ol>
+          {{ range $Nick, $URL := .Profile.Followers }}
+            <li>
+              {{ if $.User.Is $URL }}
+                me
+              {{ else }}
+                {{ if isLocal $URL }}
+                  {{ $Nick }}
+                {{ else }}
+                  {{ $Nick }}
+                {{ end }}
+                ({{ $URL }})
+
+                {{ if $.Authenticated }}
+                  {{ if not ($.User.Is $URL) }}
+                    [<a href="/transferFeed/{{$.Profile.Username}}/{{$Nick}}" onclick="return confirm('Are you sure you want to transfer feed to this user? This cannot be undone!');">Transfer</a>]
+                  {{ end }}
+                {{ end }}
+              {{ end }}
+            </li>
+          {{ end }}
+        </oL>
+        {{ end }}
+    </div>
+</article>
+{{ end }}

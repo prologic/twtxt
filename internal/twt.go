@@ -27,12 +27,24 @@ var (
 	ErrInvalidTwtLine = errors.New("error: invalid twt line parsed")
 )
 
-// Turns "@nick" into "@<nick URL>" if we're following nick.
+// ExpandMentions turns "@nick" into "@<nick URL>" if we're following the user or feed
+// or if they exist on the local pod. Also turns @user@domain into
+// @<user URL> as a convenient way to mention users across pods.
 func ExpandMentions(conf *Config, db Store, user *User, text string) string {
-	re := regexp.MustCompile(`@([_a-zA-Z0-9]+)`)
+	re := regexp.MustCompile(`@([_a-zA-Z0-9]+)(?:@)?((?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9]\.)|(?:[0-9]+/[0-9]{2})\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?)`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
 		mentionedNick := parts[1]
+		mentionedDomain := parts[2]
+
+		if mentionedNick != "" && mentionedDomain != "" {
+			// TODO: Validate the remote end for a valid Twtxt pod?
+			// XXX: Should we always assume https:// ?
+			return fmt.Sprintf(
+				"@<%s https://%s/user/%s/twtxt.txt>",
+				mentionedNick, mentionedDomain, mentionedNick,
+			)
+		}
 
 		for followedNick, followedURL := range user.Following {
 			if mentionedNick == followedNick {
@@ -43,10 +55,10 @@ func ExpandMentions(conf *Config, db Store, user *User, text string) string {
 		username := NormalizeUsername(mentionedNick)
 		if db.HasUser(username) || db.HasFeed(username) {
 			return fmt.Sprintf("@<%s %s>", username, URLForUser(conf, username))
-		} else {
-			// Not expanding if we're not following
-			return match
 		}
+
+		// Not expanding if we're not following, not a local user/feed
+		return match
 	})
 }
 

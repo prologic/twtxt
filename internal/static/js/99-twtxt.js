@@ -169,7 +169,7 @@ function deleteTwt(e) {
   ) {
     Twix.ajax({
       type: "DELETE",
-      url: u("#twtForm").attr("action"),
+      url: u("#form").attr("action"),
       success: function (data) {
         var hash = u(e.target).data("hash");
         u("#" + hash).remove();
@@ -202,7 +202,7 @@ u("#post").on("click", function (e) {
   e.preventDefault();
   u("#post").html('<i class="icss-spinner icss-pulse"></i>&nbsp;Posting...');
   u("#post").attr("disabled", true);
-  u("#twtForm").first().submit();
+  u("#form").first().submit();
 });
 
 u.prototype.getSelection = function () {
@@ -431,6 +431,18 @@ u("#usrBtn").on("click", function (e) {
   } else {
     clearMentionedList();
   }
+});
+
+u("#writeBtn").on("click", function (e) {
+  e.preventDefault();
+
+  u("#title").attr("type", "");
+  u("#title").first().focus();
+  u("#post").html('<i class="icss-print"></i>&nbsp;Publish!');
+  u("#text").attr("wrap", "hard");
+  u("#text").attr("maxlength", "");
+  u("#text").attr("rows", 24);
+  u("#form").attr("action", "/blog");
 });
 
 u("textarea#text").on("focus", function (e) {

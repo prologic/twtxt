@@ -4,7 +4,7 @@
   <head>
     <link href="/css/{{ .Commit }}/twtxt.min.css" rel="stylesheet" />
     <link rel="icon" type="image/png" href="/img/{{ .Commit}}/favicon.png" />
-    
+
     {{ range .Alternatives }}
       <link rel="alternate" type="{{ .Type }}" title="{{ .Title }}" href="{{ .URL }}" />
     {{ end }}

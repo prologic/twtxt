@@ -1,0 +1,9 @@
+{{define "content"}}
+  {{ template "post" . }}
+  {{ template "feed" . }}
+  <article class="grid">
+    <div>
+      {{ .Content }}
+    </div>
+  </article>
+{{ end }}

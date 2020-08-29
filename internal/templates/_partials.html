@@ -10,6 +10,8 @@
         <li><a id="usrBtn" href="#" data-tooltip="Mention"><i class="icss-user-circle"></i></a></li>
         <li><a id="lnkBtn" href="#" data-tooltip="Link"><i class="icss-link"></i></a></li>
         <li><a id="imgBtn" href="#" data-tooltip="Image"><i class="icss-image"></i></a></li>
+        <li>&nbsp;</li>
+        <li><a id="writeBtn" href="#" data-tooltip="Open blog post editor"><i class="icss-quill-pen"></i></a></li>
         <li>
           <form id="uploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload">
             <label for="uploadMedia">
@@ -20,8 +22,9 @@
         </li>
       </ul>
     </nav>
-    <form id="twtForm" action="/post" method="POST">
+    <form id="form" action="/post" method="POST">
       <input type="hidden" id="replaceTwt" name="hash" value="" />
+      <input type="hidden" id="title" name="title" placeholder="Title" value="" />
       <div class="textarea-container">
         <textarea id="text" name="text" placeholder="{{ .TwtPrompt }}" rows=3 maxlength={{ .MaxTwtLength }} wrap="soft" autofocus required></textarea>
           <div id="mentioned-list" class="users-list">

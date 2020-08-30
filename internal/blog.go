@@ -188,7 +188,10 @@ func WriteBlog(conf *Config, user *User, title, content string) (*BlogPost, erro
 	content = strings.ReplaceAll(content, "\r\n", "\n")
 
 	b := NewBlogPost(user.Username, title)
-	b.WriteString(content)
+	if _, err := b.WriteString(content); err != nil {
+		log.WithError(err).Error("error writing blog content")
+		return nil, err
+	}
 
 	if err := b.Save(conf); err != nil {
 		log.WithError(err).Error("error writing blog file")

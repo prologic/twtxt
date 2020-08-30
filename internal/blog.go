@@ -82,8 +82,8 @@ func (b *BlogPost) Filename(ext string) string {
 	fn := filepath.Join(
 		b.Author,
 		fmt.Sprintf("%04d", b.Year),
-		fmt.Sprintf("%02%d", b.Month),
-		fmt.Sprintf("%02%d", b.Date),
+		fmt.Sprintf("%02d", b.Month),
+		fmt.Sprintf("%02d", b.Date),
 		fmt.Sprintf("%s%s", b.Slug, ext),
 	)
 	return fn

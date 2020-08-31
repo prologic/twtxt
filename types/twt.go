@@ -38,10 +38,15 @@ type Twt struct {
 func (twt Twt) Mentions() []Twter {
 	var mentions []Twter
 
+	seen := make(map[Twter]bool)
 	re := regexp.MustCompile(`@<(.*?) (.*?)>`)
 	matches := re.FindAllStringSubmatch(twt.Text, -1)
 	for _, match := range matches {
-		mentions = append(mentions, Twter{Nick: match[1], URL: match[2]})
+		mention := Twter{Nick: match[1], URL: match[2]}
+		if !seen[mention] {
+			mentions = append(mentions, mention)
+			seen[mention] = true
+		}
 	}
 
 	return mentions
@@ -51,10 +56,15 @@ func (twt Twt) Mentions() []Twter {
 func (twt Twt) Tags() []string {
 	var tags []string
 
+	seen := make(map[string]bool)
 	re := regexp.MustCompile(`#<(.*?) .*?>`)
 	matches := re.FindAllStringSubmatch(twt.Text, -1)
 	for _, match := range matches {
-		tags = append(tags, match[1])
+		tag := match[1]
+		if !seen[tag] {
+			tags = append(tags, tag)
+			seen[tag] = true
+		}
 	}
 
 	return tags

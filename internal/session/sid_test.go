@@ -3,7 +3,6 @@ package session
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"fmt"
 	"testing"
 )
 
@@ -22,7 +21,6 @@ func TestNewID(t *testing.T) {
 
 	sid2, err := ValidateSessionID(sid.String(), testSigningKey)
 	if nil != err {
-		fmt.Printf("generated: %v \n expected: %v\n", sid, sid2)
 		t.Fatal(err)
 	}
 

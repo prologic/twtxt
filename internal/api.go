@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -68,6 +69,7 @@ func (a *API) initRoutes() {
 	router.POST("/post", a.isAuthorized(a.PostEndpoint()))
 	router.POST("/follow", a.isAuthorized(a.FollowEndpoint()))
 	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
+	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
 	router.POST("/discover", a.DiscoverEndpoint())
 }
 
@@ -541,6 +543,44 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{}`))
+		return
+	}
+}
+
+// UploadMediaEndpoint ...
+func (a *API) UploadMediaEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		// Limit request body to to abuse
+		r.Body = http.MaxBytesReader(w, r.Body, a.config.MaxUploadSize)
+
+		mediaFile, _, err := r.FormFile("media_file")
+		if err != nil && err != http.ErrMissingFile {
+			log.WithError(err).Error("error parsing form file")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		var mediaURI string
+
+		if mediaFile != nil {
+			opts := &ImageOptions{Resize: true, ResizeW: MediaResolution, ResizeH: 0}
+			mediaURI, err = StoreUploadedImage(
+				a.config, mediaFile,
+				mediaDir, "",
+				opts,
+			)
+		}
+
+		uri := URI{"mediaURI", mediaURI}
+		data, err := json.Marshal(uri)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+
 		return
 	}
 }

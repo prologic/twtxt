@@ -202,10 +202,10 @@ func (s *Server) setupMetrics() {
 		},
 	)
 
-	// feed sources
+	// feed cache sources
 	metrics.NewGauge(
-		"feed", "sources",
-		"Number of feed sources being fetched",
+		"cache", "sources",
+		"Number of feed sources being fetched by the global feed cache",
 	)
 
 	// feed cache size

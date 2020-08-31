@@ -19,7 +19,7 @@ func TestNewID(t *testing.T) {
 		t.Errorf("Signed ID string was empty")
 	}
 
-	sid2, err := ValidateSessionID(sid.String(), testSigningKey)
+	_, err = ValidateSessionID(sid.String(), testSigningKey)
 	if nil != err {
 		t.Fatal(err)
 	}

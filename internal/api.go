@@ -590,3 +590,48 @@ func (a *API) UploadMediaEndpoint() httprouter.Handle {
 		return
 	}
 }
+
+// ProfileEndpoint ...
+func (a *API) ProfileEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		nick := NormalizeUsername(p.ByName("nick"))
+		if nick == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		nick = NormalizeUsername(nick)
+
+		var profile Profile
+
+		if a.db.HasUser(nick) {
+			user, err := a.db.GetUser(nick)
+			if err != nil {
+				log.WithError(err).Errorf("error loading user object for %s", nick)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			profile = user.Profile()
+		} else if a.db.HasFeed(nick) {
+			feed, err := a.db.GetFeed(nick)
+			if err != nil {
+				log.WithError(err).Errorf("error loading feed object for %s", nick)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			profile = feed.Profile()
+		} else {
+			http.Error(w, "User/Feed not found", http.StatusNotFound)
+			return
+		}
+
+		data, err := json.Marshal(profile)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+	}
+}

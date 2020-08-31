@@ -569,6 +569,12 @@ func (a *API) UploadMediaEndpoint() httprouter.Handle {
 				mediaDir, "",
 				opts,
 			)
+
+			if err != nil {
+				log.WithError(err).Error("error storing the file")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 
 		uri := URI{"mediaURI", mediaURI}

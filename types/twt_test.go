@@ -43,7 +43,7 @@ func TestSubject(t *testing.T) {
 				Text:    "(#veryfunny) you are funny",
 				Subject: "(#veryfunny)",
 			}, {
-				Text:    "#having fun (satruday) another day",
+				Text:    "#having fun (saturday) another day",
 				Subject: "",
 			}, {
 				Text:    "@<antonio3 bla.com> not funny dude",

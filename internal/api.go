@@ -70,6 +70,7 @@ func (a *API) initRoutes() {
 	router.POST("/follow", a.isAuthorized(a.FollowEndpoint()))
 	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
 	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
+	router.GET("/profile/:nick", a.isAuthorized(a.ProfileEndpoint()))
 	router.POST("/discover", a.DiscoverEndpoint())
 }
 

@@ -35,6 +35,7 @@ import (
 	"github.com/nfnt/resize"
 	"github.com/nullrocks/identicon"
 	"github.com/prologic/twtxt"
+	"github.com/prologic/twtxt/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/writeas/slug"
 )
@@ -725,6 +726,46 @@ func URLForExternalAvatar(conf *Config, url string) string {
 	)
 }
 
+func URLForConvFactory(conf *Config, cache Cache) func(twt types.Twt) string {
+	return func(twt types.Twt) string {
+		log.Debugf("twt: %#+v", twt)
+
+		subject := twt.Subject()
+		if subject == "" {
+			return ""
+		}
+
+		log.Debugf("subject: %s", subject)
+
+		var hash string
+
+		re := regexp.MustCompile(`\(#([a-z0-9]+)\)`)
+		match := re.FindStringSubmatch(subject)
+		if match != nil {
+			hash = match[1]
+		} else {
+			re = regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
+			match = re.FindStringSubmatch(subject)
+			if match != nil {
+				hash = match[2]
+			}
+		}
+
+		log.Debugf("match: %#v", match)
+		log.Debugf("hash: %s", hash)
+
+		if _, ok := cache.Lookup(hash); !ok {
+			return ""
+		}
+
+		return fmt.Sprintf(
+			"%s/conv/%s",
+			strings.TrimSuffix(conf.BaseURL, "/"),
+			hash,
+		)
+	}
+}
+
 func URLForTag(baseURL, tag string) string {
 	return fmt.Sprintf(
 		"%s/search?tag=%s",
@@ -885,14 +926,16 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 }
 
 // FormatMentionsAndTags turns `@<nick URL>` into `<a href="URL">@nick</a>`
-//     and `#<tag URL>` into `<a href="URL">#tag</a>`
+// and `#<tag URL>` into `<a href="URL">#tag</a>` and a `!<hash URL>`
+// into a `<a href="URL">!hash</a>`.
 func FormatMentionsAndTags(conf *Config, text string) string {
 	isLocal := IsLocalFactory(conf)
 	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
 		prefix, nick, url := parts[1], parts[2], parts[3]
-		if prefix == "@" {
+		switch prefix {
+		case "@":
 			if isLocal(url) && strings.HasSuffix(url, "/twtxt.txt") {
 				return fmt.Sprintf(
 					`<a href="%s">@%s</a>`,
@@ -903,11 +946,12 @@ func FormatMentionsAndTags(conf *Config, text string) string {
 				`<a href="%s">@%s</a>`,
 				URLForExternalProfile(conf, nick, url), nick,
 			)
+		default:
+			return fmt.Sprintf(
+				`<a href="%s">%s%s</a>`,
+				url, prefix, nick,
+			)
 		}
-		return fmt.Sprintf(
-			`<a href="%s">%s%s</a>`,
-			url, prefix, nick,
-		)
 	})
 }
 

@@ -708,3 +708,81 @@ i.icss-print:after {
 	top: .6em;
 	box-shadow: 0 .12em, -.1em -.28em 0 .05em;
 }
+
+
+i.icss-edit {
+  width: 1em;
+  height: 1em;
+  background-color: transparent;
+  border-radius: 50% 45% 50% 35% ;
+  overflow: hidden;
+  margin: 0;
+}
+i.icss-edit:before {
+  width: .3em;
+  height: .8em;
+  border: .15em solid transparent;
+  border-top: .24em solid currentColor; 
+  transform: rotate(45deg) translate(-50%);
+  transform-origin: 0 0;
+  box-shadow: 
+    0 -.05em, 
+    .24em -.8em, 
+    -.24em -.8em, 
+    0 -1.5em;
+  clip: rect(-.9em .3em 1em 0);
+  left: .25em;
+  top: .75em;
+}
+i.icss-edit:after {
+  width: .1em;
+  height: 0;
+  background-color: transparent;
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+}
+i.icss-arrow-left {
+    width: 1em;
+    height: .18em;
+    border-radius: .1em;
+    background-color: currentColor;
+    margin: .41em  0;
+}
+i.icss-arrow-left:before {
+    width: .6em;
+    height: .18em;
+    border-radius:1em;
+    background-color: currentColor;
+    top: -.15em;
+    left: -.06em;
+    transform: rotate(-45deg);
+}
+i.icss-arrow-left:after {
+    width: .6em;
+    height: .18em;
+    border-radius: .1em;
+    background-color: currentColor;
+    top: .15em;
+    left: -0.06em;
+    transform: rotate(45deg);
+}
+
+i.icss-comment  {
+  width: .9em;
+  height: .65em;
+  border-radius: 50%;
+  margin: .1em .05em .2em;
+}
+i.icss-comment:before {
+  width: .3em;
+  height: .22em;
+  border-radius: 0 0 100% 0;
+  border: 0 solid transparent;
+  border-right: .15em solid currentColor;
+  transform: rotate(15deg);
+  top: 0.55em;
+  left: .08em;
+}
+i.icss-comment:after {
+}

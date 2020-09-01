@@ -67,9 +67,9 @@ func ExpandTag(conf *Config, db Store, user *User, text string) string {
 	re := regexp.MustCompile(`#([-\w]+)`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
-		mentionedTag := parts[1]
+		tag := parts[1]
 
-		return fmt.Sprintf("#<%s %s>", mentionedTag, URLForTag(conf.BaseURL, mentionedTag))
+		return fmt.Sprintf("#<%s %s>", tag, URLForTag(conf.BaseURL, tag))
 	})
 }
 

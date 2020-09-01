@@ -50,5 +50,5 @@
     </hgroup>
   </div>
   {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true) }}
-  {{ template "feed" . }}
+  {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" $.Twts) }}
 {{end}}

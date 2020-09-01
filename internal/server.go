@@ -438,6 +438,9 @@ func (s *Server) initRoutes() {
 	s.router.HEAD("/twt/:hash", s.PermalinkHandler())
 	s.router.GET("/twt/:hash", s.PermalinkHandler())
 
+	s.router.HEAD("/conv/:hash", s.ConversationHandler())
+	s.router.GET("/conv/:hash", s.ConversationHandler())
+
 	s.router.GET("/feeds", s.am.MustAuth(s.FeedsHandler()))
 	s.router.POST("/feed", s.am.MustAuth(s.FeedHandler()))
 
@@ -566,7 +569,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		return nil, err
 	}
 
-	templates, err := NewTemplates(config)
+	templates, err := NewTemplates(config, cache)
 	if err != nil {
 		log.WithError(err).Error("error loading templates")
 		return nil, err

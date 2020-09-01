@@ -922,8 +922,6 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			}
 		}
 
-		log.Debugf("twt: #%v", twt)
-
 		if twt.IsZero() {
 			ctx.Error = true
 			ctx.Message = "No matching twt found!"

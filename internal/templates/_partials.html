@@ -78,22 +78,6 @@
           </a>
         {{ end }}
       </h2>
-      {{ if $.Authenticated }}
-        <h3>
-          {{ if eq $.LastTwt.Hash $.Twt.Hash }}
-            [<a class="edit" href="#" data-hash="{{ $.Twt.Hash }}" data-text="{{ $.Twt.Text }}">Edit</a>]
-            [<a class="delete" href="#" data-hash="{{ $.Twt.Hash }}">Delete</a>]
-          {{ end }}
-          {{ if (not ($.User.Is $.Twt.Twter.URL)) }}
-            [<a class="reply" href="#" data-reply="{{ $.User.Reply $.Twt }}">Reply</a>]
-            {{ if $.User.Follows $.Twt.Twter.URL }}
-              [<a href="/unfollow?nick={{ $.Twt.Twter.Nick }}">Unfollow</a>]
-            {{ else }}
-              [<a href="/follow?nick={{ $.Twt.Twter.Nick }}&url={{ $.Twt.Twter.URL }}">Follow</a>]
-            {{ end }}
-          {{ end }}
-        </h3>
-      {{ end }}
       <footer>
         <a class="u-url" href="/twt/{{ $.Twt.Hash }}">
           <time class="dt-published" datetime="{{ $.Twt.Created | date "2006-01-02T15:04:05Z07:00" }}">
@@ -106,19 +90,38 @@
     <div class="p-summary">
       {{ $.Twt.Text | formatTwt }}
     </div>
+    <hr />
+    {{ if $.Authenticated }}
+      <nav>
+        <ul>
+          {{ if eq $.LastTwt.Hash $.Twt.Hash }}
+            <li><a class="edit" href="#" data-hash="{{ $.Twt.Hash }}" data-text="{{ $.Twt.Text }}"><i class="icss-edit"></i>Edit</a></li>
+            <li>&nbsp;</li>
+            <li><a class="delete" href="#" data-hash="{{ $.Twt.Hash }}"><i class="icss-x"></i>Delete</a></li>
+            <li>&nbsp;</li>
+          {{ end }}
+          <li><a class="reply" href="#" data-reply="{{ $.User.Reply $.Twt }}"><i class="icss-arrow-left"></i>Reply</a></li>
+          <li>&nbsp;</li>
+          {{ with urlForConv $.Twt }}
+            <li><a class="conv" href="{{ urlForConv $.Twt }}"><i class="icss-comment"></i>Conversation</a></li>
+            <li>&nbsp;</li>
+          {{ end }}
+        </ul>
+      </nav>
+    {{ end }}
   </article>
 {{ end }}
 
 {{ define "feed" }}
   <div class="grid h-feed">
     <div>
-      {{ template "pager" . }}
+      {{ template "pager" $.Pager }}
       {{ range $idx, $twt := $.Twts }}
         {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" $twt) }}
       {{ else }}
         <small><i>There are no twts yet... come back later!</i></small>
       {{ end }}
-      {{ template "pager" . }}
+      {{ template "pager" $.Pager }}
     </div>
   </div>
 {{ end }}
@@ -127,7 +130,7 @@
   <div class="grid h-feed">
     <div>
       {{ if $.BlogPosts }}
-        {{ template "pager" . }}
+        {{ template "pager" $.Pager }}
         <ul>
           {{ range $idx, $blogPost := $.BlogPosts }}
             <li>
@@ -141,7 +144,7 @@
             </li>
           {{ end }}
         </ul>
-        {{ template "pager" . }}
+        {{ template "pager" $.Pager }}
       {{ else }}
         <small><i>No twt blogs found! Come back later!</i></small>
       {{ end }}
@@ -150,24 +153,24 @@
 {{ end }}
 
 {{ define "pager" }}
-  {{ if .Pager.HasPages }}
+  {{ if .HasPages }}
     <nav>
       <ul>
         <li>
-          {{ if .Pager.HasPrev }}
-            <a href="?page={{ .Pager.PrevPage }}">Prev</a>
+          {{ if .HasPrev }}
+            <a href="?page={{ .PrevPage }}">Prev</a>
           {{ else }}
             <a href="#" data-tooltip="No previous page">Prev</a>
           {{ end}}
         </li>
       </ul>
       <ul>
-        <li><small>Page {{ $.Pager.Page }}/{{ $.Pager.PageNums }} of {{ $.Pager.Nums }} Twts</small></li>
+        <li><small>Page {{ .Page }}/{{ .PageNums }} of {{ .Nums }} Twts</small></li>
       </ul>
       <ul>
         <li>
-          {{ if .Pager.HasNext }}
-            <a href="?page={{ .Pager.NextPage }}">Next</a>
+          {{ if .HasNext }}
+            <a href="?page={{ .NextPage }}">Next</a>
           {{ else }}
             <a href="#" data-tooltip="No next page">Next</a>
           {{ end}}

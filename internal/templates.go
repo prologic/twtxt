@@ -28,7 +28,7 @@ type Templates struct {
 	templates map[string]*template.Template
 }
 
-func NewTemplates(conf *Config) (*Templates, error) {
+func NewTemplates(conf *Config, cache Cache) (*Templates, error) {
 	templates := make(map[string]*template.Template)
 
 	funcMap := sprig.FuncMap()
@@ -37,6 +37,7 @@ func NewTemplates(conf *Config) (*Templates, error) {
 	funcMap["prettyURL"] = PrettyURL
 	funcMap["formatTwt"] = FormatTwtFactory(conf)
 	funcMap["isLocal"] = IsLocalFactory(conf)
+	funcMap["urlForConv"] = URLForConvFactory(conf, cache)
 
 	box, err := rice.FindBox("templates")
 	if err != nil {

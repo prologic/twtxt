@@ -1,0 +1,15 @@
+{{define "content"}}
+  <article class="contianer-fluid">
+    <hgroup>
+      <h2>Conversation <a href="/conv/{{ ($.Twts | first).Hash  }}">#{{ ($.Twts | first).Hash }}</a></h2>
+      <footer>Recent tws in this reply to <a href="/twt/{{ ($.Twts | first).Hash  }}">#{{ ($.Twts | first).Hash }}</a></footer>
+    </hgroup>
+    {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" ( $.Twts | first) ) }}
+  </article>
+  {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" ($.Twts | rest)) }}
+  {{ if .Authenticated }}
+    {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" false) }}
+  {{ else }}
+    <small>You must be <a href="/login">Logged in</a> to join the conversation.</small>
+  {{ end }}
+{{ end }}

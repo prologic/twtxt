@@ -7,7 +7,7 @@
       <h2>Comments:</h2>
       <footer>Recent tws in reply to this post.</footer>
     </hgroup>
-    {{ template "feed" . }}
+    {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" $.Twts) }}
     {{ if .Authenticated }}
       <hgroup>
         <h2>Have your say!</h2>

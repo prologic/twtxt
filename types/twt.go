@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/base32"
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -10,7 +11,7 @@ import (
 )
 
 const (
-	HashLength = 11
+	HashLength = 7
 )
 
 // Twter ...
@@ -77,7 +78,8 @@ func (twt Twt) Subject() string {
 	if match != nil {
 		return match[2]
 	}
-	return ""
+	// By default the subject is the Twt's Hash being replied to.
+	return fmt.Sprintf("(#%s)", twt.Hash())
 }
 
 // Hash ...

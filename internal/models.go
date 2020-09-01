@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/creasty/defaults"
 	"github.com/prologic/twtxt/types"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -240,13 +240,14 @@ func (f *Feed) FollowedBy(url string) bool {
 	return ok
 }
 
-func (f *Feed) Profile() Profile {
+func (f *Feed) Profile(conf *Config) Profile {
 	return Profile{
 		Type: "Feed",
 
 		Username: f.Name,
 		Tagline:  f.Description,
 		URL:      f.URL,
+		BlogsURL: URLForBlogs(conf.BaseURL, f.Name),
 
 		Followers: f.Followers,
 	}
@@ -325,13 +326,14 @@ func (u *User) Sources() types.Feeds {
 	return feeds
 }
 
-func (u *User) Profile() Profile {
+func (u *User) Profile(conf *Config) Profile {
 	return Profile{
 		Type: "User",
 
 		Username: u.Username,
 		Tagline:  u.Tagline,
 		URL:      u.URL,
+		BlogsURL: URLForBlogs(conf.BaseURL, u.Username),
 
 		Followers: u.Followers,
 		Following: u.Following,

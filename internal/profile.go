@@ -7,6 +7,7 @@ type Profile struct {
 	Tagline  string
 	URL      string
 	TwtURL   string
+	BlogsURL string
 
 	Followers map[string]string
 	Following map[string]string

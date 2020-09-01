@@ -669,6 +669,14 @@ func UserURL(url string) string {
 	return url
 }
 
+func URLForBlogs(baseURL, author string) string {
+	return fmt.Sprintf(
+		"%s/blogs/%s",
+		strings.TrimSuffix(baseURL, "/"),
+		author,
+	)
+}
+
 func URLForPage(baseURL, page string) string {
 	return fmt.Sprintf(
 		"%s/%s",

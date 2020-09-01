@@ -123,6 +123,32 @@
   </div>
 {{ end }}
 
+{{ define "blogposts" }}
+  <div class="grid h-feed">
+    <div>
+      {{ if $.BlogPosts }}
+        {{ template "pager" . }}
+        <ul>
+          {{ range $idx, $blogPost := $.BlogPosts }}
+            <li>
+              <a class="u-url" href="{{ $blogPost.URL ($.BaseURL) }}">
+                {{ $blogPost.Title }}
+                <time class="dt-published" datetime="{{ $blogPost.Created | date "2006-01-02T15:04:05Z07:00" }}">
+                  {{ dateInZone "Mon, Jan 2 3:04PM 2006" $blogPost.Created $.User.DisplayDatesInTimezone }}
+                </time>
+              </a>
+              &nbsp;({{ $blogPost.Created | time }})
+            </li>
+          {{ end }}
+        </ul>
+        {{ template "pager" . }}
+      {{ else }}
+        <small><i>No twt blogs found! Come back later!</i></small>
+      {{ end }}
+    </div>
+  </div>
+{{ end }}
+
 {{ define "pager" }}
   {{ if .Pager.HasPages }}
     <nav>
@@ -156,6 +182,7 @@
     {{ if $.ShowConfig }}
       <li><a target="_blank" href="/user/{{ $.Profile.Username }}/config.yaml">Config&nbsp;<i class="icss-gear"></i></a></li>
     {{ end  }}
+    <li><a href="{{ $.Profile.BlogsURL }}">Blogs&nbsp;<i class="icss-quill-pen"></i></a></li>
     <li><a target="_blank" href="{{ $.Profile.URL }}">Twtxt&nbsp;<i class="icss-link"></i></a></li>
     <li><a target="_blank" href="{{ $.Profile.URL | trimSuffix "/twtxt.txt" }}/atom.xml">Atom&nbsp;<i class="icss-rss"></i></a></li>
     <li><a href="/user/{{ $.Profile.Username }}/followers">Followers: {{ $.Profile.Followers | len }}</a></li>

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base32"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/julienschmidt/httprouter"
+	log "github.com/sirupsen/logrus"
 	"github.com/writeas/slug"
 	"golang.org/x/crypto/blake2b"
 )
@@ -20,6 +21,10 @@ import (
 const (
 	blogsDir       = "blogs"
 	blogHashLength = 7
+)
+
+var (
+	ErrInvalidBlogPath = errors.New("error: invalid blog path")
 )
 
 type BlogPost struct {
@@ -33,6 +38,51 @@ type BlogPost struct {
 
 	hash string
 	data *bytes.Buffer
+}
+
+type BlogPosts []*BlogPost
+
+func (bs BlogPosts) Len() int {
+	return len(bs)
+}
+func (bs BlogPosts) Less(i, j int) bool {
+	return bs[i].Created().After(bs[j].Created())
+}
+func (bs BlogPosts) Swap(i, j int) {
+	bs[i], bs[j] = bs[j], bs[i]
+}
+
+func GetBlogPosts(conf *Config, author string) (BlogPosts, error) {
+	var blogPosts BlogPosts
+
+	p := filepath.Join(conf.Data, blogsDir, author)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating blogs directory")
+		return nil, err
+	}
+
+	err := filepath.Walk(p, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.WithError(err).Error("error walking blog directory")
+			return err
+		}
+
+		if !info.IsDir() && filepath.Ext(info.Name()) == ".md" {
+			blogPost, err := BlogPostFromFile(conf, path)
+			if err != nil {
+				log.WithError(err).Errorf("error loading blog post %s", path)
+				return err
+			}
+			blogPosts = append(blogPosts, blogPost)
+		}
+		return nil
+	})
+	if err != nil {
+		log.WithError(err).Errorf("error listing blog posts for %s", author)
+		return nil, err
+	}
+
+	return blogPosts, nil
 }
 
 func NewBlogPost(author, title string) *BlogPost {
@@ -53,6 +103,49 @@ func NewBlogPost(author, title string) *BlogPost {
 	return b
 }
 
+func BlogPostFromFile(conf *Config, fn string) (*BlogPost, error) {
+	p := filepath.Join(conf.Data, blogsDir)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating blogs directory")
+		return nil, err
+	}
+
+	rel, err := filepath.Rel(p, fn)
+	if err != nil {
+		log.WithError(err).Error("filepath.Rel() error")
+		return nil, err
+	}
+
+	parts := strings.Split(rel, "/")
+	if len(parts) != 5 {
+		log.WithField("fn", fn).Errorf("invalid blog path expected 5 tokens got %d", len(parts))
+		return nil, ErrInvalidBlogPath
+	}
+
+	author := parts[0]
+	year := SafeParseInt(parts[1], 1970)
+	month := SafeParseInt(parts[2], 1)
+	date := SafeParseInt(parts[3], 1)
+	slug := strings.TrimSuffix(parts[4], filepath.Ext(parts[4]))
+
+	b := &BlogPost{
+		Author: author,
+		Year:   year,
+		Month:  month,
+		Date:   date,
+
+		Slug: slug,
+
+		data: &bytes.Buffer{},
+	}
+
+	if err := b.LoadMetadata(conf); err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
 func BlogPostFromParams(conf *Config, p httprouter.Params) (*BlogPost, error) {
 	author := p.ByName("author")
 	year := SafeParseInt(p.ByName("year"), 1970)
@@ -71,11 +164,22 @@ func BlogPostFromParams(conf *Config, p httprouter.Params) (*BlogPost, error) {
 		data: &bytes.Buffer{},
 	}
 
+	if err := b.LoadMetadata(conf); err != nil {
+		log.WithError(err).Errorf("error loading metdata for blog post %s", b)
+		return nil, err
+	}
+
 	if err := b.Load(conf); err != nil {
+		log.WithError(err).Errorf("error loading content for blog post %s", b)
 		return nil, err
 	}
 
 	return b, nil
+}
+
+func (b *BlogPost) Created() time.Time {
+	now := time.Now()
+	return time.Date(b.Year, time.Month(b.Month), b.Date, 0, 0, 0, 0, now.Location())
 }
 
 func (b *BlogPost) Filename(ext string) string {
@@ -101,7 +205,7 @@ func (b *BlogPost) Bytes() []byte {
 	return b.data.Bytes()
 }
 
-func (b *BlogPost) Load(conf *Config) error {
+func (b *BlogPost) LoadMetadata(conf *Config) error {
 	fn := filepath.Join(conf.Data, blogsDir, b.Filename(".json"))
 	metadata, err := ioutil.ReadFile(fn)
 	if err != nil {
@@ -112,7 +216,11 @@ func (b *BlogPost) Load(conf *Config) error {
 		return err
 	}
 
-	fn = filepath.Join(conf.Data, blogsDir, b.Filename(".md"))
+	return nil
+}
+
+func (b *BlogPost) Load(conf *Config) error {
+	fn := filepath.Join(conf.Data, blogsDir, b.Filename(".md"))
 	data, err := ioutil.ReadFile(fn)
 	if err != nil {
 		return err

@@ -3,8 +3,8 @@ package internal
 import (
 	"time"
 
-	"github.com/apex/log"
 	"github.com/patrickmn/go-cache"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/prologic/twtxt/internal/session"
 )

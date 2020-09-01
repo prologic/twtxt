@@ -71,6 +71,7 @@ type Context struct {
 
 	Twter       types.Twter
 	Twts        types.Twts
+	BlogPosts   BlogPosts
 	Feeds       []*Feed
 	FeedSources FeedSourceMap
 	Pager       paginator.Paginator

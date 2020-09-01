@@ -1,0 +1,44 @@
+{{define "content"}}
+  <div class="container">
+    <div>
+      <hgroup>
+        <h2 class="u-author h-card">
+          {{ if $.User.Is .Profile.URL }}
+            <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
+              <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" />
+              <span class="p-name">My Twt Blogs</span>
+            </a>
+          {{ else }}
+            <a href="{{ .Profile.URL | trimSuffix "/twtxt.txt" }}" class="u-url p-name">
+              <img class="avatar u-photo" src="/user/{{ $.Profile.Username }}/avatar" />
+              <span class="p-name">Twt Blogs for {{ .Profile.Username }}</span>
+            </a>
+          {{ end }}
+        </h2>
+        {{ if not ($.User.Is .Profile.URL) }}
+          <h3>
+            {{ if $.User.Follows .Profile.URL }}
+              <a href="/unfollow?nick={{ .Profile.Username  }}">
+                <i class="icss-minus"></i>
+                Unfollow
+              </a>
+            {{ else }}
+              <a href="/follow?nick={{ .Profile.Username  }}&url={{ .Profile.URL }}">
+                <i class="icss-plus"></i>
+                Follow
+              </a>
+            {{ end }}
+
+            {{ if $.User.OwnsFeed .Profile.Username }}
+              | <a href="/feed/{{ .Profile.Username  }}/manage">Manage</a>
+            {{ end }}
+          </h3>
+        {{ end}}
+        <footer>
+          <p><i>{{ .Profile.Tagline }}</i></p>
+        </footer>
+      </hgroup>
+    </div>
+    {{ template "blogposts" . }}
+  </div>
+{{end}}

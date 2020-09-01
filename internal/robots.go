@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/apex/log"
 	"github.com/julienschmidt/httprouter"
+	log "github.com/sirupsen/logrus"
 )
 
 const robotsTpl = `User-Agent: *
@@ -16,6 +16,7 @@ Allow: /user
 Allow: /feed
 Allow: /about
 Allow: /help
+Allow: /blogs
 Allow: /privacy
 Allow: /support
 Allow: /search

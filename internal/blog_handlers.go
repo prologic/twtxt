@@ -163,6 +163,102 @@ func (s *Server) BlogHandler() httprouter.Handle {
 	}
 }
 
+// BlogsHandler ...
+func (s *Server) BlogsHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		author := NormalizeUsername(p.ByName("author"))
+		if author == "" {
+			ctx.Error = true
+			ctx.Message = "No author specified"
+			s.render("error", w, ctx)
+			return
+		}
+
+		author = NormalizeUsername(author)
+
+		var profile Profile
+
+		if s.db.HasUser(author) {
+			user, err := s.db.GetUser(author)
+			if err != nil {
+				log.WithError(err).Errorf("error loading user object for %s", author)
+				ctx.Error = true
+				ctx.Message = "Error loading profile"
+				s.render("error", w, ctx)
+				return
+			}
+			profile = user.Profile(s.config)
+		} else if s.db.HasFeed(author) {
+			feed, err := s.db.GetFeed(author)
+			if err != nil {
+				log.WithError(err).Errorf("error loading feed object for %s", author)
+				ctx.Error = true
+				ctx.Message = "Error loading profile"
+				s.render("error", w, ctx)
+				return
+			}
+			profile = feed.Profile(s.config)
+		} else {
+			ctx.Error = true
+			ctx.Message = "No author found by that name"
+			s.render("404", w, ctx)
+			return
+		}
+
+		ctx.Profile = profile
+
+		ctx.Links = append(ctx.Links, Link{
+			Href: fmt.Sprintf("%s/webmention", UserURL(profile.URL)),
+			Rel:  "webmention",
+		})
+		ctx.Alternatives = append(ctx.Alternatives, Alternatives{
+			Alternative{
+				Type:  "text/plain",
+				Title: fmt.Sprintf("%s's Twtxt Feed", profile.Username),
+				URL:   profile.URL,
+			},
+			Alternative{
+				Type:  "application/atom+xml",
+				Title: fmt.Sprintf("%s's Atom Feed", profile.Username),
+				URL:   fmt.Sprintf("%s/atom.xml", UserURL(profile.URL)),
+			},
+		}...)
+
+		blogPosts, err := GetBlogPosts(s.config, author)
+		if err != nil {
+			log.WithError(err).Errorf("error loading blog posts for %s", author)
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("Error loading blog posts for %s, Please try again later!", author)
+			s.render("error", w, ctx)
+			return
+		}
+
+		sort.Sort(blogPosts)
+
+		var pagedBlogPosts BlogPosts
+
+		page := SafeParseInt(r.FormValue("page"), 1)
+		pager := paginator.New(adapter.NewSliceAdapter(blogPosts), s.config.TwtsPerPage)
+		pager.SetPage(page)
+
+		if err := pager.Results(&pagedBlogPosts); err != nil {
+			log.WithError(err).Error("error sorting and paging twts")
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading the timeline"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Title = fmt.Sprintf("%s's Twt Blog Posts", profile.Username)
+		ctx.BlogPosts = pagedBlogPosts
+		ctx.Pager = pager
+
+		s.render("blogs", w, ctx)
+	}
+}
+
 // PublishBlogHandler ...
 func (s *Server) PublishBlogHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

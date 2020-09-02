@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -53,7 +54,11 @@ func TestSubject(t *testing.T) {
 
 		for _, testCase := range testCases {
 			twt := Twt{Twter: Twter{}, Text: testCase.Text, Created: time.Now()}
-			assert.Equal(testCase.Subject, twt.Subject())
+			if testCase.Subject == "" {
+				assert.Equal(fmt.Sprintf("(#%s)", twt.Hash()), twt.Subject())
+			} else {
+				assert.Equal(testCase.Subject, twt.Subject())
+			}
 		}
 	})
 }

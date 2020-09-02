@@ -131,14 +131,12 @@ function replyTo(e) {
   var el = u("textarea#text");
   var text = document.getElementById("text");
 
-  var reply;
+  var reply = u(e.target).data("reply");
+
   if (u("#replyTo").first().value != "") {
-    reply = u("#replyTo").first().value;
-  } else {
-    reply = u(e.target).data("reply");
+    reply = reply.replace("(" + u("#replyTo").first().value + ") ", "")
   }
 
-  var reply
   el.empty();
   text.value = reply;
   el.scroll();

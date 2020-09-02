@@ -728,14 +728,10 @@ func URLForExternalAvatar(conf *Config, url string) string {
 
 func URLForConvFactory(conf *Config, cache Cache) func(twt types.Twt) string {
 	return func(twt types.Twt) string {
-		log.Debugf("twt: %#+v", twt)
-
 		subject := twt.Subject()
 		if subject == "" {
 			return ""
 		}
-
-		log.Debugf("subject: %s", subject)
 
 		var hash string
 
@@ -750,9 +746,6 @@ func URLForConvFactory(conf *Config, cache Cache) func(twt types.Twt) string {
 				hash = match[2]
 			}
 		}
-
-		log.Debugf("match: %#v", match)
-		log.Debugf("hash: %s", hash)
 
 		if _, ok := cache.Lookup(hash); !ok {
 			return ""

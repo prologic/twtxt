@@ -612,7 +612,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = user.Profile(a.config)
+			profile = user.Profile(a.config.BaseURL)
 		} else if a.db.HasFeed(nick) {
 			feed, err := a.db.GetFeed(nick)
 			if err != nil {
@@ -620,7 +620,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = feed.Profile(a.config)
+			profile = feed.Profile(a.config.BaseURL)
 		} else {
 			http.Error(w, "User/Feed not found", http.StatusNotFound)
 			return

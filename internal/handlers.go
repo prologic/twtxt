@@ -183,7 +183,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		nick = NormalizeUsername(nick)
 
-		var profile Profile
+		var profile types.Profile
 
 		if s.db.HasUser(nick) {
 			user, err := s.db.GetUser(nick)
@@ -1960,7 +1960,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 			URL:    url,
 			Avatar: URLForExternalAvatar(s.config, url),
 		}
-		ctx.Profile = Profile{
+		ctx.Profile = types.Profile{
 			Username: nick,
 			TwtURL:   url,
 			URL:      URLForExternalProfile(s.config, nick, url),
@@ -2273,7 +2273,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var (
 			twts    types.Twts
-			profile Profile
+			profile types.Profile
 			err     error
 		)
 
@@ -2304,7 +2304,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 		} else {
 			twts = s.cache.GetByPrefix(s.config.BaseURL, false)
 
-			profile = Profile{
+			profile = types.Profile{
 				Type:     "Local",
 				Username: s.config.Name,
 				Tagline:  "", // TODO: Maybe Twtxt Pods should have a configurable description?

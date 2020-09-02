@@ -603,7 +603,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 
 		nick = NormalizeUsername(nick)
 
-		var profile Profile
+		var profile types.Profile
 
 		if a.db.HasUser(nick) {
 			user, err := a.db.GetUser(nick)
@@ -612,7 +612,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = user.Profile()
+			profile = user.Profile(a.config)
 		} else if a.db.HasFeed(nick) {
 			feed, err := a.db.GetFeed(nick)
 			if err != nil {
@@ -620,7 +620,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = feed.Profile()
+			profile = feed.Profile(a.config)
 		} else {
 			http.Error(w, "User/Feed not found", http.StatusNotFound)
 			return

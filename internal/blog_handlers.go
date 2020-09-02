@@ -189,7 +189,7 @@ func (s *Server) BlogsHandler() httprouter.Handle {
 
 		author = NormalizeUsername(author)
 
-		var profile Profile
+		var profile types.Profile
 
 		if s.db.HasUser(author) {
 			user, err := s.db.GetUser(author)

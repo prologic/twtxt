@@ -240,8 +240,8 @@ func (f *Feed) FollowedBy(url string) bool {
 	return ok
 }
 
-func (f *Feed) Profile(baseURL string) Profile {
-	return Profile{
+func (f *Feed) Profile(baseURL string) types.Profile {
+	return types.Profile{
 		Type: "Feed",
 
 		Username: f.Name,
@@ -326,8 +326,8 @@ func (u *User) Sources() types.Feeds {
 	return feeds
 }
 
-func (u *User) Profile(baseURL string) Profile {
-	return Profile{
+func (u *User) Profile(baseURL string) types.Profile {
+	return types.Profile{
 		Type: "User",
 
 		Username: u.Username,

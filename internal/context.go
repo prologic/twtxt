@@ -53,7 +53,7 @@ type Context struct {
 	User          *User
 	Tokens        []*Token
 	LastTwt       types.Twt
-	Profile       Profile
+	Profile       types.Profile
 	Authenticated bool
 
 	Error   bool

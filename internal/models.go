@@ -360,9 +360,6 @@ func (u *User) Reply(twt types.Twt) string {
 	subject := twt.Subject()
 
 	if subject != "" {
-		if subject == fmt.Sprintf("(#%s)", twt.Hash()) {
-			return fmt.Sprintf("%s ", subject)
-		}
 		subject = FormatMentionsAndTagsForSubject(subject)
 		return fmt.Sprintf("%s %s ", strings.Join(mentions, " "), subject)
 	}

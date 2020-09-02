@@ -626,7 +626,29 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 			return
 		}
 
-		data, err := json.Marshal(profile)
+		profileResponse := types.ProfileResponse{}
+
+		profileResponse.Profile = profile
+
+		profileResponse.Links = types.Links{types.Link{
+			Href: fmt.Sprintf("%s/webmention", UserURL(profile.URL)),
+			Rel:  "webmention",
+		}}
+
+		profileResponse.Alternatives = types.Alternatives{
+			types.Alternative{
+				Type:  "text/plain",
+				Title: fmt.Sprintf("%s's Twtxt Feed", profile.Username),
+				URL:   profile.URL,
+			},
+			types.Alternative{
+				Type:  "application/atom+xml",
+				Title: fmt.Sprintf("%s's Atom Feed", profile.Username),
+				URL:   fmt.Sprintf("%s/atom.xml", UserURL(profile.URL)),
+			},
+		}
+
+		data, err := json.Marshal(profileResponse)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

@@ -120,17 +120,17 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 			Keywords:    strings.Join(ks, ", "),
 		}
 		if strings.HasPrefix(twt.Twter.URL, s.config.BaseURL) {
-			ctx.Links = append(ctx.Links, Link{
+			ctx.Links = append(ctx.Links, types.Link{
 				Href: fmt.Sprintf("%s/webmention", UserURL(twt.Twter.URL)),
 				Rel:  "webmention",
 			})
-			ctx.Alternatives = append(ctx.Alternatives, Alternatives{
-				Alternative{
+			ctx.Alternatives = append(ctx.Alternatives, types.Alternatives{
+				types.Alternative{
 					Type:  "text/plain",
 					Title: fmt.Sprintf("%s's Twtxt Feed", twt.Twter.Nick),
 					URL:   twt.Twter.URL,
 				},
-				Alternative{
+				types.Alternative{
 					Type:  "application/atom+xml",
 					Title: fmt.Sprintf("%s's Atom Feed", twt.Twter.Nick),
 					URL:   fmt.Sprintf("%s/atom.xml", UserURL(twt.Twter.URL)),

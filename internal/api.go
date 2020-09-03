@@ -70,7 +70,7 @@ func (a *API) initRoutes() {
 	router.POST("/follow", a.isAuthorized(a.FollowEndpoint()))
 	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
 	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
-	router.GET("/profile/:nick", a.isAuthorized(a.ProfileEndpoint()))
+	router.GET("/profile/:nick", a.ProfileEndpoint())
 	router.POST("/discover", a.DiscoverEndpoint())
 }
 
@@ -107,6 +107,38 @@ func (a *API) jwtKeyFunc(token *jwt.Token) (interface{}, error) {
 		return nil, fmt.Errorf("There was an error")
 	}
 	return a.config.APISigningKey, nil
+}
+
+func (a *API) getLoggedInUser(r *http.Request) *User {
+	token, err := jwt.Parse(r.Header.Get("Token"), a.jwtKeyFunc)
+	if err != nil {
+		return nil
+	}
+
+	if !token.Valid {
+		return nil
+	}
+
+	claims := token.Claims.(jwt.MapClaims)
+
+	username := claims["username"].(string)
+
+	user, err := a.db.GetUser(username)
+	if err != nil {
+		log.WithError(err).Error("error loading user object")
+		return nil
+	}
+
+	// Every registered new user follows themselves
+	// TODO: Make  this configurable server behaviour?
+	if user.Following == nil {
+		user.Following = make(map[string]string)
+	}
+
+	user.Following[user.Username] = user.URL
+
+	return user
+
 }
 
 func (a *API) isAuthorized(endpoint httprouter.Handle) httprouter.Handle {
@@ -595,6 +627,7 @@ func (a *API) UploadMediaEndpoint() httprouter.Handle {
 // ProfileEndpoint ...
 func (a *API) ProfileEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		loggedInUser := a.getLoggedInUser(r)
 		nick := NormalizeUsername(p.ByName("nick"))
 		if nick == "" {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -613,6 +646,15 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 				return
 			}
 			profile = user.Profile(a.config.BaseURL)
+
+			if loggedInUser == nil {
+				if !user.IsFollowersPubliclyVisible {
+					profile.Followers = map[string]string{}
+				}
+				if !user.IsFollowingPubliclyVisible {
+					profile.Following = map[string]string{}
+				}
+			}
 		} else if a.db.HasFeed(nick) {
 			feed, err := a.db.GetFeed(nick)
 			if err != nil {
@@ -636,6 +678,11 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 		}}
 
 		profileResponse.Alternatives = types.Alternatives{
+			types.Alternative{
+				Type:  "application/atom+xml",
+				Title: fmt.Sprintf("%s local feed", a.config.Name),
+				URL:   fmt.Sprintf("%s/atom.xml", a.config.BaseURL),
+			},
 			types.Alternative{
 				Type:  "text/plain",
 				Title: fmt.Sprintf("%s's Twtxt Feed", profile.Username),

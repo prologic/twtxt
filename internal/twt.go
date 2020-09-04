@@ -175,6 +175,7 @@ func GetLastTwt(conf *Config, user *User) (twt types.Twt, offset int, err error)
 	}
 
 	twt, err = ParseLine(string(data), user.Twter())
+
 	return
 }
 

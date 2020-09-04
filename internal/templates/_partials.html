@@ -93,7 +93,7 @@
       <nav>
         <ul>
           {{ if eq $.LastTwt.Hash $.Twt.Hash }}
-            <li><a class="edit" href="#" data-hash="{{ $.Twt.Hash }}" data-text="{{ $.Twt.Text }}"><i class="icss-edit"></i>Edit</a></li>
+            <li><a class="edit" href="#" data-hash="{{ $.Twt.Hash }}" data-text="{{ $.Twt.Text | unparseTwt }}"><i class="icss-edit"></i>Edit</a></li>
             <li>&nbsp;</li>
             <li><a class="delete" href="#" data-hash="{{ $.Twt.Hash }}"><i class="icss-x"></i>Delete</a></li>
             <li>&nbsp;</li>

@@ -835,6 +835,42 @@ func ValidateUsername(username string) error {
 	return nil
 }
 
+// UnparseTwtFactory is the opposite of CleanTwt and ExpandMentions/ExpandTags
+func UnparseTwtFactory(conf *Config) func(text string) string {
+	isLocal := IsLocalFactory(conf)
+	return func(text string) string {
+		text = strings.ReplaceAll(text, "\u2028", "\n")
+
+		re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
+		return re.ReplaceAllStringFunc(text, func(match string) string {
+			parts := re.FindStringSubmatch(match)
+			prefix, nick, uri := parts[1], parts[2], parts[3]
+
+			switch prefix {
+			case "@":
+				if uri != "" && !isLocal(uri) {
+					u, err := url.Parse(uri)
+					if err != nil {
+						log.WithField("uri", uri).Warn("UnparseTwt(): error parsing uri")
+						return match
+					}
+					return fmt.Sprintf("@%s@%sd", nick, u.Hostname())
+				}
+				return fmt.Sprintf("@%s", nick)
+			case "#":
+				return fmt.Sprintf("#%s", nick)
+			default:
+				log.
+					WithField("prefix", prefix).
+					WithField("nick", nick).
+					WithField("uri", uri).
+					Warn("UnprocessTwt(): invalid prefix")
+			}
+			return match
+		})
+	}
+}
+
 // CleanTwt cleans a twt's text, replacing new lines with spaces and
 // stripping surrounding spaces.
 func CleanTwt(text string) string {

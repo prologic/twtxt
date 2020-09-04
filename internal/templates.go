@@ -37,6 +37,7 @@ func NewTemplates(conf *Config, blogs *BlogsCache, cache *Cache) (*Templates, er
 	funcMap["prettyURL"] = PrettyURL
 	funcMap["isLocal"] = IsLocalFactory(conf)
 	funcMap["formatTwt"] = FormatTwtFactory(conf)
+	funcMap["unparseTwt"] = UnparseTwtFactory(conf)
 	funcMap["formatForDateTime"] = FormatForDateTime
 	funcMap["urlForBlog"] = URLForBlogFactory(conf, blogs)
 	funcMap["urlForConv"] = URLForConvFactory(conf, cache)

@@ -28,6 +28,7 @@ import (
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
 	"github.com/gomarkdown/markdown/html"
+	"github.com/gomarkdown/markdown/parser"
 	"github.com/goware/urlx"
 	"github.com/h2non/filetype"
 	shortuuid "github.com/lithammer/shortuuid/v3"
@@ -837,10 +838,9 @@ func ValidateUsername(username string) error {
 // CleanTwt cleans a twt's text, replacing new lines with spaces and
 // stripping surrounding spaces.
 func CleanTwt(text string) string {
-	text = strings.ReplaceAll(text, "\r\n", " ")
-	text = strings.ReplaceAll(text, "\n", " ")
 	text = strings.TrimSpace(text)
-
+	text = strings.ReplaceAll(text, "\r\n", "\n")
+	text = strings.ReplaceAll(text, "\n", "\u2028")
 	return text
 }
 
@@ -953,6 +953,13 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 			return ast.GoToNext, false
 		}
 
+		// Replace  `LS: Line Separator, U+2028` with `\n` so the Markdown
+		// renderer can interpreter newlines as `<br />` and `<p>`.
+		text = strings.ReplaceAll(text, "\u2028", "\n")
+
+		extensions := parser.CommonExtensions | parser.HardLineBreak
+		mdParser := parser.NewWithExtensions(extensions)
+
 		htmlFlags := html.CommonFlags | html.HrefTargetBlank
 		opts := html.RendererOptions{
 			Flags:          htmlFlags,
@@ -962,7 +969,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 		renderer := html.NewRenderer(opts)
 
 		md := []byte(FormatMentionsAndTags(conf, text))
-		maybeUnsafeHTML := markdown.ToHTML(md, nil, renderer)
+		maybeUnsafeHTML := markdown.ToHTML(md, mdParser, renderer)
 		p := bluemonday.UGCPolicy()
 		p.AllowAttrs("target").OnElements("a")
 		p.AllowAttrs("class").OnElements("i")

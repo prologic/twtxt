@@ -445,7 +445,6 @@ u("#writeBtn").on("click", function (e) {
   u("#title").attr("type", "");
   u("#title").first().focus();
   u("#post").html('<i class="icss-print"></i>&nbsp;Publish!');
-  u("#text").attr("wrap", "hard");
   u("#text").attr("maxlength", "");
   u("#text").attr("rows", 24);
   u("#form").attr("action", "/blog");

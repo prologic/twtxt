@@ -737,6 +737,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 		}
 
 		text := CleanTwt(r.FormValue("text"))
+
 		if text == "" {
 			ctx.Error = true
 			ctx.Message = "No post content provided!"

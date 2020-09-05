@@ -332,7 +332,6 @@ func (cache Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 }
 
 // IsCached ...
-
 func (cache Cache) IsCached(url string) bool {
 	cache.mu.RLock()
 	_, ok := cache.Twts[url]
@@ -348,4 +347,13 @@ func (cache Cache) GetByURL(url string) types.Twts {
 		return cached.Twts
 	}
 	return types.Twts{}
+}
+
+// Delete ...
+func (cache Cache) Delete(feeds types.Feeds) {
+	for feed := range feeds {
+		cache.mu.Lock()
+		delete(cache.Twts, feed.URL)
+		cache.mu.Unlock()
+	}
 }

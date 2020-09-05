@@ -240,6 +240,12 @@ func (f *Feed) FollowedBy(url string) bool {
 	return ok
 }
 
+func (f *Feed) Source() types.Feeds {
+	feeds := make(types.Feeds)
+	feeds[types.Feed{Nick: f.Name, URL: f.URL}] = true
+	return feeds
+}
+
 func (f *Feed) Profile(baseURL string) types.Profile {
 	return types.Profile{
 		Type: "Feed",

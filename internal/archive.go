@@ -28,6 +28,7 @@ var (
 // such as an on-disk hash layout with one directory per 2-letter part of
 // the hash sequence.
 type Archiver interface {
+	Del(hash string) error
 	Has(hash string) bool
 	Get(hash string) (types.Twt, error)
 	Archive(twt types.Twt) error
@@ -40,6 +41,7 @@ func NewNullArchiver() (Archiver, error) {
 	return &NullArchiver{}, nil
 }
 
+func (a *NullArchiver) Del(hash string) error              { return nil }
 func (a *NullArchiver) Has(hash string) bool               { return false }
 func (a *NullArchiver) Get(hash string) (types.Twt, error) { return types.Twt{}, nil }
 func (a *NullArchiver) Archive(twt types.Twt) error        { return nil }
@@ -80,6 +82,20 @@ func (a *DiskArchiver) fileExists(fn string) bool {
 		return false
 	}
 	return true
+}
+
+func (a *DiskArchiver) Del(hash string) error {
+	fn, err := a.makePath(hash)
+	if err != nil {
+		log.WithError(err).Errorf("error computing archive file for twt %s", hash)
+		return err
+	}
+
+	if a.fileExists(fn) {
+		return os.Remove(fn)
+	}
+
+	return nil
 }
 
 func (a *DiskArchiver) Has(hash string) bool {

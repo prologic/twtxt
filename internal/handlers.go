@@ -2454,7 +2454,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 				if nick != "" {
 					if s.db.HasFeed(nick) {
 						// Fetch feed twts
-						twts, err := GetUserTwts(s.config, nick)
+						twts, err := GetAllTwts(s.config, nick)
 						if err != nil {
 							ctx.Error = true
 							ctx.Message = "Twt not found! Please try again."
@@ -2493,8 +2493,8 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 			}
 		}
 
-		// Get user's primary feed twts
-		twts, err := GetUserTwts(s.config, ctx.User.Username)
+		// Get user's prmary feed twts
+		twts, err := GetAllTwts(s.config, ctx.User.Username)
 		if err != nil {
 			ctx.Error = true
 			ctx.Message = "Primary feed not found! Please try again."

@@ -2439,7 +2439,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 		feeds, err := s.db.GetAllFeeds()
 		if err != nil {
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading feeds"
+			ctx.Message = "An error occured whilst deleting your account"
 			s.render("error", w, ctx)
 			return
 		}
@@ -2457,7 +2457,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 						twts, err := GetAllTwts(s.config, nick)
 						if err != nil {
 							ctx.Error = true
-							ctx.Message = "Twt not found! Please try again."
+							ctx.Message = "An error occured whilst deleting your account"
 							s.render("error", w, ctx)
 							return
 						}
@@ -2485,9 +2485,20 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 				// Delete feed
 				if err := s.db.DelFeed(nick); err != nil {
 					ctx.Error = true
-					ctx.Message = "Error deleting feed! Please try again."
+					ctx.Message = "An error occured whilst deleting your account"
 					s.render("error", w, ctx)
 					return
+				}
+
+				// Delete feeds's twtxt.txt
+				fn := filepath.Join(s.config.Data, feedsDir, nick)
+				if FileExists(fn) {
+					if err := os.Remove(fn); err != nil {
+						log.WithError(err).Error("error removing feed")
+						ctx.Error = true
+						ctx.Message = "An error occured whilst deleting your account"
+						s.render("error", w, ctx)
+					}
 				}
 
 			}
@@ -2497,46 +2508,64 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 		twts, err := GetAllTwts(s.config, ctx.User.Username)
 		if err != nil {
 			ctx.Error = true
-			ctx.Message = "Primary feed not found! Please try again."
+			ctx.Message = "An error occured whilst deleting your account"
 			s.render("error", w, ctx)
 			return
 		}
 
 		// Parse twts to search and remove primary feed uploaded media
 		for _, twt := range twts {
-
 			mediaPaths := GetMediaNamesFromText(twt.Text)
 
 			// Remove all uploaded media in a twt
 			for _, mediaPath := range mediaPaths {
-
 				// Delete .png
-				path := filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.png", mediaPath))
-				os.Remove(path)
+				fn := filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.png", mediaPath))
+				if FileExists(fn) {
+					if err := os.Remove(fn); err != nil {
+						log.WithError(err).Error("error removing media")
+						ctx.Error = true
+						ctx.Message = "An error occured whilst deleting your account"
+						s.render("error", w, ctx)
+					}
+				}
 
 				// Delete .webp
-				path = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.webp", mediaPath))
-				os.Remove(path)
+				fn = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.webp", mediaPath))
+				if FileExists(fn) {
+					if err := os.Remove(fn); err != nil {
+						log.WithError(err).Error("error removing media")
+						ctx.Error = true
+						ctx.Message = "An error occured whilst deleting your account"
+						s.render("error", w, ctx)
+					}
+				}
 			}
 		}
 
 		// Delete user's primary feed
 		if err := s.db.DelFeed(ctx.User.Username); err != nil {
 			ctx.Error = true
-			ctx.Message = "Primary feed not found! Please try again."
+			ctx.Message = "An error occured whilst deleting your account"
 			s.render("error", w, ctx)
 			return
 		}
 
-		// Delete user
-		user := ctx.User
-		if user == nil {
-			log.Fatalf("user not found in context")
+		// Delete user's twtxt.txt
+		fn := filepath.Join(s.config.Data, feedsDir, ctx.User.Username)
+		if FileExists(fn) {
+			if err := os.Remove(fn); err != nil {
+				log.WithError(err).Error("error removing user's feed")
+				ctx.Error = true
+				ctx.Message = "An error occured whilst deleting your account"
+				s.render("error", w, ctx)
+			}
 		}
 
+		// Delete user
 		if err := s.db.DelUser(ctx.Username); err != nil {
 			ctx.Error = true
-			ctx.Message = "Error deleting account"
+			ctx.Message = "An error occured whilst deleting your account"
 			s.render("error", w, ctx)
 			return
 		}
@@ -2547,7 +2576,6 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 		ctx.Error = false
 		ctx.Message = "Successfully deleted account"
 		s.render("error", w, ctx)
-		return
 	}
 }
 

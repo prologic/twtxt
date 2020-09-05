@@ -2601,6 +2601,9 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 		// Delete user's feed from cache
 		s.cache.Delete(ctx.User.Source())
 
+		// Re-populate/Warm cache with local twts for this pod
+		s.cache.GetByPrefix(s.config.BaseURL, true)
+
 		s.sm.Delete(w, r)
 		ctx.Authenticated = false
 

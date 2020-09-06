@@ -564,255 +564,37 @@ i.icss-paper-plane {
     left: .36em;
   }
 
-i.icss-magic-wand {
-    width: .07em;
-    height: .35em;
-    background-color: transparent;
-    border-radius: 50%;
-    box-shadow: .4em .05em;
-    margin: .325em .465em;
+i.icss-gears {
+    width: .5em;
+    height: .5em;
+    position: relative;
+    border-radius: 100%;
+    border-width: .063em;
+    border-style: solid;
+    border-color: transparent;
+    margin: .36em .532em .08em .1em;
+    box-shadow: .51em -.32em 0 -.06em;
 }
-i.icss-magic-wand:before {
-    width: .2em;
-    height: 1em;
-    background-color: transparent;
-    border-radius: .05em; 
-    box-shadow: inset 0 0 0 .065em,
-        inset 0 -.35em, inset 0 .2em, .5em 0 0 -.36em;
-    transform: rotate(45deg);
-    top: -.23em;
-    left: -.15em;
-}
-i.icss-magic-wand:after {
-    width: .35em;
-    height: .35em;
-    background-color: transparent;
-    border: 0 solid transparent;
-    border-width: .145em 0;
-    box-shadow: inset .5em .5em, 
-        -.3em -.5em 0 -.11em,
-        .05em -.45em 0 -.11em,
-        -.55em -.35em 0 -.1em;
-    border-radius: 50%;
-    top: .05em;
-    left: .25em;
-}
-i.icss-composite-darker {
-  width: .7em;
-  height: .7em;
-  box-shadow: inset 0 0 0 .065em;
-  background-color: transparent;
-  margin: 0 .3em .3em 0;
-}
-i.icss-composite-darker:before {
-  width: .7em;
-  height: .7em;
-  background-color: currentColor;
-  border-radius: 50%;
-  clip: rect(0 .4em .4em 0);
-  top: .3em;
-  left: .3em;
-}
-i.icss-composite-darker:after {
-  width: .7em;
-  height: .7em;
-  background: currentColor;
-  border-radius: 50%;
-  opacity: .5;
-  top: .3em;
-  left: .3em;
+i.icss-gears:before {
+    width: .7em;
+    height: .7em;
+    border-radius: 100%;
+    background: linear-gradient(0deg,transparent 39%,currentcolor 39%,currentcolor 61%, transparent 61%),
+        linear-gradient(60deg,transparent 42%, currentcolor 42%,currentcolor 58%, transparent 58%),
+        linear-gradient(120deg,transparent 42%, currentcolor 42%,currentcolor 58%, transparent 58%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
-i.icss-composite-lighter {
-  width: .7em;
-  height: .7em;
-  box-shadow: inset 0 0 0 .065em;
-  background-color: transparent;
-  margin: 0 .3em .3em 0;
-}
-i.icss-composite-lighter:before {
-  width: .7em;
-  height: .7em;
-  background-color: currentColor;
-  border-radius: 50%;
-  opacity: 50%;
-  top: .3em;
-  left: .3em;
-}
-i.icss-composite-lighter:after {
-  width: .7em;
-  height: .7em;
-  border-radius: 50%;
-  background-image: 
-    linear-gradient(transparent 50%, currentColor 50%),
-    linear-gradient(90deg, transparent 50%, currentColor 50%);
-  top: .3em;
-  left: .3em;
-}
-
-i.icss-quill-pen {
-  width: 1em;
-  height: 1em;
-  background-color: transparent;
-  margin: 0;
-}
-i.icss-quill-pen:before {
-  width: .78em;
-  height: .78em;
-  border-radius: 85% 15% 100% 0 / 85% 15%;
-  box-shadow: 
-    inset -.5em .12em 0 -.2em,
-    inset .52em -.68em 0 -.2em;
-  transform: rotate(-7deg) skewX(-15deg);
-  top: .05em;
-  left: .17em;
-}
-i.icss-quill-pen:after {
-  width: .2em;
-  height: .09em;
-  background: currentColor;
-  transform: skewY(-45deg);
-  left: .05em;
-  top: .8em;
-}
-
-i.icss-print {
-	width: .68em;
-	height: 1em;
-	border-style: solid;
-	border-color: currentcolor;
-	background-color: transparent;
-	border-width: .07em;
-	border-radius: .05em;
-	background-color: transparent;
-	margin: 0 .16em;
-}
-i.icss-print:before {
-	width: 1em;
-	height: .4em;
-	border-width: .07em .21em 0;
-	border-style: solid;
-	border-color: currentColor currentcolor transparent;
-	border-radius: .05em .05em 0 0;
-	top: .25em;
-	left: 50%;
-	transform: translateX(-50%);
-	background-image: linear-gradient(transparent 20%, currentcolor 20%, currentcolor 60%, transparent 60% );
-}
-i.icss-print:after {
-	width: .45em;
-	height: 0.065em;
-	background-color: currentColor;
-	left: 50%;
-	transform: translateX(-50%);
-	top: .6em;
-	box-shadow: 0 .12em, -.1em -.28em 0 .05em;
-}
-
-
-i.icss-edit {
-  width: 1em;
-  height: 1em;
-  background-color: transparent;
-  border-radius: 50% 45% 50% 35% ;
-  overflow: hidden;
-  margin: 0;
-}
-i.icss-edit:before {
-  width: .3em;
-  height: .8em;
-  border: .15em solid transparent;
-  border-top: .24em solid currentColor; 
-  transform: rotate(45deg) translate(-50%);
-  transform-origin: 0 0;
-  box-shadow: 
-    0 -.05em, 
-    .24em -.8em, 
-    -.24em -.8em, 
-    0 -1.5em;
-  clip: rect(-.9em .3em 1em 0);
-  left: .25em;
-  top: .75em;
-}
-i.icss-edit:after {
-  width: .1em;
-  height: 0;
-  background-color: transparent;
-  transform: translate(-50%, -50%);
-  top: 50%;
-  left: 50%;
-}
-i.icss-arrow-left {
-    width: 1em;
-    height: .18em;
-    border-radius: .1em;
-    background-color: currentColor;
-    margin: .41em  0;
-}
-i.icss-arrow-left:before {
-    width: .6em;
-    height: .18em;
-    border-radius:1em;
-    background-color: currentColor;
-    top: -.15em;
-    left: -.06em;
-    transform: rotate(-45deg);
-}
-i.icss-arrow-left:after {
-    width: .6em;
-    height: .18em;
-    border-radius: .1em;
-    background-color: currentColor;
-    top: .15em;
-    left: -0.06em;
-    transform: rotate(45deg);
-}
-
-i.icss-comment  {
-  width: .9em;
-  height: .65em;
-  border-radius: 50%;
-  margin: .1em .05em .2em;
-}
-i.icss-comment:before {
-  width: .3em;
-  height: .22em;
-  border-radius: 0 0 100% 0;
-  border: 0 solid transparent;
-  border-right: .15em solid currentColor;
-  transform: rotate(15deg);
-  top: 0.55em;
-  left: .08em;
-}
-i.icss-comment:after {
-}
-
-i.icss-chat  {
-  width: .7em;
-  height: .55em;
-  border-radius: 50%;
-  border: .065em solid transparent;
-  background: transparent;
-  box-shadow: inset 1em 0,  -.35em -.23em;
-  margin: .35em -.05em .05em .35em;
-}
-i.icss-chat:before {
-  width: .25em;
-  height: .2em;
-  border-radius: 0 0 100% 0;
-  border: 0 solid transparent;
-  border-right: .13em solid currentColor;
-  transform: rotate(18deg);
-  top: 0.15em;
-  left: -.38em;
-}
-i.icss-chat:after {
-  width: .2em;
-  height: .15em;
-  border-radius: 0 0 0 100%;
-  border: 0 solid transparent;
-  border-left: .12em solid currentColor;
-  transform: rotate(-10deg);
-  top: 0.37em;
-  left: .3em;
+i.icss-gears:after {
+    width: .55em;
+    height: .55em;
+    border-radius: 100%;
+    background: linear-gradient(0deg,transparent 37%,currentcolor 37%,currentcolor 63%, transparent 63%),
+        linear-gradient(60deg,transparent 40%, currentcolor 40%,currentcolor 60%, transparent 60%),
+        linear-gradient(120deg,transparent 40%, currentcolor 40%,currentcolor 60%, transparent 60%);
+    top: -.135em;
+    left: .695em;
+    transform: translate(-50%, -50%) rotate(25deg);
 }

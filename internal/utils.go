@@ -783,6 +783,14 @@ func PrettyURL(uri string) string {
 	return fmt.Sprintf("%s/%s", u.Hostname(), strings.TrimPrefix(u.EscapedPath(), "/"))
 }
 
+// IsAdminUserFactory returns a function that returns true if the user provided
+// is the configured pod administrator, false otherwise.
+func IsAdminUserFactory(conf *Config) func(user *User) bool {
+	return func(user *User) bool {
+		return NormalizeUsername(conf.AdminUser) == NormalizeUsername(user.Username)
+	}
+}
+
 func UserURL(url string) string {
 	if strings.HasSuffix(url, "/twtxt.txt") {
 		return strings.TrimSuffix(url, "/twtxt.txt")

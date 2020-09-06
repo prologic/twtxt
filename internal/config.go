@@ -1,7 +1,8 @@
 package internal
 
 import (
-	"encoding/json"
+	"errors"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"net/url"
@@ -9,50 +10,56 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/apex/log"
+	"github.com/goccy/go-yaml"
+)
+
+var (
+	ErrConfigPathMissing = errors.New("error: config file missing")
 )
 
 // Config contains the server configuration parameters
 type Config struct {
-	Data              string        `json:"data"`
-	Name              string        `json:"name"`
-	Description		  string		`json:"description"`
-	Store             string        `json:"store"`
-	Theme             string        `json:"theme"`
-	BaseURL           string        `json:"base_url"`
-	AdminUser         string        `json:"admin_user"`
-	AdminName         string        `json:"admin_name"`
-	AdminEmail        string        `json:"admin_email"`
-	FeedSources       []string      `json:"feed_sources"`
-	RegisterMessage   string        `json:"register_message"`
-	CookieSecret      string        `json:"cookie_secret"`
-	TwtPrompts        []string      `json:"twt_prompts"`
-	TwtsPerPage       int           `json:"twts_per_page"`
-	MaxUploadSize     int64         `json:"max_upload_size"`
-	MaxTwtLength      int           `json:"max_twt_length"`
-	MaxCacheTTL       time.Duration `json:"max_cache_ttl"`
-	MaxCacheItems     int           `json:"max_cache_items"`
-	OpenProfiles      bool          `json:"open_profiles"`
-	OpenRegistrations bool          `json:"open_registrations"`
-	SessionExpiry     time.Duration `json:"session_expiry"`
-	SessionCacheTTL   time.Duration `json:"session_cache_ttl"`
+	Data              string        `yaml:"data"`
+	Name              string        `yaml:"name"`
+	Description		  string		`yaml:"description"`
+	Store             string        `yaml:"store"`
+	Theme             string        `yaml:"theme"`
+	BaseURL           string        `yaml:"base_url"`
+	AdminUser         string        `yaml:"admin_user"`
+	AdminName         string        `yaml:"admin_name"`
+	AdminEmail        string        `yaml:"admin_email"`
+	FeedSources       []string      `yaml:"feed_sources"`
+	RegisterMessage   string        `yaml:"register_message"`
+	CookieSecret      string        `yaml:"cookie_secret"`
+	TwtPrompts        []string      `yaml:"twt_prompts"`
+	TwtsPerPage       int           `yaml:"twts_per_page"`
+	MaxUploadSize     int64         `yaml:"max_upload_size"`
+	MaxTwtLength      int           `yaml:"max_twt_length"`
+	OpenProfiles      bool          `yaml:"open_profiles"`
+	OpenRegistrations bool          `yaml:"open_registrations"`
+	SessionExpiry     time.Duration `yaml:"session_expiry"`
 
 	MagicLinkSecret string `json:"magiclink_secret"`
 
-	SMTPHost string `json:"smtp_host"`
-	SMTPPort int    `json:"smtp_port"`
-	SMTPUser string `json:"smtp_user"`
-	SMTPPass string `json:"smtp_pass"`
-	SMTPFrom string `json:"smtp_from"`
+	SMTPHost string `yaml:"smtp_host"`
+	SMTPPort int    `yaml:"smtp_port"`
+	SMTPUser string `yaml:"smtp_user"`
+	SMTPPass string `yaml:"smtp_pass"`
+	SMTPFrom string `yaml:"smtp_from"`
 
-	MaxFetchLimit int64 `json:"max_fetch_limit"`
+	MaxFetchLimit int64 `yaml:"max_fetch_limit"`
 
-	APISessionTime time.Duration `json:"api_session_time"`
-	APISigningKey  []byte        `json:"api_signing_key"`
+	APISessionTime time.Duration `yaml:"api_session_time"`
+	APISigningKey  []byte        `yaml:"api_signing_key"`
 
 	baseURL *url.URL
 
-	WhitelistedDomains []string `json:"whitelisted_domains"`
 	whitelistedDomains []*regexp.Regexp
+	WhitelistedDomains []string `yaml:"whitelisted_domains"`
+
+	path string
 }
 
 // WhitelistedDomain returns true if the domain provided is a whiltelisted
@@ -79,6 +86,22 @@ func (c *Config) RandomTwtPrompt() string {
 	return c.TwtPrompts[n]
 }
 
+// ConfigFromReader reads an io.Reader `r` and pares it into a *Config object
+func ConfigFromReader(r io.Reader) (cfg *Config, err error) {
+	var data []byte
+
+	data, err = ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
 // Load loads a configuration from the given path
 func Load(path string) (*Config, error) {
 	var cfg Config
@@ -88,21 +111,39 @@ func Load(path string) (*Config, error) {
 		return nil, err
 	}
 
-	if err := json.Unmarshal(data, &cfg); err != nil {
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		return nil, err
 	}
+
+	cfg.path = path
 
 	return &cfg, nil
 }
 
+func (c *Config) String() string {
+	data, err := yaml.MarshalWithOptions(c, yaml.Indent(4))
+	if err != nil {
+		log.WithError(err).Warn("error marshalling config")
+		return ""
+	}
+	return string(data)
+}
+
 // Save saves the configuration to the provided path
 func (c *Config) Save(path string) error {
+	if path == "" {
+		path = c.path
+	}
+	if path == "" {
+		return ErrConfigPathMissing
+	}
+
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
 
-	data, err := json.Marshal(c)
+	data, err := yaml.MarshalWithOptions(c, yaml.Indent(4))
 	if err != nil {
 		return err
 	}

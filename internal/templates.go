@@ -42,6 +42,8 @@ func NewTemplates(conf *Config, blogs *BlogsCache, cache *Cache) (*Templates, er
 	funcMap["formatForDateTime"] = FormatForDateTime
 	funcMap["urlForBlog"] = URLForBlogFactory(conf, blogs)
 	funcMap["urlForConv"] = URLForConvFactory(conf, cache)
+	funcMap["isLocal"] = IsLocalFactory(conf)
+	funcMap["isAdminUser"] = IsAdminUserFactory(conf)
 
 	box, err := rice.FindBox("templates")
 	if err != nil {

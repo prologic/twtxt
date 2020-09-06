@@ -345,7 +345,7 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 			if _, err := blogPost.WriteString(text); err != nil {
 				log.WithError(err).Error("error writing blog post content")
 				ctx.Error = true
-				ctx.Message = "An error occured updating blog post"
+				ctx.Message = "An error occurred updating blog post"
 				s.render("error", w, ctx)
 				return
 			}

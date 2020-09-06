@@ -38,6 +38,7 @@ import (
 	"github.com/prologic/twtxt/internal/session"
 	"github.com/prologic/twtxt/types"
 	"github.com/steambap/captcha"
+	"github.com/mitchellh/go-homedir"
 )
 
 const (
@@ -2411,6 +2412,150 @@ func (s *Server) SupportHandler() httprouter.Handle {
 			s.config.AdminName,
 		)
 		s.render("error", w, ctx)
+	}
+}
+
+// ManagePodHandler ...
+func (s *Server) ManagePodHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		if r.Method == "GET" {
+			s.render("managePod", w, ctx)
+			return
+		}
+
+		name := strings.TrimSpace(r.FormValue("podName"))
+		description := strings.TrimSpace(r.FormValue("podDescription"))
+		maxTwtLength := SafeParseInt(r.FormValue("maxTwtLength"), s.config.MaxTwtLength)
+		openProfiles := r.FormValue("enableOpenProfiles") == "on"
+		openRegistrations := r.FormValue("enableOpenRegistrations") == "on"
+
+		// Update pod avatar
+		avatarFile, _, err := r.FormFile("avatar_file")
+		if err != nil && err != http.ErrMissingFile {
+			log.WithError(err).Error("error parsing form file")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if avatarFile != nil {
+			opts := &ImageOptions{
+				Resize:  true,
+				ResizeW: AvatarResolution,
+				ResizeH: AvatarResolution,
+			}
+			_, err = StoreUploadedPodImage(
+				s.config, avatarFile,
+				"", opts,
+			)
+			if err != nil {
+				ctx.Error = true
+				ctx.Message = fmt.Sprintf("Error updating pod avatar: %s", err)
+				s.render("error", w, ctx)
+				return
+			}
+		}
+
+		// Get home directory
+		home, err := homedir.Dir()
+		if err != nil {
+			log.WithError(err).Error("error finding home directory")
+			os.Exit(1)
+		}
+
+		// Update pod name
+		if name != "" {
+			s.config.Name = name
+		} else {
+			log.WithError(err).Errorf("Pod name not specified")
+			ctx.Error = true
+			ctx.Message = ""
+			s.render("error", w, ctx)
+			return
+		}
+
+		// Update pod description
+		if description != "" {
+			s.config.Description = description
+		} else {
+			log.WithError(err).Errorf("Pod description not specified")
+			ctx.Error = true
+			ctx.Message = ""
+			s.render("error", w, ctx)
+			return
+		}
+
+		// Update twt length
+		s.config.MaxTwtLength = maxTwtLength
+		// Update open profiles
+		s.config.OpenProfiles = openProfiles
+		// Update open registrations
+		s.config.OpenRegistrations = openRegistrations
+
+		log.Infof("Manage Pod: %s %v %t %t", s.config.Name, s.config.MaxTwtLength, s.config.OpenProfiles, s.config.OpenRegistrations)
+
+		// Save config file
+		if err := s.config.Save(filepath.Join(home, ".twt.yaml")); err != nil {
+			log.WithError(err).Error("error saving config")
+			os.Exit(1)
+		}
+
+		
+		ctx.Error = false
+		ctx.Message = "Pod updated successfully"
+		s.render("error", w, ctx)
+	}
+}
+
+// PodAvatarHandler ...
+func (s *Server) PodAvatarHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		w.Header().Set("Cache-Control", "public, no-cache, must-revalidate")
+
+		var fn string
+
+		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+			fn = filepath.Join(s.config.Data, "", "logo.webp");
+			w.Header().Set("Content-Type", "image/webp")
+		} else {
+			// Support older browsers like IE11 that don't support WebP :/
+			metrics.Counter("media", "old_avatar").Inc()
+			fn = filepath.Join(s.config.Data, "", "logo.png");
+			w.Header().Set("Content-Type", "image/png")
+		}
+
+		if fileInfo, err := os.Stat(fn); err == nil {
+			etag := fmt.Sprintf("W/\"%s-%s\"", r.RequestURI, fileInfo.ModTime().Format(time.RFC3339))
+
+			if match := r.Header.Get("If-None-Match"); match != "" {
+				if strings.Contains(match, etag) {
+					w.WriteHeader(http.StatusNotModified)
+					return
+				}
+			}
+
+			w.Header().Set("Etag", etag)
+			if r.Method == http.MethodHead {
+				return
+			}
+
+			f, err := os.Open(fn)
+			if err != nil {
+				log.WithError(err).Error("error opening avatar file")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			defer f.Close()
+
+			if _, err := io.Copy(w, f); err != nil {
+				log.WithError(err).Error("error writing avatar response")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			return
+		}
 	}
 }
 

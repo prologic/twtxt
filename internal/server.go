@@ -481,6 +481,8 @@ func (s *Server) initRoutes() {
 	s.router.GET("/user/:nick/followers", s.FollowersHandler())
 	s.router.GET("/user/:nick/following", s.FollowingHandler())
 
+	s.router.GET("/pod/avatar", s.PodAvatarHandler())
+
 	// WebMentions
 	s.router.POST("/user/:nick/webmention", s.WebMentionHandler())
 
@@ -533,6 +535,9 @@ func (s *Server) initRoutes() {
 
 	s.router.GET("/settings", s.am.MustAuth(s.SettingsHandler()))
 	s.router.POST("/settings", s.am.MustAuth(s.SettingsHandler()))
+
+	s.router.GET("/managePod", s.ManagePodHandler())
+	s.router.POST("/managePod", s.ManagePodHandler())
 
 	s.router.POST("/token/delete/:signature", s.am.MustAuth(s.DeleteTokenHandler()))
 

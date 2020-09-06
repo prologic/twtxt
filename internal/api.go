@@ -721,11 +721,13 @@ func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 
 		if nick == "" {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
 		}
 
 		url := query.Get("url")
 		if url == "" {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
 		}
 
 		profileResponse := types.ProfileResponse{}
@@ -738,8 +740,8 @@ func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 
 		profileResponse.Twter = types.Twter{
 			Nick:   nick,
-			Avatar: URLForExternalAvatar(a.config, url),
-			URL:    URLForUser(a.config, nick),
+			Avatar: URLForExternalAvatar(a.config, nick, url),
+			URL:    URLForExternalProfile(a.config, nick, url),
 		}
 
 		data, err := json.Marshal(profileResponse)

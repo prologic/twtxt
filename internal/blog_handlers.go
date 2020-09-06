@@ -341,7 +341,15 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 				return
 			}
 			blogPost.Reset()
-			blogPost.WriteString(text)
+
+			if _, err := blogPost.WriteString(text); err != nil {
+				log.WithError(err).Error("error writing blog post content")
+				ctx.Error = true
+				ctx.Message = "An error occured updating blog post"
+				s.render("error", w, ctx)
+				return
+			}
+
 			if err := blogPost.Save(s.config); err != nil {
 				log.WithError(err).Error("error saving blog post")
 				ctx.Error = true

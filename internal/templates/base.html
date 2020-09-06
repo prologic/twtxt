@@ -81,6 +81,14 @@
             /settings
           </a>
         </li>
+        {{ if isAdminUser .User }}
+          <li>
+            <a class="secondary" href="/manage">
+              <i class="icss-gears"></i>
+              /manage
+            </a>
+          </li>
+        {{ end }}
         <li>
           <a class="secondary" href="/logout">
             <i class="icss-exit"></i>

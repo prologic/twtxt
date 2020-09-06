@@ -37,6 +37,8 @@ type Meta struct {
 }
 
 type Context struct {
+	Config string
+
 	BaseURL                 string
 	InstanceName            string
 	SoftwareVersion         string

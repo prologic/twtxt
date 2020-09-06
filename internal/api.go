@@ -71,6 +71,7 @@ func (a *API) initRoutes() {
 	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
 	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
 	router.GET("/profile/:nick", a.ProfileEndpoint())
+	router.GET("/external", a.ProfileEndpoint())
 	router.POST("/discover", a.DiscoverEndpoint())
 }
 
@@ -693,6 +694,52 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 				Title: fmt.Sprintf("%s's Atom Feed", profile.Username),
 				URL:   fmt.Sprintf("%s/atom.xml", UserURL(profile.URL)),
 			},
+		}
+
+		profileResponse.Twter = types.Twter{
+			Nick:   profile.Username,
+			Avatar: URLForAvatar(a.config, profile.Username),
+			URL:    URLForUser(a.config, profile.Username),
+		}
+
+		data, err := json.Marshal(profileResponse)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+	}
+}
+
+// ExternalProfileEndpoint ...
+func (a *API) ExternalProfileEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		query := r.URL.Query()
+		nick := query.Get("nick")
+
+		if nick == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+		}
+
+		url := query.Get("url")
+		if url == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+		}
+
+		profileResponse := types.ProfileResponse{}
+
+		profileResponse.Profile = types.Profile{
+			Username: nick,
+			TwtURL:   url,
+			URL:      URLForExternalProfile(a.config, nick, url),
+		}
+
+		profileResponse.Twter = types.Twter{
+			Nick:   nick,
+			Avatar: URLForExternalAvatar(a.config, url),
+			URL:    URLForUser(a.config, nick),
 		}
 
 		data, err := json.Marshal(profileResponse)

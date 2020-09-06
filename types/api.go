@@ -122,8 +122,10 @@ func NewFollowRequest(r io.Reader) (req FollowRequest, err error) {
 	return
 }
 
+// ProfileResponse ...
 type ProfileResponse struct {
 	Profile      Profile      `json:"profile"`
 	Links        Links        `json:"links"`
 	Alternatives Alternatives `json:"alternatives"`
+	Twter        Twter        `json:"twter"`
 }

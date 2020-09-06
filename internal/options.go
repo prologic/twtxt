@@ -116,6 +116,7 @@ var (
 func NewConfig() *Config {
 	return &Config{
 		Name:              DefaultName,
+		Description:	   DefaultMetaDescription,
 		Store:             DefaultStore,
 		Theme:             DefaultTheme,
 		BaseURL:           DefaultBaseURL,
@@ -205,6 +206,14 @@ func WithFeedSources(feedSources []string) Option {
 func WithName(name string) Option {
 	return func(cfg *Config) error {
 		cfg.Name = name
+		return nil
+	}
+}
+
+// WithDescription sets the instance's description
+func WithDescription(description string) Option {
+	return func(cfg *Config) error {
+		cfg.Description = description
 		return nil
 	}
 }

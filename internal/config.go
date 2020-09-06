@@ -15,12 +15,13 @@ import (
 type Config struct {
 	Data              string        `json:"data"`
 	Name              string        `json:"name"`
+	Description		  string		`json:"description"`
 	Store             string        `json:"store"`
 	Theme             string        `json:"theme"`
 	BaseURL           string        `json:"base_url"`
 	AdminUser         string        `json:"admin_user"`
-	AdminName         string        `json:"admin_user"`
-	AdminEmail        string        `json:"admin_user"`
+	AdminName         string        `json:"admin_name"`
+	AdminEmail        string        `json:"admin_email"`
 	FeedSources       []string      `json:"feed_sources"`
 	RegisterMessage   string        `json:"register_message"`
 	CookieSecret      string        `json:"cookie_secret"`

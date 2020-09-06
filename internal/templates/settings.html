@@ -95,6 +95,11 @@
         </div>
         <button type="submit" class="primary">Update</button>
       </form>
+      {{ if .IsAdmin }}
+      <form action="/managePod" method="GET">
+        <button type="submit" class="contrast">Manage Pod</button>
+      </form>
+      {{ end }}
       
         
       <details>

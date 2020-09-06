@@ -24,6 +24,7 @@ var (
 
 	// Basic options
 	name    string
+	description string
 	data    string
 	store   string
 	theme   string
@@ -75,6 +76,7 @@ func init() {
 
 	// Basic options
 	flag.StringVarP(&name, "name", "n", internal.DefaultName, "set the pod's name")
+	flag.StringVarP(&description, "description", "m", internal.DefaultMetaDescription, "set the pod's description")
 	flag.StringVarP(&data, "data", "d", internal.DefaultData, "data directory")
 	flag.StringVarP(&store, "store", "s", internal.DefaultStore, "store to use")
 	flag.StringVarP(&theme, "theme", "t", internal.DefaultTheme, "set the default theme")
@@ -218,6 +220,7 @@ func main() {
 	svr, err := internal.NewServer(bind,
 		// Basic options
 		internal.WithName(name),
+		internal.WithDescription(description),
 		internal.WithData(data),
 		internal.WithStore(store),
 		internal.WithTheme(theme),

@@ -71,7 +71,7 @@ func (a *API) initRoutes() {
 	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
 	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
 	router.GET("/profile/:nick", a.ProfileEndpoint())
-	router.GET("/external", a.ProfileEndpoint())
+	router.GET("/external", a.ExternalProfileEndpoint())
 	router.POST("/discover", a.DiscoverEndpoint())
 }
 

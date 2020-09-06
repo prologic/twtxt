@@ -1,22 +1,33 @@
 {{define "content"}}
   <article class="contianer-fluid">
     <hgroup>
-      <h2><a href="{{ $.BlogPost.URL $.BaseURL }}">{{ $.BlogPost.Title }}</a></h2>
-      <h3 class="u-author h-card">
+      <h2 class="u-author h-card">
         <a href="/user/{{ $.BlogPost.Author }}" class="u-url">
           <img class="avatar u-photo" src="/user/{{ $.BlogPost.Author }}/avatar" />
         <span class="p-name">{{ $.BlogPost.Author }}</span>
         </a>
-      </h3>
+      </h2>
+      <h3><a href="{{ $.BlogPost.URL $.BaseURL }}">{{ $.BlogPost.Title }}</a></h3>
     </hgroup>
     {{ .Content }}
     <footer>
+      Published
       <a class="u-url" href="{{ $.BlogPost.URL $.BaseURL }}">
         <time class="dt-published" datetime="{{ $.BlogPost.Created | date "2006-01-02T15:04:05Z07:00" }}">
           {{ dateInZone ($.BlogPost.Created | formatForDateTime) $.BlogPost.Created $.User.DisplayDatesInTimezone }}
         </time>
       </a>
       &nbsp;({{ $.BlogPost.Created | time }})
+      <hr />
+      {{ if and $.Authenticated (eq $.User.Username $.BlogPost.Author) }}
+        <nav>
+          <ul>
+            <li><a href="{{ $.BlogPost.URL $.BaseURL }}/edit"><i class="icss-edit"></i>Edit</a></li>
+            <li>&nbsp;</li>
+            <li><a href="{{ $.BlogPost.URL $.BaseURL }}/delete"><i class="icss-x"></i>Delete</a></li>
+          </ul>
+        </nav>
+      {{ end }}
     </footer>
   </article>
   <div class="container">

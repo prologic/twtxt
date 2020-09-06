@@ -226,6 +226,10 @@ func (b *BlogPost) Filename(ext string) string {
 	return fn
 }
 
+func (b *BlogPost) Reset() {
+	b.data.Reset()
+}
+
 func (b *BlogPost) Write(p []byte) (int, error) {
 	return b.data.Write(p)
 }
@@ -311,6 +315,10 @@ func (b *BlogPost) Hash() string {
 	b.hash = hash[len(hash)-blogHashLength:]
 
 	return b.hash
+}
+
+func (b *BlogPost) Content() string {
+	return string(b.Bytes())
 }
 
 func (b *BlogPost) String() string {

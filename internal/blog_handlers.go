@@ -174,6 +174,48 @@ func (s *Server) BlogHandler() httprouter.Handle {
 	}
 }
 
+// EditBlogHandler ...
+func (s *Server) EditBlogHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		blogPost, err := BlogPostFromParams(s.config, p)
+		if err != nil {
+			log.WithError(err).Error("error loading blog post")
+			ctx.Error = true
+			ctx.Message = "Error loading blog post! Please contact support."
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Title = fmt.Sprintf("Editing Twt Blog: %s", blogPost.Title)
+		ctx.BlogPost = blogPost
+
+		s.render("edit_blogpost", w, ctx)
+	}
+}
+
+// DeleteBlogHandler ...
+func (s *Server) DeleteBlogHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		blogPost, err := BlogPostFromParams(s.config, p)
+		if err != nil {
+			log.WithError(err).Error("error loading blog post")
+			ctx.Error = true
+			ctx.Message = "Error loading blog post! Please contact support."
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Title = fmt.Sprintf("Editing Twt Blog: %s", blogPost.Title)
+		ctx.BlogPost = blogPost
+
+		s.render("delete_blogpost", w, ctx)
+	}
+}
+
 // BlogsHandler ...
 func (s *Server) BlogsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -285,6 +327,29 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 			ctx.Error = true
 			ctx.Message = "No content provided!"
 			s.render("error", w, ctx)
+			return
+		}
+
+		hash := r.FormValue("hash")
+		if hash != "" {
+			blogPost, ok := s.blogs.Get(hash)
+			if !ok {
+				log.WithField("hash", hash).Warn("invalid blog hash or blog not found")
+				ctx.Error = true
+				ctx.Message = "Invalid blog or blog not found"
+				s.render("error", w, ctx)
+				return
+			}
+			blogPost.Reset()
+			blogPost.WriteString(text)
+			if err := blogPost.Save(s.config); err != nil {
+				log.WithError(err).Error("error saving blog post")
+				ctx.Error = true
+				ctx.Message = "An error occured updating blog post"
+				s.render("error", w, ctx)
+				return
+			}
+			http.Redirect(w, r, blogPost.URL(s.config.BaseURL), http.StatusFound)
 			return
 		}
 

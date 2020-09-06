@@ -454,8 +454,8 @@ func (s *Server) initRoutes() {
 	s.router.GET("/blogs/:author", s.BlogsHandler())
 	s.router.GET("/blog/:author/:year/:month/:date/:slug", s.BlogHandler())
 	s.router.HEAD("/blog/:author/:year/:month/:date/:slug", s.BlogHandler())
-	//s.router.PATCH("/blog", s.am.MustAuth(s.PostHandler()))
-	//s.router.DELETE("/blog", s.am.MustAuth(s.PostHandler()))
+	s.router.GET("/blog/:author/:year/:month/:date/:slug/edit", s.EditBlogHandler())
+	s.router.GET("/blog/:author/:year/:month/:date/:slug/delete", s.DeleteBlogHandler())
 
 	// Redirect old URIs (twtxt <= v0.0.8) of the form /u/<nick> -> /user/<nick>/twtxt.txt
 	// TODO: Remove this after v1

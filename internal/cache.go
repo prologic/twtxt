@@ -59,10 +59,11 @@ type Cache struct {
 }
 
 // Store ...
-func (cache Cache) Store(path string) error {
+func (cache *Cache) Store(path string) error {
 	b := new(bytes.Buffer)
 	enc := gob.NewEncoder(b)
 	err := enc.Encode(cache)
+
 	if err != nil {
 		log.WithError(err).Error("error encoding cache")
 		return err
@@ -136,7 +137,7 @@ func LoadCache(path string) (*Cache, error) {
 const maxfetchers = 50
 
 // FetchTwts ...
-func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) {
+func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) {
 	stime := time.Now()
 	defer func() {
 		metrics.Gauge(
@@ -279,7 +280,7 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) 
 }
 
 // Lookup ...
-func (cache Cache) Lookup(hash string) (types.Twt, bool) {
+func (cache *Cache) Lookup(hash string) (types.Twt, bool) {
 	cache.mu.RLock()
 	defer cache.mu.RUnlock()
 	for _, cached := range cache.Twts {
@@ -292,7 +293,7 @@ func (cache Cache) Lookup(hash string) (types.Twt, bool) {
 }
 
 // GetAll ...
-func (cache Cache) GetAll() types.Twts {
+func (cache *Cache) GetAll() types.Twts {
 	var alltwts types.Twts
 	cache.mu.RLock()
 	for _, cached := range cache.Twts {
@@ -303,7 +304,7 @@ func (cache Cache) GetAll() types.Twts {
 }
 
 // GetByPrefix ...
-func (cache Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
+func (cache *Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 	key := fmt.Sprintf("prefix:%s", prefix)
 	cache.mu.RLock()
 	cached, ok := cache.Twts[key]
@@ -334,7 +335,7 @@ func (cache Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 }
 
 // IsCached ...
-func (cache Cache) IsCached(url string) bool {
+func (cache *Cache) IsCached(url string) bool {
 	cache.mu.RLock()
 	_, ok := cache.Twts[url]
 	cache.mu.RUnlock()
@@ -342,7 +343,7 @@ func (cache Cache) IsCached(url string) bool {
 }
 
 // GetByURL ...
-func (cache Cache) GetByURL(url string) types.Twts {
+func (cache *Cache) GetByURL(url string) types.Twts {
 	cache.mu.RLock()
 	defer cache.mu.RUnlock()
 	if cached, ok := cache.Twts[url]; ok {
@@ -352,7 +353,7 @@ func (cache Cache) GetByURL(url string) types.Twts {
 }
 
 // Delete ...
-func (cache Cache) Delete(feeds types.Feeds) {
+func (cache *Cache) Delete(feeds types.Feeds) {
 	for feed := range feeds {
 		cache.mu.Lock()
 		delete(cache.Twts, feed.URL)

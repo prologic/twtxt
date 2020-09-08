@@ -2483,9 +2483,9 @@ func (s *Server) ManagePodHandler() httprouter.Handle {
 				ResizeW: AvatarResolution,
 				ResizeH: AvatarResolution,
 			}
-			_, err = StoreUploadedPodImage(
+			_, err = StoreUploadedImage(
 				s.config, avatarFile,
-				"", opts,
+				"", "logo", opts,
 			)
 			if err != nil {
 				ctx.Error = true

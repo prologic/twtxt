@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -71,7 +72,7 @@ func (a *API) initRoutes() {
 	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
 	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
 	router.GET("/profile/:nick", a.ProfileEndpoint())
-	router.GET("/external", a.ExternalProfileEndpoint())
+	router.GET("/external/:slug/:nick", a.ExternalProfileEndpoint())
 	router.POST("/discover", a.DiscoverEndpoint())
 }
 
@@ -716,19 +717,28 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 // ExternalProfileEndpoint ...
 func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		query := r.URL.Query()
-		nick := query.Get("nick")
+		slug := p.ByName("slug")
+		nick := p.ByName("nick")
+
+		if slug == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		v, ok := slugs.Load(slug)
+		if !ok {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		u := v.(*url.URL)
 
 		if nick == "" {
-			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
+			log.Warn("no nick given to external profile request")
+			nick = "unknown"
 		}
 
-		url := query.Get("url")
-		if url == "" {
-			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
+		url := u.String()
 
 		profileResponse := types.ProfileResponse{}
 

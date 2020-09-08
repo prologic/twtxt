@@ -452,6 +452,8 @@ func (s *Server) initRoutes() {
 	s.router.GET("/mentions", s.am.MustAuth(s.MentionsHandler()))
 	s.router.GET("/search", s.SearchHandler())
 
+	s.router.POST("/ack/:hash", s.am.MustAuth(s.AckHandler()))
+
 	s.router.HEAD("/twt/:hash", s.PermalinkHandler())
 	s.router.GET("/twt/:hash", s.PermalinkHandler())
 

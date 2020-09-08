@@ -381,7 +381,7 @@ func (a *API) PostEndpoint() httprouter.Handle {
 		a.cache.FetchTwts(a.config, a.archive, user.Source())
 
 		// Re-populate/Warm cache with local twts for this pod
-		a.cache.GetByPrefix(a.config.BaseURL, true)
+		a.cache.GetTwtsByPrefix(a.config.BaseURL, true)
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
@@ -405,7 +405,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 		var twts types.Twts
 
 		for feed := range user.Sources() {
-			twts = append(twts, a.cache.GetByURL(feed.URL)...)
+			twts = append(twts, a.cache.GetTwtsByURL(feed.URL)...)
 		}
 
 		sort.Sort(twts)
@@ -452,7 +452,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 			return
 		}
 
-		twts := a.cache.GetByPrefix(a.config.BaseURL, false)
+		twts := a.cache.GetTwtsByPrefix(a.config.BaseURL, false)
 
 		sort.Sort(twts)
 
@@ -506,7 +506,7 @@ func (a *API) MentionsEndpoint() httprouter.Handle {
 
 		// Search for @mentions on feeds user is following
 		for feed := range user.Sources() {
-			for _, twt := range a.cache.GetByURL(feed.URL) {
+			for _, twt := range a.cache.GetTwtsByURL(feed.URL) {
 				for _, twter := range twt.Mentions() {
 					if user.Is(twter.URL) && !seen[twt.Hash()] {
 						twts = append(twts, twt)
@@ -517,7 +517,7 @@ func (a *API) MentionsEndpoint() httprouter.Handle {
 		}
 
 		// Search for @mentions in local twts too (i.e: /discover)
-		for _, twt := range a.cache.GetByPrefix(a.config.BaseURL, false) {
+		for _, twt := range a.cache.GetTwtsByPrefix(a.config.BaseURL, false) {
 			for _, twter := range twt.Mentions() {
 				if user.Is(twter.URL) && !seen[twt.Hash()] {
 					twts = append(twts, twt)
@@ -904,7 +904,7 @@ func (a *API) ProfileTwtsEndpoint() httprouter.Handle {
 			return
 		}
 
-		twts := a.cache.GetByURL(profile.URL)
+		twts := a.cache.GetTwtsByURL(profile.URL)
 
 		sort.Sort(twts)
 

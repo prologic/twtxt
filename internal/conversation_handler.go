@@ -29,7 +29,7 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 
 		var err error
 
-		twt, ok := s.cache.Lookup(hash)
+		twt, ok := s.cache.LookupTwt(hash)
 		if !ok {
 			// If the twt is not in the cache look for it in the archive
 			if s.archive.Has(hash) {
@@ -80,7 +80,7 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 			var result types.Twts
 			seen := make(map[string]bool)
 			// TODO: Improve this by making this an O(1) lookup on the tag
-			for _, twt := range s.cache.GetAll() {
+			for _, twt := range s.cache.GetAllTwts() {
 				if HasString(UniqStrings(twt.Tags()), hash) && !seen[twt.Hash()] {
 					result = append(result, twt)
 					seen[twt.Hash()] = true

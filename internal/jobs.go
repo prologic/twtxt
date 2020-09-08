@@ -2,8 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"io/ioutil"
-	"path/filepath"
 
 	"github.com/prologic/twtxt/types"
 	"github.com/robfig/cron"
@@ -32,7 +30,6 @@ func init() {
 		"UpdateFeedSources": NewJobSpec("@every 15m", NewUpdateFeedSourcesJob),
 		"FixUserAccounts":   NewJobSpec("@hourly", NewFixUserAccountsJob),
 		"DeleteOldSessions": NewJobSpec("@hourly", NewDeleteOldSessionsJob),
-		"FixMissingTwts":    NewJobSpec("@daily", NewFixMissingTwtsJob),
 		"Stats":             NewJobSpec("@daily", NewStatsJob),
 		"MergeStore":        NewJobSpec("@daily", NewMergeStoreJob),
 	}
@@ -41,7 +38,6 @@ func init() {
 		"UpdateFeeds":       Jobs["UpdateFeeds"],
 		"UpdateFeedSources": Jobs["UpdateFeedSources"],
 		"FixUserAccounts":   Jobs["FixUserAccounts"],
-		"FixMissingTwts":    Jobs["FixMissingTwts"],
 		"DeleteOldSessions": Jobs["DeleteOldSessions"],
 	}
 }
@@ -117,7 +113,7 @@ func (job *StatsJob) Run() {
 	followers = UniqStrings(followers)
 	following = UniqStrings(following)
 
-	localTwts := job.cache.GetByPrefix(job.conf.BaseURL, false)
+	localTwts := job.cache.GetTwtsByPrefix(job.conf.BaseURL, false)
 
 	text := fmt.Sprintf(
 		"🧮  USERS:%d  FEEDS:%d  ARCHIVED:%d  BLOGS:%d  CACHED:%d  POSTS: %d  FOLLOWERS:%d  FOLLOWING:%d",
@@ -185,7 +181,7 @@ func (job *UpdateFeedsJob) Run() {
 	job.cache.FetchTwts(job.conf, job.archive, sources)
 
 	log.Infof("warming cache with local twts for %s", job.conf.BaseURL)
-	job.cache.GetByPrefix(job.conf.BaseURL, true)
+	job.cache.GetTwtsByPrefix(job.conf.BaseURL, true)
 
 	log.Info("updated feed cache")
 
@@ -271,44 +267,6 @@ func (job *FixUserAccountsJob) Run() {
 	for _, feed := range twtxtBots {
 		if err := CreateFeed(job.conf, job.db, nil, feed, true); err != nil {
 			log.WithError(err).Warnf("error creating new feed %s", feed)
-		}
-	}
-}
-
-type FixMissingTwtsJob struct {
-	conf    *Config
-	blogs   *BlogsCache
-	cache   *Cache
-	archive Archiver
-	db      Store
-}
-
-func NewFixMissingTwtsJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
-	return &FixMissingTwtsJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
-}
-
-func (job *FixMissingTwtsJob) Run() {
-	p := filepath.Join(job.conf.Data, feedsDir)
-	fileInfos, err := ioutil.ReadDir(p)
-	if err != nil {
-		log.WithError(err).Error("error reading feeds")
-		return
-	}
-
-	for _, fileInfo := range fileInfos {
-		name := fileInfo.Name()
-		twts, err := GetAllTwts(job.conf, name)
-		if err != nil {
-			log.WithError(err).Errorf("error loading twts for %s", name)
-			continue
-		}
-
-		for _, twt := range twts {
-			_, ok := job.cache.Lookup(twt.Hash())
-			if !ok && !job.archive.Has(twt.Hash()) {
-				log.Infof("inserting missing Twt %s into archive", twt.Hash())
-				job.archive.Archive(twt)
-			}
 		}
 	}
 }

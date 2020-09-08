@@ -125,6 +125,26 @@ function removeMe() {
   element.parentNode.removeChild(element);
 }
 
+function ackTwt(e) {
+  e.preventDefault();
+
+  u(".ack").removeClass("icss-gesture")
+  u(".ack").addClass("icss-spinner icss-pulse")
+
+  Twix.ajax({
+    type: "POST",
+    url: u(e.target).data("ack"),
+    success: function (data) {
+      u(".ack").removeClass("icss-spinner icss-pulse");
+      u(".ack").addClass("icss-gesture");
+    },
+    error: function (statusCode, statusText) {
+      u(".ack").removeClass("icss-spinner icss-pulse");
+      u(".ack").addClass("icss-exclamation-circle");
+    },
+  });
+}
+
 function replyTo(e) {
   e.preventDefault();
 
@@ -200,6 +220,7 @@ u("#theme input").on("change", function (e) {
   }
 });
 
+u(".ack").on("click", ackTwt);
 u(".reply").on("click", replyTo);
 u(".edit").on("click", editTwt);
 u(".delete").on("click", deleteTwt);

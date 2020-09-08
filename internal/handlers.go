@@ -233,7 +233,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 			},
 		}...)
 
-		twts := s.cache.GetByURL(profile.URL)
+		twts := s.cache.GetTwtsByURL(profile.URL)
 
 		sort.Sort(twts)
 
@@ -802,7 +802,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 		s.cache.FetchTwts(s.config, s.archive, user.Source())
 
 		// Re-populate/Warm cache with local twts for this pod
-		s.cache.GetByPrefix(s.config.BaseURL, true)
+		s.cache.GetTwtsByPrefix(s.config.BaseURL, true)
 
 		// WebMentions ...
 		for _, twter := range twt.Mentions() {
@@ -831,14 +831,14 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		var twts types.Twts
 
 		if !ctx.Authenticated {
-			twts = s.cache.GetByPrefix(s.config.BaseURL, false)
+			twts = s.cache.GetTwtsByPrefix(s.config.BaseURL, false)
 			ctx.Title = "Local timeline"
 		} else {
 			ctx.Title = "Timeline"
 			user := ctx.User
 			if user != nil {
 				for feed := range user.Sources() {
-					twts = append(twts, s.cache.GetByURL(feed.URL)...)
+					twts = append(twts, s.cache.GetTwtsByURL(feed.URL)...)
 				}
 			}
 		}
@@ -868,11 +868,19 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 				s.render("error", w, ctx)
 				return
 			}
+
 			ctx.LastTwt = lastTwt
 		}
 
+		log.Debugf("ctx.LastTwt: %#v", ctx.LastTwt)
+
 		ctx.Twts = pagedTwts
 		ctx.Pager = &pager
+
+		log.Debugf("ctx.Twts: %#v", ctx.Twts)
+		for _, twt := range ctx.Twts {
+			log.Debugf(" %#v", twt)
+		}
 
 		s.render("timeline", w, ctx)
 	}
@@ -883,6 +891,54 @@ func (s *Server) WebMentionHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		r.Body = http.MaxBytesReader(w, r.Body, 1024)
 		webmentions.WebMentionEndpoint(w, r)
+	}
+}
+
+// AckHandler ...
+func (s *Server) AckHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		//ctx := NewContext(s.config, s.db, r)
+
+		hash := p.ByName("hash")
+		if hash == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		var (
+			archived bool
+			err      error
+		)
+
+		twt, ok := s.cache.LookupTwt(hash)
+		if !ok {
+			// If the twt is not in the cache look for it in the archive
+			if s.archive.Has(hash) {
+				twt, err = s.archive.Get(hash)
+				if err != nil {
+					log.WithError(err).Error("error loading twt from archvie")
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+				archived = true
+			}
+		}
+
+		if twt.IsZero() {
+			http.Error(w, "Twt Not Found", http.StatusNotFound)
+			return
+		}
+
+		// TODO: Implement a `Cacheable` for this...
+		// twt.Meta().Add("acks", ctx.User.Username)
+
+		if archived {
+			if err := s.archive.Archive(twt); err != nil {
+				log.WithError(err).Error("error updating archived twt")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+		}
 	}
 }
 
@@ -899,7 +955,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 
 		var err error
 
-		twt, ok := s.cache.Lookup(hash)
+		twt, ok := s.cache.LookupTwt(hash)
 		if !ok {
 			// If the twt is not in the cache look for it in the archive
 			if s.archive.Has(hash) {
@@ -987,7 +1043,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		localTwts := s.cache.GetByPrefix(s.config.BaseURL, false)
+		localTwts := s.cache.GetTwtsByPrefix(s.config.BaseURL, false)
 
 		sort.Sort(localTwts)
 
@@ -1036,7 +1092,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 
 		// Search for @mentions on feeds user is following
 		for feed := range ctx.User.Sources() {
-			for _, twt := range s.cache.GetByURL(feed.URL) {
+			for _, twt := range s.cache.GetTwtsByURL(feed.URL) {
 				for _, twter := range twt.Mentions() {
 					if ctx.User.Is(twter.URL) && !seen[twt.Hash()] {
 						twts = append(twts, twt)
@@ -1047,7 +1103,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 		}
 
 		// Search for @mentions in local twts too (i.e: /discover)
-		for _, twt := range s.cache.GetByPrefix(s.config.BaseURL, false) {
+		for _, twt := range s.cache.GetTwtsByPrefix(s.config.BaseURL, false) {
 			for _, twter := range twt.Mentions() {
 				if ctx.User.Is(twter.URL) && !seen[twt.Hash()] {
 					twts = append(twts, twt)
@@ -1097,7 +1153,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 			var result types.Twts
 			seen := make(map[string]bool)
 			// TODO: Improve this by making this an O(1) lookup on the tag
-			for _, twt := range s.cache.GetAll() {
+			for _, twt := range s.cache.GetAllTwts() {
 				if HasString(UniqStrings(twt.Tags()), tag) && !seen[twt.Hash()] {
 					result = append(result, twt)
 					seen[twt.Hash()] = true
@@ -1904,7 +1960,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 			s.cache.FetchTwts(s.config, s.archive, sources)
 		}
 
-		twts := s.cache.GetByURL(u.String())
+		twts := s.cache.GetTwtsByURL(u.String())
 
 		sort.Sort(twts)
 
@@ -2281,7 +2337,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 			if s.db.HasUser(nick) {
 				if user, err := s.db.GetUser(nick); err == nil {
 					profile = user.Profile(s.config.BaseURL)
-					twts = s.cache.GetByURL(profile.URL)
+					twts = s.cache.GetTwtsByURL(profile.URL)
 				} else {
 					log.WithError(err).Error("error loading user object")
 					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -2290,7 +2346,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 			} else if s.db.HasFeed(nick) {
 				if feed, err := s.db.GetFeed(nick); err == nil {
 					profile = feed.Profile(s.config.BaseURL)
-					twts = s.cache.GetByURL(profile.URL)
+					twts = s.cache.GetTwtsByURL(profile.URL)
 				} else {
 					log.WithError(err).Error("error loading user object")
 					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -2301,7 +2357,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 				return
 			}
 		} else {
-			twts = s.cache.GetByPrefix(s.config.BaseURL, false)
+			twts = s.cache.GetTwtsByPrefix(s.config.BaseURL, false)
 
 			profile = types.Profile{
 				Type:     "Local",
@@ -2548,7 +2604,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 				}
 
 				// Delete feed from cache
-				s.cache.Delete(feed.Source())
+				s.cache.DeleteItems(feed.Source())
 			}
 		}
 
@@ -2627,10 +2683,10 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 		}
 
 		// Delete user's feed from cache
-		s.cache.Delete(ctx.User.Source())
+		s.cache.DeleteItems(ctx.User.Source())
 
 		// Re-populate/Warm cache with local twts for this pod
-		s.cache.GetByPrefix(s.config.BaseURL, true)
+		s.cache.GetTwtsByPrefix(s.config.BaseURL, true)
 
 		s.sm.Delete(w, r)
 		ctx.Authenticated = false

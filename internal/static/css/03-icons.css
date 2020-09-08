@@ -840,4 +840,46 @@ i.icss-video-camera:after {
   border-radius: 50%;
   top: -.26em;
   left: .37em
+
+i.icss-gesture {
+  width: .15em;
+  height: .55em;
+  border-radius: .1em;
+  margin: .12em .4em .33em .45em;
+}
+i.icss-gesture:before {
+  width: .45em;
+  height: .5em;
+  border-radius: .3em .12em 0 .2em;
+  border: .1em solid transparent;
+  border-width: 0 0 .35em 0;
+  background-color: currentColor;
+  box-shadow: 
+    -.1em 0,
+    -.3em -.35em;
+  transform: rotate(-45deg);
+  clip: rect(-.5em .5em .15em -.5em);
+  left: .15em;
+  top: .35em;
+}
+i.icss-gesture:after {
+}
+
+i.icss-exclamation-circle {
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    border: .1em solid currentColor;
+    background-color: transparent;
+    margin: 0;
+}
+i.icss-exclamation-circle:before {
+    width: .15em;
+    border: .015em solid transparent;
+    border-top: .38em solid currentColor;
+    border-bottom: .09em solid transparent;
+    box-shadow: 0 .13em 0 -.012em;
+    top: .1em;
+    left: 50%;
+    transform: translateX(-50%); 
 }

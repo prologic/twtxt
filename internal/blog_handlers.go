@@ -37,7 +37,7 @@ func (s *Server) BlogHandler() httprouter.Handle {
 			var result types.Twts
 			seen := make(map[string]bool)
 			// TODO: Improve this by making this an O(1) lookup on the tag
-			for _, twt := range s.cache.GetAll() {
+			for _, twt := range s.cache.GetAllTwts() {
 				if HasString(UniqStrings(twt.Tags()), tag) && !seen[twt.Hash()] {
 					result = append(result, twt)
 					seen[twt.Hash()] = true
@@ -432,7 +432,7 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 		s.cache.FetchTwts(s.config, s.archive, user.Source())
 
 		// Re-populate/Warm cache with local twts for this pod
-		s.cache.GetByPrefix(s.config.BaseURL, true)
+		s.cache.GetTwtsByPrefix(s.config.BaseURL, true)
 
 		http.Redirect(w, r, RedirectURL(r, s.config, "/"), http.StatusFound)
 	}

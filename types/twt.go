@@ -3,10 +3,13 @@ package types
 import (
 	"encoding/base32"
 	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
 
+	"github.com/apex/log"
+	"github.com/writeas/slug"
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -20,6 +23,33 @@ type Twter struct {
 	URL     string
 	Avatar  string
 	Tagline string
+
+	hash string
+}
+
+// Hash ...
+func (twter Twter) Hash() string {
+	if twter.hash != "" {
+		return twter.hash
+	}
+
+	u, err := url.Parse(twter.URL)
+	if err != nil {
+		log.WithError(err).Warnf("Twter.Hash(): error parsing url: %s", twter.URL)
+		return ""
+	}
+
+	s := slug.Make(fmt.Sprintf("%s/%s", u.Hostname(), u.Path))
+
+	payload := fmt.Sprintf("%s/%s", s, twter.Nick)
+	sum := blake2b.Sum256([]byte(payload))
+
+	// Base32 is URL-safe, unlike Base64, and shorter than hex.
+	encoding := base32.StdEncoding.WithPadding(base32.NoPadding)
+	hash := strings.ToLower(encoding.EncodeToString(sum[:]))
+	twter.hash = hash[len(hash)-HashLength:]
+
+	return twter.hash
 }
 
 func (twter Twter) IsZero() bool {
@@ -103,11 +133,19 @@ func (twt Twt) IsZero() bool {
 	return twt.Twter.IsZero() && twt.Created.IsZero() && twt.Text == ""
 }
 
-// TwtMap ...
-type TwtMap map[string]Twt
-
 // Twts typedef to be able to attach sort methods
 type Twts []Twt
+
+func (twts Twts) IsZero() bool {
+	return twts == nil || len(twts) == 0
+}
+
+func (twts Twts) Hash() string {
+	if len(twts) > 0 {
+		return twts[0].Hash()
+	}
+	return ""
+}
 
 func (twts Twts) Len() int {
 	return len(twts)

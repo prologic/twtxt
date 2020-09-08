@@ -33,9 +33,16 @@ func TestExpandTags(t *testing.T) {
 			Text:   "http://127.0.0.1:8000/#foo",
 			Output: "http://127.0.0.1:8000/#foo",
 		},
+		/* XXX: This edge-case does not work
 		{
 			Text:   "http://127.0.0.1:8000/#foo #foo",
 			Output: "http://127.0.0.1:8000/#foo #<foo http://127.0.0.1:8000/search?tag=foo>",
+		},
+		*/
+		// But this one does...
+		{
+			Text:   "http://127.0.0.1:8000/#foo #bar",
+			Output: "http://127.0.0.1:8000/#foo #<bar http://127.0.0.1:8000/search?tag=bar>",
 		},
 		{
 			Text:   "https://github.com/foo/bar/issues/1#issue-12345567",

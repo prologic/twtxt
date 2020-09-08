@@ -69,7 +69,7 @@ func ExpandTags(conf *Config, text string) string {
 		parts := re.FindStringSubmatch(match)
 		tag := parts[1]
 
-		matched, err := regexp.MatchString(fmt.Sprintf(`https?://.*?%s`, match), text)
+		matched, err := regexp.MatchString(fmt.Sprintf(`https?://[^#]*?%s`, match), text)
 		if err == nil && matched {
 			return match
 		}

@@ -62,12 +62,17 @@ func ExpandMentions(conf *Config, db Store, user *User, text string) string {
 	})
 }
 
-// Turns #tag into "@<tag URL>"
-func ExpandTag(conf *Config, db Store, user *User, text string) string {
-	re := regexp.MustCompile(`#([-\w]+)`)
+// ExpandTags turns #tag into "@<tag URL>"
+func ExpandTags(conf *Config, text string) string {
+	re := regexp.MustCompile(`\B#([-\w]+)\b`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
 		tag := parts[1]
+
+		matched, err := regexp.MatchString(fmt.Sprintf(`https?://.*%s`, match), text)
+		if err == nil && matched {
+			return match
+		}
 
 		return fmt.Sprintf("#<%s %s>", tag, URLForTag(conf.BaseURL, tag))
 	})
@@ -133,7 +138,7 @@ func AppendTwt(conf *Config, db Store, user *User, text string, args ...interfac
 	line := fmt.Sprintf(
 		"%s\t%s\n",
 		now.Format(time.RFC3339),
-		ExpandTag(conf, db, user, ExpandMentions(conf, db, user, text)),
+		ExpandTags(conf, ExpandMentions(conf, db, user, text)),
 	)
 
 	if _, err = f.WriteString(line); err != nil {

@@ -34,6 +34,10 @@ func TestExpandTags(t *testing.T) {
 			Output: "http://127.0.0.1:8000/#foo",
 		},
 		{
+			Text:   "http://127.0.0.1:8000/#foo #foo",
+			Output: "http://127.0.0.1:8000/#foo #<foo http://127.0.0.1:8000/search?tag=foo>",
+		},
+		{
 			Text:   "https://github.com/foo/bar/issues/1#issue-12345567",
 			Output: "https://github.com/foo/bar/issues/1#issue-12345567",
 		},

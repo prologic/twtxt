@@ -2421,7 +2421,7 @@ func (s *Server) ManageHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
-			s.render("managePod", w, ctx)
+			s.render("manage", w, ctx)
 			return
 		}
 
@@ -2492,8 +2492,6 @@ func (s *Server) ManageHandler() httprouter.Handle {
 		s.config.OpenProfiles = openProfiles
 		// Update open registrations
 		s.config.OpenRegistrations = openRegistrations
-
-		log.Infof("Manage Pod: %s %v %t %t", s.config.Name, s.config.MaxTwtLength, s.config.OpenProfiles, s.config.OpenRegistrations)
 
 		// Save config file
 		if err := s.config.Save(filepath.Join(home, ".twt.yaml")); err != nil {

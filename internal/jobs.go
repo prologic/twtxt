@@ -42,17 +42,18 @@ func init() {
 	}
 }
 
-type JobFactory func(conf *Config, cache *Cache, archive Archiver, store Store) cron.Job
+type JobFactory func(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, store Store) cron.Job
 
 type SyncStoreJob struct {
 	conf    *Config
+	blogs   *BlogsCache
 	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewSyncStoreJob(conf *Config, cache *Cache, archive Archiver, db Store) cron.Job {
-	return &SyncStoreJob{conf: conf, cache: cache, archive: archive, db: db}
+func NewSyncStoreJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+	return &SyncStoreJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
 }
 
 func (job *SyncStoreJob) Run() {
@@ -64,13 +65,14 @@ func (job *SyncStoreJob) Run() {
 
 type StatsJob struct {
 	conf    *Config
+	blogs   *BlogsCache
 	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewStatsJob(conf *Config, cache *Cache, archive Archiver, db Store) cron.Job {
-	return &StatsJob{conf: conf, cache: cache, archive: archive, db: db}
+func NewStatsJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+	return &StatsJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
 }
 
 func (job *StatsJob) Run() {
@@ -80,6 +82,12 @@ func (job *StatsJob) Run() {
 	)
 
 	log.Infof("updating stats")
+
+	archiveSize, err := job.archive.Count()
+	if err != nil {
+		log.WithError(err).Warn("unable to get archive size")
+		return
+	}
 
 	feeds, err := job.db.GetAllFeeds()
 	if err != nil {
@@ -108,8 +116,9 @@ func (job *StatsJob) Run() {
 	localTwts := job.cache.GetByPrefix(job.conf.BaseURL, false)
 
 	text := fmt.Sprintf(
-		"🧮  USERS:%d FEEDS:%d POSTS:%d FOLLOWERS:%d FOLLOWING:%d",
-		len(users), len(feeds), len(localTwts), len(followers), len(following),
+		"🧮  USERS:%d  FEEDS:%d  ARCHIVED:%d  BLOGS:%d  CACHED:%d  POSTS: %d  FOLLOWERS:%d  FOLLOWING:%d",
+		len(users), len(feeds), archiveSize, job.blogs.Count(),
+		job.cache.Count(), len(localTwts), len(followers), len(following),
 	)
 
 	if _, err := AppendSpecial(job.conf, job.db, "stats", text); err != nil {
@@ -119,13 +128,14 @@ func (job *StatsJob) Run() {
 
 type UpdateFeedsJob struct {
 	conf    *Config
+	blogs   *BlogsCache
 	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewUpdateFeedsJob(conf *Config, cache *Cache, archive Archiver, db Store) cron.Job {
-	return &UpdateFeedsJob{conf: conf, cache: cache, archive: archive, db: db}
+func NewUpdateFeedsJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+	return &UpdateFeedsJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
 }
 
 func (job *UpdateFeedsJob) Run() {
@@ -188,13 +198,14 @@ func (job *UpdateFeedsJob) Run() {
 
 type UpdateFeedSourcesJob struct {
 	conf    *Config
+	blogs   *BlogsCache
 	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewUpdateFeedSourcesJob(conf *Config, cache *Cache, archive Archiver, db Store) cron.Job {
-	return &UpdateFeedSourcesJob{conf: conf, cache: cache, archive: archive, db: db}
+func NewUpdateFeedSourcesJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+	return &UpdateFeedSourcesJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
 }
 
 func (job *UpdateFeedSourcesJob) Run() {
@@ -213,13 +224,14 @@ func (job *UpdateFeedSourcesJob) Run() {
 
 type FixUserAccountsJob struct {
 	conf    *Config
+	blogs   *BlogsCache
 	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewFixUserAccountsJob(conf *Config, cache *Cache, archive Archiver, db Store) cron.Job {
-	return &FixUserAccountsJob{conf: conf, cache: cache, archive: archive, db: db}
+func NewFixUserAccountsJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+	return &FixUserAccountsJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
 }
 
 func (job *FixUserAccountsJob) Run() {
@@ -261,13 +273,14 @@ func (job *FixUserAccountsJob) Run() {
 
 type DeleteOldSessionsJob struct {
 	conf    *Config
+	blogs   *BlogsCache
 	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewDeleteOldSessionsJob(conf *Config, cache *Cache, archive Archiver, db Store) cron.Job {
-	return &DeleteOldSessionsJob{conf: conf, cache: cache, archive: archive, db: db}
+func NewDeleteOldSessionsJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+	return &DeleteOldSessionsJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
 }
 
 func (job *DeleteOldSessionsJob) Run() {
@@ -291,13 +304,14 @@ func (job *DeleteOldSessionsJob) Run() {
 
 type MergeStoreJob struct {
 	conf    *Config
+	blogs   *BlogsCache
 	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewMergeStoreJob(conf *Config, cache *Cache, archive Archiver, db Store) cron.Job {
-	return &MergeStoreJob{conf: conf, cache: cache, archive: archive, db: db}
+func NewMergeStoreJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+	return &MergeStoreJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
 }
 
 func (job *MergeStoreJob) Run() {

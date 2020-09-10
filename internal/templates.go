@@ -62,7 +62,7 @@ func NewTemplates(conf *Config, blogs *BlogsCache, cache *Cache) (*Templates, er
 			}
 
 			name := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
-			t := template.New(name).Option("missingkey=error")
+			t := template.New(name).Option("missingkey=zero")
 			t.Funcs(funcMap)
 			template.Must(t.Parse(box.MustString(info.Name())))
 			template.Must(t.Parse(box.MustString(partialsTemplate)))

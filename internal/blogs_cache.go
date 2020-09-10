@@ -124,6 +124,11 @@ func (cache BlogsCache) Get(hash string) (*BlogPost, bool) {
 	return blogPost, ok
 }
 
+// Count ...
+func (cache BlogsCache) Count() int {
+	return len(cache.Blogs)
+}
+
 // GetAll ...
 func (cache BlogsCache) GetAll() BlogPosts {
 	var blogPosts BlogPosts

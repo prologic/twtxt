@@ -108,7 +108,7 @@
           <ul>
             {{ range $Feeds }}
               <li>
-                <a href="/external?nick={{ .Name  }}&url={{ .URL }}">{{ .Name }}</a>
+                <a href="/external/{{ .URL | slugify }}/{{ .Name  }}">{{ .Name }}</a>
                 &nbsp;
                 {{ if $.User.Follows .URL }}
                   [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]

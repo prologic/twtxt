@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -71,6 +72,7 @@ func (a *API) initRoutes() {
 	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
 	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
 	router.GET("/profile/:nick", a.ProfileEndpoint())
+	router.GET("/external/:slug/:nick", a.ExternalProfileEndpoint())
 	router.POST("/discover", a.DiscoverEndpoint())
 }
 
@@ -693,6 +695,63 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 				Title: fmt.Sprintf("%s's Atom Feed", profile.Username),
 				URL:   fmt.Sprintf("%s/atom.xml", UserURL(profile.URL)),
 			},
+		}
+
+		profileResponse.Twter = types.Twter{
+			Nick:   profile.Username,
+			Avatar: URLForAvatar(a.config, profile.Username),
+			URL:    URLForUser(a.config, profile.Username),
+		}
+
+		data, err := json.Marshal(profileResponse)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+	}
+}
+
+// ExternalProfileEndpoint ...
+func (a *API) ExternalProfileEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		slug := p.ByName("slug")
+		nick := p.ByName("nick")
+
+		if slug == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		v, ok := slugs.Load(slug)
+		if !ok {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		u := v.(*url.URL)
+
+		if nick == "" {
+			log.Warn("no nick given to external profile request")
+			nick = "unknown"
+		}
+
+		url := u.String()
+
+		profileResponse := types.ProfileResponse{}
+
+		profileResponse.Profile = types.Profile{
+			Username: nick,
+			TwtURL:   url,
+			URL:      URLForExternalProfile(a.config, nick, url),
+		}
+
+		profileResponse.Twter = types.Twter{
+			Nick:   nick,
+			Avatar: URLForExternalAvatar(a.config, nick, url),
+			URL:    URLForExternalProfile(a.config, nick, url),
 		}
 
 		data, err := json.Marshal(profileResponse)

@@ -17,6 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 48,
+  "iteration": 1599441891662,
   "links": [],
   "panels": [
     {
@@ -84,13 +85,15 @@
         "lineColor": "rgb(31, 120, 193)",
         "show": true
       },
-      "tableColumn": "{instance=\"twtxt:8000\", job=\"twtxt\"}",
+      "tableColumn": "{instance=\"twtxt_twtxt:8000\", job=\"twtxt\"}",
       "targets": [
         {
-          "expr": "twtd_server_uptime / 1e6",
+          "expr": "twtd_server_uptime{job=\"$job\", instance=\"$instance\"} / 1e6",
           "format": "time_series",
           "instant": false,
+          "interval": "",
           "intervalFactor": 1,
+          "legendFormat": "",
           "refId": "A"
         }
       ],
@@ -174,10 +177,10 @@
         "lineColor": "rgb(31, 120, 193)",
         "show": true
       },
-      "tableColumn": "twtd_cache_size{instance=\"twtxt:8000\", job=\"twtxt\"}",
+      "tableColumn": "twtd_cache_twts{instance=\"twtxt_twtxt:8000\", job=\"twtxt\"}",
       "targets": [
         {
-          "expr": "twtd_cache_size",
+          "expr": "twtd_cache_twts{job=\"$job\", instance=\"$instance\"}",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -260,10 +263,10 @@
         "lineColor": "rgb(31, 120, 193)",
         "show": true
       },
-      "tableColumn": "twtd_cache_last_processed_seconds{instance=\"twtxt:8000\", job=\"twtxt\"}",
+      "tableColumn": "{instance=\"twtxt_twtxt:8000\", job=\"twtxt\"}",
       "targets": [
         {
-          "expr": "twtd_cache_last_processed_seconds",
+          "expr": "avg_over_time(twtd_cache_last_processed_seconds{job=\"$job\", instance=\"$instance\"}[$__range])",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -278,7 +281,7 @@
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [],
-      "valueName": "avg"
+      "valueName": "current"
     },
     {
       "cacheTimeout": null,
@@ -342,10 +345,10 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.1.5",
       "targets": [
         {
-          "expr": "sum(irate(process_cpu_seconds_total{job=\"twtxt\"}[5m]) * 100)",
+          "expr": "sum(rate(process_cpu_seconds_total{job=\"$job\", instance=\"$instance\"}[$__range]) * 100)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -419,10 +422,10 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.1.5",
       "targets": [
         {
-          "expr": "process_resident_memory_bytes{job=\"twtxt\"}",
+          "expr": "process_resident_memory_bytes{job=\"$job\", instance=\"$instance\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -468,15 +471,15 @@
       },
       "lines": true,
       "linewidth": 1,
-      "nullPointMode": "connected",
+      "nullPointMode": "null",
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.1.5",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [
         {
-          "alias": "twts_archived/s",
+          "alias": "twts_archived",
           "yaxis": 2
         }
       ],
@@ -485,15 +488,15 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "twtd_cache_last_processed_seconds",
+          "expr": "avg_over_time(twtd_cache_last_processed_seconds{job=\"$job\", instance=\"$instance\"}[$__range])",
           "interval": "",
           "legendFormat": "cache_update_duration",
           "refId": "A"
         },
         {
-          "expr": "rate(twtd_archive_size[5m])",
+          "expr": "increase(twtd_archive_size{job=\"$job\", instance=\"$instance\"}[$__range])",
           "interval": "",
-          "legendFormat": "twts_archived/s",
+          "legendFormat": "twts_archived",
           "refId": "B"
         }
       ],
@@ -526,7 +529,7 @@
           "show": true
         },
         {
-          "format": "ops",
+          "format": "short",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -545,7 +548,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "Database / Cache Sizes (such as no. of users, feeds, sessions, cache size, etc)",
+      "description": "Database / Cache Stats (such as no. of users, feeds, sessions, cache size, etc)",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -575,13 +578,25 @@
       "linewidth": 1,
       "nullPointMode": "connected",
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.1.5",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [
         {
-          "alias": "cahced_twts",
+          "alias": "feed_sources",
+          "yaxis": 2
+        },
+        {
+          "alias": "server_sessions",
+          "yaxis": 2
+        },
+        {
+          "alias": "cached_feeds",
+          "yaxis": 2
+        },
+        {
+          "alias": "cached_twts",
           "yaxis": 2
         }
       ],
@@ -590,35 +605,59 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "twtd_db_feeds",
+          "expr": "twtd_db_feeds{job=\"$job\", instance=\"$instance\"}",
           "interval": "",
           "legendFormat": "db_feeds",
           "refId": "A"
         },
         {
-          "expr": "twtd_db_sessions",
+          "expr": "twtd_db_sessions{job=\"$job\", instance=\"$instance\"}",
           "interval": "",
           "legendFormat": "db_sessions",
           "refId": "B"
         },
         {
-          "expr": "twtd_db_users",
+          "expr": "twtd_db_users{job=\"$job\", instance=\"$instance\"}",
           "interval": "",
           "legendFormat": "db_users",
           "refId": "C"
         },
         {
-          "expr": "twtd_cache_size",
+          "expr": "twtd_db_tokens{job=\"$job\", instance=\"$instance\"}",
           "interval": "",
-          "legendFormat": "cahced_twts",
+          "legendFormat": "db_tokens",
+          "refId": "H"
+        },
+        {
+          "expr": "twtd_cache_feeds{job=\"$job\", instance=\"$instance\"}",
+          "interval": "",
+          "legendFormat": "cached_feeds",
+          "refId": "G"
+        },
+        {
+          "expr": "twtd_cache_twts{job=\"$job\", instance=\"$instance\"}",
+          "interval": "",
+          "legendFormat": "cached_twts",
           "refId": "D"
+        },
+        {
+          "expr": "twtd_feed_sources{job=\"$job\", instance=\"$instance\"}",
+          "interval": "",
+          "legendFormat": "feed_sources",
+          "refId": "E"
+        },
+        {
+          "expr": "twtd_server_sessions{job=\"$job\", instance=\"$instance\"}",
+          "interval": "",
+          "legendFormat": "server_sessions",
+          "refId": "F"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "DB/Cache Size",
+      "title": "DB/Cache Stats",
       "tooltip": {
         "shared": false,
         "sort": 0,
@@ -697,7 +736,7 @@
       "links": [],
       "nullPointMode": "connected",
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.1.5",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -712,7 +751,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(irate(process_cpu_seconds_total{job=\"twtxt\"}[5m]) * 100)",
+          "expr": "sum(rate(process_cpu_seconds_total{job=\"$job\", instance=\"$instance\"}[$__range]) * 100)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -806,7 +845,7 @@
       "links": [],
       "nullPointMode": "connected",
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.1.5",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -821,7 +860,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "process_resident_memory_bytes{job=\"twtxt\"}",
+          "expr": "process_resident_memory_bytes{job=\"$job\", instance=\"$instance\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -831,8 +870,9 @@
           "step": 4
         },
         {
-          "expr": "process_virtual_memory_bytes{job=\"twtxt\"}",
+          "expr": "process_virtual_memory_bytes{job=\"$job\", instance=\"$instance\"}",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 2,
           "legendFormat": "vm",
           "metric": "process_virtual_memory_bytes",
@@ -924,7 +964,7 @@
       "links": [],
       "nullPointMode": "connected",
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.1.5",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -939,7 +979,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "go_memstats_heap_sys_bytes{job=\"twtxt\"}",
+          "expr": "go_memstats_heap_sys_bytes{job=\"$job\", instance=\"$instance\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -949,7 +989,7 @@
           "step": 4
         },
         {
-          "expr": "go_memstats_mcache_sys_bytes{job=\"twtxt\"}",
+          "expr": "go_memstats_mcache_sys_bytes{job=\"$job\", instance=\"$instance\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -959,25 +999,25 @@
           "step": 4
         },
         {
-          "expr": "go_memstats_mspan_sys_bytes{job=\"twtxt\"}",
+          "expr": "go_memstats_mspan_sys_bytes{job=\"$job\", instance=\"$instance\"}",
           "interval": "",
           "legendFormat": "mspan",
           "refId": "C"
         },
         {
-          "expr": "go_memstats_other_sys_bytes{job=\"twtxt\"}",
+          "expr": "go_memstats_other_sys_bytes{job=\"$job\", instance=\"$instance\"}",
           "interval": "",
           "legendFormat": "other",
           "refId": "D"
         },
         {
-          "expr": "go_memstats_stack_sys_bytes{job=\"twtxt\"}",
+          "expr": "go_memstats_stack_sys_bytes{job=\"$job\", instance=\"$instance\"}",
           "interval": "",
           "legendFormat": "stack",
           "refId": "E"
         },
         {
-          "expr": "go_memstats_sys_bytes{job=\"twtxt\"}",
+          "expr": "go_memstats_sys_bytes{job=\"$job\", instance=\"$instance\"}",
           "interval": "",
           "legendFormat": "sys",
           "refId": "F"
@@ -1067,7 +1107,7 @@
       "links": [],
       "nullPointMode": "connected",
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.1.5",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -1082,7 +1122,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "go_memstats_alloc_bytes{job=\"twtxt\"}",
+          "expr": "go_memstats_alloc_bytes{job=\"$job\", instance=\"$instance\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1092,7 +1132,7 @@
           "step": 4
         },
         {
-          "expr": "go_memstats_heap_inuse_bytes{job=\"twtxt\"}",
+          "expr": "go_memstats_heap_inuse_bytes{job=\"$job\", instance=\"$instance\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1102,8 +1142,9 @@
           "step": 4
         },
         {
-          "expr": "go_memstats_stack_inuse_bytes{job=\"twtxt\"}",
+          "expr": "go_memstats_stack_inuse_bytes{job=\"$job\", instance=\"$instance\"}",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "stack",
           "refId": "C"
@@ -1193,7 +1234,7 @@
       "links": [],
       "nullPointMode": "connected",
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.1.5",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -1208,7 +1249,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "go_threads{job=\"twtxt\"}",
+          "expr": "go_threads{job=\"$job\", instance=\"$instance\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1218,8 +1259,9 @@
           "step": 4
         },
         {
-          "expr": "go_goroutines{job=\"twtxt\"}",
+          "expr": "go_goroutines{job=\"$job\", instance=\"$instance\"}",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "goroutines",
           "refId": "B"
@@ -1309,7 +1351,7 @@
       "links": [],
       "nullPointMode": "connected",
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.1.5",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -1324,8 +1366,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "go_gc_duration_seconds_sum{job=\"twtxt\"} / go_gc_duration_seconds_count{job=\"twtxt\"}",
+          "expr": "go_gc_duration_seconds_sum{job=\"$job\", instance=\"$instance\"} / go_gc_duration_seconds_count{job=\"$job\", instance=\"$instance\"}",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 2,
           "legendFormat": "avg",
           "metric": "go_memstats_alloc_bytes",
@@ -1333,14 +1376,15 @@
           "step": 4
         },
         {
-          "expr": "go_gc_duration_seconds{job=\"twtxt\", quantile=\"0.5\"}",
+          "expr": "go_gc_duration_seconds{job=\"$job\", instance=\"$instance\", quantile=\"0.5\"}",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "p50",
           "refId": "C"
         },
         {
-          "expr": "go_gc_duration_seconds{job=\"twtxt\", quantile=\"0.95\"}",
+          "expr": "go_gc_duration_seconds{job=\"$job\", instance=\"$instance\", quantile=\"0.95\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -1400,7 +1444,60 @@
     "je"
   ],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": false,
+          "text": "twtxt",
+          "value": "twtxt"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(twtd_server_info, job)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Job",
+        "multi": false,
+        "name": "job",
+        "options": [],
+        "query": "label_values(twtd_server_info, job)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 3,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": false,
+          "text": "twtxt_twtxt:8000",
+          "value": "twtxt_twtxt:8000"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(twtd_server_info{job =~ '$job'}, instance)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Instance",
+        "multi": false,
+        "name": "instance",
+        "options": [],
+        "query": "label_values(twtd_server_info{job =~ '$job'}, instance)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 3,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
   },
   "time": {
     "from": "now-3h",
@@ -1434,5 +1531,5 @@
   "timezone": "",
   "title": "Twtxt",
   "uid": "ukIHxwIMz",
-  "version": 33
+  "version": 42
 }

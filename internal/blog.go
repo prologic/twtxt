@@ -36,7 +36,10 @@ type BlogPost struct {
 	Title  string `json:"title"`
 	Twt    string `json:"twt"`
 
+	PublishedAt time.Time `json:"published_at"`
+
 	hash string
+	stat os.FileInfo
 	data *bytes.Buffer
 }
 
@@ -130,6 +133,8 @@ func NewBlogPost(author, title string) *BlogPost {
 		Title: title,
 		Slug:  slug.Make(title),
 
+		PublishedAt: time.Now(),
+
 		data: &bytes.Buffer{},
 	}
 
@@ -215,6 +220,17 @@ func (b *BlogPost) Created() time.Time {
 	return time.Date(b.Year, time.Month(b.Month), b.Date, 0, 0, 0, 0, now.Location())
 }
 
+func (b *BlogPost) Modified() time.Time {
+	return b.stat.ModTime()
+}
+
+func (b *BlogPost) Published() time.Time {
+	if b.PublishedAt.IsZero() {
+		return b.Created()
+	}
+	return b.PublishedAt
+}
+
 func (b *BlogPost) Filename(ext string) string {
 	fn := filepath.Join(
 		b.Author,
@@ -226,11 +242,24 @@ func (b *BlogPost) Filename(ext string) string {
 	return fn
 }
 
+func (b *BlogPost) Reset() {
+	if b.data == nil {
+		b.data = &bytes.Buffer{}
+	}
+	b.data.Reset()
+}
+
 func (b *BlogPost) Write(p []byte) (int, error) {
+	if b.data == nil {
+		b.data = &bytes.Buffer{}
+	}
 	return b.data.Write(p)
 }
 
 func (b *BlogPost) WriteString(s string) (int, error) {
+	if b.data == nil {
+		b.data = &bytes.Buffer{}
+	}
 	return b.data.WriteString(s)
 }
 
@@ -254,6 +283,14 @@ func (b *BlogPost) LoadMetadata(conf *Config) error {
 
 func (b *BlogPost) Load(conf *Config) error {
 	fn := filepath.Join(conf.Data, blogsDir, b.Filename(".md"))
+
+	stat, err := os.Stat(fn)
+	if err != nil {
+		return err
+	}
+
+	b.stat = stat
+
 	data, err := ioutil.ReadFile(fn)
 	if err != nil {
 		return err
@@ -311,6 +348,10 @@ func (b *BlogPost) Hash() string {
 	b.hash = hash[len(hash)-blogHashLength:]
 
 	return b.hash
+}
+
+func (b *BlogPost) Content() string {
+	return string(b.Bytes())
 }
 
 func (b *BlogPost) String() string {

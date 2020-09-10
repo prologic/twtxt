@@ -177,7 +177,7 @@ func searchLinks(node *html.Node, link *url.URL) bool {
 				target, err := url.Parse(href)
 				if err == nil {
 					// prologic/twtxt pods have the form
-					// http://pod.domain.tld/external?nick=NICK&url=URL
+					// http://pod.domain.tld/external/uri/nick
 					if strings.HasPrefix(target.Path, "/external") && target.Query().Get("url") == link.String() {
 						return true
 					}

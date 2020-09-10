@@ -32,6 +32,7 @@ type Archiver interface {
 	Has(hash string) bool
 	Get(hash string) (types.Twt, error)
 	Archive(twt types.Twt) error
+	Count() (int, error)
 }
 
 // NullArchiver implements Archiver using dummy implementation stubs
@@ -45,6 +46,7 @@ func (a *NullArchiver) Del(hash string) error              { return nil }
 func (a *NullArchiver) Has(hash string) bool               { return false }
 func (a *NullArchiver) Get(hash string) (types.Twt, error) { return types.Twt{}, nil }
 func (a *NullArchiver) Archive(twt types.Twt) error        { return nil }
+func (a *NullArchiver) Count() (int, error)                { return 0, nil }
 
 // DiskArchiver implements Archiver using an on-disk hash layout directory
 // structure with one directory per 2-letter hash sequence with a single
@@ -165,4 +167,25 @@ func (a *DiskArchiver) Archive(twt types.Twt) error {
 	}
 
 	return nil
+}
+
+func (a *DiskArchiver) Count() (int, error) {
+	var count int
+
+	err := filepath.Walk(a.path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.WithError(err).Error("error walking archive directory")
+			return err
+		}
+
+		if !info.IsDir() && filepath.Ext(info.Name()) == ".json" {
+			count++
+		}
+		return nil
+	})
+	if err != nil {
+		log.WithError(err).Errorf("error listing all archived twtw")
+	}
+
+	return count, err
 }

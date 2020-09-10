@@ -223,6 +223,15 @@ func (s *Server) setupMetrics() {
 		"Number of active twts in the global feed cache",
 	)
 
+	// blogs cache size
+	metrics.NewGaugeFunc(
+		"cache", "blogs",
+		"Number of blogs in the blogs cache",
+		func() float64 {
+			return float64(s.blogs.Count())
+		},
+	)
+
 	// feed cache processing time
 	metrics.NewGauge(
 		"cache", "last_processed_seconds",
@@ -375,7 +384,7 @@ func (s *Server) setupWebMentions() {
 
 func (s *Server) setupCronJobs() error {
 	for name, jobSpec := range Jobs {
-		job := jobSpec.Factory(s.config, s.cache, s.archive, s.db)
+		job := jobSpec.Factory(s.config, s.blogs, s.cache, s.archive, s.db)
 		if err := s.cron.AddJob(jobSpec.Schedule, job); err != nil {
 			return err
 		}
@@ -390,7 +399,7 @@ func (s *Server) runStartupJobs() {
 
 	log.Info("running startup jobs")
 	for name, jobSpec := range StartupJobs {
-		job := jobSpec.Factory(s.config, s.cache, s.archive, s.db)
+		job := jobSpec.Factory(s.config, s.blogs, s.cache, s.archive, s.db)
 		log.Infof("running %s now...", name)
 		job.Run()
 	}
@@ -454,8 +463,8 @@ func (s *Server) initRoutes() {
 	s.router.GET("/blogs/:author", s.BlogsHandler())
 	s.router.GET("/blog/:author/:year/:month/:date/:slug", s.BlogHandler())
 	s.router.HEAD("/blog/:author/:year/:month/:date/:slug", s.BlogHandler())
-	//s.router.PATCH("/blog", s.am.MustAuth(s.PostHandler()))
-	//s.router.DELETE("/blog", s.am.MustAuth(s.PostHandler()))
+	s.router.GET("/blog/:author/:year/:month/:date/:slug/edit", s.EditBlogHandler())
+	s.router.GET("/blog/:author/:year/:month/:date/:slug/delete", s.DeleteBlogHandler())
 
 	// Redirect old URIs (twtxt <= v0.0.8) of the form /u/<nick> -> /user/<nick>/twtxt.txt
 	// TODO: Remove this after v1

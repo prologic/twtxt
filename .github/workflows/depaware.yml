@@ -1,0 +1,21 @@
+---
+name: depaware
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+      - name: depaware twt
+        run: >-
+          go run github.com/tailscale/depaware
+          --check github.com/prologic/twtxt/cmd/twt
+      - name: depaware twtd
+        run: >-
+          go run github.com/tailscale/depaware
+          --check github.com/prologic/twtxt/cmd/twtd

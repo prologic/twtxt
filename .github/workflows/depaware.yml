@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Set up Go
         uses: actions/setup-go@v2
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: depaware twt
         run: >-
           go run github.com/tailscale/depaware

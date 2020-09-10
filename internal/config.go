@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/goccy/go-yaml"
+	log "github.com/sirupsen/logrus"
 )
 
 var (

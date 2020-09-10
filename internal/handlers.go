@@ -34,11 +34,11 @@ import (
 	"github.com/vcraescu/go-paginator/adapter"
 	"gopkg.in/yaml.v2"
 
+	"github.com/mitchellh/go-homedir"
 	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/internal/session"
 	"github.com/prologic/twtxt/types"
 	"github.com/steambap/captcha"
-	"github.com/mitchellh/go-homedir"
 )
 
 const (
@@ -1760,44 +1760,6 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 	}
 }
 
-// ManagerHandler ...
-func (s *Server) ManageHandler() httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		ctx := NewContext(s.config, s.db, r)
-
-		if r.Method == "GET" {
-			ctx.Config = s.config.String()
-			s.render("manage", w, ctx)
-			return
-		}
-
-		// Limit request body to to abuse
-		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
-
-		cfg, err := ConfigFromReader(r.Body)
-		if err != nil {
-			log.WithError(err).Error("error parsing new config")
-			ctx.Error = true
-			ctx.Message = fmt.Sprintf("Error saving pod configuration: %s", err)
-			s.render("error", w, ctx)
-			return
-		}
-
-		if err := cfg.Save(s.config.path); err != nil {
-			log.WithError(err).Error("error writing new config")
-			ctx.Error = true
-			ctx.Message = fmt.Sprintf("Error saving pod configuration: %s", err)
-			s.render("error", w, ctx)
-			return
-		}
-
-		ctx.Error = false
-		ctx.Message = "Successfully updated pod configuration"
-		s.render("error", w, ctx)
-		return
-	}
-}
-
 // DeleteHandler ...
 func (s *Server) DeleteHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -2453,8 +2415,8 @@ func (s *Server) SupportHandler() httprouter.Handle {
 	}
 }
 
-// ManagePodHandler ...
-func (s *Server) ManagePodHandler() httprouter.Handle {
+// ManageHandler ...
+func (s *Server) ManageHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
@@ -2539,7 +2501,6 @@ func (s *Server) ManagePodHandler() httprouter.Handle {
 			os.Exit(1)
 		}
 
-		
 		ctx.Error = false
 		ctx.Message = "Pod updated successfully"
 		s.render("error", w, ctx)
@@ -2554,12 +2515,12 @@ func (s *Server) PodAvatarHandler() httprouter.Handle {
 		var fn string
 
 		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
-			fn = filepath.Join(s.config.Data, "", "logo.webp");
+			fn = filepath.Join(s.config.Data, "", "logo.webp")
 			w.Header().Set("Content-Type", "image/webp")
 		} else {
 			// Support older browsers like IE11 that don't support WebP :/
 			metrics.Counter("media", "old_avatar").Inc()
-			fn = filepath.Join(s.config.Data, "", "logo.png");
+			fn = filepath.Join(s.config.Data, "", "logo.png")
 			w.Header().Set("Content-Type", "image/png")
 		}
 

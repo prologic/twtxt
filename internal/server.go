@@ -536,11 +536,8 @@ func (s *Server) initRoutes() {
 	s.router.GET("/settings", s.am.MustAuth(s.SettingsHandler()))
 	s.router.POST("/settings", s.am.MustAuth(s.SettingsHandler()))
 
-	s.router.GET("/managePod", s.ManagePodHandler())
-	s.router.POST("/managePod", s.ManagePodHandler())
-
-	s.router.GET("/manage", s.am.MustAuth(s.ManageHandler()))
-	s.router.POST("/manage", s.am.MustAuth(s.ManageHandler()))
+	s.router.GET("/manage", s.ManageHandler())
+	s.router.POST("/manage", s.ManageHandler())
 
 	s.router.GET("/deleteFeeds", s.DeleteAccountHandler())
 	s.router.POST("/delete", s.am.MustAuth(s.DeleteAllHandler()))

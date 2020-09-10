@@ -11,6 +11,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/andreadipersio/securecookie v0.0.0-20131119095127-e3c3b33544ec
 	github.com/andyleap/microformats v0.0.0-20150523144534-25ae286f528b
+	github.com/apex/log v1.9.0
 	github.com/chai2010/webp v1.1.0
 	github.com/creasty/defaults v1.5.0
 	github.com/cyphar/filepath-securejoin v0.2.2
@@ -21,6 +22,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/elithrar/simple-scrypt v1.3.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/goccy/go-yaml v1.8.2
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gomarkdown/markdown v0.0.0-20200609195525-3f9352745725
 	github.com/gorilla/feeds v1.1.1

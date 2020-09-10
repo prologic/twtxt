@@ -23,7 +23,7 @@ var (
 type Config struct {
 	Data              string        `yaml:"data"`
 	Name              string        `yaml:"name"`
-	Description		  string		`yaml:"description"`
+	Description       string        `yaml:"description"`
 	Store             string        `yaml:"store"`
 	Theme             string        `yaml:"theme"`
 	BaseURL           string        `yaml:"base_url"`
@@ -37,9 +37,12 @@ type Config struct {
 	TwtsPerPage       int           `yaml:"twts_per_page"`
 	MaxUploadSize     int64         `yaml:"max_upload_size"`
 	MaxTwtLength      int           `yaml:"max_twt_length"`
+	MaxCacheTTL       time.Duration `yaml:"max_cache_ttl"`
+	MaxCacheItems     int           `yaml:"max_cache_items"`
 	OpenProfiles      bool          `yaml:"open_profiles"`
 	OpenRegistrations bool          `yaml:"open_registrations"`
 	SessionExpiry     time.Duration `yaml:"session_expiry"`
+	SessionCacheTTL   time.Duration `yaml:"session_cache_ttl"`
 
 	MagicLinkSecret string `json:"magiclink_secret"`
 

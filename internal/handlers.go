@@ -449,11 +449,21 @@ func (s *Server) MediaHandler() httprouter.Handle {
 
 		var fn string
 
-		if strings.HasSuffix(name, ".png") {
+		switch filepath.Ext(name) {
+		case ".png":
 			metrics.Counter("media", "old_media").Inc()
 			w.Header().Set("Content-Type", "image/png")
 			fn = filepath.Join(s.config.Data, mediaDir, name)
-		} else {
+		case ".webp":
+			w.Header().Set("Content-Type", "image/webp")
+			fn = filepath.Join(s.config.Data, mediaDir, name)
+		case ".mp4":
+			w.Header().Set("Content-Type", "video/mp4")
+			fn = filepath.Join(s.config.Data, mediaDir, name)
+		case ".webm":
+			w.Header().Set("Content-Type", "video/webm")
+			fn = filepath.Join(s.config.Data, mediaDir, name)
+		default:
 			if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
 				w.Header().Set("Content-Type", "image/webp")
 				fn = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.webp", name))
@@ -2211,16 +2221,24 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 		// Limit request body to to abuse
 		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
 
-		mediaFile, _, err := r.FormFile("media_file")
+		mediaFile, mediaHeaders, err := r.FormFile("media_file")
 		if err != nil && err != http.ErrMissingFile {
 			log.WithError(err).Error("error parsing form file")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		if mediaFile == nil || mediaHeaders == nil {
+			log.Warn("no valid media file uploaded")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
 		var mediaURI string
 
-		if mediaFile != nil {
+		ctype := mediaHeaders.Header.Get("Content-Type")
+
+		if strings.HasPrefix(ctype, "image/") {
 			opts := &ImageOptions{Resize: true, ResizeW: MediaResolution, ResizeH: 0}
 			mediaURI, err = StoreUploadedImage(
 				s.config, mediaFile,
@@ -2233,6 +2251,23 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+		} else if strings.HasPrefix(ctype, "video/") {
+			opts := &VideoOptions{Resize: true, Size: "240p"}
+			mediaURI, err = StoreUploadedVideo(
+				s.config, mediaFile,
+				mediaDir, "",
+				opts,
+			)
+
+			if err != nil {
+				log.WithError(err).Error("error storing the file")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		} else {
+			log.Warn("no video or image file")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
 		}
 
 		uri := URI{"mediaURI", mediaURI}

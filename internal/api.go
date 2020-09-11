@@ -69,6 +69,7 @@ func (a *API) initRoutes() {
 
 	router.POST("/post", a.isAuthorized(a.PostEndpoint()))
 	router.POST("/follow", a.isAuthorized(a.FollowEndpoint()))
+	router.POST("/unfollow", a.isAuthorized(a.UnfollowEndpoint()))
 	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
 	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
 	router.GET("/profile/:nick", a.ProfileEndpoint())
@@ -569,6 +570,7 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 		url := NormalizeURL(req.URL)
 
 		if nick == "" || url == "" {
+			log.Warn("no nick or url provided")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
@@ -652,6 +654,80 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{}`))
 		return
+	}
+}
+
+// UnfollowEndpoint ...
+func (a *API) UnfollowEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		req, err := types.NewUnfollowRequest(r.Body)
+
+		if err != nil {
+			log.WithError(err).Error("error parsing follow request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		nick := req.Nick
+
+		if nick == "" {
+			log.Error("no nick provided")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		user := r.Context().Value(UserContextKey).(*User)
+
+		if user == nil {
+			log.Fatalf("user not found in context")
+		}
+
+		url, ok := user.Following[nick]
+		if !ok {
+			log.Errorf("user %s is not following %s", nick, url)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		delete(user.Following, nick)
+
+		if err := a.db.SetUser(user.Username, user); err != nil {
+			log.WithError(err).Warnf("error updating user object for user  %s", user.Username)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		if strings.HasPrefix(url, a.config.BaseURL) {
+			url = UserURL(url)
+			nick := NormalizeUsername(filepath.Base(url))
+			followee, err := a.db.GetUser(nick)
+			if err != nil {
+				log.WithError(err).Warnf("error loading user object for followee %s", nick)
+			} else {
+				if followee.Followers != nil {
+					delete(followee.Followers, user.Username)
+					if err := a.db.SetUser(followee.Username, followee); err != nil {
+						log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
+					}
+				}
+				if _, err := AppendSpecial(
+					a.config, a.db,
+					twtxtBot,
+					fmt.Sprintf(
+						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+						followee.Username, URLForUser(a.config, followee.Username),
+						user.Username, URLForUser(a.config, user.Username),
+						"twtxt", twtxt.FullVersion(),
+					),
+				); err != nil {
+					log.WithError(err).Warnf("error appending special FOLLOW post")
+				}
+			}
+		}
+
+		// No real response
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
 	}
 }
 

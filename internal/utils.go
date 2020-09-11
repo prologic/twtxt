@@ -744,14 +744,10 @@ func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *
 	}
 
 	if opts.Resize {
-		var (
-			//size  string
-			scale string
-		)
+		var scale string
 
 		switch opts.Size {
 		case 640:
-			//size = "hd480"
 			scale = "scale=640:-2"
 		default:
 			log.Warnf("error invalid video size: %s", opts.Size)
@@ -759,7 +755,6 @@ func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *
 		}
 
 		args = append(args, []string{
-			//"-s", size,
 			"-vf", scale,
 		}...)
 	}

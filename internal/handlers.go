@@ -2248,7 +2248,7 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 				return
 			}
 		} else if strings.HasPrefix(ctype, "video/") {
-			opts := &VideoOptions{Resize: true, Size: "240p"}
+			opts := &VideoOptions{Resize: true, Size: MediaResolution}
 			mediaURI, err = StoreUploadedVideo(
 				s.config, mediaFile,
 				mediaDir, "",

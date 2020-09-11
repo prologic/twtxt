@@ -6,10 +6,6 @@ article p img {
     display: block;
 }
 
-article p video {
-    display: block;
-}
-
 article hgroup h3 {
     margin-left: 60px;
 }
@@ -35,6 +31,15 @@ article hgroup footer {
 
 .nav {
     z-index: 1050;
+}
+
+/* 480p */
+video {
+  display: block;
+  width: 100%;
+  height: 480px;
+  background: #000;
+  box-shadow: 0 3px 7px 0 rgba(0, 0, 0, 0.2);
 }
 
 #imageUploadForm {

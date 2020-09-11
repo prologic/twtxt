@@ -498,7 +498,7 @@ type ImageOptions struct {
 
 type VideoOptions struct {
 	Resize bool
-	Size   string
+	Size   int
 }
 
 func DownloadImage(conf *Config, url string, resource, name string, opts *ImageOptions) (string, error) {
@@ -744,23 +744,24 @@ func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *
 	}
 
 	if opts.Resize {
-		var size string
+		var (
+			//size  string
+			scale string
+		)
 
 		switch opts.Size {
-		case "720p":
-			size = "hd720"
-		case "480p":
-			size = "hd480"
-		case "360p":
-			size = "nhd"
-		case "240p":
-			size = "film"
+		case 640:
+			//size = "hd480"
+			scale = "scale=640:-2"
 		default:
 			log.Warnf("error invalid video size: %s", opts.Size)
 			return "", ErrInvalidVideoSize
 		}
 
-		args = append(args, []string{"-s", size}...)
+		args = append(args, []string{
+			//"-s", size,
+			"-vf", scale,
+		}...)
 	}
 
 	args = append(args, []string{
@@ -768,7 +769,7 @@ func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *
 		"-c:a", "libvorbis",
 		"-crf", "18",
 		"-strict", "-2",
-		//"-loglevel", "quiet",
+		"-loglevel", "quiet",
 		of.Name(),
 	}...)
 
@@ -1190,17 +1191,17 @@ func RenderVideo(conf *Config, uri string) string {
 		u.Path = ReplaceExt(u.Path, ".mp4")
 		mp4URI := u.String()
 
-		return fmt.Sprintf(`<video controls preload="metadata" width="320" height="240">
-  <source type="video/webm" src="%s" />
-  <source type="video/mp4" src="%s" />
-  Your browser does not support the video element.
+		return fmt.Sprintf(`<video controls preload="metadata">
+    <source type="video/webm" src="%s" />
+    <source type="video/mp4" src="%s" />
+    Your browser does not support the video element.
   </video>`, webmURI, mp4URI)
 	}
 
-	return fmt.Sprintf(`<video controls preload="metadata" width="320" height="240">
-  <source type="video/mp4" src="%s" />
-  Your browser does not support the video element.
-  </video>`, uri)
+	return fmt.Sprintf(`<video controls preload="metadata">
+    <source type="video/mp4" src="%s" />
+    Your browser does not support the video element.
+    </video>`, uri)
 }
 
 // PreprocessMedia ...

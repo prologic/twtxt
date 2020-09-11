@@ -750,7 +750,7 @@ func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *
 		case 640:
 			scale = "scale=640:-2"
 		default:
-			log.Warnf("error invalid video size: %s", opts.Size)
+			log.Warnf("error invalid video size: %d", opts.Size)
 			return "", ErrInvalidVideoSize
 		}
 

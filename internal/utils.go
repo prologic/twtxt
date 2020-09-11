@@ -912,8 +912,28 @@ func CleanTwt(text string) string {
 	return text
 }
 
-// PreprocessImage ...
-func PreprocessImage(conf *Config, u *url.URL, alt string) string {
+// RenderAudio ...
+func RenderAudio(url string) string {
+	// TODO: Support OGG
+	// <source type="audio/ogg" src="%s.ogg"></source>
+	return fmt.Sprintf(`<audio controls="controls">
+  <source type="audio/mp3" src="%s"></source>
+  Your browser does not support the audio element.
+</audio>`, url)
+}
+
+// RenderVideo ...
+func RenderVideo(url string) string {
+	// TODO: Support WEBM
+	// <source type="video/webm" src="%s.webm"></source>
+	return fmt.Sprintf(`<video controls preload="metadata" width="320" height="240">
+  <source type="video/mp4" src="%s" />
+  Your browser does not support the video element.
+  </video>`, url)
+}
+
+// PreprocessMedia ...
+func PreprocessMedia(conf *Config, u *url.URL, alt string) string {
 	var html string
 
 	// Normalize the domain name
@@ -926,11 +946,19 @@ func PreprocessImage(conf *Config, u *url.URL, alt string) string {
 			// Ensure all local links match our BaseURL scheme
 			u.Scheme = conf.baseURL.Scheme
 		} else {
-			// Ensure all extern links to images are served over TLS
+			// Ensure all extern links are served over TLS
 			u.Scheme = "https"
 		}
-		src := u.String()
-		html = fmt.Sprintf(`<img alt="%s" src="%s" loading=lazy>`, alt, src)
+
+		switch filepath.Ext(u.Path) {
+		case ".mp4", ".webm":
+			html = RenderVideo(u.String())
+		case ".mp3", ".ogg":
+			html = RenderAudio(u.String())
+		default:
+			src := u.String()
+			html = fmt.Sprintf(`<img alt="%s" src="%s" loading=lazy>`, alt, src)
+		}
 	} else {
 		src := u.String()
 		html = fmt.Sprintf(
@@ -975,7 +1003,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 					return ast.GoToNext, false
 				}
 
-				html := PreprocessImage(conf, u, string(image.Title))
+				html := PreprocessMedia(conf, u, string(image.Title))
 
 				io.WriteString(w, html)
 
@@ -1010,7 +1038,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 					return ast.GoToNext, false
 				}
 
-				html := PreprocessImage(conf, u, alt)
+				html := PreprocessMedia(conf, u, alt)
 
 				io.WriteString(w, html)
 
@@ -1039,6 +1067,9 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 		md := []byte(FormatMentionsAndTags(conf, text))
 		maybeUnsafeHTML := markdown.ToHTML(md, mdParser, renderer)
 		p := bluemonday.UGCPolicy()
+		p.AllowAttrs("id", "controls").OnElements("audio")
+		p.AllowAttrs("id", "controls", "preload", "poster").OnElements("video")
+		p.AllowAttrs("src", "type").OnElements("source")
 		p.AllowAttrs("target").OnElements("a")
 		p.AllowAttrs("class").OnElements("i")
 		p.AllowAttrs("alt", "loading").OnElements("a", "img")

@@ -108,6 +108,7 @@ var (
 	DefaultWhitelistedDomains = []string{
 		`imgur\.com`,
 		`giphy\.com`,
+		`tube\.mills\.io`,
 		`reactiongifs\.com`,
 		`githubusercontent\.com`,
 	}

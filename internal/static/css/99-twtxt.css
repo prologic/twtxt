@@ -6,6 +6,10 @@ article p img {
     display: block;
 }
 
+article p video {
+    display: block;
+}
+
 article hgroup h3 {
     margin-left: 60px;
 }

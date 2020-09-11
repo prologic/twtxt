@@ -587,7 +587,7 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 // UnfollowEndpoint ...
 func (a *API) UnfollowEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		req, err := types.NewFollowRequest(r.Body)
+		req, err := types.NewUnfollowRequest(r.Body)
 
 		if err != nil {
 			log.WithError(err).Error("error parsing follow request")

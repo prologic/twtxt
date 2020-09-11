@@ -505,11 +505,7 @@ func (s *Server) MediaHandler() httprouter.Handle {
 			return
 		}
 
-		if _, err := io.Copy(w, f); err != nil {
-			log.WithError(err).Error("error writing media response")
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
+		http.ServeContent(w, r, filepath.Base(fn), fileInfo.ModTime(), f)
 	}
 }
 

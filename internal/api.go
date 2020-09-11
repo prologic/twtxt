@@ -69,11 +69,13 @@ func (a *API) initRoutes() {
 
 	router.POST("/post", a.isAuthorized(a.PostEndpoint()))
 	router.POST("/follow", a.isAuthorized(a.FollowEndpoint()))
+	router.POST("/unfollow", a.isAuthorized(a.UnfollowEndpoint()))
 	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
 	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
 	router.GET("/profile/:nick", a.ProfileEndpoint())
 	router.GET("/external/:slug/:nick", a.ExternalProfileEndpoint())
 	router.POST("/discover", a.DiscoverEndpoint())
+	router.POST("/mentions", a.isAuthorized(a.MentionsEndpoint()))
 }
 
 // CreateToken ...
@@ -480,6 +482,78 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 	}
 }
 
+// MentionsEndpoint ...
+func (a *API) MentionsEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		req, err := types.NewTimelineRequest(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing post request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		user := r.Context().Value(UserContextKey).(*User)
+
+		var twts types.Twts
+
+		seen := make(map[string]bool)
+
+		// Search for @mentions on feeds user is following
+		for feed := range user.Sources() {
+			for _, twt := range a.cache.GetByURL(feed.URL) {
+				for _, twter := range twt.Mentions() {
+					if user.Is(twter.URL) && !seen[twt.Hash()] {
+						twts = append(twts, twt)
+						seen[twt.Hash()] = true
+					}
+				}
+			}
+		}
+
+		// Search for @mentions in local twts too (i.e: /discover)
+		for _, twt := range a.cache.GetByPrefix(a.config.BaseURL, false) {
+			for _, twter := range twt.Mentions() {
+				if user.Is(twter.URL) && !seen[twt.Hash()] {
+					twts = append(twts, twt)
+					seen[twt.Hash()] = true
+				}
+			}
+		}
+
+		sort.Sort(twts)
+
+		var pagedTwts types.Twts
+
+		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.TwtsPerPage)
+		pager.SetPage(req.Page)
+
+		if err = pager.Results(&pagedTwts); err != nil {
+			log.WithError(err).Error("error loading discover")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		res := types.TimelineResponse{
+			Twts: pagedTwts,
+			Pager: types.PagerResponse{
+				Current:   pager.Page(),
+				MaxPages:  pager.PageNums(),
+				TotalTwts: pager.Nums(),
+			},
+		}
+
+		body, err := res.Bytes()
+		if err != nil {
+			log.WithError(err).Error("error serializing response")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(body)
+	}
+}
+
 // FollowEndpoint ...
 func (a *API) FollowEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -496,6 +570,7 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 		url := NormalizeURL(req.URL)
 
 		if nick == "" || url == "" {
+			log.Warn("no nick or url provided")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
@@ -579,6 +654,80 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{}`))
 		return
+	}
+}
+
+// UnfollowEndpoint ...
+func (a *API) UnfollowEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		req, err := types.NewUnfollowRequest(r.Body)
+
+		if err != nil {
+			log.WithError(err).Error("error parsing follow request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		nick := req.Nick
+
+		if nick == "" {
+			log.Error("no nick provided")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		user := r.Context().Value(UserContextKey).(*User)
+
+		if user == nil {
+			log.Fatalf("user not found in context")
+		}
+
+		url, ok := user.Following[nick]
+		if !ok {
+			log.Errorf("user %s is not following %s", nick, url)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		delete(user.Following, nick)
+
+		if err := a.db.SetUser(user.Username, user); err != nil {
+			log.WithError(err).Warnf("error updating user object for user  %s", user.Username)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		if strings.HasPrefix(url, a.config.BaseURL) {
+			url = UserURL(url)
+			nick := NormalizeUsername(filepath.Base(url))
+			followee, err := a.db.GetUser(nick)
+			if err != nil {
+				log.WithError(err).Warnf("error loading user object for followee %s", nick)
+			} else {
+				if followee.Followers != nil {
+					delete(followee.Followers, user.Username)
+					if err := a.db.SetUser(followee.Username, followee); err != nil {
+						log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
+					}
+				}
+				if _, err := AppendSpecial(
+					a.config, a.db,
+					twtxtBot,
+					fmt.Sprintf(
+						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+						followee.Username, URLForUser(a.config, followee.Username),
+						user.Username, URLForUser(a.config, user.Username),
+						"twtxt", twtxt.FullVersion(),
+					),
+				); err != nil {
+					log.WithError(err).Warnf("error appending special FOLLOW post")
+				}
+			}
+		}
+
+		// No real response
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
 	}
 }
 

@@ -122,6 +122,21 @@ func NewFollowRequest(r io.Reader) (req FollowRequest, err error) {
 	return
 }
 
+// UnfollowRequest ...
+type UnfollowRequest struct {
+	Nick string `json:"nick"`
+}
+
+// NewUnfollowRequest ...
+func NewUnfollowRequest(r io.Reader) (req UnfollowRequest, err error) {
+	body, err := ioutil.ReadAll(r)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &req)
+	return
+}
+
 // ProfileResponse ...
 type ProfileResponse struct {
 	Profile      Profile      `json:"profile"`

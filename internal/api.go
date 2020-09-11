@@ -611,6 +611,7 @@ func (a *API) UnfollowEndpoint() httprouter.Handle {
 
 		url, ok := user.Following[nick]
 		if !ok {
+			log.Errorf("user %s is not following %s", nick, url)
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}

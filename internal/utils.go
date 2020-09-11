@@ -1151,23 +1151,59 @@ func CleanTwt(text string) string {
 }
 
 // RenderAudio ...
-func RenderAudio(url string) string {
-	// TODO: Support OGG
-	// <source type="audio/ogg" src="%s.ogg"></source>
+func RenderAudio(conf *Config, uri string) string {
+	isLocalURL := IsLocalURLFactory(conf)
+
+	if isLocalURL(uri) {
+		u, err := url.Parse(uri)
+		if err != nil {
+			log.WithError(err).Warnf("error parsing uri: %s", uri)
+			return ""
+		}
+
+		oggURI := u.String()
+		u.Path = ReplaceExt(u.Path, ".mp3")
+		mp3URI := u.String()
+
+		return fmt.Sprintf(`<audio controls="controls">
+  <source type="audio/ogg" src="%s"></source>
+  <source type="audio/mp3" src="%s"></source>
+  Your browser does not support the audio element.
+</audio>`, oggURI, mp3URI)
+	}
+
 	return fmt.Sprintf(`<audio controls="controls">
   <source type="audio/mp3" src="%s"></source>
   Your browser does not support the audio element.
-</audio>`, url)
+</audio>`, uri)
 }
 
 // RenderVideo ...
-func RenderVideo(url string) string {
-	// TODO: Support WEBM
-	// <source type="video/webm" src="%s.webm"></source>
+func RenderVideo(conf *Config, uri string) string {
+	isLocalURL := IsLocalURLFactory(conf)
+
+	if isLocalURL(uri) {
+		u, err := url.Parse(uri)
+		if err != nil {
+			log.WithError(err).Warnf("error parsing uri: %s", uri)
+			return ""
+		}
+
+		webmURI := u.String()
+		u.Path = ReplaceExt(u.Path, ".mp4")
+		mp4URI := u.String()
+
+		return fmt.Sprintf(`<video controls preload="metadata" width="320" height="240">
+  <source type="video/webm" src="%s" />
+  <source type="video/mp4" src="%s" />
+  Your browser does not support the video element.
+  </video>`, webmURI, mp4URI)
+	}
+
 	return fmt.Sprintf(`<video controls preload="metadata" width="320" height="240">
   <source type="video/mp4" src="%s" />
   Your browser does not support the video element.
-  </video>`, url)
+  </video>`, uri)
 }
 
 // PreprocessMedia ...
@@ -1190,9 +1226,9 @@ func PreprocessMedia(conf *Config, u *url.URL, alt string) string {
 
 		switch filepath.Ext(u.Path) {
 		case ".mp4", ".webm":
-			html = RenderVideo(u.String())
+			html = RenderVideo(conf, u.String())
 		case ".mp3", ".ogg":
-			html = RenderAudio(u.String())
+			html = RenderAudio(conf, u.String())
 		default:
 			src := u.String()
 			html = fmt.Sprintf(`<img alt="%s" src="%s" loading=lazy>`, alt, src)

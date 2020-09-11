@@ -319,9 +319,6 @@ func RunCmd(timeout time.Duration, command string, args ...string) error {
 	}
 	defer cancel()
 
-	log.Debugf("command: %s", command)
-	log.Debugf("args: #%v", args)
-
 	cmd := exec.CommandContext(ctx, command, args...)
 
 	out, err := cmd.CombinedOutput()

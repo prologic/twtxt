@@ -74,6 +74,7 @@ func (a *API) initRoutes() {
 	router.GET("/profile/:nick", a.ProfileEndpoint())
 	router.GET("/external/:slug/:nick", a.ExternalProfileEndpoint())
 	router.POST("/discover", a.DiscoverEndpoint())
+	router.POST("/mentions", a.isAuthorized(a.MentionsEndpoint()))
 }
 
 // CreateToken ...
@@ -445,6 +446,78 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 		}
 
 		twts := a.cache.GetByPrefix(a.config.BaseURL, false)
+
+		sort.Sort(twts)
+
+		var pagedTwts types.Twts
+
+		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.TwtsPerPage)
+		pager.SetPage(req.Page)
+
+		if err = pager.Results(&pagedTwts); err != nil {
+			log.WithError(err).Error("error loading discover")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		res := types.TimelineResponse{
+			Twts: pagedTwts,
+			Pager: types.PagerResponse{
+				Current:   pager.Page(),
+				MaxPages:  pager.PageNums(),
+				TotalTwts: pager.Nums(),
+			},
+		}
+
+		body, err := res.Bytes()
+		if err != nil {
+			log.WithError(err).Error("error serializing response")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(body)
+	}
+}
+
+// MentionsEndpoint ...
+func (a *API) MentionsEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		req, err := types.NewTimelineRequest(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing post request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		user := r.Context().Value(UserContextKey).(*User)
+
+		var twts types.Twts
+
+		seen := make(map[string]bool)
+
+		// Search for @mentions on feeds user is following
+		for feed := range user.Sources() {
+			for _, twt := range a.cache.GetByURL(feed.URL) {
+				for _, twter := range twt.Mentions() {
+					if user.Is(twter.URL) && !seen[twt.Hash()] {
+						twts = append(twts, twt)
+						seen[twt.Hash()] = true
+					}
+				}
+			}
+		}
+
+		// Search for @mentions in local twts too (i.e: /discover)
+		for _, twt := range a.cache.GetByPrefix(a.config.BaseURL, false) {
+			for _, twter := range twt.Mentions() {
+				if user.Is(twter.URL) && !seen[twt.Hash()] {
+					twts = append(twts, twt)
+					seen[twt.Hash()] = true
+				}
+			}
+		}
 
 		sort.Sort(twts)
 

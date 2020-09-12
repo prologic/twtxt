@@ -18,7 +18,11 @@ jobs:
         env:
           DEBIAN_FRONTEND: 'noninteractive'
         run: |
-          sudo apt-get install -y ffmpeg-dev
+          sudo apt-get update
+          sudo apt-get install -y libavcodec-dev
+          sudo apt-get install -y libavutil-dev
+          sudo apt-get install -y libavformat-dev
+          sudo apt-get install -y libswscale-dev
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v1
         with:

@@ -34,6 +34,7 @@ type Config struct {
 	OpenRegistrations bool          `json:"open_registrations"`
 	SessionExpiry     time.Duration `json:"session_expiry"`
 	SessionCacheTTL   time.Duration `json:"session_cache_ttl"`
+	TranscoderTimeout time.Duration `json:"transcoder_timeout"`
 
 	MagicLinkSecret string `json:"magiclink_secret"`
 

@@ -53,7 +53,7 @@ RUN make server VERSION=$VERSION COMMIT=$COMMIT
 # Runtime
 FROM alpine:latest
 
-RUN apk --no-cache -U add ca-certificates tzdata
+RUN apk --no-cache -U add ca-certificates tzdata ffmpeg
 
 WORKDIR /
 VOLUME /data

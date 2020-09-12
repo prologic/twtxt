@@ -59,9 +59,10 @@ var (
 	smtpFrom string
 
 	// Timeouts
-	sessionExpiry   time.Duration
-	sessionCacheTTL time.Duration
-	apiSessionTime  time.Duration
+	sessionExpiry     time.Duration
+	sessionCacheTTL   time.Duration
+	apiSessionTime    time.Duration
+	transcoderTimeout time.Duration
 
 	// Whitelists, Sources
 	feedSources        []string
@@ -154,6 +155,10 @@ func init() {
 	flag.DurationVar(
 		&apiSessionTime, "api-session-time", internal.DefaultAPISessionTime,
 		"timeout for api tokens to expire",
+	)
+	flag.DurationVar(
+		&transcoderTimeout, "transcoder-timeout", internal.DefaultTranscoderTimeout,
+		"timeout for the video transcoder",
 	)
 
 	// Whitelists, Sources
@@ -256,6 +261,7 @@ func main() {
 		internal.WithSessionExpiry(sessionExpiry),
 		internal.WithSessionCacheTTL(sessionCacheTTL),
 		internal.WithAPISessionTime(apiSessionTime),
+		internal.WithTranscoderTimeout(transcoderTimeout),
 
 		// Whitelists, Sources
 		internal.WithFeedSources(feedSources),

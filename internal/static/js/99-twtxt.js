@@ -522,16 +522,16 @@ u("#mentioned-list").on("click", function (e) {
   u("#mentioned-list").first().classList.remove("show");
 });
 
-u("#uploadMedia").on("change", function (e) {
-  u("#uploadMediaButton").removeClass("icss-camera");
-  u("#uploadMediaButton").addClass("icss-spinner icss-pulse");
-  u("#uploadForm").data("tooltip", "Uploading...");
+u("#uploadImage").on("change", function (e) {
+  u("#uploadImageButton").removeClass("icss-camera");
+  u("#uploadImageButton").addClass("icss-spinner icss-pulse");
+  u("#uploadImageForm").data("tooltip", "Uploading...");
 
-  u("#uploadMedia").html('<i class="icss-spinner icss-pulse"></i>');
+  u("#uploadImage").html('<i class="icss-spinner icss-pulse"></i>');
   Twix.ajax({
     type: "POST",
-    url: u("#uploadForm").attr("action"),
-    data: new FormData(u("#uploadForm").first()),
+    url: u("#imageUploadForm").attr("action"),
+    data: new FormData(u("#imageUploadForm").first()),
     success: function (data) {
       var el = u("textarea#text");
       var text = document.getElementById("text");
@@ -543,15 +543,53 @@ u("#uploadMedia").on("change", function (e) {
       var size = el.text().length;
       text.setSelectionRange(size, size);
 
-      u("#uploadMediaButton").removeClass("icss-spinner icss-pulse");
-      u("#uploadMediaButton").addClass("icss-camera");
-      u("#uploadForm").data("tooltip", "Upload");
+      u("#uploadImageButton").removeClass("icss-spinner icss-pulse");
+      u("#uploadImageButton").addClass("icss-camera");
+      u("#uploadImage").data("tooltip", "Upload");
     },
     error: function (statusCode, statusText) {
-      u("#uploadMediaButton").removeClass("icss-spinner icss-pulse");
-      u("#uploadMediaButton").addClass("icss-camera");
+      u("#uploadImageButton").removeClass("icss-spinner icss-pulse");
+      u("#uploadImageButton").addClass("icss-camera");
       alert(
-        "An error occurred uploading your media: " +
+        "An error occurred uploading your image: " +
+          statusCode +
+          " " +
+          statusText
+      );
+    },
+  });
+});
+
+u("#uploadVideo").on("change", function (e) {
+  u("#uploadVideoButton").removeClass("icss-camera");
+  u("#uploadVideoButton").addClass("icss-spinner icss-pulse");
+  u("#uploadVideoForm").data("tooltip", "Uploading...");
+
+  u("#uploadVideo").html('<i class="icss-spinner icss-pulse"></i>');
+  Twix.ajax({
+    type: "POST",
+    url: u("#videoUploadForm").attr("action"),
+    data: new FormData(u("#videoUploadForm").first()),
+    success: function (data) {
+      var el = u("textarea#text");
+      var text = document.getElementById("text");
+
+      text.value += " ![](" + data.Path + ") ";
+      el.scroll();
+      text.focus();
+
+      var size = el.text().length;
+      text.setSelectionRange(size, size);
+
+      u("#uploadVideoButton").removeClass("icss-spinner icss-pulse");
+      u("#uploadVideoButton").addClass("icss-camera");
+      u("#uploadVideo").data("tooltip", "Upload");
+    },
+    error: function (statusCode, statusText) {
+      u("#uploadVideoButton").removeClass("icss-spinner icss-pulse");
+      u("#uploadVideoButton").addClass("icss-camera");
+      alert(
+        "An error occurred uploading your video: " +
           statusCode +
           " " +
           statusText

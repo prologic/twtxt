@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"html/template"
@@ -11,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -95,6 +97,8 @@ var (
 	ErrInvalidUserAgent = errors.New("error: invalid twtxt user agent")
 	ErrReservedUsername = errors.New("error: username is reserved")
 	ErrInvalidImage     = errors.New("error: invalid image")
+	ErrInvalidVideo     = errors.New("error: invalid video")
+	ErrInvalidVideoSize = errors.New("error: invalid video size")
 )
 
 func init() {
@@ -162,6 +166,31 @@ func ImageToPng(fn string) error {
 
 	if err := png.Encode(of, img); err != nil {
 		log.WithError(err).Error("error reencoding image")
+		return err
+	}
+
+	return nil
+}
+
+func VideoToMp4(conf *Config, fn string) error {
+	if !IsVideo(fn) {
+		return ErrInvalidVideo
+	}
+
+	of := ReplaceExt(fn, ".mp4")
+
+	if err := RunCmd(
+		conf.TranscoderTimeout,
+		"ffmpeg",
+		"-y",
+		"-i", fn,
+		"-vcodec", "h264",
+		"-acodec", "aac",
+		"-strict", "-2",
+		"-loglevel", "quiet",
+		of,
+	); err != nil {
+		log.WithError(err).Error("error transcoding video")
 		return err
 	}
 
@@ -268,6 +297,37 @@ func FileExists(name string) bool {
 		}
 	}
 	return true
+}
+
+// CmdExists ...
+func CmdExists(cmd string) bool {
+	_, err := exec.LookPath(cmd)
+	return err == nil
+}
+
+// RunCmd ...
+func RunCmd(timeout time.Duration, command string, args ...string) error {
+	var (
+		ctx    context.Context
+		cancel context.CancelFunc
+	)
+
+	if timeout > 0 {
+		ctx, cancel = context.WithTimeout(context.Background(), timeout)
+	} else {
+		ctx, cancel = context.WithCancel(context.Background())
+	}
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, command, args...)
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.WithError(err).WithField("out", string(out)).Error("error running command")
+		return err
+	}
+
+	return nil
 }
 
 // RenderString ...
@@ -409,10 +469,36 @@ func IsImage(fn string) bool {
 	return false
 }
 
+func IsVideo(fn string) bool {
+	f, err := os.Open(fn)
+	if err != nil {
+		log.WithError(err).Warnf("error opening file %s", fn)
+		return false
+	}
+	defer f.Close()
+
+	head := make([]byte, 261)
+	if _, err := f.Read(head); err != nil {
+		log.WithError(err).Warnf("error reading from file %s", fn)
+		return false
+	}
+
+	if filetype.IsVideo(head) {
+		return true
+	}
+
+	return false
+}
+
 type ImageOptions struct {
 	Resize  bool
 	ResizeW int
 	ResizeH int
+}
+
+type VideoOptions struct {
+	Resize bool
+	Size   int
 }
 
 func DownloadImage(conf *Config, url string, resource, name string, opts *ImageOptions) (string, error) {
@@ -594,9 +680,154 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 	return fmt.Sprintf(
 		"%s/%s/%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
-		resource, strings.TrimSuffix(filepath.Base(fn), filepath.Ext(fn)),
+		resource, filepath.Base(fn),
 	), nil
 }
+
+func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *VideoOptions) (string, error) {
+	tf, err := ioutil.TempFile("", "twtxt-upload-*")
+	if err != nil {
+		log.WithError(err).Error("error creating temporary file")
+		return "", err
+	}
+	defer tf.Close()
+
+	if _, err := io.Copy(tf, f); err != nil {
+		log.WithError(err).Error("error writng temporary file")
+		return "", err
+	}
+
+	if _, err := tf.Seek(0, io.SeekStart); err != nil {
+		log.WithError(err).Error("error seeking temporary file")
+		return "", err
+	}
+
+	if !IsVideo(tf.Name()) {
+		return "", ErrInvalidVideo
+	}
+
+	if _, err := tf.Seek(0, io.SeekStart); err != nil {
+		log.WithError(err).Error("error seeking temporary file")
+		return "", err
+	}
+
+	p := filepath.Join(conf.Data, resource)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating avatars directory")
+		return "", err
+	}
+
+	var fn string
+
+	if name == "" {
+		uuid := shortuuid.New()
+		fn = filepath.Join(p, fmt.Sprintf("%s.webm", uuid))
+	} else {
+		fn = fmt.Sprintf("%s.webm", filepath.Join(p, name))
+	}
+
+	of, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		log.WithError(err).Error("error opening output file")
+		return "", err
+	}
+	defer of.Close()
+
+	if _, err := tf.Seek(0, io.SeekStart); err != nil {
+		log.WithError(err).Error("error seeking temporary file")
+		return "", err
+	}
+
+	args := []string{
+		"-y",
+		"-i", tf.Name(),
+	}
+
+	if opts.Resize {
+		var scale string
+
+		switch opts.Size {
+		case 640:
+			scale = "scale=640:-2"
+		default:
+			log.Warnf("error invalid video size: %d", opts.Size)
+			return "", ErrInvalidVideoSize
+		}
+
+		args = append(args, []string{
+			"-vf", scale,
+		}...)
+	}
+
+	args = append(args, []string{
+		"-c:v", "libvpx",
+		"-c:a", "libvorbis",
+		"-crf", "18",
+		"-strict", "-2",
+		"-loglevel", "quiet",
+		of.Name(),
+	}...)
+
+	if err := RunCmd(
+		conf.TranscoderTimeout,
+		"ffmpeg",
+		args...,
+	); err != nil {
+		log.WithError(err).Error("error transcoding video")
+		return "", err
+	}
+
+	// Re-encode to MP4 (for older browsers)
+	if err := of.Close(); err != nil {
+		log.WithError(err).Warnf("error cloding file %s", fn)
+	}
+	if err := VideoToMp4(conf, fn); err != nil {
+		log.WithError(err).Warnf("error reencoding video to MP4 (for older browsers: %s", fn)
+	}
+
+	return fmt.Sprintf(
+		"%s/%s/%s",
+		strings.TrimSuffix(conf.BaseURL, "/"),
+		resource, filepath.Base(fn),
+	), nil
+}
+
+/*
+	// TODO: Make this a background job
+	// Resize for lower quality options
+	for size, suffix := range a.Config.Transcoder.Sizes {
+		log.
+			WithField("size", size).
+			WithField("vf", filepath.Base(vf)).
+			Info("resizing video for lower quality playback")
+		sf := fmt.Sprintf(
+			"%s#%s.mp4",
+			strings.TrimSuffix(vf, filepath.Ext(vf)),
+			suffix,
+		)
+
+		if err := utils.RunCmd(
+			a.Config.Transcoder.Timeout,
+			"ffmpeg",
+			"-y",
+			"-i", vf,
+			"-s", size,
+			"-c:v", "libx264",
+			"-c:a", "aac",
+			"-crf", "18",
+			"-strict", "-2",
+			"-loglevel", "quiet",
+			"-metadata", fmt.Sprintf("title=%s", title),
+			"-metadata", fmt.Sprintf("comment=%s", description),
+			sf,
+		); err != nil {
+			err := fmt.Errorf("error transcoding video: %w", err)
+			log.Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+*/
 
 func NormalizeFeedName(name string) string {
 	name = strings.TrimSpace(name)
@@ -912,8 +1143,64 @@ func CleanTwt(text string) string {
 	return text
 }
 
-// PreprocessImage ...
-func PreprocessImage(conf *Config, u *url.URL, alt string) string {
+// RenderAudio ...
+func RenderAudio(conf *Config, uri string) string {
+	isLocalURL := IsLocalURLFactory(conf)
+
+	if isLocalURL(uri) {
+		u, err := url.Parse(uri)
+		if err != nil {
+			log.WithError(err).Warnf("error parsing uri: %s", uri)
+			return ""
+		}
+
+		oggURI := u.String()
+		u.Path = ReplaceExt(u.Path, ".mp3")
+		mp3URI := u.String()
+
+		return fmt.Sprintf(`<audio controls="controls">
+  <source type="audio/ogg" src="%s"></source>
+  <source type="audio/mp3" src="%s"></source>
+  Your browser does not support the audio element.
+</audio>`, oggURI, mp3URI)
+	}
+
+	return fmt.Sprintf(`<audio controls="controls">
+  <source type="audio/mp3" src="%s"></source>
+  Your browser does not support the audio element.
+</audio>`, uri)
+}
+
+// RenderVideo ...
+func RenderVideo(conf *Config, uri string) string {
+	isLocalURL := IsLocalURLFactory(conf)
+
+	if isLocalURL(uri) {
+		u, err := url.Parse(uri)
+		if err != nil {
+			log.WithError(err).Warnf("error parsing uri: %s", uri)
+			return ""
+		}
+
+		webmURI := u.String()
+		u.Path = ReplaceExt(u.Path, ".mp4")
+		mp4URI := u.String()
+
+		return fmt.Sprintf(`<video controls preload="metadata">
+    <source type="video/webm" src="%s" />
+    <source type="video/mp4" src="%s" />
+    Your browser does not support the video element.
+  </video>`, webmURI, mp4URI)
+	}
+
+	return fmt.Sprintf(`<video controls preload="metadata">
+    <source type="video/mp4" src="%s" />
+    Your browser does not support the video element.
+    </video>`, uri)
+}
+
+// PreprocessMedia ...
+func PreprocessMedia(conf *Config, u *url.URL, alt string) string {
 	var html string
 
 	// Normalize the domain name
@@ -926,11 +1213,19 @@ func PreprocessImage(conf *Config, u *url.URL, alt string) string {
 			// Ensure all local links match our BaseURL scheme
 			u.Scheme = conf.baseURL.Scheme
 		} else {
-			// Ensure all extern links to images are served over TLS
+			// Ensure all extern links are served over TLS
 			u.Scheme = "https"
 		}
-		src := u.String()
-		html = fmt.Sprintf(`<img alt="%s" src="%s" loading=lazy>`, alt, src)
+
+		switch filepath.Ext(u.Path) {
+		case ".mp4", ".webm":
+			html = RenderVideo(conf, u.String())
+		case ".mp3", ".ogg":
+			html = RenderAudio(conf, u.String())
+		default:
+			src := u.String()
+			html = fmt.Sprintf(`<img alt="%s" src="%s" loading=lazy>`, alt, src)
+		}
 	} else {
 		src := u.String()
 		html = fmt.Sprintf(
@@ -975,7 +1270,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 					return ast.GoToNext, false
 				}
 
-				html := PreprocessImage(conf, u, string(image.Title))
+				html := PreprocessMedia(conf, u, string(image.Title))
 
 				io.WriteString(w, html)
 
@@ -1010,7 +1305,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 					return ast.GoToNext, false
 				}
 
-				html := PreprocessImage(conf, u, alt)
+				html := PreprocessMedia(conf, u, alt)
 
 				io.WriteString(w, html)
 
@@ -1039,6 +1334,9 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 		md := []byte(FormatMentionsAndTags(conf, text))
 		maybeUnsafeHTML := markdown.ToHTML(md, mdParser, renderer)
 		p := bluemonday.UGCPolicy()
+		p.AllowAttrs("id", "controls").OnElements("audio")
+		p.AllowAttrs("id", "controls", "preload", "poster").OnElements("video")
+		p.AllowAttrs("src", "type").OnElements("source")
 		p.AllowAttrs("target").OnElements("a")
 		p.AllowAttrs("class").OnElements("i")
 		p.AllowAttrs("alt", "loading").OnElements("a", "img")

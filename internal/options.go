@@ -67,6 +67,9 @@ const (
 	// DefaultSessionExpiry is the server's default session expiry time
 	DefaultSessionExpiry = 240 * time.Hour // 10 days
 
+	// DefaultTranscoderTimeout is the default vodeo transcoding timeout
+	DefaultTranscoderTimeout = 5 * time.Minute // 5mins
+
 	// DefaultMagicLinkSecret is the jwt magic link secret
 	DefaultMagicLinkSecret = "PLEASE_CHANGE_ME!!!"
 
@@ -108,6 +111,7 @@ var (
 	DefaultWhitelistedDomains = []string{
 		`imgur\.com`,
 		`giphy\.com`,
+		`tube\.mills\.io`,
 		`reactiongifs\.com`,
 		`githubusercontent\.com`,
 	}
@@ -293,6 +297,14 @@ func WithSessionCacheTTL(cacheTTL time.Duration) Option {
 func WithSessionExpiry(expiry time.Duration) Option {
 	return func(cfg *Config) error {
 		cfg.SessionExpiry = expiry
+		return nil
+	}
+}
+
+// WithTranscoderTimeout sets the video transcoding timeout
+func WithTranscoderTimeout(timeout time.Duration) Option {
+	return func(cfg *Config) error {
+		cfg.TranscoderTimeout = timeout
 		return nil
 	}
 }

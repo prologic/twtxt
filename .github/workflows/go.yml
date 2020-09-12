@@ -23,7 +23,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install dependencies
-        run: /bin/sh -c "${{ matric.pre }}"
+        run: /bin/sh -c "${{ matrix.pre }}"
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v1
         with:

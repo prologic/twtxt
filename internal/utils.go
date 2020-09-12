@@ -1186,14 +1186,14 @@ func RenderVideo(conf *Config, uri string) string {
 		u.Path = ReplaceExt(u.Path, ".mp4")
 		mp4URI := u.String()
 
-		return fmt.Sprintf(`<video controls preload="metadata">
+		return fmt.Sprintf(`<video controls playsinline preload="auto">
     <source type="video/webm" src="%s" />
     <source type="video/mp4" src="%s" />
     Your browser does not support the video element.
   </video>`, webmURI, mp4URI)
 	}
 
-	return fmt.Sprintf(`<video controls preload="metadata">
+	return fmt.Sprintf(`<video controls playsinline preload="auto">
     <source type="video/mp4" src="%s" />
     Your browser does not support the video element.
     </video>`, uri)

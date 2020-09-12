@@ -1,7 +1,7 @@
 # Build
 FROM golang:alpine AS build
 
-RUN apk add --no-cache -U build-base git make
+RUN apk add --no-cache -U build-base git make ffmpeg-dev
 
 RUN mkdir -p /src
 

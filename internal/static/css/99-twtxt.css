@@ -35,9 +35,11 @@ article hgroup footer {
 
 /* 480p */
 video {
+  object-fit: contain;
   display: block;
-  width: auto;
-  height: 480px;
+  max-width: 100%;
+  width: 100%;
+  height: auto;
   background: #000;
   box-shadow: 0 3px 7px 0 rgba(0, 0, 0, 0.2);
 }

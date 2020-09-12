@@ -15,8 +15,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install dependencies
+        env:
+          DEBIAN_FRONTEND: 'noninteractive'
         run: |
-          apt-get install -y ffmpeg-dev
+          sudo apt-get install -y ffmpeg-dev
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v1
         with:

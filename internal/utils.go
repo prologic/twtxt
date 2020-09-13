@@ -26,6 +26,7 @@ import (
 	"image/png"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/bakape/thumbnailer/v2"
 	"github.com/chai2010/webp"
 	"github.com/disintegration/imageorient"
 	"github.com/gomarkdown/markdown"
@@ -99,6 +100,13 @@ var (
 	ErrInvalidImage     = errors.New("error: invalid image")
 	ErrInvalidVideo     = errors.New("error: invalid video")
 	ErrInvalidVideoSize = errors.New("error: invalid video size")
+
+	thumbnailerOpts = thumbnailer.Options{
+		ThumbDims: thumbnailer.Dims{
+			Width:  640,
+			Height: 480,
+		},
+	}
 )
 
 func init() {
@@ -785,6 +793,33 @@ func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *
 		log.WithError(err).Warnf("error reencoding video to MP4 (for older browsers: %s", fn)
 	}
 
+	// Generate poster / thumbnail
+	_, thumb, err := thumbnailer.Process(tf, thumbnailerOpts)
+	if err != nil {
+		log.WithError(err).Error("error generating video poster thumbnail")
+		return "", err
+	}
+
+	pf, err := os.OpenFile(ReplaceExt(fn, ".webp"), os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		log.WithError(err).Error("error opening thumbnail output file")
+		return "", err
+	}
+	defer pf.Close()
+
+	if err := webp.Encode(pf, thumb, &webp.Options{Lossless: true}); err != nil {
+		log.WithError(err).Error("error reencoding thumbnail image")
+		return "", err
+	}
+
+	// Re-encode to PNG (for older browsers)
+	if err := pf.Close(); err != nil {
+		log.WithError(err).Warnf("error cloding file %s", fn)
+	}
+	if err := ImageToPng(ReplaceExt(fn, ".webp")); err != nil {
+		log.WithError(err).Warnf("error reencoding thumbnail image to PNG (for older browsers: %s", fn)
+	}
+
 	return fmt.Sprintf(
 		"%s/%s/%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
@@ -1183,14 +1218,18 @@ func RenderVideo(conf *Config, uri string) string {
 		}
 
 		webmURI := u.String()
+
 		u.Path = ReplaceExt(u.Path, ".mp4")
 		mp4URI := u.String()
 
-		return fmt.Sprintf(`<video controls playsinline preload="auto">
+		u.Path = ReplaceExt(u.Path, "")
+		posterURI := u.String()
+
+		return fmt.Sprintf(`<video controls playsinline preload="auto" poster="%s">
     <source type="video/webm" src="%s" />
     <source type="video/mp4" src="%s" />
     Your browser does not support the video element.
-  </video>`, webmURI, mp4URI)
+  </video>`, posterURI, webmURI, mp4URI)
 	}
 
 	return fmt.Sprintf(`<video controls playsinline preload="auto">

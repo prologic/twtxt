@@ -632,13 +632,13 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 			return
 		}
 
-		path, err := securejoin.SecureJoin(filepath.Join(s.config.Data, "feeds"), nick)
+		fn, err := securejoin.SecureJoin(filepath.Join(s.config.Data, "feeds"), nick)
 		if err != nil {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
-		stat, err := os.Stat(path)
+		fileInfo, err := os.Stat(fn)
 		if err != nil {
 			if os.IsNotExist(err) {
 				http.Error(w, "Feed Not Found", http.StatusNotFound)
@@ -651,62 +651,53 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Header().Set("Link", fmt.Sprintf(`<%s/user/%s/webmention>; rel="webmention"`, s.config.BaseURL, nick))
-		w.Header().Set("Last-Modified", stat.ModTime().UTC().Format(http.TimeFormat))
+		w.Header().Set("Last-Modified", fileInfo.ModTime().UTC().Format(http.TimeFormat))
 
-		if r.Method == http.MethodHead {
-			defer r.Body.Close()
-			return
-		}
-
-		if r.Method == http.MethodGet {
-			followerClient, err := DetectFollowerFromUserAgent(r.UserAgent())
+		followerClient, err := DetectFollowerFromUserAgent(r.UserAgent())
+		if err != nil {
+			log.WithError(err).Warnf("unable to detect twtxt client from %s", FormatRequest(r))
+		} else {
+			user, err := s.db.GetUser(nick)
 			if err != nil {
-				log.WithError(err).Warnf("unable to detect twtxt client from %s", FormatRequest(r))
+				log.WithError(err).Warnf("error loading user object for %s", nick)
 			} else {
-				user, err := s.db.GetUser(nick)
-				if err != nil {
-					log.WithError(err).Warnf("error loading user object for %s", nick)
-				} else {
-					if !user.FollowedBy(followerClient.URL) {
-						if _, err := AppendSpecial(
-							s.config, s.db,
-							twtxtBot,
-							fmt.Sprintf(
-								"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-								nick, URLForUser(s.config, nick),
-								followerClient.Nick, followerClient.URL,
-								followerClient.ClientName, followerClient.ClientVersion,
-							),
-						); err != nil {
-							log.WithError(err).Warnf("error appending special FOLLOW post")
-						}
-						if user.Followers == nil {
-							user.Followers = make(map[string]string)
-						}
-						user.Followers[followerClient.Nick] = followerClient.URL
-						if err := s.db.SetUser(nick, user); err != nil {
-							log.WithError(err).Warnf("error updating user object for %s", nick)
-						}
+				if !user.FollowedBy(followerClient.URL) {
+					if _, err := AppendSpecial(
+						s.config, s.db,
+						twtxtBot,
+						fmt.Sprintf(
+							"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+							nick, URLForUser(s.config, nick),
+							followerClient.Nick, followerClient.URL,
+							followerClient.ClientName, followerClient.ClientVersion,
+						),
+					); err != nil {
+						log.WithError(err).Warnf("error appending special FOLLOW post")
+					}
+					if user.Followers == nil {
+						user.Followers = make(map[string]string)
+					}
+					user.Followers[followerClient.Nick] = followerClient.URL
+					if err := s.db.SetUser(nick, user); err != nil {
+						log.WithError(err).Warnf("error updating user object for %s", nick)
 					}
 				}
 			}
-			f, err := os.Open(path)
-			if err != nil {
-				log.WithError(err).Error("error opening feed")
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-			defer f.Close()
-			w.Write([]byte(fmt.Sprintf("# nick = %s\n", nick)))
-			w.Write([]byte(fmt.Sprintf("# url = %s\n", URLForUser(s.config, nick))))
-			if _, err := io.Copy(w, f); err != nil {
-				log.WithError(err).Error("error sending feed response")
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-		} else {
-			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
+
+		f, err := os.Open(fn)
+		if err != nil {
+			log.WithError(err).Error("error opening feed")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		defer f.Close()
+
+		if r.Method == http.MethodHead {
+			return
+		}
+
+		http.ServeContent(w, r, filepath.Base(fn), fileInfo.ModTime(), f)
 	}
 }
 

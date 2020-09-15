@@ -54,8 +54,9 @@ type OldCache map[string]Cached
 
 // Cache ...
 type Cache struct {
-	mu   sync.RWMutex
-	Twts map[string]Cached
+	mu         sync.RWMutex
+	ModifiedAt time.Time
+	Twts       map[string]Cached
 }
 
 // Store ...
@@ -98,9 +99,16 @@ func CacheLastModified(path string) (time.Time, error) {
 
 // LoadCache ...
 func LoadCache(path string) (*Cache, error) {
-	cache := &Cache{
-		Twts: make(map[string]Cached),
+	fn := filepath.Join(path, feedCacheFile)
+
+	cacheLastModified, err := CacheLastModified(fn)
+	if err != nil {
+		log.Warn("CacheLastModified() error")
 	}
+
+	cache := &Cache{
+		ModifiedAt: cacheLastModified,
+		Twts:       make(map[string]Cached)}
 
 	f, err := os.Open(filepath.Join(path, feedCacheFile))
 	if err != nil {
@@ -139,14 +147,6 @@ const maxfetchers = 50
 // FetchTwts ...
 func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) {
 	stime := time.Now()
-	defer func() {
-		metrics.Gauge(
-			"cache",
-			"last_processed_seconds",
-		).Set(
-			float64(time.Now().Sub(stime) / 1e9),
-		)
-	}()
 
 	// buffered to let goroutines write without blocking before the main thread
 	// begins reading
@@ -268,6 +268,10 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds)
 	for range twtsch {
 	}
 
+	cache.mu.Lock()
+	cache.ModifiedAt = time.Now()
+	cache.mu.Unlock()
+
 	cache.mu.RLock()
 	metrics.Gauge("cache", "feeds").Set(float64(len(cache.Twts)))
 	count := 0
@@ -276,6 +280,13 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds)
 	}
 	cache.mu.RUnlock()
 	metrics.Gauge("cache", "twts").Set(float64(count))
+
+	metrics.Gauge(
+		"cache",
+		"last_processed_seconds",
+	).Set(
+		float64(time.Now().Sub(stime) / 1e9),
+	)
 }
 
 // Lookup ...
@@ -333,6 +344,7 @@ func (cache *Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 	cache.mu.RUnlock()
 
 	cache.mu.Lock()
+	cache.ModifiedAt = time.Now()
 	cache.Twts[key] = Cached{
 		cache:        make(map[string]types.Twt),
 		Twts:         twts,
@@ -368,4 +380,7 @@ func (cache *Cache) Delete(feeds types.Feeds) {
 		delete(cache.Twts, feed.URL)
 		cache.mu.Unlock()
 	}
+	cache.mu.Lock()
+	cache.ModifiedAt = time.Now()
+	cache.mu.Unlock()
 }

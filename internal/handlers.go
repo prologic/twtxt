@@ -829,16 +829,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 // TimelineHandler ...
 func (s *Server) TimelineHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		cacheLastModified, err := CacheLastModified(s.config.Data)
-		if err != nil {
-			log.WithError(err).Error("CacheLastModified() error")
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Header().Set("Last-Modified", cacheLastModified.UTC().Format(http.TimeFormat))
-
 		if r.Method == http.MethodHead {
 			defer r.Body.Close()
 			return
@@ -861,14 +852,6 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			}
 		}
 
-		if err != nil {
-			log.WithError(err).Error("error loading twts")
-			ctx.Error = true
-			ctx.Message = "An error occurred while loading the timeline"
-			s.render("error", w, ctx)
-			return
-		}
-
 		sort.Sort(twts)
 
 		var pagedTwts types.Twts
@@ -877,7 +860,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
-		if err = pager.Results(&pagedTwts); err != nil {
+		if err := pager.Results(&pagedTwts); err != nil {
 			log.WithError(err).Error("error sorting and paging twts")
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading the timeline"

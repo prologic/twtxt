@@ -77,7 +77,7 @@ func (a *API) initRoutes() {
 	router.POST("/discover", a.DiscoverEndpoint())
 
 	router.GET("/profile/:nick", a.ProfileEndpoint())
-	router.GET("/profile/:nick/twts", a.ProfileTwtsEndpoint())
+	router.POST("/profile/:nick/twts", a.ProfileTwtsEndpoint())
 
 	router.GET("/external/:slug/:nick", a.ExternalProfileEndpoint())
 
@@ -395,7 +395,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		user := r.Context().Value(UserContextKey).(*User)
 
-		req, err := types.NewTimelineRequest(r.Body)
+		req, err := types.NewPagedRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing post request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -421,7 +421,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 			return
 		}
 
-		res := types.TimelineResponse{
+		res := types.PagedResponse{
 			Twts: pagedTwts,
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
@@ -445,7 +445,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 // DiscoverEndpoint ...
 func (a *API) DiscoverEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		req, err := types.NewTimelineRequest(r.Body)
+		req, err := types.NewPagedRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing post request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -467,7 +467,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 			return
 		}
 
-		res := types.TimelineResponse{
+		res := types.PagedResponse{
 			Twts: pagedTwts,
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
@@ -491,7 +491,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 // MentionsEndpoint ...
 func (a *API) MentionsEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		req, err := types.NewTimelineRequest(r.Body)
+		req, err := types.NewPagedRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing post request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -539,7 +539,7 @@ func (a *API) MentionsEndpoint() httprouter.Handle {
 			return
 		}
 
-		res := types.TimelineResponse{
+		res := types.PagedResponse{
 			Twts: pagedTwts,
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
@@ -872,6 +872,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 // ProfileTwtsEndpoint ...
 func (a *API) ProfileTwtsEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		req, err := types.NewPagedRequest(r.Body)
 		nick := NormalizeUsername(p.ByName("nick"))
 		if nick == "" {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -909,11 +910,16 @@ func (a *API) ProfileTwtsEndpoint() httprouter.Handle {
 
 		var pagedTwts types.Twts
 
-		page := SafeParseInt(r.FormValue("p"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.TwtsPerPage)
-		pager.SetPage(page)
+		pager.SetPage(req.Page)
 
-		res := types.TimelineResponse{
+		if err = pager.Results(&pagedTwts); err != nil {
+			log.WithError(err).Error("error loading twts")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		res := types.PagedResponse{
 			Twts: pagedTwts,
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),

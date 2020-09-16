@@ -69,13 +69,13 @@ func NewPostRequest(r io.Reader) (req PostRequest, err error) {
 	return
 }
 
-// TimelineRequest ...
-type TimelineRequest struct {
+// PagedRequest ...
+type PagedRequest struct {
 	Page int `json:"page"`
 }
 
-// NewTimelineRequest ...
-func NewTimelineRequest(r io.Reader) (req TimelineRequest, err error) {
+// NewPagedRequest ...
+func NewPagedRequest(r io.Reader) (req PagedRequest, err error) {
 	body, err := ioutil.ReadAll(r)
 	if err != nil {
 		return
@@ -91,14 +91,14 @@ type PagerResponse struct {
 	TotalTwts int `json:"total_twts"`
 }
 
-// TimelineResponse ...
-type TimelineResponse struct {
+// PagedResponse ...
+type PagedResponse struct {
 	Twts  []Twt `json:"twts"`
 	Pager PagerResponse
 }
 
 // Bytes ...
-func (res TimelineResponse) Bytes() ([]byte, error) {
+func (res PagedResponse) Bytes() ([]byte, error) {
 	body, err := json.Marshal(res)
 	if err != nil {
 		return nil, err

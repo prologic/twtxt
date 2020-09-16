@@ -68,13 +68,19 @@ func (a *API) initRoutes() {
 	router.POST("/register", a.RegisterEndpoint())
 
 	router.POST("/post", a.isAuthorized(a.PostEndpoint()))
+	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
+
 	router.POST("/follow", a.isAuthorized(a.FollowEndpoint()))
 	router.POST("/unfollow", a.isAuthorized(a.UnfollowEndpoint()))
+
 	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
-	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
-	router.GET("/profile/:nick", a.ProfileEndpoint())
-	router.GET("/external/:slug/:nick", a.ExternalProfileEndpoint())
 	router.POST("/discover", a.DiscoverEndpoint())
+
+	router.GET("/profile/:nick", a.ProfileEndpoint())
+	router.POST("/profile/:nick/twts", a.ProfileTwtsEndpoint())
+
+	router.GET("/external/:slug/:nick", a.ExternalProfileEndpoint())
+
 	router.POST("/mentions", a.isAuthorized(a.MentionsEndpoint()))
 }
 
@@ -389,7 +395,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		user := r.Context().Value(UserContextKey).(*User)
 
-		req, err := types.NewTimelineRequest(r.Body)
+		req, err := types.NewPagedRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing post request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -415,7 +421,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 			return
 		}
 
-		res := types.TimelineResponse{
+		res := types.PagedResponse{
 			Twts: pagedTwts,
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
@@ -439,7 +445,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 // DiscoverEndpoint ...
 func (a *API) DiscoverEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		req, err := types.NewTimelineRequest(r.Body)
+		req, err := types.NewPagedRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing post request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -461,7 +467,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 			return
 		}
 
-		res := types.TimelineResponse{
+		res := types.PagedResponse{
 			Twts: pagedTwts,
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
@@ -485,7 +491,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 // MentionsEndpoint ...
 func (a *API) MentionsEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		req, err := types.NewTimelineRequest(r.Body)
+		req, err := types.NewPagedRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing post request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -533,7 +539,7 @@ func (a *API) MentionsEndpoint() httprouter.Handle {
 			return
 		}
 
-		res := types.TimelineResponse{
+		res := types.PagedResponse{
 			Twts: pagedTwts,
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
@@ -853,6 +859,76 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 		}
 
 		data, err := json.Marshal(profileResponse)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+	}
+}
+
+// ProfileTwtsEndpoint ...
+func (a *API) ProfileTwtsEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		req, err := types.NewPagedRequest(r.Body)
+		nick := NormalizeUsername(p.ByName("nick"))
+		if nick == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		nick = NormalizeUsername(nick)
+
+		var profile types.Profile
+
+		if a.db.HasUser(nick) {
+			user, err := a.db.GetUser(nick)
+			if err != nil {
+				log.WithError(err).Errorf("error loading user object for %s", nick)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			profile = user.Profile(a.config.BaseURL)
+		} else if a.db.HasFeed(nick) {
+			feed, err := a.db.GetFeed(nick)
+			if err != nil {
+				log.WithError(err).Errorf("error loading feed object for %s", nick)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			profile = feed.Profile(a.config.BaseURL)
+		} else {
+			http.Error(w, "User/Feed not found", http.StatusNotFound)
+			return
+		}
+
+		twts := a.cache.GetByURL(profile.URL)
+
+		sort.Sort(twts)
+
+		var pagedTwts types.Twts
+
+		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.TwtsPerPage)
+		pager.SetPage(req.Page)
+
+		if err = pager.Results(&pagedTwts); err != nil {
+			log.WithError(err).Error("error loading twts")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		res := types.PagedResponse{
+			Twts: pagedTwts,
+			Pager: types.PagerResponse{
+				Current:   pager.Page(),
+				MaxPages:  pager.PageNums(),
+				TotalTwts: pager.Nums(),
+			},
+		}
+
+		data, err := json.Marshal(res)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

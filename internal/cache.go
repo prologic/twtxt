@@ -84,18 +84,6 @@ func (cache *Cache) Store(path string) error {
 	return nil
 }
 
-// CacheLastModified ...
-func CacheLastModified(path string) (time.Time, error) {
-	stat, err := os.Stat(filepath.Join(path, feedCacheFile))
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return time.Time{}, err
-		}
-		return time.Unix(0, 0), nil
-	}
-	return stat.ModTime(), nil
-}
-
 // LoadCache ...
 func LoadCache(path string) (*Cache, error) {
 	cache := &Cache{

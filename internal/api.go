@@ -44,7 +44,7 @@ var (
 // API ...
 type API struct {
 	router  *Router
-	config  *Config
+	config  *config
 	cache   *Cache
 	archive Archiver
 	db      Store
@@ -52,7 +52,7 @@ type API struct {
 }
 
 // NewAPI ...
-func NewAPI(router *Router, config *Config, cache *Cache, archive Archiver, db Store, pm passwords.Passwords) *API {
+func NewAPI(router *Router, config *config, cache *Cache, archive Archiver, db Store, pm passwords.Passwords) *API {
 	api := &API{router, config, cache, archive, db, pm}
 
 	api.initRoutes()
@@ -84,7 +84,7 @@ func (a *API) CreateToken(user *User, r *http.Request) (*Token, error) {
 	claims["username"] = user.Username
 	createdAt := time.Now()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(a.config.APISigningKey)
+	tokenString, err := token.SignedString(a.config.apiSigningKey)
 	if err != nil {
 		log.WithError(err).Error("error creating signed token")
 		return nil, err
@@ -110,7 +110,7 @@ func (a *API) jwtKeyFunc(token *jwt.Token) (interface{}, error) {
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 		return nil, fmt.Errorf("There was an error")
 	}
-	return a.config.APISigningKey, nil
+	return a.config.apiSigningKey, nil
 }
 
 func (a *API) getLoggedInUser(r *http.Request) *User {
@@ -222,7 +222,7 @@ func (a *API) RegisterEndpoint() httprouter.Handle {
 			return
 		}
 
-		fn := filepath.Join(a.config.Data, feedsDir, username)
+		fn := filepath.Join(a.config.data, feedsDir, username)
 		if _, err := os.Stat(fn); err == nil {
 			http.Error(w, "Feed Exists", http.StatusBadRequest)
 			return
@@ -406,7 +406,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 
 		var pagedTwts types.Twts
 
-		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.TwtsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.twtsPerPage)
 		pager.SetPage(req.Page)
 
 		if err = pager.Results(&pagedTwts); err != nil {
@@ -452,7 +452,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 
 		var pagedTwts types.Twts
 
-		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.TwtsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.twtsPerPage)
 		pager.SetPage(req.Page)
 
 		if err = pager.Results(&pagedTwts); err != nil {
@@ -524,7 +524,7 @@ func (a *API) MentionsEndpoint() httprouter.Handle {
 
 		var pagedTwts types.Twts
 
-		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.TwtsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.twtsPerPage)
 		pager.SetPage(req.Page)
 
 		if err = pager.Results(&pagedTwts); err != nil {
@@ -831,7 +831,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 		profileResponse.Alternatives = types.Alternatives{
 			types.Alternative{
 				Type:  "application/atom+xml",
-				Title: fmt.Sprintf("%s local feed", a.config.Name),
+				Title: fmt.Sprintf("%s local feed", a.config.PodName),
 				URL:   fmt.Sprintf("%s/atom.xml", a.config.BaseURL),
 			},
 			types.Alternative{

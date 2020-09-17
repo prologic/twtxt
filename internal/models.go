@@ -90,14 +90,14 @@ func (t *Token) Bytes() ([]byte, error) {
 	return data, nil
 }
 
-func CreateFeed(conf *Config, db Store, user *User, name string, force bool) error {
+func CreateFeed(conf *config, db Store, user *User, name string, force bool) error {
 	if user != nil {
 		if !force && len(user.Feeds) > maxUserFeeds {
 			return ErrTooManyFeeds
 		}
 	}
 
-	fn := filepath.Join(conf.Data, feedsDir, name)
+	fn := filepath.Join(conf.data, feedsDir, name)
 	stat, err := os.Stat(fn)
 
 	if err == nil && !force {

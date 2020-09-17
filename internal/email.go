@@ -77,15 +77,15 @@ func Indent(text, indent string) string {
 	return result[:len(result)-1]
 }
 
-func SendEmail(conf *Config, recipients []string, replyTo, subject string, body string) error {
+func SendEmail(conf *config, recipients []string, replyTo, subject string, body string) error {
 	m := gomail.NewMessage()
-	m.SetHeader("From", conf.SMTPFrom)
+	m.SetHeader("From", conf.smtpFrom)
 	m.SetHeader("To", recipients...)
 	m.SetHeader("Reply-To", replyTo)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/plain", body)
 
-	d := gomail.NewDialer(conf.SMTPHost, conf.SMTPPort, conf.SMTPUser, conf.SMTPPass)
+	d := gomail.NewDialer(conf.smtpHost, conf.smtpPort, conf.smtpUser, conf.smtpPass)
 
 	err := d.DialAndSend(m)
 	if err != nil {
@@ -96,14 +96,14 @@ func SendEmail(conf *Config, recipients []string, replyTo, subject string, body 
 	return nil
 }
 
-func SendPasswordResetEmail(conf *Config, user *User, tokenString string) error {
+func SendPasswordResetEmail(conf *config, user *User, tokenString string) error {
 	recipients := []string{user.Email}
 	subject := fmt.Sprintf(
 		"[%s]: Password Reset Request for %s",
-		conf.Name, user.Username,
+		conf.PodName, user.Username,
 	)
 	ctx := PasswordResetEmailContext{
-		Pod:     conf.Name,
+		Pod:     conf.PodName,
 		BaseURL: conf.BaseURL,
 
 		Token:    tokenString,
@@ -116,7 +116,7 @@ func SendPasswordResetEmail(conf *Config, user *User, tokenString string) error 
 		return err
 	}
 
-	if err := SendEmail(conf, recipients, conf.SMTPFrom, subject, buf.String()); err != nil {
+	if err := SendEmail(conf, recipients, conf.smtpFrom, subject, buf.String()); err != nil {
 		log.WithError(err).Errorf("error sending new token to %s", recipients[0])
 		return err
 	}
@@ -124,15 +124,15 @@ func SendPasswordResetEmail(conf *Config, user *User, tokenString string) error 
 	return nil
 }
 
-func SendSupportRequestEmail(conf *Config, name, email, subject, message string) error {
-	recipients := []string{conf.AdminEmail, email}
+func SendSupportRequestEmail(conf *config, name, email, subject, message string) error {
+	recipients := []string{conf.adminEmail, email}
 	emailSubject := fmt.Sprintf(
 		"[%s Support Request]: %s",
-		conf.Name, subject,
+		conf.PodName, subject,
 	)
 	ctx := SupportRequestEmailContext{
-		Pod:       conf.Name,
-		AdminUser: conf.AdminUser,
+		Pod:       conf.PodName,
+		AdminUser: conf.adminUser,
 
 		Name:    name,
 		Email:   email,

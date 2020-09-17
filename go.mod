@@ -47,6 +47,7 @@ require (
 	github.com/prologic/observe v0.0.0-20181231082615-747b185a0928
 	github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
+	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0
 	github.com/rickb777/accept v0.0.0-20170318132422-d5183c44530d
 	github.com/robfig/cron v1.2.0
 	github.com/securisec/go-keywords v0.0.0-20200619134240-769e7273f2ed

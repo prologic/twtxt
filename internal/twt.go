@@ -30,7 +30,7 @@ var (
 // ExpandMentions turns "@nick" into "@<nick URL>" if we're following the user or feed
 // or if they exist on the local pod. Also turns @user@domain into
 // @<user URL> as a convenient way to mention users across pods.
-func ExpandMentions(conf *Config, db Store, user *User, text string) string {
+func ExpandMentions(conf *config, db Store, user *User, text string) string {
 	re := regexp.MustCompile(`@([a-zA-Z0-9][a-zA-Z0-9_-]+)(?:@)?((?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9]\.)|(?:[0-9]+/[0-9]{2})\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?)?`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
@@ -63,7 +63,7 @@ func ExpandMentions(conf *Config, db Store, user *User, text string) string {
 }
 
 // Turns #tag into "@<tag URL>"
-func ExpandTag(conf *Config, db Store, user *User, text string) string {
+func ExpandTag(conf *config, db Store, user *User, text string) string {
 	re := regexp.MustCompile(`#([-\w]+)`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
@@ -73,7 +73,7 @@ func ExpandTag(conf *Config, db Store, user *User, text string) string {
 	})
 }
 
-func DeleteLastTwt(conf *Config, user *User) error {
+func DeleteLastTwt(conf *config, user *User) error {
 	p := filepath.Join(conf.Data, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
@@ -96,13 +96,13 @@ func DeleteLastTwt(conf *Config, user *User) error {
 	return f.Truncate(int64(n))
 }
 
-func AppendSpecial(conf *Config, db Store, specialUsername, text string, args ...interface{}) (types.Twt, error) {
+func AppendSpecial(conf *config, db Store, specialUsername, text string, args ...interface{}) (types.Twt, error) {
 	user := &User{Username: specialUsername}
 	user.Following = make(map[string]string)
 	return AppendTwt(conf, db, user, text, args)
 }
 
-func AppendTwt(conf *Config, db Store, user *User, text string, args ...interface{}) (types.Twt, error) {
+func AppendTwt(conf *config, db Store, user *User, text string, args ...interface{}) (types.Twt, error) {
 	text = strings.TrimSpace(text)
 	if text == "" {
 		return types.Twt{}, fmt.Errorf("cowardly refusing to twt empty text, or only spaces")
@@ -148,7 +148,7 @@ func AppendTwt(conf *Config, db Store, user *User, text string, args ...interfac
 	return twt, nil
 }
 
-func FeedExists(conf *Config, username string) bool {
+func FeedExists(conf *config, username string) bool {
 	fn := filepath.Join(conf.Data, feedsDir, NormalizeUsername(username))
 	if _, err := os.Stat(fn); err != nil {
 		if os.IsNotExist(err) {
@@ -159,7 +159,7 @@ func FeedExists(conf *Config, username string) bool {
 	return true
 }
 
-func GetLastTwt(conf *Config, user *User) (twt types.Twt, offset int, err error) {
+func GetLastTwt(conf *config, user *User) (twt types.Twt, offset int, err error) {
 	p := filepath.Join(conf.Data, feedsDir)
 	if err = os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
@@ -179,7 +179,7 @@ func GetLastTwt(conf *Config, user *User) (twt types.Twt, offset int, err error)
 	return
 }
 
-func GetAllTwts(conf *Config, name string) (types.Twts, error) {
+func GetAllTwts(conf *config, name string) (types.Twts, error) {
 	p := filepath.Join(conf.Data, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")

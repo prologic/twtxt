@@ -93,7 +93,7 @@ func LoadBlogsCache(path string) (*BlogsCache, error) {
 }
 
 // UpdateBlogs ...
-func (cache BlogsCache) UpdateBlogs(conf *Config) {
+func (cache BlogsCache) UpdateBlogs(conf *config) {
 	blogPosts, err := GetAllBlogPosts(conf)
 	if err != nil {
 		log.WithError(err).Error("error getting all blog posts")
@@ -104,7 +104,7 @@ func (cache BlogsCache) UpdateBlogs(conf *Config) {
 		cache.Add(blogPost)
 	}
 
-	if err := cache.Store(conf.Data); err != nil {
+	if err := cache.Store(conf.data); err != nil {
 		log.WithError(err).Error("error saving blogs cache")
 	}
 }

@@ -42,17 +42,17 @@ func init() {
 	}
 }
 
-type JobFactory func(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, store Store) cron.Job
+type JobFactory func(conf *config, blogs *BlogsCache, cache *Cache, archive Archiver, store Store) cron.Job
 
 type SyncStoreJob struct {
-	conf    *Config
+	conf    *config
 	blogs   *BlogsCache
 	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewSyncStoreJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+func NewSyncStoreJob(conf *config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
 	return &SyncStoreJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
 }
 
@@ -64,14 +64,14 @@ func (job *SyncStoreJob) Run() {
 }
 
 type StatsJob struct {
-	conf    *Config
+	conf    *config
 	blogs   *BlogsCache
 	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewStatsJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+func NewStatsJob(conf *config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
 	return &StatsJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
 }
 
@@ -127,14 +127,14 @@ func (job *StatsJob) Run() {
 }
 
 type UpdateFeedsJob struct {
-	conf    *Config
+	conf    *config
 	blogs   *BlogsCache
 	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewUpdateFeedsJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+func NewUpdateFeedsJob(conf *config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
 	return &UpdateFeedsJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
 }
 
@@ -187,7 +187,7 @@ func (job *UpdateFeedsJob) Run() {
 
 	log.Info("syncing feed cache")
 
-	if err := job.cache.Store(job.conf.Data); err != nil {
+	if err := job.cache.Store(job.conf.data); err != nil {
 		log.WithError(err).Warn("error saving feed cache")
 		return
 	}
@@ -197,25 +197,25 @@ func (job *UpdateFeedsJob) Run() {
 }
 
 type UpdateFeedSourcesJob struct {
-	conf    *Config
+	conf    *config
 	blogs   *BlogsCache
 	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewUpdateFeedSourcesJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+func NewUpdateFeedSourcesJob(conf *config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
 	return &UpdateFeedSourcesJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
 }
 
 func (job *UpdateFeedSourcesJob) Run() {
-	log.Infof("updating %d feed sources", len(job.conf.FeedSources))
+	log.Infof("updating %d feed sources", len(job.conf.feedSources))
 
-	feedsources := FetchFeedSources(job.conf, job.conf.FeedSources)
+	feedsources := FetchFeedSources(job.conf, job.conf.feedSources)
 
 	log.Infof("fetched %d feed sources", len(feedsources.Sources))
 
-	if err := SaveFeedSources(feedsources, job.conf.Data); err != nil {
+	if err := SaveFeedSources(feedsources, job.conf.data); err != nil {
 		log.WithError(err).Warn("error saving feed sources")
 	} else {
 		log.Info("updated feed sources")
@@ -223,22 +223,22 @@ func (job *UpdateFeedSourcesJob) Run() {
 }
 
 type FixUserAccountsJob struct {
-	conf    *Config
+	conf    *config
 	blogs   *BlogsCache
 	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewFixUserAccountsJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+func NewFixUserAccountsJob(conf *config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
 	return &FixUserAccountsJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
 }
 
 func (job *FixUserAccountsJob) Run() {
 	// TODO: Refactor this into its own job.
 	fixAdminUser := func() error {
-		log.Infof("fixing adminUser account %s", job.conf.AdminUser)
-		adminUser, err := job.db.GetUser(job.conf.AdminUser)
+		log.Infof("fixing adminUser account %s", job.conf.adminUser)
+		adminUser, err := job.db.GetUser(job.conf.adminUser)
 		if err != nil {
 			log.WithError(err).Warnf("error loading user object for AdminUser")
 			return err
@@ -260,7 +260,7 @@ func (job *FixUserAccountsJob) Run() {
 
 	// Fix/Update the adminUser account
 	if err := fixAdminUser(); err != nil {
-		log.WithError(err).Warnf("error fixing adminUser %s", job.conf.AdminUser)
+		log.WithError(err).Warnf("error fixing adminUser %s", job.conf.adminUser)
 	}
 
 	// Create twtxtBots feeds
@@ -272,14 +272,14 @@ func (job *FixUserAccountsJob) Run() {
 }
 
 type DeleteOldSessionsJob struct {
-	conf    *Config
+	conf    *config
 	blogs   *BlogsCache
 	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewDeleteOldSessionsJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+func NewDeleteOldSessionsJob(conf *config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
 	return &DeleteOldSessionsJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
 }
 
@@ -303,14 +303,14 @@ func (job *DeleteOldSessionsJob) Run() {
 }
 
 type MergeStoreJob struct {
-	conf    *Config
+	conf    *config
 	blogs   *BlogsCache
 	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewMergeStoreJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+func NewMergeStoreJob(conf *config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
 	return &MergeStoreJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
 }
 

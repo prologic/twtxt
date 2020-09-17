@@ -73,7 +73,7 @@ func LoadFeedSources(path string) (*FeedSources, error) {
 	return feedsources, nil
 }
 
-func FetchFeedSources(conf *Config, sources []string) *FeedSources {
+func FetchFeedSources(conf *config, sources []string) *FeedSources {
 	var (
 		mu sync.RWMutex
 		wg sync.WaitGroup

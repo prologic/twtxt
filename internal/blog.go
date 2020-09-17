@@ -55,10 +55,10 @@ func (bs BlogPosts) Swap(i, j int) {
 	bs[i], bs[j] = bs[j], bs[i]
 }
 
-func GetBlogPostsByAuthor(conf *Config, author string) (BlogPosts, error) {
+func GetBlogPostsByAuthor(conf *config, author string) (BlogPosts, error) {
 	var blogPosts BlogPosts
 
-	p := filepath.Join(conf.Data, blogsDir, author)
+	p := filepath.Join(conf.data, blogsDir, author)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating blogs directory")
 		return nil, err
@@ -88,10 +88,10 @@ func GetBlogPostsByAuthor(conf *Config, author string) (BlogPosts, error) {
 	return blogPosts, nil
 }
 
-func GetAllBlogPosts(conf *Config) (BlogPosts, error) {
+func GetAllBlogPosts(conf *config) (BlogPosts, error) {
 	var blogPosts BlogPosts
 
-	p := filepath.Join(conf.Data, blogsDir)
+	p := filepath.Join(conf.data, blogsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating blogs directory")
 		return nil, err
@@ -141,8 +141,8 @@ func NewBlogPost(author, title string) *BlogPost {
 	return b
 }
 
-func BlogPostFromFile(conf *Config, fn string) (*BlogPost, error) {
-	p := filepath.Join(conf.Data, blogsDir)
+func BlogPostFromFile(conf *config, fn string) (*BlogPost, error) {
+	p := filepath.Join(conf.data, blogsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating blogs directory")
 		return nil, err
@@ -184,7 +184,7 @@ func BlogPostFromFile(conf *Config, fn string) (*BlogPost, error) {
 	return b, nil
 }
 
-func BlogPostFromParams(conf *Config, p httprouter.Params) (*BlogPost, error) {
+func BlogPostFromParams(conf *config, p httprouter.Params) (*BlogPost, error) {
 	author := p.ByName("author")
 	year := SafeParseInt(p.ByName("year"), 1970)
 	month := SafeParseInt(p.ByName("month"), 1)
@@ -267,8 +267,8 @@ func (b *BlogPost) Bytes() []byte {
 	return b.data.Bytes()
 }
 
-func (b *BlogPost) LoadMetadata(conf *Config) error {
-	fn := filepath.Join(conf.Data, blogsDir, b.Filename(".json"))
+func (b *BlogPost) LoadMetadata(conf *config) error {
+	fn := filepath.Join(conf.data, blogsDir, b.Filename(".json"))
 	metadata, err := ioutil.ReadFile(fn)
 	if err != nil {
 		return err
@@ -281,8 +281,8 @@ func (b *BlogPost) LoadMetadata(conf *Config) error {
 	return nil
 }
 
-func (b *BlogPost) Load(conf *Config) error {
-	fn := filepath.Join(conf.Data, blogsDir, b.Filename(".md"))
+func (b *BlogPost) Load(conf *config) error {
+	fn := filepath.Join(conf.data, blogsDir, b.Filename(".md"))
 
 	stat, err := os.Stat(fn)
 	if err != nil {
@@ -301,13 +301,13 @@ func (b *BlogPost) Load(conf *Config) error {
 	return nil
 }
 
-func (b *BlogPost) Save(conf *Config) error {
+func (b *BlogPost) Save(conf *config) error {
 	data, err := json.Marshal(&b)
 	if err != nil {
 		return err
 	}
 
-	fn := filepath.Join(conf.Data, blogsDir, b.Filename(".json"))
+	fn := filepath.Join(conf.data, blogsDir, b.Filename(".json"))
 	if err := os.MkdirAll(filepath.Dir(fn), 0755); err != nil {
 		return err
 	}
@@ -315,7 +315,7 @@ func (b *BlogPost) Save(conf *Config) error {
 		return err
 	}
 
-	fn = filepath.Join(conf.Data, blogsDir, b.Filename(".md"))
+	fn = filepath.Join(conf.data, blogsDir, b.Filename(".md"))
 	if err := os.MkdirAll(filepath.Dir(fn), 0755); err != nil {
 		return err
 	}
@@ -358,8 +358,8 @@ func (b *BlogPost) String() string {
 	return fmt.Sprintf("%s/%04d/%02d/%02d/%s", b.Author, b.Year, b.Month, b.Date, b.Slug)
 }
 
-func WriteBlog(conf *Config, user *User, title, content string) (*BlogPost, error) {
-	p := filepath.Join(conf.Data, blogsDir)
+func WriteBlog(conf *config, user *User, title, content string) (*BlogPost, error) {
+	p := filepath.Join(conf.data, blogsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating blogs directory")
 		return nil, err
@@ -383,7 +383,7 @@ func WriteBlog(conf *Config, user *User, title, content string) (*BlogPost, erro
 	return b, nil
 }
 
-func WriteBlogAs(conf *Config, feed string, title, content string) (*BlogPost, error) {
+func WriteBlogAs(conf *config, feed string, title, content string) (*BlogPost, error) {
 	user := &User{Username: feed}
 	return WriteBlog(conf, user, title, content)
 }

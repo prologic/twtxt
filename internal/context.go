@@ -67,18 +67,18 @@ type Context struct {
 	PasswordResetToken string
 }
 
-func NewContext(conf *Config, db Store, req *http.Request) *Context {
+func NewContext(conf *config, db Store, req *http.Request) *Context {
 	ctx := &Context{
 		BaseURL:          conf.BaseURL,
-		InstanceName:     conf.Name,
+		InstanceName:     conf.PodName,
 		SoftwareVersion:  twtxt.FullVersion(),
-		TwtsPerPage:      conf.TwtsPerPage,
+		TwtsPerPage:      conf.twtsPerPage,
 		TwtPrompt:        conf.RandomTwtPrompt(),
 		MaxTwtLength:     conf.MaxTwtLength,
 		RegisterDisabled: !conf.OpenRegistrations,
 
 		Commit: twtxt.Commit,
-		Theme:  conf.Theme,
+		Theme:  conf.DefaultTheme,
 
 		Timezones: timezones.AllZones,
 
@@ -93,7 +93,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		Alternatives: types.Alternatives{
 			types.Alternative{
 				Type:  "application/atom+xml",
-				Title: fmt.Sprintf("%s local feed", conf.Name),
+				Title: fmt.Sprintf("%s local feed", conf.PodName),
 				URL:   fmt.Sprintf("%s/atom.xml", conf.BaseURL),
 			},
 		},

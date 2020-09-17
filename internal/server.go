@@ -41,7 +41,7 @@ func init() {
 // Server ...
 type Server struct {
 	bind      string
-	config    *Config
+	config    *config
 	templates *Templates
 	router    *Router
 	server    *http.Server
@@ -517,6 +517,8 @@ func (s *Server) initRoutes() {
 	s.router.GET("/register", s.RegisterHandler())
 	s.router.POST("/register", s.RegisterHandler())
 
+	s.router.GET("/config", s.ConfigHandler())
+
 	// Reset Password
 	s.router.GET("/resetPassword", s.ResetPasswordHandler())
 	s.router.POST("/resetPassword", s.ResetPasswordHandler())
@@ -559,7 +561,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		}
 	}
 
-	blogs, err := LoadBlogsCache(config.Data)
+	blogs, err := LoadBlogsCache(config.data)
 	if err != nil {
 		log.WithError(err).Error("error loading blogs cache (re-creating)")
 		blogs = NewBlogsCache()
@@ -571,19 +573,19 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		blogs.UpdateBlogs(config)
 	}
 
-	cache, err := LoadCache(config.Data)
+	cache, err := LoadCache(config.data)
 	if err != nil {
 		log.WithError(err).Error("error loading feed cache")
 		return nil, err
 	}
 
-	archive, err := NewDiskArchiver(filepath.Join(config.Data, archiveDir))
+	archive, err := NewDiskArchiver(filepath.Join(config.data, archiveDir))
 	if err != nil {
 		log.WithError(err).Error("error creating feed archiver")
 		return nil, err
 	}
 
-	db, err := NewStore(config.Store)
+	db, err := NewStore(config.store)
 	if err != nil {
 		log.WithError(err).Error("error creating store")
 		return nil, err
@@ -606,14 +608,14 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	pm := passwords.NewScryptPasswords(nil)
 
-	sc := NewSessionStore(db, config.SessionCacheTTL)
+	sc := NewSessionStore(db, config.sessionCacheTTL)
 
 	sm := session.NewManager(
 		session.NewOptions(
-			config.Name,
-			config.CookieSecret,
-			strings.HasPrefix(config.BaseURL, "https"),
-			config.SessionExpiry,
+			config.PodName,
+			config.cookieSecret,
+			strings.HasPrefix(config.baseURL, "https"),
+			config.sessionExpiry,
 		),
 		sc,
 	)
@@ -681,24 +683,24 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("serving metrics endpoint at %s/metrics", server.config.BaseURL)
 
 	// Log interesting configuration options
-	log.Infof("Instance Name: %s", server.config.Name)
-	log.Infof("Base URL: %s", server.config.BaseURL)
-	log.Infof("Admin User: %s", server.config.AdminUser)
-	log.Infof("Admin Name: %s", server.config.AdminName)
-	log.Infof("Admin Email: %s", server.config.AdminEmail)
-	log.Infof("Max Twts per Page: %d", server.config.TwtsPerPage)
+	log.Infof("Instance Name: %s", server.config.PodName)
+	log.Infof("Base URL: %s", server.config.baseURL)
+	log.Infof("Admin User: %s", server.config.adminUser)
+	log.Infof("Admin Name: %s", server.config.adminName)
+	log.Infof("Admin Email: %s", server.config.adminEmail)
+	log.Infof("Max Twts per Page: %d", server.config.twtsPerPage)
 	log.Infof("Max Cache TTL: %s", server.config.MaxCacheTTL)
 	log.Infof("Max Cache Items: %d", server.config.MaxCacheItems)
 	log.Infof("Maximum length of Posts: %d", server.config.MaxTwtLength)
 	log.Infof("Open User Profiles: %t", server.config.OpenProfiles)
 	log.Infof("Open Registrations: %t", server.config.OpenRegistrations)
-	log.Infof("SMTP Host: %s", server.config.SMTPHost)
-	log.Infof("SMTP Port: %d", server.config.SMTPPort)
-	log.Infof("SMTP User: %s", server.config.SMTPUser)
-	log.Infof("SMTP From: %s", server.config.SMTPFrom)
+	log.Infof("SMTP Host: %s", server.config.smtpHost)
+	log.Infof("SMTP Port: %d", server.config.smtpPort)
+	log.Infof("SMTP User: %s", server.config.smtpUser)
+	log.Infof("SMTP From: %s", server.config.smtpFrom)
 	log.Infof("Max Fetch Limit: %s", humanize.Bytes(uint64(server.config.MaxFetchLimit)))
 	log.Infof("Max Upload Size: %s", humanize.Bytes(uint64(server.config.MaxUploadSize)))
-	log.Infof("API Session Time: %s", server.config.APISessionTime)
+	log.Infof("API Session Time: %s", server.config.apiSessionTime)
 
 	// Warn about user registration being disabled.
 	if !server.config.OpenRegistrations {

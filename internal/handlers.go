@@ -240,7 +240,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("p"), 1)
-		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.twtsPerPage)
 		pager.SetPage(page)
 
 		if err := pager.Results(&pagedTwts); err != nil {
@@ -453,25 +453,25 @@ func (s *Server) MediaHandler() httprouter.Handle {
 		case ".png":
 			metrics.Counter("media", "old_media").Inc()
 			w.Header().Set("Content-Type", "image/png")
-			fn = filepath.Join(s.config.Data, mediaDir, name)
+			fn = filepath.Join(s.config.data, mediaDir, name)
 		case ".webp":
 			w.Header().Set("Content-Type", "image/webp")
-			fn = filepath.Join(s.config.Data, mediaDir, name)
+			fn = filepath.Join(s.config.data, mediaDir, name)
 		case ".mp4":
 			w.Header().Set("Content-Type", "video/mp4")
-			fn = filepath.Join(s.config.Data, mediaDir, name)
+			fn = filepath.Join(s.config.data, mediaDir, name)
 		case ".webm":
 			w.Header().Set("Content-Type", "video/webm")
-			fn = filepath.Join(s.config.Data, mediaDir, name)
+			fn = filepath.Join(s.config.data, mediaDir, name)
 		default:
 			if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
 				w.Header().Set("Content-Type", "image/webp")
-				fn = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.webp", name))
+				fn = filepath.Join(s.config.data, mediaDir, fmt.Sprintf("%s.webp", name))
 			} else {
 				// Support older browsers like IE11 that don't support WebP :/
 				metrics.Counter("media", "old_media").Inc()
 				w.Header().Set("Content-Type", "image/png")
-				fn = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.png", name))
+				fn = filepath.Join(s.config.data, mediaDir, fmt.Sprintf("%s.png", name))
 			}
 		}
 
@@ -534,12 +534,12 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 		var fn string
 
 		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
-			fn = filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.webp", nick))
+			fn = filepath.Join(s.config.data, avatarsDir, fmt.Sprintf("%s.webp", nick))
 			w.Header().Set("Content-Type", "image/webp")
 		} else {
 			// Support older browsers like IE11 that don't support WebP :/
 			metrics.Counter("media", "old_avatar").Inc()
-			fn = filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.png", nick))
+			fn = filepath.Join(s.config.data, avatarsDir, fmt.Sprintf("%s.png", nick))
 			w.Header().Set("Content-Type", "image/png")
 		}
 
@@ -632,7 +632,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 			return
 		}
 
-		path, err := securejoin.SecureJoin(filepath.Join(s.config.Data, "feeds"), nick)
+		path, err := securejoin.SecureJoin(filepath.Join(s.config.data, "feeds"), nick)
 		if err != nil {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
@@ -829,7 +829,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 // TimelineHandler ...
 func (s *Server) TimelineHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		cacheLastModified, err := CacheLastModified(s.config.Data)
+		cacheLastModified, err := CacheLastModified(s.config.data)
 		if err != nil {
 			log.WithError(err).Error("CacheLastModified() error")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -874,7 +874,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("p"), 1)
-		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.twtsPerPage)
 		pager.SetPage(page)
 
 		if err = pager.Results(&pagedTwts); err != nil {
@@ -1020,7 +1020,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("p"), 1)
-		pager := paginator.New(adapter.NewSliceAdapter(localTwts), s.config.TwtsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(localTwts), s.config.twtsPerPage)
 		pager.SetPage(page)
 
 		if err := pager.Results(&pagedTwts); err != nil {
@@ -1087,7 +1087,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("p"), 1)
-		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.twtsPerPage)
 		pager.SetPage(page)
 
 		if err := pager.Results(&pagedTwts); err != nil {
@@ -1139,7 +1139,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("p"), 1)
-		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.twtsPerPage)
 		pager.SetPage(page)
 
 		if err := pager.Results(&pagedTwts); err != nil {
@@ -1163,7 +1163,7 @@ func (s *Server) FeedHandler() httprouter.Handle {
 
 		name := NormalizeFeedName(r.FormValue("name"))
 
-		if err := ValidateFeedName(s.config.Data, name); err != nil {
+		if err := ValidateFeedName(s.config.data, name); err != nil {
 			ctx.Error = true
 			ctx.Message = fmt.Sprintf("Invalid feed name: %s", err.Error())
 			s.render("error", w, ctx)
@@ -1218,7 +1218,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 			return
 		}
 
-		feedsources, err := LoadFeedSources(s.config.Data)
+		feedsources, err := LoadFeedSources(s.config.data)
 		if err != nil {
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading feeds"
@@ -1313,7 +1313,7 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			if s.config.OpenRegistrations {
 				s.render("register", w, ctx)
 			} else {
-				message := s.config.RegisterMessage
+				message := s.config.registerMessage
 
 				if message == "" {
 					message = "Open Registrations are disabled on this pod. Please contact the pod operator."
@@ -1345,7 +1345,7 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			return
 		}
 
-		p := filepath.Join(s.config.Data, feedsDir)
+		p := filepath.Join(s.config.data, feedsDir)
 		if err := os.MkdirAll(p, 0755); err != nil {
 			log.WithError(err).Error("error creating feeds directory")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1937,7 +1937,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("p"), 1)
-		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.twtsPerPage)
 		pager.SetPage(page)
 
 		if err := pager.Results(&pagedTwts); err != nil {
@@ -1981,12 +1981,12 @@ func (s *Server) ExternalAvatarHandler() httprouter.Handle {
 		var fn string
 
 		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
-			fn = filepath.Join(s.config.Data, externalDir, fmt.Sprintf("%s.webp", slug))
+			fn = filepath.Join(s.config.data, externalDir, fmt.Sprintf("%s.webp", slug))
 			w.Header().Set("Content-Type", "image/webp")
 		} else {
 			// Support older browsers like IE11 that don't support WebP :/
 			metrics.Counter("media", "old_avatar").Inc()
-			fn = filepath.Join(s.config.Data, externalDir, fmt.Sprintf("%s.png", slug))
+			fn = filepath.Join(s.config.data, externalDir, fmt.Sprintf("%s.png", slug))
 			w.Header().Set("Content-Type", "image/png")
 		}
 
@@ -2086,7 +2086,7 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 			jwt.SigningMethodHS256,
 			jwt.MapClaims{"username": username, "expiresAt": expiryTime},
 		)
-		tokenString, err := token.SignedString([]byte(s.config.MagicLinkSecret))
+		tokenString, err := token.SignedString([]byte(s.config.magicLinkSecret))
 		if err != nil {
 			ctx.Error = true
 			ctx.Message = err.Error()
@@ -2154,7 +2154,7 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 			}
 
-			return []byte(s.config.MagicLinkSecret), nil
+			return []byte(s.config.magicLinkSecret), nil
 		})
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
@@ -2259,7 +2259,7 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 				return
 			}
 		} else if strings.HasPrefix(ctype, "video/") {
-			opts := &VideoOptions{Resize: true, Size: MediaResolution}
+			opts := &VideoOptions{} // Resize: true, Size: MediaResolution}
 			mediaURI, err = StoreUploadedVideo(
 				s.config, mediaFile,
 				mediaDir, "",
@@ -2331,7 +2331,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 
 			profile = types.Profile{
 				Type:     "Local",
-				Username: s.config.Name,
+				Username: s.config.PodName,
 				Tagline:  "", // TODO: Maybe Twtxt Pods should have a configurable description?
 				URL:      s.config.BaseURL,
 			}
@@ -2450,7 +2450,7 @@ func (s *Server) SupportHandler() httprouter.Handle {
 		ctx.Error = false
 		ctx.Message = fmt.Sprintf(
 			"Thank you for your message! Pod operator %s will get back to you soon!",
-			s.config.AdminName,
+			s.config.adminName,
 		)
 		s.render("error", w, ctx)
 	}
@@ -2529,7 +2529,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 							// Remove all uploaded media in a twt
 							for _, mediaPath := range mediaPaths {
 								// Delete .png
-								fn := filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.png", mediaPath))
+								fn := filepath.Join(s.config.data, mediaDir, fmt.Sprintf("%s.png", mediaPath))
 								if FileExists(fn) {
 									if err := os.Remove(fn); err != nil {
 										ctx.Error = true
@@ -2540,7 +2540,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 								}
 
 								// Delete .webp
-								fn = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.webp", mediaPath))
+								fn = filepath.Join(s.config.data, mediaDir, fmt.Sprintf("%s.webp", mediaPath))
 								if FileExists(fn) {
 									if err := os.Remove(fn); err != nil {
 										ctx.Error = true
@@ -2563,7 +2563,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 				}
 
 				// Delete feeds's twtxt.txt
-				fn := filepath.Join(s.config.Data, feedsDir, nick)
+				fn := filepath.Join(s.config.data, feedsDir, nick)
 				if FileExists(fn) {
 					if err := os.Remove(fn); err != nil {
 						log.WithError(err).Error("error removing feed")
@@ -2602,7 +2602,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 			// Remove all uploaded media in a twt
 			for _, mediaPath := range mediaPaths {
 				// Delete .png
-				fn := filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.png", mediaPath))
+				fn := filepath.Join(s.config.data, mediaDir, fmt.Sprintf("%s.png", mediaPath))
 				if FileExists(fn) {
 					if err := os.Remove(fn); err != nil {
 						log.WithError(err).Error("error removing media")
@@ -2613,7 +2613,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 				}
 
 				// Delete .webp
-				fn = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.webp", mediaPath))
+				fn = filepath.Join(s.config.data, mediaDir, fmt.Sprintf("%s.webp", mediaPath))
 				if FileExists(fn) {
 					if err := os.Remove(fn); err != nil {
 						log.WithError(err).Error("error removing media")
@@ -2634,7 +2634,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 		}
 
 		// Delete user's twtxt.txt
-		fn := filepath.Join(s.config.Data, feedsDir, ctx.User.Username)
+		fn := filepath.Join(s.config.data, feedsDir, ctx.User.Username)
 		if FileExists(fn) {
 			if err := os.Remove(fn); err != nil {
 				log.WithError(err).Error("error removing user's feed")

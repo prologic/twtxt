@@ -118,52 +118,54 @@ var (
 	}
 )
 
-func NewConfig() *Config {
-	return &Config{
-		Name:              DefaultName,
-		Store:             DefaultStore,
-		Theme:             DefaultTheme,
-		BaseURL:           DefaultBaseURL,
-		AdminUser:         DefaultAdminUser,
-		FeedSources:       DefaultFeedSources,
-		RegisterMessage:   DefaultRegisterMessage,
-		CookieSecret:      DefaultCookieSecret,
-		TwtPrompts:        DefaultTwtPrompts,
-		TwtsPerPage:       DefaultTwtsPerPage,
-		MaxTwtLength:      DefaultMaxTwtLength,
-		OpenProfiles:      DefaultOpenProfiles,
-		OpenRegistrations: DefaultOpenRegistrations,
-		SessionExpiry:     DefaultSessionExpiry,
-		MagicLinkSecret:   DefaultMagicLinkSecret,
-		SMTPHost:          DefaultSMTPHost,
-		SMTPPort:          DefaultSMTPPort,
-		SMTPUser:          DefaultSMTPUser,
-		SMTPPass:          DefaultSMTPPass,
+func NewConfig() *config {
+	return &config{
+		Config: &Config{
+			PodName:           DefaultName,
+			DefaultTheme:      DefaultTheme,
+			MaxTwtLength:      DefaultMaxTwtLength,
+			OpenProfiles:      DefaultOpenProfiles,
+			OpenRegistrations: DefaultOpenRegistrations,
+		},
+		store:           DefaultStore,
+		baseURL:         DefaultBaseURL,
+		adminUser:       DefaultAdminUser,
+		feedSources:     DefaultFeedSources,
+		registerMessage: DefaultRegisterMessage,
+		cookieSecret:    DefaultCookieSecret,
+		twtPrompts:      DefaultTwtPrompts,
+		twtsPerPage:     DefaultTwtsPerPage,
+		sessionExpiry:   DefaultSessionExpiry,
+		magicLinkSecret: DefaultMagicLinkSecret,
+		smtpHost:        DefaultSMTPHost,
+		smtpPort:        DefaultSMTPPort,
+		smtpUser:        DefaultSMTPUser,
+		smtpPass:        DefaultSMTPPass,
 	}
 }
 
 // Option is a function that takes a config struct and modifies it
-type Option func(*Config) error
+type Option func(*config) error
 
 // WithData sets the data directory to use for storage
 func WithData(data string) Option {
-	return func(cfg *Config) error {
-		cfg.Data = data
+	return func(cfg *config) error {
+		cfg.data = data
 		return nil
 	}
 }
 
 // WithStore sets the store to use for accounts, sessions, etc.
 func WithStore(store string) Option {
-	return func(cfg *Config) error {
-		cfg.Store = store
+	return func(cfg *config) error {
+		cfg.store = store
 		return nil
 	}
 }
 
 // WithBaseURL sets the Base URL used for constructing feed URLs
 func WithBaseURL(baseURL string) Option {
-	return func(cfg *Config) error {
+	return func(cfg *config) error {
 		u, err := url.Parse(baseURL)
 		if err != nil {
 			return err
@@ -176,55 +178,55 @@ func WithBaseURL(baseURL string) Option {
 
 // WithAdminUser sets the Admin user used for granting special features to
 func WithAdminUser(adminUser string) Option {
-	return func(cfg *Config) error {
-		cfg.AdminUser = adminUser
+	return func(cfg *config) error {
+		cfg.adminUser = adminUser
 		return nil
 	}
 }
 
 // WithAdminName sets the Admin name used to identify the pod operator
 func WithAdminName(adminName string) Option {
-	return func(cfg *Config) error {
-		cfg.AdminName = adminName
+	return func(cfg *config) error {
+		cfg.adminName = adminName
 		return nil
 	}
 }
 
 // WithAdminEmail sets the Admin email used to contact the pod operator
 func WithAdminEmail(adminEmail string) Option {
-	return func(cfg *Config) error {
-		cfg.AdminEmail = adminEmail
+	return func(cfg *config) error {
+		cfg.adminEmail = adminEmail
 		return nil
 	}
 }
 
 // WithFeedSources sets the feed sources  to use for external feeds
 func WithFeedSources(feedSources []string) Option {
-	return func(cfg *Config) error {
-		cfg.FeedSources = feedSources
+	return func(cfg *config) error {
+		cfg.feedSources = feedSources
 		return nil
 	}
 }
 
 // WithName sets the instance's name
 func WithName(name string) Option {
-	return func(cfg *Config) error {
-		cfg.Name = name
+	return func(cfg *config) error {
+		cfg.PodName = name
 		return nil
 	}
 }
 
 // WithTheme sets the default theme to use
-func WithTheme(theme string) Option {
-	return func(cfg *Config) error {
-		cfg.Theme = theme
+func WithTheme(defaultTheme string) Option {
+	return func(cfg *config) error {
+		cfg.DefaultTheme = defaultTheme
 		return nil
 	}
 }
 
 // WithOpenRegistrations sets the open registrations flag
 func WithOpenRegistrations(openRegistrations bool) Option {
-	return func(cfg *Config) error {
+	return func(cfg *config) error {
 		cfg.OpenRegistrations = openRegistrations
 		return nil
 	}
@@ -232,23 +234,23 @@ func WithOpenRegistrations(openRegistrations bool) Option {
 
 // WithCookieSecret sets the server's cookie secret
 func WithCookieSecret(secret string) Option {
-	return func(cfg *Config) error {
-		cfg.CookieSecret = secret
+	return func(cfg *config) error {
+		cfg.cookieSecret = secret
 		return nil
 	}
 }
 
 // WithTwtsPerPage sets the server's twts per page
 func WithTwtsPerPage(twtsPerPage int) Option {
-	return func(cfg *Config) error {
-		cfg.TwtsPerPage = twtsPerPage
+	return func(cfg *config) error {
+		cfg.twtsPerPage = twtsPerPage
 		return nil
 	}
 }
 
 // WithMaxTwtLength sets the maximum length of posts permitted on the server
 func WithMaxTwtLength(maxTwtLength int) Option {
-	return func(cfg *Config) error {
+	return func(cfg *config) error {
 		cfg.MaxTwtLength = maxTwtLength
 		return nil
 	}
@@ -256,7 +258,7 @@ func WithMaxTwtLength(maxTwtLength int) Option {
 
 // WithMaxCacheTTL sets the maximum cache ttl of twts in memory
 func WithMaxCacheTTL(maxCacheTTL time.Duration) Option {
-	return func(cfg *Config) error {
+	return func(cfg *config) error {
 		cfg.MaxCacheTTL = maxCacheTTL
 		return nil
 	}
@@ -264,7 +266,7 @@ func WithMaxCacheTTL(maxCacheTTL time.Duration) Option {
 
 // WithMaxCacheItems sets the maximum cache items (per feed source) of twts in memory
 func WithMaxCacheItems(maxCacheItems int) Option {
-	return func(cfg *Config) error {
+	return func(cfg *config) error {
 		cfg.MaxCacheItems = maxCacheItems
 		return nil
 	}
@@ -272,7 +274,7 @@ func WithMaxCacheItems(maxCacheItems int) Option {
 
 // WithOpenProfiles sets whether or not to have open user profiles
 func WithOpenProfiles(openProfiles bool) Option {
-	return func(cfg *Config) error {
+	return func(cfg *config) error {
 		cfg.OpenProfiles = openProfiles
 		return nil
 	}
@@ -280,7 +282,7 @@ func WithOpenProfiles(openProfiles bool) Option {
 
 // WithMaxUploadSize sets the maximum upload size permitted by the server
 func WithMaxUploadSize(maxUploadSize int64) Option {
-	return func(cfg *Config) error {
+	return func(cfg *config) error {
 		cfg.MaxUploadSize = maxUploadSize
 		return nil
 	}
@@ -288,23 +290,23 @@ func WithMaxUploadSize(maxUploadSize int64) Option {
 
 // WithSessionCacheTTL sets the server's session cache ttl
 func WithSessionCacheTTL(cacheTTL time.Duration) Option {
-	return func(cfg *Config) error {
-		cfg.SessionCacheTTL = cacheTTL
+	return func(cfg *config) error {
+		cfg.sessionCacheTTL = cacheTTL
 		return nil
 	}
 }
 
 // WithSessionExpiry sets the server's session expiry time
 func WithSessionExpiry(expiry time.Duration) Option {
-	return func(cfg *Config) error {
-		cfg.SessionExpiry = expiry
+	return func(cfg *config) error {
+		cfg.sessionExpiry = expiry
 		return nil
 	}
 }
 
 // WithTranscoderTimeout sets the video transcoding timeout
 func WithTranscoderTimeout(timeout time.Duration) Option {
-	return func(cfg *Config) error {
+	return func(cfg *config) error {
 		cfg.TranscoderTimeout = timeout
 		return nil
 	}
@@ -312,55 +314,55 @@ func WithTranscoderTimeout(timeout time.Duration) Option {
 
 // WithMagicLinkSecret sets the MagicLinkSecert used to create password reset tokens
 func WithMagicLinkSecret(secret string) Option {
-	return func(cfg *Config) error {
-		cfg.MagicLinkSecret = secret
+	return func(cfg *config) error {
+		cfg.magicLinkSecret = secret
 		return nil
 	}
 }
 
 // WithSMTPHost sets the SMTPHost to use for sending email
 func WithSMTPHost(host string) Option {
-	return func(cfg *Config) error {
-		cfg.SMTPHost = host
+	return func(cfg *config) error {
+		cfg.smtpHost = host
 		return nil
 	}
 }
 
 // WithSMTPPort sets the SMTPPort to use for sending email
 func WithSMTPPort(port int) Option {
-	return func(cfg *Config) error {
-		cfg.SMTPPort = port
+	return func(cfg *config) error {
+		cfg.smtpPort = port
 		return nil
 	}
 }
 
 // WithSMTPUser sets the SMTPUser to use for sending email
 func WithSMTPUser(user string) Option {
-	return func(cfg *Config) error {
-		cfg.SMTPUser = user
+	return func(cfg *config) error {
+		cfg.smtpUser = user
 		return nil
 	}
 }
 
 // WithSMTPPass sets the SMTPPass to use for sending email
 func WithSMTPPass(pass string) Option {
-	return func(cfg *Config) error {
-		cfg.SMTPPass = pass
+	return func(cfg *config) error {
+		cfg.smtpPass = pass
 		return nil
 	}
 }
 
 // WithSMTPFrom sets the SMTPFrom address to use for sending email
 func WithSMTPFrom(from string) Option {
-	return func(cfg *Config) error {
-		cfg.SMTPFrom = from
+	return func(cfg *config) error {
+		cfg.smtpFrom = from
 		return nil
 	}
 }
 
 // WithMaxFetchLimit sets the maximum feed fetch limit in bytes
 func WithMaxFetchLimit(limit int64) Option {
-	return func(cfg *Config) error {
+	return func(cfg *config) error {
 		cfg.MaxFetchLimit = limit
 		return nil
 	}
@@ -368,29 +370,29 @@ func WithMaxFetchLimit(limit int64) Option {
 
 // WithAPISessionTime sets the API session time for tokens
 func WithAPISessionTime(duration time.Duration) Option {
-	return func(cfg *Config) error {
-		cfg.APISessionTime = duration
+	return func(cfg *config) error {
+		cfg.apiSessionTime = duration
 		return nil
 	}
 }
 
 // WithAPISigningKey sets the API JWT signing key for tokens
 func WithAPISigningKey(key string) Option {
-	return func(cfg *Config) error {
-		cfg.APISigningKey = []byte(key)
+	return func(cfg *config) error {
+		cfg.apiSigningKey = []byte(key)
 		return nil
 	}
 }
 
 // WithWhitelistedDomains sets the list of domains whitelisted and permitted for external iamges
 func WithWhitelistedDomains(whitelistedDomains []string) Option {
-	return func(cfg *Config) error {
+	return func(cfg *config) error {
 		for _, whitelistedDomain := range whitelistedDomains {
 			re, err := regexp.Compile(whitelistedDomain)
 			if err != nil {
 				return err
 			}
-			cfg.whitelistedDomains = append(cfg.whitelistedDomains, re)
+			cfg.whitelistedDomainsRe = append(cfg.whitelistedDomainsRe, re)
 		}
 		return nil
 	}

@@ -137,7 +137,7 @@ func LoadCache(path string) (*Cache, error) {
 const maxfetchers = 50
 
 // FetchTwts ...
-func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) {
+func (cache *Cache) FetchTwts(conf *config, archive Archiver, feeds types.Feeds) {
 	stime := time.Now()
 	defer func() {
 		metrics.Gauge(

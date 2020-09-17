@@ -4,68 +4,71 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"math/rand"
-	"net/url"
 	"os"
 	"regexp"
 	"strings"
 	"time"
 )
 
-// Config contains the server configuration parameters
+// Config contains the pod settings that are directly mutable by the pod owner
+// through the /manage endpoint and interface as well as publicly accessible
 type Config struct {
-	Data              string        `json:"data"`
-	Name              string        `json:"name"`
-	Store             string        `json:"store"`
-	Theme             string        `json:"theme"`
+	PodName           string        `json:"pod_name"`
+	DefaultTheme      string        `json:"default_theme"`
 	BaseURL           string        `json:"base_url"`
-	AdminUser         string        `json:"admin_user"`
-	AdminName         string        `json:"admin_user"`
-	AdminEmail        string        `json:"admin_user"`
-	FeedSources       []string      `json:"feed_sources"`
-	RegisterMessage   string        `json:"register_message"`
-	CookieSecret      string        `json:"cookie_secret"`
-	TwtPrompts        []string      `json:"twt_prompts"`
-	TwtsPerPage       int           `json:"twts_per_page"`
 	MaxUploadSize     int64         `json:"max_upload_size"`
 	MaxTwtLength      int           `json:"max_twt_length"`
 	MaxCacheTTL       time.Duration `json:"max_cache_ttl"`
 	MaxCacheItems     int           `json:"max_cache_items"`
 	OpenProfiles      bool          `json:"open_profiles"`
 	OpenRegistrations bool          `json:"open_registrations"`
-	SessionExpiry     time.Duration `json:"session_expiry"`
-	SessionCacheTTL   time.Duration `json:"session_cache_ttl"`
 	TranscoderTimeout time.Duration `json:"transcoder_timeout"`
+	MaxFetchLimit     int64         `json:"max_fetch_limit"`
+}
 
-	MagicLinkSecret string `json:"magiclink_secret"`
+type config struct {
+	*Config
 
-	SMTPHost string `json:"smtp_host"`
-	SMTPPort int    `json:"smtp_port"`
-	SMTPUser string `json:"smtp_user"`
-	SMTPPass string `json:"smtp_pass"`
-	SMTPFrom string `json:"smtp_from"`
+	data            string
+	store           string
+	baseURL         string
+	adminUser       string
+	adminName       string
+	adminEmail      string
+	feedSources     []string
+	registerMessage string
+	cookieSecret    string
+	twtPrompts      []string
+	twtsPerPage     int
+	sessionExpiry   time.Duration
+	sessionCacheTTL time.Duration
 
-	MaxFetchLimit int64 `json:"max_fetch_limit"`
+	magicLinkSecret string
 
-	APISessionTime time.Duration `json:"api_session_time"`
-	APISigningKey  []byte        `json:"api_signing_key"`
+	smtpHost string
+	smtpPort int
+	smtpUser string
+	smtpPass string
+	smtpFrom string
 
-	baseURL *url.URL
+	apiSessionTime time.Duration
+	apiSigningKey  []byte
 
-	WhitelistedDomains []string `json:"whitelisted_domains"`
-	whitelistedDomains []*regexp.Regexp
+	whitelistedDomains   []string
+	whitelistedDomainsRe []*regexp.Regexp
 }
 
 // WhitelistedDomain returns true if the domain provided is a whiltelisted
 // domain as per the configuration
-func (c *Config) WhitelistedDomain(domain string) (bool, bool) {
-	// Always per mit our own domain
+func (c *config) WhitelistedDomain(domain string) (bool, bool) {
+	// Always permit our own domain
 	ourDomain := strings.TrimPrefix(strings.ToLower(c.baseURL.Hostname()), "www.")
 	if domain == ourDomain {
 		return true, true
 	}
 
 	// Check against list of whitelistedDomains (regexes)
-	for _, re := range c.whitelistedDomains {
+	for _, re := range c.whitelistedDomainsRe {
 		if re.MatchString(domain) {
 			return true, false
 		}
@@ -74,9 +77,9 @@ func (c *Config) WhitelistedDomain(domain string) (bool, bool) {
 }
 
 // RandomTwtPrompt returns a random  Twt Prompt for display by the UI
-func (c *Config) RandomTwtPrompt() string {
-	n := rand.Int() % len(c.TwtPrompts)
-	return c.TwtPrompts[n]
+func (c *config) RandomTwtPrompt() string {
+	n := rand.Int() % len(c.twtPrompts)
+	return c.twtPrompts[n]
 }
 
 // Load loads a configuration from the given path

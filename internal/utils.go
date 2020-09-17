@@ -126,7 +126,7 @@ func Slugify(uri string) string {
 	return s
 }
 
-func GenerateAvatar(conf *Config, username string) (image.Image, error) {
+func GenerateAvatar(conf *config, username string) (image.Image, error) {
 	ig, err := identicon.New(conf.Name, 5, 3)
 	if err != nil {
 		log.WithError(err).Error("error creating identicon generator")
@@ -180,7 +180,7 @@ func ImageToPng(fn string) error {
 	return nil
 }
 
-func VideoToMp4(conf *Config, fn string) error {
+func VideoToMp4(conf *config, fn string) error {
 	if !IsVideo(fn) {
 		return ErrInvalidVideo
 	}
@@ -205,7 +205,7 @@ func VideoToMp4(conf *Config, fn string) error {
 	return nil
 }
 
-func GetExternalAvatar(conf *Config, nick, uri string) string {
+func GetExternalAvatar(conf *config, nick, uri string) string {
 	name := Slugify(uri)
 
 	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.webp", name))
@@ -254,7 +254,7 @@ func GetExternalAvatar(conf *Config, nick, uri string) string {
 	return ""
 }
 
-func Request(conf *Config, method, url string, headers http.Header) (*http.Response, error) {
+func Request(conf *config, method, url string, headers http.Header) (*http.Response, error) {
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		log.WithError(err).Errorf("%s: http.NewRequest fail: %s", url, err)
@@ -287,7 +287,7 @@ func Request(conf *Config, method, url string, headers http.Header) (*http.Respo
 	return res, nil
 }
 
-func ResourceExists(conf *Config, url string) bool {
+func ResourceExists(conf *config, url string) bool {
 	res, err := Request(conf, http.MethodHead, url, nil)
 	if err != nil {
 		log.WithError(err).Errorf("error checking if %s exists", url)
@@ -350,7 +350,7 @@ func RenderString(tpl string, ctx *Context) (string, error) {
 	return buf.String(), nil
 }
 
-func IsExternalFeedFactory(conf *Config) func(url string) bool {
+func IsExternalFeedFactory(conf *config) func(url string) bool {
 	baseURL := NormalizeURL(conf.BaseURL)
 	externalBaseURL := fmt.Sprintf("%s/external", strings.TrimSuffix(baseURL, "/"))
 
@@ -362,7 +362,7 @@ func IsExternalFeedFactory(conf *Config) func(url string) bool {
 	}
 }
 
-func IsLocalURLFactory(conf *Config) func(url string) bool {
+func IsLocalURLFactory(conf *config) func(url string) bool {
 	return func(url string) bool {
 		if NormalizeURL(url) == "" {
 			return false
@@ -371,7 +371,7 @@ func IsLocalURLFactory(conf *Config) func(url string) bool {
 	}
 }
 
-func GetUserFromURL(conf *Config, db Store, url string) (*User, error) {
+func GetUserFromURL(conf *config, db Store, url string) (*User, error) {
 	if !strings.HasPrefix(url, conf.BaseURL) {
 		return nil, fmt.Errorf("error: %s does not match our base url of %s", url, conf.BaseURL)
 	}
@@ -509,7 +509,7 @@ type VideoOptions struct {
 	Size   int
 }
 
-func DownloadImage(conf *Config, url string, resource, name string, opts *ImageOptions) (string, error) {
+func DownloadImage(conf *config, url string, resource, name string, opts *ImageOptions) (string, error) {
 	res, err := http.Get(url)
 	if err != nil {
 		log.WithError(err).Errorf("error downloading image from %s", url)
@@ -604,7 +604,7 @@ func DownloadImage(conf *Config, url string, resource, name string, opts *ImageO
 	), nil
 }
 
-func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *ImageOptions) (string, error) {
+func StoreUploadedImage(conf *config, f io.Reader, resource, name string, opts *ImageOptions) (string, error) {
 	tf, err := ioutil.TempFile("", "twtxt-upload-*")
 	if err != nil {
 		log.WithError(err).Error("error creating temporary file")
@@ -692,7 +692,7 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 	), nil
 }
 
-func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *VideoOptions) (string, error) {
+func StoreUploadedVideo(conf *config, f io.Reader, resource, name string, opts *VideoOptions) (string, error) {
 	tf, err := ioutil.TempFile("", "twtxt-upload-*")
 	if err != nil {
 		log.WithError(err).Error("error creating temporary file")
@@ -770,7 +770,7 @@ func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *
 	args = append(args, []string{
 		"-c:v", "libvpx",
 		"-c:a", "libvorbis",
-		"-crf", "18",
+		"-crf", "12",
 		"-strict", "-2",
 		"-loglevel", "quiet",
 		of.Name(),
@@ -948,7 +948,7 @@ func NormalizeURL(url string) string {
 	return norm
 }
 
-func RedirectURL(r *http.Request, conf *Config, defaultURL string) string {
+func RedirectURL(r *http.Request, conf *config, defaultURL string) string {
 	referer := NormalizeURL(r.Header.Get("Referer"))
 	if referer != "" && strings.HasPrefix(referer, conf.BaseURL) {
 		return referer
@@ -998,7 +998,7 @@ func URLForTwt(baseURL, hash string) string {
 	)
 }
 
-func URLForUser(conf *Config, username string) string {
+func URLForUser(conf *config, username string) string {
 	return fmt.Sprintf(
 		"%s/user/%s/twtxt.txt",
 		strings.TrimSuffix(conf.BaseURL, "/"),
@@ -1006,7 +1006,7 @@ func URLForUser(conf *Config, username string) string {
 	)
 }
 
-func URLForAvatar(conf *Config, username string) string {
+func URLForAvatar(conf *config, username string) string {
 	return fmt.Sprintf(
 		"%s/user/%s/avatar",
 		strings.TrimSuffix(conf.BaseURL, "/"),
@@ -1014,7 +1014,7 @@ func URLForAvatar(conf *Config, username string) string {
 	)
 }
 
-func URLForExternalProfile(conf *Config, nick, url string) string {
+func URLForExternalProfile(conf *config, nick, url string) string {
 	return fmt.Sprintf(
 		"%s/external/%s/%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
@@ -1022,7 +1022,7 @@ func URLForExternalProfile(conf *Config, nick, url string) string {
 	)
 }
 
-func URLForExternalAvatar(conf *Config, nick, url string) string {
+func URLForExternalAvatar(conf *config, nick, url string) string {
 	return fmt.Sprintf(
 		"%s/external/%s/%s/avatar",
 		strings.TrimSuffix(conf.BaseURL, "/"),
@@ -1030,7 +1030,7 @@ func URLForExternalAvatar(conf *Config, nick, url string) string {
 	)
 }
 
-func URLForBlogFactory(conf *Config, blogs *BlogsCache) func(twt types.Twt) string {
+func URLForBlogFactory(conf *config, blogs *BlogsCache) func(twt types.Twt) string {
 	return func(twt types.Twt) string {
 		subject := twt.Subject()
 		if subject == "" {
@@ -1060,7 +1060,7 @@ func URLForBlogFactory(conf *Config, blogs *BlogsCache) func(twt types.Twt) stri
 	}
 }
 
-func URLForConvFactory(conf *Config, cache *Cache) func(twt types.Twt) string {
+func URLForConvFactory(conf *config, cache *Cache) func(twt types.Twt) string {
 	return func(twt types.Twt) string {
 		subject := twt.Subject()
 		if subject == "" {
@@ -1134,7 +1134,7 @@ func ValidateUsername(username string) error {
 }
 
 // UnparseTwtFactory is the opposite of CleanTwt and ExpandMentions/ExpandTags
-func UnparseTwtFactory(conf *Config) func(text string) string {
+func UnparseTwtFactory(conf *config) func(text string) string {
 	isLocalURL := IsLocalURLFactory(conf)
 	return func(text string) string {
 		text = strings.ReplaceAll(text, "\u2028", "\n")
@@ -1179,7 +1179,7 @@ func CleanTwt(text string) string {
 }
 
 // RenderAudio ...
-func RenderAudio(conf *Config, uri string) string {
+func RenderAudio(conf *config, uri string) string {
 	isLocalURL := IsLocalURLFactory(conf)
 
 	if isLocalURL(uri) {
@@ -1207,7 +1207,7 @@ func RenderAudio(conf *Config, uri string) string {
 }
 
 // RenderVideo ...
-func RenderVideo(conf *Config, uri string) string {
+func RenderVideo(conf *config, uri string) string {
 	isLocalURL := IsLocalURLFactory(conf)
 
 	if isLocalURL(uri) {
@@ -1239,7 +1239,7 @@ func RenderVideo(conf *Config, uri string) string {
 }
 
 // PreprocessMedia ...
-func PreprocessMedia(conf *Config, u *url.URL, alt string) string {
+func PreprocessMedia(conf *config, u *url.URL, alt string) string {
 	var html string
 
 	// Normalize the domain name
@@ -1297,7 +1297,7 @@ func FormatForDateTime(t time.Time) string {
 }
 
 // FormatTwtFactory formats a twt into a valid HTML snippet
-func FormatTwtFactory(conf *Config) func(text string) template.HTML {
+func FormatTwtFactory(conf *config) func(text string) template.HTML {
 	return func(text string) template.HTML {
 		renderHookProcessURLs := func(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
 			// Ensure only whitelisted ![](url) images
@@ -1389,7 +1389,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 // FormatMentionsAndTags turns `@<nick URL>` into `<a href="URL">@nick</a>`
 // and `#<tag URL>` into `<a href="URL">#tag</a>` and a `!<hash URL>`
 // into a `<a href="URL">!hash</a>`.
-func FormatMentionsAndTags(conf *Config, text string) string {
+func FormatMentionsAndTags(conf *config, text string) string {
 	isLocalURL := IsLocalURLFactory(conf)
 	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {

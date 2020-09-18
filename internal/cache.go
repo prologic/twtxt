@@ -84,18 +84,6 @@ func (cache *Cache) Store(path string) error {
 	return nil
 }
 
-// CacheLastModified ...
-func CacheLastModified(path string) (time.Time, error) {
-	stat, err := os.Stat(filepath.Join(path, feedCacheFile))
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return time.Time{}, err
-		}
-		return time.Unix(0, 0), nil
-	}
-	return stat.ModTime(), nil
-}
-
 // LoadCache ...
 func LoadCache(path string) (*Cache, error) {
 	cache := &Cache{
@@ -230,15 +218,14 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds)
 
 				// Archive old twts
 				for _, twt := range old {
-					if archive.Has(twt.Hash()) {
-						// assume we have archived this twt and all older ones
-						break
+					if !archive.Has(twt.Hash()) {
+						if err := archive.Archive(twt); err != nil {
+							log.WithError(err).Errorf("error archiving twt %s aborting", twt.Hash())
+							metrics.Counter("archive", "error").Inc()
+						} else {
+							metrics.Counter("archive", "size").Inc()
+						}
 					}
-					if err := archive.Archive(twt); err != nil {
-						log.WithError(err).Errorf("error archiving twt %s aborting", twt.Hash())
-						break
-					}
-					metrics.Counter("archive", "size").Inc()
 				}
 
 				lastmodified := res.Header.Get("Last-Modified")

@@ -116,9 +116,9 @@
       {{ $.Twt.Text | formatTwt }}
     </div>
     <hr />
-    {{ if $.Authenticated }}
-      <nav>
-        <ul>
+    <nav>
+      <ul>
+        {{ if $.Authenticated }}
           {{ if eq $.LastTwt.Hash $.Twt.Hash }}
             <li><a class="edit" href="#" data-hash="{{ $.Twt.Hash }}" data-text="{{ $.Twt.Text | unparseTwt }}"><i class="icss-edit"></i>Edit</a></li>
             <li>&nbsp;</li>
@@ -127,17 +127,17 @@
           {{ end }}
           <li><a class="reply" href="#" data-reply="{{ $.User.Reply $.Twt }}"><i class="icss-arrow-left"></i>Reply</a></li>
           <li>&nbsp;</li>
-          {{ with urlForBlog $.Twt }}
-            <li><a class="blog" href="{{ urlForBlog $.Twt }}"><i class="icss-quill-pen"></i>Blog</a></li>
-            <li>&nbsp;</li>
-          {{ end }}
-          {{ with urlForConv $.Twt }}
-            <li><a class="conv" href="{{ urlForConv $.Twt }}"><i class="icss-comment"></i>Conversation</a></li>
-            <li>&nbsp;</li>
-          {{ end }}
-        </ul>
-      </nav>
-    {{ end }}
+        {{ end }}
+        {{ with urlForBlog $.Twt }}
+          <li><a class="blog" href="{{ urlForBlog $.Twt }}"><i class="icss-quill-pen"></i>Blog</a></li>
+          <li>&nbsp;</li>
+        {{ end }}
+        {{ with urlForConv $.Twt }}
+          <li><a class="conv" href="{{ urlForConv $.Twt }}"><i class="icss-comment"></i>Conversation</a></li>
+          <li>&nbsp;</li>
+        {{ end }}
+      </ul>
+    </nav>
   </article>
 {{ end }}
 

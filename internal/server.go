@@ -244,6 +244,12 @@ func (s *Server) setupMetrics() {
 		"Number of items inserted into the global feed archive",
 	)
 
+	// archive errors
+	metrics.NewCounter(
+		"archive", "error",
+		"Number of items errored inserting into the global feed archive",
+	)
+
 	// server info
 	metrics.NewGaugeVec(
 		"server", "info",

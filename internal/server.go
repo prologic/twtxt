@@ -567,7 +567,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	if err != nil {
 		log.Warnf("error loading custom pod configuration: %s", err)
 	} else {
-		if err := mergo.Merge(&config, custom, mergo.WithOverride); err != nil {
+		if err := mergo.Merge(config, custom, mergo.WithOverride); err != nil {
 			log.WithError(err).Error("error merging custom pod configuration")
 			return nil, err
 		}

@@ -1,0 +1,39 @@
+data: ./data
+name: Test Pod
+description: 📕 twtxt is a Self-Hosted, Twitter™-like Decentralised microBlogging platform. No ads, no tracking, your content, your data!
+store: bitcask://twtxt.db
+theme: dark
+base_url: http://10.0.0.102:8000
+admin_user: admin
+admin_name: Administrator
+admin_email: support@twt.social
+feed_sources:
+- https://feeds.twtxt.net/we-are-feeds.txt
+- https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt
+- https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt
+register_message: ""
+cookie_secret: PLEASE_CHANGE_ME!!!
+twt_prompts:
+- What's on your mind?
+- Share something insightful!
+- Good day to you! What's new?
+- Did something cool lately? Share it!
+- Hi! 👋 Don't forget to post a Twt today!
+twts_per_page: 50
+max_upload_size: 16777216
+max_twt_length: 288
+max_cache_ttl: 864000000000000
+max_cache_items: 150
+open_profiles: true
+open_registrations: true
+session_expiry: 864000000000000
+session_cache_ttl: 3600000000000
+magiclink_secret: PLEASE_CHANGE_ME!!!
+smtp_host: smtp.gmail.com
+smtp_port: 587
+smtp_user: PLEASE_CHANGE_ME!!!
+smtp_pass: PLEASE_CHANGE_ME!!!
+smtp_from: PLEASE_CHANGE_ME!!!
+max_fetch_limit: 2097152
+api_session_time: 864000000000000
+whitelisted_domains: []

@@ -55,7 +55,7 @@ type Config struct {
 	MaxFetchLimit int64 `yaml:"max_fetch_limit"`
 
 	APISessionTime time.Duration `yaml:"api_session_time"`
-	APISigningKey  []byte        `yaml:"api_signing_key"`
+	APISigningKey  string        `yaml:"api_signing_key"`
 
 	baseURL *url.URL
 

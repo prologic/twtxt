@@ -116,7 +116,7 @@ var (
 func NewConfig() *Config {
 	return &Config{
 		Name:              DefaultName,
-		Description:	   DefaultMetaDescription,
+		Description:       DefaultMetaDescription,
 		Store:             DefaultStore,
 		Theme:             DefaultTheme,
 		BaseURL:           DefaultBaseURL,
@@ -373,7 +373,7 @@ func WithAPISessionTime(duration time.Duration) Option {
 // WithAPISigningKey sets the API JWT signing key for tokens
 func WithAPISigningKey(key string) Option {
 	return func(cfg *Config) error {
-		cfg.APISigningKey = []byte(key)
+		cfg.APISigningKey = key
 		return nil
 	}
 }

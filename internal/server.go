@@ -563,7 +563,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		}
 	}
 
-	custom, err := LoadConfig(filepath.Join(config.Data, "custom.json"))
+	custom, err := LoadConfig(filepath.Join(config.Data, "custom.yaml"))
 	if err != nil {
 		log.Warnf("error loading custom pod configuration: %s", err)
 	} else {

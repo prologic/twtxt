@@ -34,7 +34,6 @@ import (
 	"github.com/vcraescu/go-paginator/adapter"
 	"gopkg.in/yaml.v2"
 
-	"github.com/mitchellh/go-homedir"
 	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/internal/session"
 	"github.com/prologic/twtxt/types"
@@ -2457,13 +2456,6 @@ func (s *Server) ManageHandler() httprouter.Handle {
 			}
 		}
 
-		// Get home directory
-		home, err := homedir.Dir()
-		if err != nil {
-			log.WithError(err).Error("error finding home directory")
-			os.Exit(1)
-		}
-
 		// Update pod name
 		if name != "" {
 			s.config.Name = name
@@ -2494,7 +2486,7 @@ func (s *Server) ManageHandler() httprouter.Handle {
 		s.config.OpenRegistrations = openRegistrations
 
 		// Save config file
-		if err := s.config.Save(filepath.Join(home, ".twt.yaml")); err != nil {
+		if err := s.config.Save(filepath.Join(s.config.Data, "custom.yaml")); err != nil {
 			log.WithError(err).Error("error saving config")
 			os.Exit(1)
 		}

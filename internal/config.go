@@ -105,8 +105,8 @@ func ConfigFromReader(r io.Reader) (cfg *Config, err error) {
 	return cfg, nil
 }
 
-// Load loads a configuration from the given path
-func Load(path string) (*Config, error) {
+// LoadConfig loads a configuration from the given path
+func LoadConfig(path string) (*Config, error) {
 	var cfg Config
 
 	data, err := ioutil.ReadFile(path)

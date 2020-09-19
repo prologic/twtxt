@@ -17,6 +17,7 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/andyleap/microformats"
 	humanize "github.com/dustin/go-humanize"
+	"github.com/imdario/mergo"
 	"github.com/prologic/observe"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
@@ -558,6 +559,16 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	for _, opt := range options {
 		if err := opt(config); err != nil {
+			return nil, err
+		}
+	}
+
+	custom, err := LoadConfig(filepath.Join(config.Data, "custom.json"))
+	if err != nil {
+		log.Warnf("error loading custom pod configuration: %s", err)
+	} else {
+		if err := mergo.Merge(&config, custom, mergo.WithOverride); err != nil {
+			log.WithError(err).Error("error merging custom pod configuration")
 			return nil, err
 		}
 	}

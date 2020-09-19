@@ -29,7 +29,7 @@ require (
 	github.com/goware/urlx v0.3.1
 	github.com/h2non/filetype v1.1.0
 	github.com/huandu/xstrings v1.3.2 // indirect
-	github.com/imdario/mergo v0.3.10 // indirect
+	github.com/imdario/mergo v0.3.10
 	github.com/jinzhu/gorm v1.9.15 // indirect
 	github.com/jinzhu/now v1.1.1 // indirect
 	github.com/julienschmidt/httprouter v1.3.0

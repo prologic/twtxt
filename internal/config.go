@@ -2,7 +2,6 @@ package internal
 
 import (
 	"errors"
-	"io"
 	"io/ioutil"
 	"math/rand"
 	"net/url"
@@ -11,58 +10,82 @@ import (
 	"strings"
 	"time"
 
+	"github.com/apex/log"
+	"github.com/gabstv/merger"
 	"github.com/goccy/go-yaml"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
 	ErrConfigPathMissing = errors.New("error: config file missing")
 )
 
+// Settings contains Pod Settings that can be customised via the Web UI
+type Settings struct {
+	Name        string `yaml:"pod_name"`
+	Description string `yaml:"pod_descriptio"`
+
+	MaxTwtLength int `yaml:"max_twt_length"`
+
+	OpenProfiles      bool `yaml:"open_profiles"`
+	OpenRegistrations bool `yaml:"open_registrations"`
+}
+
 // Config contains the server configuration parameters
 type Config struct {
-	Data              string        `yaml:"data"`
-	Name              string        `yaml:"name"`
-	Description       string        `yaml:"description"`
-	Store             string        `yaml:"store"`
-	Theme             string        `yaml:"theme"`
-	BaseURL           string        `yaml:"base_url"`
-	AdminUser         string        `yaml:"admin_user"`
-	AdminName         string        `yaml:"admin_name"`
-	AdminEmail        string        `yaml:"admin_email"`
-	FeedSources       []string      `yaml:"feed_sources"`
-	RegisterMessage   string        `yaml:"register_message"`
-	CookieSecret      string        `yaml:"cookie_secret"`
-	TwtPrompts        []string      `yaml:"twt_prompts"`
-	TwtsPerPage       int           `yaml:"twts_per_page"`
-	MaxUploadSize     int64         `yaml:"max_upload_size"`
-	MaxTwtLength      int           `yaml:"max_twt_length"`
-	MaxCacheTTL       time.Duration `yaml:"max_cache_ttl"`
-	MaxCacheItems     int           `yaml:"max_cache_items"`
-	OpenProfiles      bool          `yaml:"open_profiles"`
-	OpenRegistrations bool          `yaml:"open_registrations"`
-	SessionExpiry     time.Duration `yaml:"session_expiry"`
-	SessionCacheTTL   time.Duration `yaml:"session_cache_ttl"`
+	Data              string
+	Name              string
+	Description       string
+	Store             string
+	Theme             string
+	BaseURL           string
+	AdminUser         string
+	AdminName         string
+	AdminEmail        string
+	FeedSources       []string
+	RegisterMessage   string
+	CookieSecret      string
+	TwtPrompts        []string
+	TwtsPerPage       int
+	MaxUploadSize     int64
+	MaxTwtLength      int
+	MaxCacheTTL       time.Duration
+	MaxCacheItems     int
+	OpenProfiles      bool
+	OpenRegistrations bool
+	SessionExpiry     time.Duration
+	SessionCacheTTL   time.Duration
 
-	MagicLinkSecret string `json:"magiclink_secret"`
+	MagicLinkSecret string
 
-	SMTPHost string `yaml:"smtp_host"`
-	SMTPPort int    `yaml:"smtp_port"`
-	SMTPUser string `yaml:"smtp_user"`
-	SMTPPass string `yaml:"smtp_pass"`
-	SMTPFrom string `yaml:"smtp_from"`
+	SMTPHost string
+	SMTPPort int
+	SMTPUser string
+	SMTPPass string
+	SMTPFrom string
 
-	MaxFetchLimit int64 `yaml:"max_fetch_limit"`
+	MaxFetchLimit int64
 
-	APISessionTime time.Duration `yaml:"api_session_time"`
-	APISigningKey  string        `yaml:"api_signing_key"`
+	APISessionTime time.Duration
+	APISigningKey  string
 
 	baseURL *url.URL
 
 	whitelistedDomains []*regexp.Regexp
-	WhitelistedDomains []string `yaml:"whitelisted_domains"`
+	WhitelistedDomains []string
 
 	path string
+}
+
+// Settings returns a `Settings` struct containing pod settings that can
+// then be persisted to disk to override some configuration options.
+func (c *Config) Settings() *Settings {
+	settings := &Settings{}
+
+	if err := merger.MergeOverwrite(settings, c); err != nil {
+		log.WithError(err).Warn("error creating pod settings")
+	}
+
+	return settings
 }
 
 // WhitelistedDomain returns true if the domain provided is a whiltelisted
@@ -89,64 +112,30 @@ func (c *Config) RandomTwtPrompt() string {
 	return c.TwtPrompts[n]
 }
 
-// ConfigFromReader reads an io.Reader `r` and pares it into a *Config object
-func ConfigFromReader(r io.Reader) (cfg *Config, err error) {
-	var data []byte
-
-	data, err = ioutil.ReadAll(r)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, err
-	}
-
-	return cfg, nil
-}
-
-// LoadConfig loads a configuration from the given path
-func LoadConfig(path string) (*Config, error) {
-	var cfg Config
+// LoadSettings loads pod settings from the given path
+func LoadSettings(path string) (*Settings, error) {
+	var settings Settings
 
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
+	if err := yaml.Unmarshal(data, &settings); err != nil {
 		return nil, err
 	}
 
-	cfg.path = path
-
-	return &cfg, nil
+	return &settings, nil
 }
 
-func (c *Config) String() string {
-	data, err := yaml.MarshalWithOptions(c, yaml.Indent(4))
-	if err != nil {
-		log.WithError(err).Warn("error marshalling config")
-		return ""
-	}
-	return string(data)
-}
-
-// Save saves the configuration to the provided path
-func (c *Config) Save(path string) error {
-	if path == "" {
-		path = c.path
-	}
-	if path == "" {
-		return ErrConfigPathMissing
-	}
-
+// Save saves the pod settings to the given path
+func (s *Settings) Save(path string) error {
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
 
-	data, err := yaml.MarshalWithOptions(c, yaml.Indent(4))
+	data, err := yaml.MarshalWithOptions(s, yaml.Indent(4))
 	if err != nil {
 		return err
 	}

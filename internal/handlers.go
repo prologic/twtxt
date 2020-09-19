@@ -2486,7 +2486,7 @@ func (s *Server) ManageHandler() httprouter.Handle {
 		s.config.OpenRegistrations = openRegistrations
 
 		// Save config file
-		if err := s.config.Save(filepath.Join(s.config.Data, "custom.yaml")); err != nil {
+		if err := s.config.Settings().Save(filepath.Join(s.config.Data, "settings.yaml")); err != nil {
 			log.WithError(err).Error("error saving config")
 			os.Exit(1)
 		}

@@ -22,6 +22,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/elithrar/simple-scrypt v1.3.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/gabstv/merger v1.0.1
 	github.com/goccy/go-yaml v1.8.2
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gomarkdown/markdown v0.0.0-20200609195525-3f9352745725

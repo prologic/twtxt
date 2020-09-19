@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -23,6 +24,16 @@ func TestFormatMentionsAndTags(t *testing.T) {
 			text:     "@<test http://0.0.0.0:8000/user/test/twtxt.txt>",
 			format:   MarkdownFmt,
 			expected: `[@test](http://0.0.0.0:8000/user/test)`,
+		},
+		{
+			text:     "@<iamexternal http://iamexternal.com/twtxt.txt>",
+			format:   HTMLFmt,
+			expected: fmt.Sprintf(`<a href="%s">@iamexternal</a>`, URLForExternalProfile(conf, "iamexternal", "http://iamexternal.com/twtxt.txt>")),
+		},
+		{
+			text:     "@<iamexternal http://iamexternal.com/twtxt.txt>",
+			format:   MarkdownFmt,
+			expected: fmt.Sprintf(`[@iamexternal](%s)`, URLForExternalProfile(conf, "iamexternal", "http://iamexternal.com/twtxt.txt>")),
 		},
 		{
 			text:     "#<test http://0.0.0.0:8000/search?tag=test>",

@@ -2,11 +2,15 @@ package types
 
 import (
 	"encoding/base32"
+	"encoding/json"
 	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+	"github.com/writeas/slug"
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -26,6 +30,36 @@ func (twter Twter) IsZero() bool {
 	return twter.Nick == "" && twter.URL == ""
 }
 
+func (twter Twter) Slug() string {
+	u, err := url.Parse(twter.URL)
+	if err != nil {
+		log.WithError(err).Warnf("Twter.Slug(): error parsing url: %s", twter.URL)
+		return ""
+	}
+
+	return slug.Make(fmt.Sprintf("%s/%s", u.Hostname(), u.Path))
+}
+
+func (twter Twter) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Nick    string `json:"nick"`
+		URL     string `json:"url"`
+		Avatar  string `json:"avatar"`
+		Tagline string `json:"tagline"`
+
+		// Dynamic Fields
+		Slug string `json:"slug"`
+	}{
+		Nick:    twter.Nick,
+		URL:     twter.URL,
+		Avatar:  twter.Avatar,
+		Tagline: twter.Tagline,
+
+		// Dynamic Fields
+		Slug: twter.Slug(),
+	})
+}
+
 // Twt ...
 type Twt struct {
 	Twter   Twter
@@ -33,6 +67,24 @@ type Twt struct {
 	Created time.Time
 
 	hash string
+}
+
+func (twt Twt) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Twter   Twter     `json:"twter"`
+		Text    string    `json:"text"`
+		Created time.Time `json:"created"`
+
+		// Dynamic Fields
+		Hash string `json:"hash"`
+	}{
+		Twter:   twt.Twter,
+		Text:    twt.Text,
+		Created: twt.Created,
+
+		// Dynamic Fields
+		Hash: twt.Hash(),
+	})
 }
 
 // Mentions ...

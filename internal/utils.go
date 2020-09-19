@@ -69,10 +69,13 @@ const (
 	YearAgo  = MonthAgo * 12
 )
 
+// TwtTextFormat represents the format of which the twt text gets formatted to
 type TwtTextFormat int
 
 const (
+	// MarkdownFmt to use markdown format
 	MarkdownFmt TwtTextFormat = iota
+	// HTMLFmt to use HTML format
 	HTMLFmt
 )
 

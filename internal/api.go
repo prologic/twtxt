@@ -113,7 +113,7 @@ func (a *API) CreateToken(user *User, r *http.Request) (*Token, error) {
 }
 
 func (a *API) formatTwtText(twts types.Twts) types.Twts {
-	var res types.Twts
+	res := make(types.Twts, 0)
 
 	for _, twt := range twts {
 		res = append(res, types.Twt{

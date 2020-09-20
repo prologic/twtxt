@@ -551,6 +551,7 @@ func (s *Server) initRoutes() {
 
 	s.router.GET("/settings", s.am.MustAuth(s.SettingsHandler()))
 	s.router.POST("/settings", s.am.MustAuth(s.SettingsHandler()))
+	s.router.POST("/token/delete/:signature", s.am.MustAuth(s.DeleteTokenHandler()))
 
 	s.router.GET("/manage", s.ManageHandler())
 	s.router.POST("/manage", s.ManageHandler())

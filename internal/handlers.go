@@ -1745,8 +1745,8 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 	}
 }
 
-// DeleteHandler ...
-func (s *Server) DeleteHandler() httprouter.Handle {
+// DeleteTokenHandler ...
+func (s *Server) DeleteTokenHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 

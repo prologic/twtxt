@@ -16,11 +16,19 @@
           <li><a id="writeBtn" href="#" data-tooltip="Open blog post editor"><i class="icss-quill-pen"></i></a></li>
         {{ end }}
         <li>
-          <form id="uploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload">
-            <label for="uploadMedia">
-              <i id="uploadMediaButton" class="icss-camera"></i>
+          <form id="imageUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload">
+            <label for="uploadImage">
+              <i id="uploadImageButton" class="icss-camera"></i>
             </label>
-            <input id="uploadMedia" class="invisible" type="file" accept="image/png, image/jpeg" name="media_file" />
+            <input id="uploadImage" class="invisible" type="file" accept="image/*" name="media_file" />
+          </form>
+        </li>
+        <li>
+          <form id="videoUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload">
+            <label for="uploadVideo">
+              <i id="uploadVideoButton" class="icss-video-camera"></i>
+            </label>
+            <input id="uploadVideo" class="invisible" type="file" accept="video/*" name="media_file" />
           </form>
         </li>
       </ul>
@@ -108,9 +116,9 @@
       {{ $.Twt.Text | formatTwt }}
     </div>
     <hr />
-    {{ if $.Authenticated }}
-      <nav>
-        <ul>
+    <nav>
+      <ul>
+        {{ if $.Authenticated }}
           {{ if eq $.LastTwt.Hash $.Twt.Hash }}
             <li><a class="edit" href="#" data-hash="{{ $.Twt.Hash }}" data-text="{{ $.Twt.Text | unparseTwt }}"><i class="icss-edit"></i>Edit</a></li>
             <li>&nbsp;</li>
@@ -119,17 +127,17 @@
           {{ end }}
           <li><a class="reply" href="#" data-reply="{{ $.User.Reply $.Twt }}"><i class="icss-arrow-left"></i>Reply</a></li>
           <li>&nbsp;</li>
-          {{ with urlForBlog $.Twt }}
-            <li><a class="blog" href="{{ urlForBlog $.Twt }}"><i class="icss-quill-pen"></i>Blog</a></li>
-            <li>&nbsp;</li>
-          {{ end }}
-          {{ with urlForConv $.Twt }}
-            <li><a class="conv" href="{{ urlForConv $.Twt }}"><i class="icss-comment"></i>Conversation</a></li>
-            <li>&nbsp;</li>
-          {{ end }}
-        </ul>
-      </nav>
-    {{ end }}
+        {{ end }}
+        {{ with urlForBlog $.Twt }}
+          <li><a class="blog" href="{{ urlForBlog $.Twt }}"><i class="icss-quill-pen"></i>Blog</a></li>
+          <li>&nbsp;</li>
+        {{ end }}
+        {{ with urlForConv $.Twt }}
+          <li><a class="conv" href="{{ urlForConv $.Twt }}"><i class="icss-comment"></i>Conversation</a></li>
+          <li>&nbsp;</li>
+        {{ end }}
+      </ul>
+    </nav>
   </article>
 {{ end }}
 

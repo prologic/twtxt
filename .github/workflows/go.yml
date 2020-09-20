@@ -12,8 +12,18 @@ jobs:
       matrix:
         go-version: [1.14.x]
         platform: [ubuntu-latest, macos-latest]
+        include:
+          - platform: ubuntu-latest
+            pre: >-
+              sudo apt-get update &&
+              sudo apt-get install -y libavcodec-dev
+              libavutil-dev libavformat-dev libswscale-dev
+          - platform: macos-latest
+            pre: brew install ffmpeg
     runs-on: ${{ matrix.platform }}
     steps:
+      - name: Install dependencies
+        run: /bin/sh -c "${{ matrix.pre }}"
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v1
         with:

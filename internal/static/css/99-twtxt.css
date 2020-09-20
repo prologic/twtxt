@@ -33,15 +33,39 @@ article hgroup footer {
     z-index: 1050;
 }
 
-#uploadForm {
+/* 480p */
+video {
+  object-fit: contain;
+  display: block;
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+  background: #000;
+  box-shadow: 0 3px 7px 0 rgba(0, 0, 0, 0.2);
+}
+
+#imageUploadForm {
     display: inline;
 }
 
-#uploadForm label {
+#imageUploadForm label {
     display: inline;
 }
 
-#uploadMedia {
+#uploadImage {
+    margin: 0;
+    padding: 0;
+}
+
+#videoUploadForm {
+    display: inline;
+}
+
+#videoUploadForm label {
+    display: inline;
+}
+
+#uploadVideo {
     margin: 0;
     padding: 0;
 }

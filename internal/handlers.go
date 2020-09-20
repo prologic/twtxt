@@ -449,11 +449,21 @@ func (s *Server) MediaHandler() httprouter.Handle {
 
 		var fn string
 
-		if strings.HasSuffix(name, ".png") {
+		switch filepath.Ext(name) {
+		case ".png":
 			metrics.Counter("media", "old_media").Inc()
 			w.Header().Set("Content-Type", "image/png")
 			fn = filepath.Join(s.config.Data, mediaDir, name)
-		} else {
+		case ".webp":
+			w.Header().Set("Content-Type", "image/webp")
+			fn = filepath.Join(s.config.Data, mediaDir, name)
+		case ".mp4":
+			w.Header().Set("Content-Type", "video/mp4")
+			fn = filepath.Join(s.config.Data, mediaDir, name)
+		case ".webm":
+			w.Header().Set("Content-Type", "video/webm")
+			fn = filepath.Join(s.config.Data, mediaDir, name)
+		default:
 			if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
 				w.Header().Set("Content-Type", "image/webp")
 				fn = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.webp", name))
@@ -463,6 +473,12 @@ func (s *Server) MediaHandler() httprouter.Handle {
 				w.Header().Set("Content-Type", "image/png")
 				fn = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.png", name))
 			}
+		}
+
+		if !FileExists(fn) {
+			log.Warnf("media not found: %s", name)
+			http.Error(w, "Media Not Found", http.StatusNotFound)
+			return
 		}
 
 		fileInfo, err := os.Stat(fn)
@@ -495,11 +511,7 @@ func (s *Server) MediaHandler() httprouter.Handle {
 			return
 		}
 
-		if _, err := io.Copy(w, f); err != nil {
-			log.WithError(err).Error("error writing media response")
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
+		http.ServeContent(w, r, filepath.Base(fn), fileInfo.ModTime(), f)
 	}
 }
 
@@ -620,13 +632,13 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 			return
 		}
 
-		path, err := securejoin.SecureJoin(filepath.Join(s.config.Data, "feeds"), nick)
+		fn, err := securejoin.SecureJoin(filepath.Join(s.config.Data, "feeds"), nick)
 		if err != nil {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
-		stat, err := os.Stat(path)
+		fileInfo, err := os.Stat(fn)
 		if err != nil {
 			if os.IsNotExist(err) {
 				http.Error(w, "Feed Not Found", http.StatusNotFound)
@@ -639,62 +651,53 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Header().Set("Link", fmt.Sprintf(`<%s/user/%s/webmention>; rel="webmention"`, s.config.BaseURL, nick))
-		w.Header().Set("Last-Modified", stat.ModTime().UTC().Format(http.TimeFormat))
+		w.Header().Set("Last-Modified", fileInfo.ModTime().UTC().Format(http.TimeFormat))
 
-		if r.Method == http.MethodHead {
-			defer r.Body.Close()
-			return
-		}
-
-		if r.Method == http.MethodGet {
-			followerClient, err := DetectFollowerFromUserAgent(r.UserAgent())
+		followerClient, err := DetectFollowerFromUserAgent(r.UserAgent())
+		if err != nil {
+			log.WithError(err).Warnf("unable to detect twtxt client from %s", FormatRequest(r))
+		} else {
+			user, err := s.db.GetUser(nick)
 			if err != nil {
-				log.WithError(err).Warnf("unable to detect twtxt client from %s", FormatRequest(r))
+				log.WithError(err).Warnf("error loading user object for %s", nick)
 			} else {
-				user, err := s.db.GetUser(nick)
-				if err != nil {
-					log.WithError(err).Warnf("error loading user object for %s", nick)
-				} else {
-					if !user.FollowedBy(followerClient.URL) {
-						if _, err := AppendSpecial(
-							s.config, s.db,
-							twtxtBot,
-							fmt.Sprintf(
-								"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-								nick, URLForUser(s.config, nick),
-								followerClient.Nick, followerClient.URL,
-								followerClient.ClientName, followerClient.ClientVersion,
-							),
-						); err != nil {
-							log.WithError(err).Warnf("error appending special FOLLOW post")
-						}
-						if user.Followers == nil {
-							user.Followers = make(map[string]string)
-						}
-						user.Followers[followerClient.Nick] = followerClient.URL
-						if err := s.db.SetUser(nick, user); err != nil {
-							log.WithError(err).Warnf("error updating user object for %s", nick)
-						}
+				if !user.FollowedBy(followerClient.URL) {
+					if _, err := AppendSpecial(
+						s.config, s.db,
+						twtxtBot,
+						fmt.Sprintf(
+							"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+							nick, URLForUser(s.config, nick),
+							followerClient.Nick, followerClient.URL,
+							followerClient.ClientName, followerClient.ClientVersion,
+						),
+					); err != nil {
+						log.WithError(err).Warnf("error appending special FOLLOW post")
+					}
+					if user.Followers == nil {
+						user.Followers = make(map[string]string)
+					}
+					user.Followers[followerClient.Nick] = followerClient.URL
+					if err := s.db.SetUser(nick, user); err != nil {
+						log.WithError(err).Warnf("error updating user object for %s", nick)
 					}
 				}
 			}
-			f, err := os.Open(path)
-			if err != nil {
-				log.WithError(err).Error("error opening feed")
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-			defer f.Close()
-			w.Write([]byte(fmt.Sprintf("# nick = %s\n", nick)))
-			w.Write([]byte(fmt.Sprintf("# url = %s\n", URLForUser(s.config, nick))))
-			if _, err := io.Copy(w, f); err != nil {
-				log.WithError(err).Error("error sending feed response")
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-		} else {
-			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
+
+		f, err := os.Open(fn)
+		if err != nil {
+			log.WithError(err).Error("error opening feed")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		defer f.Close()
+
+		if r.Method == http.MethodHead {
+			return
+		}
+
+		http.ServeContent(w, r, filepath.Base(fn), fileInfo.ModTime(), f)
 	}
 }
 
@@ -817,16 +820,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 // TimelineHandler ...
 func (s *Server) TimelineHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		cacheLastModified, err := CacheLastModified(s.config.Data)
-		if err != nil {
-			log.WithError(err).Error("CacheLastModified() error")
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Header().Set("Last-Modified", cacheLastModified.UTC().Format(http.TimeFormat))
-
 		if r.Method == http.MethodHead {
 			defer r.Body.Close()
 			return
@@ -849,14 +843,6 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			}
 		}
 
-		if err != nil {
-			log.WithError(err).Error("error loading twts")
-			ctx.Error = true
-			ctx.Message = "An error occurred while loading the timeline"
-			s.render("error", w, ctx)
-			return
-		}
-
 		sort.Sort(twts)
 
 		var pagedTwts types.Twts
@@ -865,7 +851,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
-		if err = pager.Results(&pagedTwts); err != nil {
+		if err := pager.Results(&pagedTwts); err != nil {
 			log.WithError(err).Error("error sorting and paging twts")
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading the timeline"
@@ -2211,16 +2197,29 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 		// Limit request body to to abuse
 		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
 
-		mediaFile, _, err := r.FormFile("media_file")
+		mediaFile, mediaHeaders, err := r.FormFile("media_file")
 		if err != nil && err != http.ErrMissingFile {
+			if err.Error() == "http: request body too large" {
+				log.Warnf("request too large for media upload from %s", FormatRequest(r))
+				http.Error(w, "Media Upload Too Large", http.StatusRequestEntityTooLarge)
+				return
+			}
 			log.WithError(err).Error("error parsing form file")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		if mediaFile == nil || mediaHeaders == nil {
+			log.Warn("no valid media file uploaded")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
 		var mediaURI string
 
-		if mediaFile != nil {
+		ctype := mediaHeaders.Header.Get("Content-Type")
+
+		if strings.HasPrefix(ctype, "image/") {
 			opts := &ImageOptions{Resize: true, ResizeW: MediaResolution, ResizeH: 0}
 			mediaURI, err = StoreUploadedImage(
 				s.config, mediaFile,
@@ -2233,6 +2232,23 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+		} else if strings.HasPrefix(ctype, "video/") {
+			opts := &VideoOptions{} // Resize: true, Size: MediaResolution}
+			mediaURI, err = StoreUploadedVideo(
+				s.config, mediaFile,
+				mediaDir, "",
+				opts,
+			)
+
+			if err != nil {
+				log.WithError(err).Error("error storing the file")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		} else {
+			log.Warn("no video or image file")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
 		}
 
 		uri := URI{"mediaURI", mediaURI}

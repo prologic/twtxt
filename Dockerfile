@@ -1,7 +1,7 @@
 # Build
 FROM golang:alpine AS build
 
-RUN apk add --no-cache -U build-base git make
+RUN apk add --no-cache -U build-base git make ffmpeg-dev
 
 RUN mkdir -p /src
 
@@ -53,7 +53,7 @@ RUN make server VERSION=$VERSION COMMIT=$COMMIT
 # Runtime
 FROM alpine:latest
 
-RUN apk --no-cache -U add ca-certificates tzdata
+RUN apk --no-cache -U add ca-certificates tzdata ffmpeg
 
 WORKDIR /
 VOLUME /data

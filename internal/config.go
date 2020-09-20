@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/gabstv/merger"
 	"github.com/goccy/go-yaml"
+	log "github.com/sirupsen/logrus"
 )
 
 var (

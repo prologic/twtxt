@@ -91,15 +91,16 @@ var (
 	validUsername  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]+$`)
 	userAgentRegex = regexp.MustCompile(`(.*?)\/(.*?) ?\(\+(https?://.*); @(.*)\)`)
 
-	ErrInvalidFeedName  = errors.New("error: invalid feed name")
-	ErrFeedNameTooLong  = errors.New("error: feed name is too long")
-	ErrInvalidUsername  = errors.New("error: invalid username")
-	ErrUsernameTooLong  = errors.New("error: username is too long")
-	ErrInvalidUserAgent = errors.New("error: invalid twtxt user agent")
-	ErrReservedUsername = errors.New("error: username is reserved")
-	ErrInvalidImage     = errors.New("error: invalid image")
-	ErrInvalidVideo     = errors.New("error: invalid video")
-	ErrInvalidVideoSize = errors.New("error: invalid video size")
+	ErrInvalidFeedName   = errors.New("error: invalid feed name")
+	ErrFeedNameTooLong   = errors.New("error: feed name is too long")
+	ErrInvalidUsername   = errors.New("error: invalid username")
+	ErrUsernameTooLong   = errors.New("error: username is too long")
+	ErrInvalidUserAgent  = errors.New("error: invalid twtxt user agent")
+	ErrReservedUsername  = errors.New("error: username is reserved")
+	ErrInvalidImage      = errors.New("error: invalid image")
+	ErrInvalidVideo      = errors.New("error: invalid video")
+	ErrInvalidVideoSize  = errors.New("error: invalid video size")
+	ErrVideoUploadFailed = errors.New("error: video upload failed")
 
 	thumbnailerOpts = thumbnailer.Options{
 		ThumbDims: thumbnailer.Dims{
@@ -174,31 +175,6 @@ func ImageToPng(fn string) error {
 
 	if err := png.Encode(of, img); err != nil {
 		log.WithError(err).Error("error reencoding image")
-		return err
-	}
-
-	return nil
-}
-
-func VideoToMp4(conf *Config, fn string) error {
-	if !IsVideo(fn) {
-		return ErrInvalidVideo
-	}
-
-	of := ReplaceExt(fn, ".mp4")
-
-	if err := RunCmd(
-		conf.TranscoderTimeout,
-		"ffmpeg",
-		"-y",
-		"-i", fn,
-		"-vcodec", "h264",
-		"-acodec", "aac",
-		"-strict", "-2",
-		"-loglevel", "quiet",
-		of,
-	); err != nil {
-		log.WithError(err).Error("error transcoding video")
 		return err
 	}
 
@@ -746,78 +722,129 @@ func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *
 		return "", err
 	}
 
-	args := []string{
-		"-y",
-		"-i", tf.Name(),
-	}
+	wg := sync.WaitGroup{}
 
-	if opts.Resize {
-		var scale string
+	TranscodeWebM := func(ctx context.Context, errs chan error) {
+		defer wg.Done()
 
-		switch opts.Size {
-		case 640:
-			scale = "scale=640:-2"
-		default:
-			log.Warnf("error invalid video size: %d", opts.Size)
-			return "", ErrInvalidVideoSize
+		args := []string{
+			"-y",
+			"-i", tf.Name(),
+		}
+
+		if opts.Resize {
+			var scale string
+
+			switch opts.Size {
+			case 640:
+				scale = "scale=640:-2"
+			default:
+				log.Warnf("error invalid video size: %d", opts.Size)
+				errs <- ErrInvalidVideoSize
+				return
+			}
+
+			args = append(args, []string{
+				"-vf", scale,
+			}...)
 		}
 
 		args = append(args, []string{
-			"-vf", scale,
+			"-c:v", "libvpx",
+			"-c:a", "libvorbis",
+			"-crf", "18",
+			"-strict", "-2",
+			"-loglevel", "quiet",
+			of.Name(),
 		}...)
+
+		if err := RunCmd(
+			conf.TranscoderTimeout,
+			"ffmpeg",
+			args...,
+		); err != nil {
+			log.WithError(err).Error("error transcoding video")
+			errs <- err
+			return
+		}
 	}
 
-	args = append(args, []string{
-		"-c:v", "libvpx",
-		"-c:a", "libvorbis",
-		"-crf", "18",
-		"-strict", "-2",
-		"-loglevel", "quiet",
-		of.Name(),
-	}...)
+	TranscodeMP4 := func(ctx context.Context, errs chan error) {
+		defer wg.Done()
 
-	if err := RunCmd(
-		conf.TranscoderTimeout,
-		"ffmpeg",
-		args...,
-	); err != nil {
-		log.WithError(err).Error("error transcoding video")
-		return "", err
-	}
-
-	// Re-encode to MP4 (for older browsers)
-	if err := of.Close(); err != nil {
-		log.WithError(err).Warnf("error cloding file %s", fn)
-	}
-	if err := VideoToMp4(conf, fn); err != nil {
-		log.WithError(err).Warnf("error reencoding video to MP4 (for older browsers: %s", fn)
+		if err := RunCmd(
+			conf.TranscoderTimeout,
+			"ffmpeg",
+			"-y",
+			"-i", tf.Name(),
+			"-vcodec", "h264",
+			"-acodec", "aac",
+			"-strict", "-2",
+			"-loglevel", "quiet",
+			ReplaceExt(fn, ".mp4"),
+		); err != nil {
+			log.WithError(err).Error("error transcoding video")
+			errs <- err
+			return
+		}
 	}
 
-	// Generate poster / thumbnail
-	_, thumb, err := thumbnailer.Process(tf, thumbnailerOpts)
-	if err != nil {
-		log.WithError(err).Error("error generating video poster thumbnail")
-		return "", err
+	GeneratePoster := func(ctx context.Context, errs chan error) {
+		defer wg.Done()
+
+		// Generate poster / thumbnail
+		_, thumb, err := thumbnailer.Process(tf, thumbnailerOpts)
+		if err != nil {
+			log.WithError(err).Error("error generating video poster thumbnail")
+			errs <- err
+			return
+		}
+
+		pf, err := os.OpenFile(ReplaceExt(fn, ".webp"), os.O_WRONLY|os.O_CREATE, 0644)
+		if err != nil {
+			log.WithError(err).Error("error opening thumbnail output file")
+			errs <- err
+			return
+		}
+		defer pf.Close()
+
+		if err := webp.Encode(pf, thumb, &webp.Options{Lossless: true}); err != nil {
+			log.WithError(err).Error("error reencoding thumbnail image")
+			errs <- err
+			return
+		}
+
+		// Re-encode to PNG (for older browsers)
+		if err := pf.Close(); err != nil {
+			log.WithError(err).Warnf("error cloding file %s", fn)
+		}
+		if err := ImageToPng(ReplaceExt(fn, ".webp")); err != nil {
+			log.WithError(err).Warnf("error reencoding thumbnail image to PNG (for older browsers: %s", fn)
+		}
 	}
 
-	pf, err := os.OpenFile(ReplaceExt(fn, ".webp"), os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		log.WithError(err).Error("error opening thumbnail output file")
-		return "", err
-	}
-	defer pf.Close()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	if err := webp.Encode(pf, thumb, &webp.Options{Lossless: true}); err != nil {
-		log.WithError(err).Error("error reencoding thumbnail image")
-		return "", err
+	errs := make(chan error)
+
+	wg.Add(3)
+	go TranscodeWebM(ctx, errs)
+	go TranscodeMP4(ctx, errs)
+	go GeneratePoster(ctx, errs)
+
+	wg.Wait()
+	close(errs)
+
+	errors := 0
+	for err := range errs {
+		log.WithError(err).Error("StoreUploadedVideo() error")
+		errors++
 	}
 
-	// Re-encode to PNG (for older browsers)
-	if err := pf.Close(); err != nil {
-		log.WithError(err).Warnf("error cloding file %s", fn)
-	}
-	if err := ImageToPng(ReplaceExt(fn, ".webp")); err != nil {
-		log.WithError(err).Warnf("error reencoding thumbnail image to PNG (for older browsers: %s", fn)
+	if errors > 0 {
+		log.Error("StoreUploadedVideo() too many errors")
+		return "", ErrVideoUploadFailed
 	}
 
 	return fmt.Sprintf(
@@ -826,43 +853,6 @@ func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *
 		resource, filepath.Base(fn),
 	), nil
 }
-
-/*
-	// TODO: Make this a background job
-	// Resize for lower quality options
-	for size, suffix := range a.Config.Transcoder.Sizes {
-		log.
-			WithField("size", size).
-			WithField("vf", filepath.Base(vf)).
-			Info("resizing video for lower quality playback")
-		sf := fmt.Sprintf(
-			"%s#%s.mp4",
-			strings.TrimSuffix(vf, filepath.Ext(vf)),
-			suffix,
-		)
-
-		if err := utils.RunCmd(
-			a.Config.Transcoder.Timeout,
-			"ffmpeg",
-			"-y",
-			"-i", vf,
-			"-s", size,
-			"-c:v", "libx264",
-			"-c:a", "aac",
-			"-crf", "18",
-			"-strict", "-2",
-			"-loglevel", "quiet",
-			"-metadata", fmt.Sprintf("title=%s", title),
-			"-metadata", fmt.Sprintf("comment=%s", description),
-			sf,
-		); err != nil {
-			err := fmt.Errorf("error transcoding video: %w", err)
-			log.Error(err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-*/
 
 func NormalizeFeedName(name string) string {
 	name = strings.TrimSpace(name)

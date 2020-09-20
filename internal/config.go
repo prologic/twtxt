@@ -22,7 +22,7 @@ var (
 // Settings contains Pod Settings that can be customised via the Web UI
 type Settings struct {
 	Name        string `yaml:"pod_name"`
-	Description string `yaml:"pod_descriptio"`
+	Description string `yaml:"pod_description"`
 
 	MaxTwtLength int `yaml:"max_twt_length"`
 

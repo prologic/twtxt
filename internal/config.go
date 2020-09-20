@@ -54,6 +54,7 @@ type Config struct {
 	OpenRegistrations bool
 	SessionExpiry     time.Duration
 	SessionCacheTTL   time.Duration
+	TranscoderTimeout time.Duration
 
 	MagicLinkSecret string
 

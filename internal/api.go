@@ -90,7 +90,7 @@ func (a *API) CreateToken(user *User, r *http.Request) (*Token, error) {
 	claims["username"] = user.Username
 	createdAt := time.Now()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(a.config.APISigningKey)
+	tokenString, err := token.SignedString([]byte(a.config.APISigningKey))
 	if err != nil {
 		log.WithError(err).Error("error creating signed token")
 		return nil, err
@@ -130,7 +130,7 @@ func (a *API) jwtKeyFunc(token *jwt.Token) (interface{}, error) {
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 		return nil, fmt.Errorf("There was an error")
 	}
-	return a.config.APISigningKey, nil
+	return []byte(a.config.APISigningKey), nil
 }
 
 func (a *API) getLoggedInUser(r *http.Request) *User {

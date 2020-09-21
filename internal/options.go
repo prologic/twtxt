@@ -121,6 +121,7 @@ var (
 func NewConfig() *Config {
 	return &Config{
 		Name:              DefaultName,
+		Description:       DefaultMetaDescription,
 		Store:             DefaultStore,
 		Theme:             DefaultTheme,
 		BaseURL:           DefaultBaseURL,
@@ -210,6 +211,14 @@ func WithFeedSources(feedSources []string) Option {
 func WithName(name string) Option {
 	return func(cfg *Config) error {
 		cfg.Name = name
+		return nil
+	}
+}
+
+// WithDescription sets the instance's description
+func WithDescription(description string) Option {
+	return func(cfg *Config) error {
+		cfg.Description = description
 		return nil
 	}
 }
@@ -377,7 +386,7 @@ func WithAPISessionTime(duration time.Duration) Option {
 // WithAPISigningKey sets the API JWT signing key for tokens
 func WithAPISigningKey(key string) Option {
 	return func(cfg *Config) error {
-		cfg.APISigningKey = []byte(key)
+		cfg.APISigningKey = key
 		return nil
 	}
 }

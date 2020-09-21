@@ -69,6 +69,16 @@ const (
 	YearAgo  = MonthAgo * 12
 )
 
+// TwtTextFormat represents the format of which the twt text gets formatted to
+type TwtTextFormat int
+
+const (
+	// MarkdownFmt to use markdown format
+	MarkdownFmt TwtTextFormat = iota
+	// HTMLFmt to use HTML format
+	HTMLFmt
+)
+
 var (
 	slugs *sync.Map
 
@@ -957,6 +967,14 @@ func PrettyURL(uri string) string {
 	return fmt.Sprintf("%s/%s", u.Hostname(), strings.TrimPrefix(u.EscapedPath(), "/"))
 }
 
+// IsAdminUserFactory returns a function that returns true if the user provided
+// is the configured pod administrator, false otherwise.
+func IsAdminUserFactory(conf *Config) func(user *User) bool {
+	return func(user *User) bool {
+		return NormalizeUsername(conf.AdminUser) == NormalizeUsername(user.Username)
+	}
+}
+
 func UserURL(url string) string {
 	if strings.HasSuffix(url, "/twtxt.txt") {
 		return strings.TrimSuffix(url, "/twtxt.txt")
@@ -1360,7 +1378,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 		}
 		renderer := html.NewRenderer(opts)
 
-		md := []byte(FormatMentionsAndTags(conf, text))
+		md := []byte(FormatMentionsAndTags(conf, text, HTMLFmt))
 		maybeUnsafeHTML := markdown.ToHTML(md, mdParser, renderer)
 		p := bluemonday.UGCPolicy()
 		p.AllowAttrs("id", "controls").OnElements("audio")
@@ -1379,30 +1397,34 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 // FormatMentionsAndTags turns `@<nick URL>` into `<a href="URL">@nick</a>`
 // and `#<tag URL>` into `<a href="URL">#tag</a>` and a `!<hash URL>`
 // into a `<a href="URL">!hash</a>`.
-func FormatMentionsAndTags(conf *Config, text string) string {
+func FormatMentionsAndTags(conf *Config, text string, format TwtTextFormat) string {
 	isLocalURL := IsLocalURLFactory(conf)
 	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
 		prefix, nick, url := parts[1], parts[2], parts[3]
+		if format == HTMLFmt {
+			switch prefix {
+			case "@":
+				if isLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
+					return fmt.Sprintf(`<a href="%s">@%s</a>`, UserURL(url), nick)
+				}
+				return fmt.Sprintf(`<a href="%s">@%s</a>`, URLForExternalProfile(conf, nick, url), nick)
+			default:
+				return fmt.Sprintf(`<a href="%s">%s%s</a>`, url, prefix, nick)
+			}
+		}
+
 		switch prefix {
 		case "@":
 			if isLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
-				return fmt.Sprintf(
-					`<a href="%s">@%s</a>`,
-					UserURL(url), nick,
-				)
+				return fmt.Sprintf(`[@%s](%s)`, nick, UserURL(url))
 			}
-			return fmt.Sprintf(
-				`<a href="%s">@%s</a>`,
-				URLForExternalProfile(conf, nick, url), nick,
-			)
+			return fmt.Sprintf(`[@%s](%s)`, nick, URLForExternalProfile(conf, nick, url))
 		default:
-			return fmt.Sprintf(
-				`<a href="%s">%s%s</a>`,
-				url, prefix, nick,
-			)
+			return fmt.Sprintf(`[%s%s](%s)`, prefix, nick, url)
 		}
+
 	})
 }
 

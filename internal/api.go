@@ -90,7 +90,7 @@ func (a *API) CreateToken(user *User, r *http.Request) (*Token, error) {
 	claims["username"] = user.Username
 	createdAt := time.Now()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(a.config.APISigningKey)
+	tokenString, err := token.SignedString([]byte(a.config.APISigningKey))
 	if err != nil {
 		log.WithError(err).Error("error creating signed token")
 		return nil, err
@@ -112,11 +112,25 @@ func (a *API) CreateToken(user *User, r *http.Request) (*Token, error) {
 	return tkn, nil
 }
 
+func (a *API) formatTwtText(twts types.Twts) types.Twts {
+	res := make(types.Twts, 0)
+
+	for _, twt := range twts {
+		res = append(res, types.Twt{
+			Twter:   twt.Twter,
+			Text:    FormatMentionsAndTags(a.config, twt.Text, MarkdownFmt),
+			Created: twt.Created,
+		})
+	}
+
+	return res
+}
+
 func (a *API) jwtKeyFunc(token *jwt.Token) (interface{}, error) {
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 		return nil, fmt.Errorf("There was an error")
 	}
-	return a.config.APISigningKey, nil
+	return []byte(a.config.APISigningKey), nil
 }
 
 func (a *API) getLoggedInUser(r *http.Request) *User {
@@ -422,7 +436,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: pagedTwts,
+			Twts: a.formatTwtText(pagedTwts),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
@@ -468,7 +482,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: pagedTwts,
+			Twts: a.formatTwtText(pagedTwts),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
@@ -540,7 +554,7 @@ func (a *API) MentionsEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: pagedTwts,
+			Twts: a.formatTwtText(pagedTwts),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
@@ -920,7 +934,7 @@ func (a *API) ProfileTwtsEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: pagedTwts,
+			Twts: a.formatTwtText(pagedTwts),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),

@@ -17,6 +17,7 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/andyleap/microformats"
 	humanize "github.com/dustin/go-humanize"
+	"github.com/gabstv/merger"
 	"github.com/prologic/observe"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
@@ -496,6 +497,8 @@ func (s *Server) initRoutes() {
 	s.router.GET("/user/:nick/followers", s.FollowersHandler())
 	s.router.GET("/user/:nick/following", s.FollowingHandler())
 
+	s.router.GET("/pod/avatar", s.PodAvatarHandler())
+
 	// WebMentions
 	s.router.POST("/user/:nick/webmention", s.WebMentionHandler())
 
@@ -548,8 +551,10 @@ func (s *Server) initRoutes() {
 
 	s.router.GET("/settings", s.am.MustAuth(s.SettingsHandler()))
 	s.router.POST("/settings", s.am.MustAuth(s.SettingsHandler()))
-
 	s.router.POST("/token/delete/:signature", s.am.MustAuth(s.DeleteTokenHandler()))
+
+	s.router.GET("/manage", s.ManageHandler())
+	s.router.POST("/manage", s.ManageHandler())
 
 	s.router.GET("/deleteFeeds", s.DeleteAccountHandler())
 	s.router.POST("/delete", s.am.MustAuth(s.DeleteAllHandler()))
@@ -561,6 +566,16 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	for _, opt := range options {
 		if err := opt(config); err != nil {
+			return nil, err
+		}
+	}
+
+	settings, err := LoadSettings(filepath.Join(config.Data, "settings.yaml"))
+	if err != nil {
+		log.Warnf("error loading pod settings: %s", err)
+	} else {
+		if err := merger.MergeOverwrite(config, settings); err != nil {
+			log.WithError(err).Error("error merging pod settings")
 			return nil, err
 		}
 	}

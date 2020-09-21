@@ -16,6 +16,7 @@
 /data/cache
 /data/blogscache
 /data/feedsources
+/data/settings.yaml
 
 /data/feeds/*
 /data/blogs/*

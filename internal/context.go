@@ -23,6 +23,8 @@ type Meta struct {
 }
 
 type Context struct {
+	Config string
+
 	BaseURL                 string
 	InstanceName            string
 	SoftwareVersion         string
@@ -30,6 +32,7 @@ type Context struct {
 	TwtPrompt               string
 	MaxTwtLength            int
 	RegisterDisabled        bool
+	OpenProfiles			bool
 	RegisterDisabledMessage string
 
 	Timezones []*timezones.Zoneinfo
@@ -41,6 +44,7 @@ type Context struct {
 	LastTwt       types.Twt
 	Profile       types.Profile
 	Authenticated bool
+	IsAdmin 	  bool
 
 	Error   bool
 	Message string
@@ -76,6 +80,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		TwtPrompt:        conf.RandomTwtPrompt(),
 		MaxTwtLength:     conf.MaxTwtLength,
 		RegisterDisabled: !conf.OpenRegistrations,
+		OpenProfiles:	  conf.OpenProfiles,
 
 		Commit: twtxt.Commit,
 		Theme:  conf.Theme,
@@ -87,7 +92,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 			Title:       DefaultMetaTitle,
 			Author:      DefaultMetaAuthor,
 			Keywords:    DefaultMetaKeywords,
-			Description: DefaultMetaDescription,
+			Description: conf.Description,
 		},
 
 		Alternatives: types.Alternatives{
@@ -128,6 +133,10 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	} else {
 		ctx.User = &User{}
 		ctx.Twter = types.Twter{}
+	}
+
+	if ctx.Username == conf.AdminUser {
+		ctx.IsAdmin = true
 	}
 
 	// Set the theme based on user preferences

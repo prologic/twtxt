@@ -897,7 +897,6 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 		var twts types.Twts
 
 		if a.db.HasUser(nick) {
-			log.Debug("has user")
 			user, err := a.db.GetUser(nick)
 			if err != nil {
 				log.WithError(err).Errorf("error loading user object for %s", nick)
@@ -907,7 +906,6 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 			profile = user.Profile(a.config.BaseURL)
 			twts = a.cache.GetByURL(profile.URL)
 		} else if a.db.HasFeed(nick) {
-			log.Debug("has feed")
 			feed, err := a.db.GetFeed(nick)
 			if err != nil {
 				log.WithError(err).Errorf("error loading feed object for %s", nick)
@@ -924,10 +922,8 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 				return
 			}
 
-			log.Debug("slug %s", v)
 			u := v.(*url.URL)
 			if !a.cache.IsCached(u.String()) {
-				log.Debug("is cached %s", u.String())
 				sources := make(types.Feeds)
 				sources[types.Feed{Nick: nick, URL: u.String()}] = true
 				a.cache.FetchTwts(a.config, a.archive, sources)

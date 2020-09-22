@@ -144,3 +144,20 @@ type ProfileResponse struct {
 	Alternatives Alternatives `json:"alternatives"`
 	Twter        Twter        `json:"twter"`
 }
+
+// FetchTwtsRequest ...
+type FetchTwtsRequest struct {
+	Slug string `json:"slug"`
+	Nick string `json:"nick"`
+	Page int    `json:"page"`
+}
+
+// NewFetchTwtsRequest ...
+func NewFetchTwtsRequest(r io.Reader) (req FetchTwtsRequest, err error) {
+	body, err := ioutil.ReadAll(r)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &req)
+	return
+}

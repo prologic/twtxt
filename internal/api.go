@@ -77,7 +77,7 @@ func (a *API) initRoutes() {
 	router.POST("/discover", a.DiscoverEndpoint())
 
 	router.GET("/profile/:nick", a.ProfileEndpoint())
-	router.POST("/profile/:nick/twts", a.ProfileTwtsEndpoint())
+	router.POST("/fetch-twts", a.FetchTwtsEndpoint())
 
 	router.GET("/external/:slug/:nick", a.ExternalProfileEndpoint())
 
@@ -884,20 +884,20 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 }
 
 // ProfileTwtsEndpoint ...
-func (a *API) ProfileTwtsEndpoint() httprouter.Handle {
+func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		req, err := types.NewPagedRequest(r.Body)
-		nick := NormalizeUsername(p.ByName("nick"))
+		req, err := types.NewFetchTwtsRequest(r.Body)
+		nick := NormalizeUsername(req.Nick)
 		if nick == "" {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
-		nick = NormalizeUsername(nick)
-
 		var profile types.Profile
+		var twts types.Twts
 
 		if a.db.HasUser(nick) {
+			log.Debug("has user")
 			user, err := a.db.GetUser(nick)
 			if err != nil {
 				log.WithError(err).Errorf("error loading user object for %s", nick)
@@ -905,7 +905,9 @@ func (a *API) ProfileTwtsEndpoint() httprouter.Handle {
 				return
 			}
 			profile = user.Profile(a.config.BaseURL)
+			twts = a.cache.GetByURL(profile.URL)
 		} else if a.db.HasFeed(nick) {
+			log.Debug("has feed")
 			feed, err := a.db.GetFeed(nick)
 			if err != nil {
 				log.WithError(err).Errorf("error loading feed object for %s", nick)
@@ -913,12 +915,29 @@ func (a *API) ProfileTwtsEndpoint() httprouter.Handle {
 				return
 			}
 			profile = feed.Profile(a.config.BaseURL)
+
+			twts = a.cache.GetByURL(profile.URL)
+		} else if req.Slug != "" {
+			v, ok := slugs.Load(req.Slug)
+			if !ok {
+				http.Error(w, "User/Feed not found", http.StatusNotFound)
+				return
+			}
+
+			log.Debug("slug %s", v)
+			u := v.(*url.URL)
+			if !a.cache.IsCached(u.String()) {
+				log.Debug("is cached %s", u.String())
+				sources := make(types.Feeds)
+				sources[types.Feed{Nick: nick, URL: u.String()}] = true
+				a.cache.FetchTwts(a.config, a.archive, sources)
+			}
+
+			twts = a.cache.GetByURL(u.String())
 		} else {
 			http.Error(w, "User/Feed not found", http.StatusNotFound)
 			return
 		}
-
-		twts := a.cache.GetByURL(profile.URL)
 
 		sort.Sort(twts)
 

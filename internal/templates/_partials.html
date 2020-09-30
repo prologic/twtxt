@@ -92,7 +92,7 @@
             <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
               <img class="avatar u-photo" src="/user/{{ $.Twt.Twter.Nick }}/avatar" />
           {{ else }}
-            <a href="/external/{{ $.Twt.Twter.URL | slugify }}/{{ $.Twt.Twter.Nick  }}" class="u-url">
+            <a href="/external/{{ $.Twt.Twter.URL }}/{{ $.Twt.Twter.Nick  }}" class="u-url">
               {{ if $.Twt.Twter.Avatar }}
                 <img class="avatar u-photo" src="{{ $.Twt.Twter.Avatar }}" />
               {{ else }}

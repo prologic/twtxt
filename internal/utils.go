@@ -80,8 +80,6 @@ const (
 )
 
 var (
-	slugs *sync.Map
-
 	specialUsernames = []string{
 		newsSpecialUser,
 		helpSpecialUser,
@@ -120,10 +118,6 @@ var (
 	}
 )
 
-func init() {
-	slugs = &sync.Map{}
-}
-
 func Slugify(uri string) string {
 	u, err := url.Parse(uri)
 	if err != nil {
@@ -131,10 +125,7 @@ func Slugify(uri string) string {
 		return ""
 	}
 
-	s := slug.Make(fmt.Sprintf("%s/%s", u.Hostname(), u.Path))
-	slugs.Store(s, u)
-
-	return s
+	return slug.Make(fmt.Sprintf("%s/%s", u.Hostname(), u.Path))
 }
 
 func GenerateAvatar(conf *Config, username string) (image.Image, error) {
@@ -192,9 +183,9 @@ func ImageToPng(fn string) error {
 }
 
 func GetExternalAvatar(conf *Config, nick, uri string) string {
-	name := Slugify(uri)
+	slug := Slugify(uri)
 
-	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.webp", name))
+	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.webp", slug))
 	if FileExists(fn) {
 		return URLForExternalAvatar(conf, nick, uri)
 	}
@@ -223,7 +214,7 @@ func GetExternalAvatar(conf *Config, nick, uri string) string {
 		source, _ := base.Parse(candidate)
 		if ResourceExists(conf, source.String()) {
 			opts := &ImageOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: AvatarResolution}
-			_, err := DownloadImage(conf, source.String(), externalDir, name, opts)
+			_, err := DownloadImage(conf, source.String(), externalDir, slug, opts)
 			if err != nil {
 				log.WithError(err).
 					WithField("base", base.String()).
@@ -1028,7 +1019,7 @@ func URLForExternalProfile(conf *Config, nick, url string) string {
 	return fmt.Sprintf(
 		"%s/external/%s/%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
-		Slugify(url), nick,
+		url, nick,
 	)
 }
 
@@ -1036,7 +1027,7 @@ func URLForExternalAvatar(conf *Config, nick, url string) string {
 	return fmt.Sprintf(
 		"%s/external/%s/%s/avatar",
 		strings.TrimSuffix(conf.BaseURL, "/"),
-		Slugify(url), nick,
+		url, nick,
 	)
 }
 

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -79,7 +78,7 @@ func (a *API) initRoutes() {
 	router.GET("/profile/:nick", a.ProfileEndpoint())
 	router.POST("/fetch-twts", a.FetchTwtsEndpoint())
 
-	router.GET("/external/:slug/:nick", a.ExternalProfileEndpoint())
+	router.GET("/external/:url/:nick", a.ExternalProfileEndpoint())
 
 	router.POST("/mentions", a.isAuthorized(a.MentionsEndpoint()))
 }
@@ -915,21 +914,14 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 			profile = feed.Profile(a.config.BaseURL)
 
 			twts = a.cache.GetByURL(profile.URL)
-		} else if req.Slug != "" {
-			v, ok := slugs.Load(req.Slug)
-			if !ok {
-				http.Error(w, "User/Feed not found", http.StatusNotFound)
-				return
-			}
-
-			u := v.(*url.URL)
-			if !a.cache.IsCached(u.String()) {
+		} else if req.URL != "" {
+			if !a.cache.IsCached(req.URL) {
 				sources := make(types.Feeds)
-				sources[types.Feed{Nick: nick, URL: u.String()}] = true
+				sources[types.Feed{Nick: nick, URL: req.URL}] = true
 				a.cache.FetchTwts(a.config, a.archive, sources)
 			}
 
-			twts = a.cache.GetByURL(u.String())
+			twts = a.cache.GetByURL(req.URL)
 		} else {
 			http.Error(w, "User/Feed not found", http.StatusNotFound)
 			return
@@ -971,28 +963,18 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 // ExternalProfileEndpoint ...
 func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		slug := p.ByName("slug")
+		url := p.ByName("url")
 		nick := p.ByName("nick")
 
-		if slug == "" {
+		if url == "" {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
-
-		v, ok := slugs.Load(slug)
-		if !ok {
-			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
-
-		u := v.(*url.URL)
 
 		if nick == "" {
 			log.Warn("no nick given to external profile request")
 			nick = "unknown"
 		}
-
-		url := u.String()
 
 		profileResponse := types.ProfileResponse{}
 

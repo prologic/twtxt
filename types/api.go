@@ -147,7 +147,7 @@ type ProfileResponse struct {
 
 // FetchTwtsRequest ...
 type FetchTwtsRequest struct {
-	Slug string `json:"slug"`
+	URL  string `json:"url"`
 	Nick string `json:"nick"`
 	Page int    `json:"page"`
 }

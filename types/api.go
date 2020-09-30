@@ -161,3 +161,19 @@ func NewFetchTwtsRequest(r io.Reader) (req FetchTwtsRequest, err error) {
 	err = json.Unmarshal(body, &req)
 	return
 }
+
+// ExternalProfileRequest ...
+type ExternalProfileRequest struct {
+	URL  string `json:"url"`
+	Nick string `json:"nick"`
+}
+
+// NewExternalProfileRequest ...
+func NewExternalProfileRequest(r io.Reader) (req ExternalProfileRequest, err error) {
+	body, err := ioutil.ReadAll(r)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &req)
+	return
+}

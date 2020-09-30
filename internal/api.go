@@ -886,6 +886,12 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		req, err := types.NewFetchTwtsRequest(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing fetch twts request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
 		nick := NormalizeUsername(req.Nick)
 		if nick == "" {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -963,8 +969,15 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 // ExternalProfileEndpoint ...
 func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		url := p.ByName("url")
-		nick := p.ByName("nick")
+		req, err := types.NewExternalProfileRequest(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing external profile request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		url := req.URL
+		nick := req.Nick
 
 		if url == "" {
 			http.Error(w, "Bad Request", http.StatusBadRequest)

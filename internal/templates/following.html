@@ -18,7 +18,7 @@
               {{ if isLocalURL $URL }}
                 <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">
               {{ else }}
-                <a href="/external/{{ $URL }}/{{ $Nick  }}">
+                <a href="/external?uri={{ $URL }}&nick={{ $Nick  }}">
               {{ end }}
               {{ if $.User.Is $URL }}me{{ else }}{{ $Nick }}{{ end }}
 

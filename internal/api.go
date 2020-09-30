@@ -986,7 +986,7 @@ func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 
 		profileResponse.Twter = types.Twter{
 			Nick:   nick,
-			Avatar: URLForExternalAvatar(a.config, nick, url),
+			Avatar: URLForExternalAvatar(a.config, url),
 			URL:    URLForExternalProfile(a.config, nick, url),
 		}
 

@@ -1873,10 +1873,10 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		url := p.ByName("url")
-		nick := p.ByName("nick")
+		uri := r.URL.Query().Get("uri")
+		nick := r.URL.Query().Get("nick")
 
-		if url == "" {
+		if uri == "" {
 			ctx.Error = true
 			ctx.Message = "Cannot find external feed"
 			s.render("error", w, ctx)
@@ -1888,13 +1888,13 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 			nick = "unknown"
 		}
 
-		if !s.cache.IsCached(url) {
+		if !s.cache.IsCached(uri) {
 			sources := make(types.Feeds)
-			sources[types.Feed{Nick: nick, URL: url}] = true
+			sources[types.Feed{Nick: nick, URL: uri}] = true
 			s.cache.FetchTwts(s.config, s.archive, sources)
 		}
 
-		twts := s.cache.GetByURL(url)
+		twts := s.cache.GetByURL(uri)
 
 		sort.Sort(twts)
 
@@ -1916,16 +1916,16 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 		ctx.Pager = &pager
 		ctx.Twter = types.Twter{
 			Nick:   nick,
-			URL:    url,
-			Avatar: URLForExternalAvatar(s.config, nick, url),
+			URL:    uri,
+			Avatar: URLForExternalAvatar(s.config, uri),
 		}
 		ctx.Profile = types.Profile{
 			Username: nick,
-			TwtURL:   url,
-			URL:      URLForExternalProfile(s.config, nick, url),
+			TwtURL:   uri,
+			URL:      URLForExternalProfile(s.config, nick, uri),
 		}
 
-		ctx.Title = fmt.Sprintf("External feed for @<%s %s>", nick, url)
+		ctx.Title = fmt.Sprintf("External feed for @<%s %s>", nick, uri)
 		s.render("externalProfile", w, ctx)
 	}
 }
@@ -1935,13 +1935,14 @@ func (s *Server) ExternalAvatarHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		w.Header().Set("Cache-Control", "public, no-cache, must-revalidate")
 
-		url := p.ByName("url")
-		if url == "" {
-			log.Warn("no url provided for external avatar")
+		uri := r.URL.Query().Get("uri")
+
+		if uri == "" {
+			log.Warn("no uri provided for external avatar")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
-		slug := Slugify(url)
+		slug := Slugify(uri)
 
 		var fn string
 

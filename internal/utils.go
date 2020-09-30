@@ -187,7 +187,7 @@ func GetExternalAvatar(conf *Config, nick, uri string) string {
 
 	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.webp", slug))
 	if FileExists(fn) {
-		return URLForExternalAvatar(conf, nick, uri)
+		return URLForExternalAvatar(conf, uri)
 	}
 
 	if !strings.HasSuffix(uri, "/") {
@@ -222,7 +222,7 @@ func GetExternalAvatar(conf *Config, nick, uri string) string {
 					Error("error downloading external avatar")
 				return ""
 			}
-			return URLForExternalAvatar(conf, nick, uri)
+			return URLForExternalAvatar(conf, uri)
 		}
 	}
 
@@ -1015,19 +1015,19 @@ func URLForAvatar(conf *Config, username string) string {
 	)
 }
 
-func URLForExternalProfile(conf *Config, nick, url string) string {
+func URLForExternalProfile(conf *Config, nick, uri string) string {
 	return fmt.Sprintf(
-		"%s/external/%s/%s",
+		"%s/external?uri=%s&nick%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
-		url, nick,
+		uri, nick,
 	)
 }
 
-func URLForExternalAvatar(conf *Config, nick, url string) string {
+func URLForExternalAvatar(conf *Config, uri string) string {
 	return fmt.Sprintf(
-		"%s/external/%s/%s/avatar",
+		"%s/externalAvatar?uri=%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
-		url, nick,
+		uri,
 	)
 }
 

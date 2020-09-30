@@ -28,12 +28,12 @@ func TestFormatMentionsAndTags(t *testing.T) {
 		{
 			text:     "@<iamexternal http://iamexternal.com/twtxt.txt>",
 			format:   HTMLFmt,
-			expected: fmt.Sprintf(`<a href="%s">@iamexternal</a>`, URLForExternalProfile(conf, "iamexternal", "http://iamexternal.com/twtxt.txt>")),
+			expected: fmt.Sprintf(`<a href="%s">@iamexternal</a>`, URLForExternalProfile(conf, "iamexternal", "http://iamexternal.com/twtxt.txt")),
 		},
 		{
 			text:     "@<iamexternal http://iamexternal.com/twtxt.txt>",
 			format:   MarkdownFmt,
-			expected: fmt.Sprintf(`[@iamexternal](%s)`, URLForExternalProfile(conf, "iamexternal", "http://iamexternal.com/twtxt.txt>")),
+			expected: fmt.Sprintf(`[@iamexternal](%s)`, URLForExternalProfile(conf, "iamexternal", "http://iamexternal.com/twtxt.txt")),
 		},
 		{
 			text:     "#<test http://0.0.0.0:8000/search?tag=test>",

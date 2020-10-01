@@ -78,7 +78,7 @@ func (a *API) initRoutes() {
 	router.GET("/profile/:nick", a.ProfileEndpoint())
 	router.POST("/fetch-twts", a.FetchTwtsEndpoint())
 
-	router.GET("/external/:url/:nick", a.ExternalProfileEndpoint())
+	router.POST("/external", a.ExternalProfileEndpoint())
 
 	router.POST("/mentions", a.isAuthorized(a.MentionsEndpoint()))
 }

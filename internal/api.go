@@ -994,7 +994,7 @@ func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 		profileResponse.Profile = types.Profile{
 			Username: nick,
 			TwtURL:   url,
-			URL:      URLForExternalProfile(a.config, nick, url),
+			URL:      url,
 		}
 
 		profileResponse.Twter = types.Twter{

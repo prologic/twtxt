@@ -23,7 +23,7 @@ func TestFormatMentionsAndTags(t *testing.T) {
 		{
 			text:     "@<test http://0.0.0.0:8000/user/test/twtxt.txt>",
 			format:   MarkdownFmt,
-			expected: "[@test](test|http://0.0.0.0:8000/user/test/twtxt.txt)",
+			expected: "[@test](http://0.0.0.0:8000/user/test/twtxt.txt#test)",
 		},
 		{
 			text:     "@<iamexternal http://iamexternal.com/twtxt.txt>",
@@ -33,7 +33,7 @@ func TestFormatMentionsAndTags(t *testing.T) {
 		{
 			text:     "@<iamexternal http://iamexternal.com/twtxt.txt>",
 			format:   MarkdownFmt,
-			expected: fmt.Sprintf(`[@iamexternal](%s)`, URLForExternalProfile(conf, "iamexternal", "http://iamexternal.com/twtxt.txt")),
+			expected: "[@iamexternal](http://iamexternal.com/twtxt.txt#iamexternal)",
 		},
 		{
 			text:     "#<test http://0.0.0.0:8000/search?tag=test>",

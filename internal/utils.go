@@ -866,6 +866,164 @@ func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *
 	), nil
 }
 
+func TranscodeVideo(conf *Config, ifn string, resource, name string, opts *VideoOptions) (string, error) {
+	p := filepath.Join(conf.Data, resource)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating avatars directory")
+		return "", err
+	}
+
+	var ofn string
+
+	if name == "" {
+		uuid := shortuuid.New()
+		ofn = filepath.Join(p, fmt.Sprintf("%s.webm", uuid))
+	} else {
+		ofn = fmt.Sprintf("%s.webm", filepath.Join(p, name))
+	}
+
+	of, err := os.OpenFile(ofn, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		log.WithError(err).Error("error opening output file")
+		return "", err
+	}
+	defer of.Close()
+
+	wg := sync.WaitGroup{}
+
+	TranscodeWebM := func(ctx context.Context, errs chan error) {
+		defer wg.Done()
+
+		args := []string{"-y", "-i", ifn}
+
+		if opts.Resize {
+			var scale string
+
+			switch opts.Size {
+			case 640:
+				scale = "scale=640:-2"
+			default:
+				log.Warnf("error invalid video size: %d", opts.Size)
+				errs <- ErrInvalidVideoSize
+				return
+			}
+
+			args = append(args, []string{
+				"-vf", scale,
+			}...)
+		}
+
+		args = append(args, []string{
+			"-c:v", "libvpx",
+			"-c:a", "libvorbis",
+			"-crf", "18",
+			"-strict", "-2",
+			"-loglevel", "quiet",
+			ofn,
+		}...)
+
+		if err := RunCmd(
+			conf.TranscoderTimeout,
+			"ffmpeg",
+			args...,
+		); err != nil {
+			log.WithError(err).Error("error transcoding video")
+			errs <- err
+			return
+		}
+	}
+
+	TranscodeMP4 := func(ctx context.Context, errs chan error) {
+		defer wg.Done()
+
+		if err := RunCmd(
+			conf.TranscoderTimeout,
+			"ffmpeg",
+			"-y",
+			"-i", ifn,
+			"-vcodec", "h264",
+			"-acodec", "aac",
+			"-strict", "-2",
+			"-loglevel", "quiet",
+			ReplaceExt(ofn, ".mp4"),
+		); err != nil {
+			log.WithError(err).Error("error transcoding video")
+			errs <- err
+			return
+		}
+	}
+
+	GeneratePoster := func(ctx context.Context, errs chan error) {
+		defer wg.Done()
+
+		f, err := os.Open(ifn)
+		if err != nil {
+			log.WithError(err).Error("error generating video poster thumbnail")
+			errs <- err
+			return
+		}
+		defer f.Close()
+
+		// Generate poster / thumbnail
+		_, thumb, err := thumbnailer.Process(f, thumbnailerOpts)
+		if err != nil {
+			log.WithError(err).Error("error generating video poster thumbnail")
+			errs <- err
+			return
+		}
+
+		pf, err := os.OpenFile(ReplaceExt(ofn, ".webp"), os.O_WRONLY|os.O_CREATE, 0644)
+		if err != nil {
+			log.WithError(err).Error("error opening thumbnail output file")
+			errs <- err
+			return
+		}
+		defer pf.Close()
+
+		if err := webp.Encode(pf, thumb, &webp.Options{Lossless: true}); err != nil {
+			log.WithError(err).Error("error reencoding thumbnail image")
+			errs <- err
+			return
+		}
+
+		if err := ImageToPng(ReplaceExt(ofn, ".webp")); err != nil {
+			log.WithError(err).Errorf("error reencoding thumbnail image to PNG (for older browsers: %s", ofn)
+			errs <- err
+			return
+		}
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errs := make(chan error)
+
+	wg.Add(3)
+	go TranscodeWebM(ctx, errs)
+	go TranscodeMP4(ctx, errs)
+	go GeneratePoster(ctx, errs)
+
+	wg.Wait()
+	close(errs)
+
+	errors := 0
+	for err := range errs {
+		log.WithError(err).Error("StoreUploadedVideo() error")
+		errors++
+	}
+
+	if errors > 0 {
+		log.Error("StoreUploadedVideo() too many errors")
+		return "", ErrVideoUploadFailed
+	}
+
+	return fmt.Sprintf(
+		"%s/%s/%s",
+		strings.TrimSuffix(conf.BaseURL, "/"),
+		resource, filepath.Base(ofn),
+	), nil
+}
+
 func NormalizeFeedName(name string) string {
 	name = strings.TrimSpace(name)
 	name = strings.ReplaceAll(name, " ", "_")

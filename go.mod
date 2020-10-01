@@ -11,6 +11,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/andreadipersio/securecookie v0.0.0-20131119095127-e3c3b33544ec
 	github.com/andyleap/microformats v0.0.0-20150523144534-25ae286f528b
+	github.com/apex/log v1.9.0
 	github.com/bakape/thumbnailer/v2 v2.6.4
 	github.com/chai2010/webp v1.1.0
 	github.com/creasty/defaults v1.5.0
@@ -48,8 +49,10 @@ require (
 	github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0
+	github.com/renstrom/shortuuid v3.0.0+incompatible
 	github.com/rickb777/accept v0.0.0-20170318132422-d5183c44530d
 	github.com/robfig/cron v1.2.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/securisec/go-keywords v0.0.0-20200619134240-769e7273f2ed
 	github.com/sirupsen/logrus v1.6.0
 	github.com/smartystreets/assertions v1.0.0 // indirect

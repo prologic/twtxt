@@ -62,6 +62,9 @@ type Server struct {
 	// Scheduler
 	cron *cron.Cron
 
+	// Dispatcher
+	tasks *Dispatcher
+
 	// Auth
 	am *auth.Manager
 
@@ -102,6 +105,7 @@ func (s *Server) AddShutdownHook(f func()) {
 // Shutdown ...
 func (s *Server) Shutdown(ctx context.Context) error {
 	s.cron.Stop()
+	s.tasks.Stop()
 
 	if err := s.server.Shutdown(ctx); err != nil {
 		log.WithError(err).Error("error shutting down server")
@@ -677,6 +681,9 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		// Schedular
 		cron: cron.New(),
 
+		// Dispatcher
+		tasks: NewDispatcher(10, 100), // TODO: Make this configurable?
+
 		// Auth Manager
 		am: am,
 
@@ -693,7 +700,10 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		return nil, err
 	}
 	server.cron.Start()
-	log.Infof("started background jobs")
+	log.Info("started background jobs")
+
+	server.tasks.Start()
+	log.Info("started task dispatcher")
 
 	server.setupWebMentions()
 	log.Infof("started webmentions processor")

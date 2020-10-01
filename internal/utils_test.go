@@ -23,7 +23,7 @@ func TestFormatMentionsAndTags(t *testing.T) {
 		{
 			text:     "@<test http://0.0.0.0:8000/user/test/twtxt.txt>",
 			format:   MarkdownFmt,
-			expected: `[@test](http://0.0.0.0:8000/user/test)`,
+			expected: "[@test](test|http://0.0.0.0:8000/user/test/twtxt.txt)",
 		},
 		{
 			text:     "@<iamexternal http://iamexternal.com/twtxt.txt>",

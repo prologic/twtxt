@@ -1411,9 +1411,9 @@ func FormatMentionsAndTags(conf *Config, text string, format TwtTextFormat) stri
 		switch prefix {
 		case "@":
 			if isLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
-				return fmt.Sprintf(`[@%s](%s)`, nick, UserURL(url))
+				return fmt.Sprintf(`[@%s](%s|%s)`, nick, nick, url)
 			}
-			return fmt.Sprintf(`[@%s](%s)`, nick, URLForExternalProfile(conf, nick, url))
+			return fmt.Sprintf(`[@%s](%s|%s)`, nick, nick, url)
 		default:
 			return fmt.Sprintf(`[%s%s](%s)`, prefix, nick, url)
 		}

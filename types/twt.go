@@ -18,6 +18,14 @@ const (
 	HashLength = 7
 )
 
+var (
+	tagsRe    = regexp.MustCompile(`#[-\w]+`)
+	subjectRe = regexp.MustCompile(`^(@<.*>[, ]*)*(\(.*?\))(.*)`)
+
+	uriTagsRe     = regexp.MustCompile(`#<(.*?) .*?>`)
+	uriMentionsRe = regexp.MustCompile(`@<(.*?) (.*?)>`)
+)
+
 // Twter ...
 type Twter struct {
 	Nick    string
@@ -92,8 +100,7 @@ func (twt Twt) Mentions() []Twter {
 	var mentions []Twter
 
 	seen := make(map[Twter]bool)
-	re := regexp.MustCompile(`@<(.*?) (.*?)>`)
-	matches := re.FindAllStringSubmatch(twt.Text, -1)
+	matches := uriMentionsRe.FindAllStringSubmatch(twt.Text, -1)
 	for _, match := range matches {
 		mention := Twter{Nick: match[1], URL: match[2]}
 		if !seen[mention] {
@@ -110,8 +117,7 @@ func (twt Twt) Tags() []string {
 	var tags []string
 
 	seen := make(map[string]bool)
-	re := regexp.MustCompile(`#<(.*?) .*?>`)
-	matches := re.FindAllStringSubmatch(twt.Text, -1)
+	matches := uriTagsRe.FindAllStringSubmatch(twt.Text, -1)
 	for _, match := range matches {
 		tag := match[1]
 		if !seen[tag] {
@@ -125,11 +131,17 @@ func (twt Twt) Tags() []string {
 
 // Subject ...
 func (twt Twt) Subject() string {
-	re := regexp.MustCompile(`^(@<.*>[, ]*)*(\(.*?\))(.*)`)
-	match := re.FindStringSubmatch(twt.Text)
+	match := subjectRe.FindStringSubmatch(twt.Text)
 	if match != nil {
-		return match[2]
+		matchingSubject := match[2]
+		matchedURITags := uriTagsRe.FindAllStringSubmatch(matchingSubject, -1)
+		if matchedURITags != nil {
+			// Re-add the (#xxx) back as the output
+			return fmt.Sprintf("(#%s)", matchedURITags[0][1])
+		}
+		return matchingSubject
 	}
+
 	// By default the subject is the Twt's Hash being replied to.
 	return fmt.Sprintf("(#%s)", twt.Hash())
 }
@@ -174,9 +186,8 @@ func (twts Twts) Swap(i, j int) {
 // Tags ...
 func (twts Twts) Tags() map[string]int {
 	tags := make(map[string]int)
-	re := regexp.MustCompile(`#[-\w]+`)
 	for _, twt := range twts {
-		for _, tag := range re.FindAllString(twt.Text, -1) {
+		for _, tag := range tagsRe.FindAllString(twt.Text, -1) {
 			tags[strings.TrimLeft(tag, "#")]++
 		}
 	}

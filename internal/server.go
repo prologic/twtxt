@@ -541,6 +541,9 @@ func (s *Server) initRoutes() {
 	s.router.HEAD("/media/:name", s.MediaHandler())
 	s.router.POST("/upload", s.am.MustAuth(s.UploadMediaHandler()))
 
+	// Task State
+	s.router.GET("/task/:uuid", s.TaskHandler())
+
 	// User/Feed Lookups
 	s.router.GET("/lookup", s.am.MustAuth(s.LookupHandler()))
 

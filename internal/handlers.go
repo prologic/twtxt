@@ -2275,6 +2275,37 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 	}
 }
 
+// TaskHandler ...
+func (s *Server) TaskHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		uuid := p.ByName("uuid")
+
+		if uuid == "" {
+			log.Warn("no task uuid provided")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		t, ok := s.tasks.Lookup(uuid)
+		if !ok {
+			log.Warnf("no task found by uuid: %s", uuid)
+			http.Error(w, "Task Not Found", http.StatusNotFound)
+			return
+		}
+
+		data, err := json.Marshal(t.Result())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+
+		return
+	}
+}
+
 // SyndicationHandler ...
 func (s *Server) SyndicationHandler() httprouter.Handle {
 	formatTwt := FormatTwtFactory(s.config)

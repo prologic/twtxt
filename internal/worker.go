@@ -24,7 +24,7 @@ func NewWorker(workerPool chan chan Task) *Worker {
 }
 
 // Start initializes a select loop to listen for tasks to execute
-func (w Worker) Start() {
+func (w *Worker) Start() {
 	go func() {
 		for {
 			w.workerPool <- w.taskChannel
@@ -42,7 +42,7 @@ func (w Worker) Start() {
 }
 
 // Stop will end the task select loop for the worker
-func (w Worker) Stop() {
+func (w *Worker) Stop() {
 	go func() {
 		w.quit <- true
 	}()

@@ -678,15 +678,14 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 	), nil
 }
 
-func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *VideoOptions) (string, error) {
+func ReceiveVideo(r io.Reader) (string, error) {
 	tf, err := ioutil.TempFile("", "twtxt-upload-*")
 	if err != nil {
 		log.WithError(err).Error("error creating temporary file")
 		return "", err
 	}
-	defer tf.Close()
 
-	if _, err := io.Copy(tf, f); err != nil {
+	if _, err := io.Copy(tf, r); err != nil {
 		log.WithError(err).Error("error writng temporary file")
 		return "", err
 	}
@@ -700,170 +699,7 @@ func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *
 		return "", ErrInvalidVideo
 	}
 
-	if _, err := tf.Seek(0, io.SeekStart); err != nil {
-		log.WithError(err).Error("error seeking temporary file")
-		return "", err
-	}
-
-	p := filepath.Join(conf.Data, resource)
-	if err := os.MkdirAll(p, 0755); err != nil {
-		log.WithError(err).Error("error creating avatars directory")
-		return "", err
-	}
-
-	var fn string
-
-	if name == "" {
-		uuid := shortuuid.New()
-		fn = filepath.Join(p, fmt.Sprintf("%s.webm", uuid))
-	} else {
-		fn = fmt.Sprintf("%s.webm", filepath.Join(p, name))
-	}
-
-	of, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		log.WithError(err).Error("error opening output file")
-		return "", err
-	}
-	defer of.Close()
-
-	if _, err := tf.Seek(0, io.SeekStart); err != nil {
-		log.WithError(err).Error("error seeking temporary file")
-		return "", err
-	}
-
-	wg := sync.WaitGroup{}
-
-	TranscodeWebM := func(ctx context.Context, errs chan error) {
-		defer wg.Done()
-
-		args := []string{
-			"-y",
-			"-i", tf.Name(),
-		}
-
-		if opts.Resize {
-			var scale string
-
-			switch opts.Size {
-			case 640:
-				scale = "scale=640:-2"
-			default:
-				log.Warnf("error invalid video size: %d", opts.Size)
-				errs <- ErrInvalidVideoSize
-				return
-			}
-
-			args = append(args, []string{
-				"-vf", scale,
-			}...)
-		}
-
-		args = append(args, []string{
-			"-c:v", "libvpx",
-			"-c:a", "libvorbis",
-			"-crf", "18",
-			"-strict", "-2",
-			"-loglevel", "quiet",
-			of.Name(),
-		}...)
-
-		if err := RunCmd(
-			conf.TranscoderTimeout,
-			"ffmpeg",
-			args...,
-		); err != nil {
-			log.WithError(err).Error("error transcoding video")
-			errs <- err
-			return
-		}
-	}
-
-	TranscodeMP4 := func(ctx context.Context, errs chan error) {
-		defer wg.Done()
-
-		if err := RunCmd(
-			conf.TranscoderTimeout,
-			"ffmpeg",
-			"-y",
-			"-i", tf.Name(),
-			"-vcodec", "h264",
-			"-acodec", "aac",
-			"-strict", "-2",
-			"-loglevel", "quiet",
-			ReplaceExt(fn, ".mp4"),
-		); err != nil {
-			log.WithError(err).Error("error transcoding video")
-			errs <- err
-			return
-		}
-	}
-
-	GeneratePoster := func(ctx context.Context, errs chan error) {
-		defer wg.Done()
-
-		// Generate poster / thumbnail
-		_, thumb, err := thumbnailer.Process(tf, thumbnailerOpts)
-		if err != nil {
-			log.WithError(err).Error("error generating video poster thumbnail")
-			errs <- err
-			return
-		}
-
-		pf, err := os.OpenFile(ReplaceExt(fn, ".webp"), os.O_WRONLY|os.O_CREATE, 0644)
-		if err != nil {
-			log.WithError(err).Error("error opening thumbnail output file")
-			errs <- err
-			return
-		}
-		defer pf.Close()
-
-		if err := webp.Encode(pf, thumb, &webp.Options{Lossless: true}); err != nil {
-			log.WithError(err).Error("error reencoding thumbnail image")
-			errs <- err
-			return
-		}
-
-		// Re-encode to PNG (for older browsers)
-		if err := pf.Close(); err != nil {
-			log.WithError(err).Warnf("error cloding file %s", fn)
-		}
-		if err := ImageToPng(ReplaceExt(fn, ".webp")); err != nil {
-			log.WithError(err).Errorf("error reencoding thumbnail image to PNG (for older browsers: %s", fn)
-			errs <- err
-			return
-		}
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	errs := make(chan error)
-
-	wg.Add(3)
-	go TranscodeWebM(ctx, errs)
-	go TranscodeMP4(ctx, errs)
-	go GeneratePoster(ctx, errs)
-
-	wg.Wait()
-	close(errs)
-
-	errors := 0
-	for err := range errs {
-		log.WithError(err).Error("StoreUploadedVideo() error")
-		errors++
-	}
-
-	if errors > 0 {
-		log.Error("StoreUploadedVideo() too many errors")
-		return "", ErrVideoUploadFailed
-	}
-
-	return fmt.Sprintf(
-		"%s/%s/%s",
-		strings.TrimSuffix(conf.BaseURL, "/"),
-		resource, filepath.Base(fn),
-	), nil
+	return tf.Name(), nil
 }
 
 func TranscodeVideo(conf *Config, ifn string, resource, name string, opts *VideoOptions) (string, error) {
@@ -1047,7 +883,11 @@ type URI struct {
 	Path string
 }
 
-func (u *URI) String() string {
+func (u URI) IsZero() bool {
+	return u.Type == "" && u.Path == ""
+}
+
+func (u URI) String() string {
 	return fmt.Sprintf("%s://%s", u.Type, u.Path)
 }
 
@@ -1266,6 +1106,14 @@ func URLForTag(baseURL, tag string) string {
 		"%s/search?tag=%s",
 		strings.TrimSuffix(baseURL, "/"),
 		tag,
+	)
+}
+
+func URLForTask(baseURL, uuid string) string {
+	return fmt.Sprintf(
+		"%s/task/%s",
+		strings.TrimSuffix(baseURL, "/"),
+		uuid,
 	)
 }
 

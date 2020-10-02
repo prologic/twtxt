@@ -65,14 +65,18 @@ func (twt Twt) MarshalJSON() ([]byte, error) {
 		Created time.Time `json:"created"`
 
 		// Dynamic Fields
-		Hash string `json:"hash"`
+		Hash    string   `json:"hash"`
+		Tags    []string `json:"tags"`
+		Subject string   `json:"subject"`
 	}{
 		Twter:   twt.Twter,
 		Text:    twt.Text,
 		Created: twt.Created,
 
 		// Dynamic Fields
-		Hash: twt.Hash(),
+		Hash:    twt.Hash(),
+		Tags:    twt.Tags(),
+		Subject: twt.Subject(),
 	})
 }
 

@@ -68,7 +68,7 @@ const (
 	DefaultSessionExpiry = 240 * time.Hour // 10 days
 
 	// DefaultTranscoderTimeout is the default vodeo transcoding timeout
-	DefaultTranscoderTimeout = 5 * time.Minute // 5mins
+	DefaultTranscoderTimeout = 10 * time.Minute // 10mins
 
 	// DefaultMagicLinkSecret is the jwt magic link secret
 	DefaultMagicLinkSecret = "PLEASE_CHANGE_ME!!!"

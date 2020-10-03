@@ -832,24 +832,32 @@ func TranscodeVideo(conf *Config, ifn string, resource, name string, opts *Video
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	errors := 0
 	errs := make(chan error)
 
-	wg.Add(3)
+	wg.Add(4)
+
 	go TranscodeWebM(ctx, errs)
 	go TranscodeMP4(ctx, errs)
 	go GeneratePoster(ctx, errs)
 
+	go func(ctx context.Context) {
+		defer wg.Done()
+
+		select {
+		case err := <-errs:
+			log.WithError(err).Errorf("TranscodeVideo() error")
+			errors++
+		case <-ctx.Done():
+			return
+		}
+	}(ctx)
+
 	wg.Wait()
 	close(errs)
 
-	errors := 0
-	for err := range errs {
-		log.WithError(err).Error("StoreUploadedVideo() error")
-		errors++
-	}
-
 	if errors > 0 {
-		log.Error("StoreUploadedVideo() too many errors")
+		log.Error("TranscodeVideo() too many errors")
 		return "", ErrVideoUploadFailed
 	}
 

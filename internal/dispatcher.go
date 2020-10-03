@@ -2,8 +2,6 @@ package internal
 
 import (
 	"errors"
-
-	"github.com/renstrom/shortuuid"
 )
 
 // Dispatcher maintains a pool for available workers
@@ -79,9 +77,9 @@ func (d *Dispatcher) Stop() {
 	d.quit <- true
 }
 
-// Lookup returns the matching `Task` given its uuid
-func (d *Dispatcher) Lookup(uuid string) (Task, bool) {
-	task, ok := d.taskMap[uuid]
+// Lookup returns the matching `Task` given its id
+func (d *Dispatcher) Lookup(id string) (Task, bool) {
+	task, ok := d.taskMap[id]
 	return task, ok
 }
 
@@ -92,10 +90,9 @@ func (d *Dispatcher) Dispatch(task Task) (string, error) {
 		return "", errors.New("dispatcher is not active")
 	}
 
-	uuid := shortuuid.New()
 	d.taskQueue <- task
-	d.taskMap[uuid] = task
-	return uuid, nil
+	d.taskMap[task.ID()] = task
+	return task.ID(), nil
 }
 
 // DispatchFunc pushes the given func into the task queue by first wrapping

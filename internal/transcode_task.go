@@ -2,6 +2,7 @@ package internal
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	log "github.com/sirupsen/logrus"
@@ -20,13 +21,14 @@ type TranscodeTask struct {
 
 func NewTranscodeTask(conf *Config, fn string) *TranscodeTask {
 	return &TranscodeTask{
-		BaseTask: &BaseTask{},
+		BaseTask: NewBaseTask(),
 
 		conf: conf,
 		fn:   fn,
 	}
 }
 
+func (t *TranscodeTask) String() string { return fmt.Sprintf("%T: %s", t, t.ID()) }
 func (t *TranscodeTask) Run() error {
 	defer t.Done()
 	t.SetState(TaskStateRunning)

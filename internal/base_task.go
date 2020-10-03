@@ -1,9 +1,23 @@
 package internal
 
+import (
+	"fmt"
+
+	"github.com/renstrom/shortuuid"
+)
+
 type BaseTask struct {
 	state TaskState
 	data  TaskData
 	err   error
+	id    string
+}
+
+func NewBaseTask() *BaseTask {
+	return &BaseTask{
+		data: make(TaskData),
+		id:   shortuuid.New(),
+	}
 }
 
 func (t *BaseTask) SetState(state TaskState) {
@@ -31,12 +45,20 @@ func (t *BaseTask) Fail(err error) error {
 }
 
 func (t *BaseTask) Result() TaskResult {
+	stateStr := t.state.String()
+	errStr := ""
+	if t.err != nil {
+		errStr = t.err.Error()
+	}
+
 	return TaskResult{
-		State: t.state,
-		Error: t.err,
+		State: stateStr,
+		Error: errStr,
 		Data:  t.data,
 	}
 }
 
+func (t *BaseTask) String() string   { return fmt.Sprintf("%T: %s", t, t.ID()) }
+func (t *BaseTask) ID() string       { return t.id }
 func (t *BaseTask) State() TaskState { return t.state }
 func (t *BaseTask) Error() error     { return t.err }

@@ -32,7 +32,7 @@ func (w *Worker) Start() {
 			select {
 			case task := <-w.taskChannel:
 				if err := task.Run(); err != nil {
-					log.WithError(err).Errorf("error running task %q", task)
+					log.WithError(err).Errorf("error running task %s", task)
 				}
 			case <-w.quit:
 				return

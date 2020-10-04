@@ -462,6 +462,12 @@ func (s *Server) MediaHandler() httprouter.Handle {
 		case ".webm":
 			w.Header().Set("Content-Type", "video/webm")
 			fn = filepath.Join(s.config.Data, mediaDir, name)
+		case ".ogg":
+			w.Header().Set("Content-Type", "audio/ogg")
+			fn = filepath.Join(s.config.Data, mediaDir, name)
+		case ".mp3":
+			w.Header().Set("Content-Type", "audio/mp3")
+			fn = filepath.Join(s.config.Data, mediaDir, name)
 		default:
 			if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
 				w.Header().Set("Content-Type", "image/webp")
@@ -2214,6 +2220,25 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 		if strings.HasPrefix(ctype, "image/") {
 			opts := &ImageOptions{Resize: true, ResizeW: MediaResolution, ResizeH: 0}
 			mediaURI, err = StoreUploadedImage(
+				s.config, mediaFile,
+				mediaDir, "",
+				opts,
+			)
+
+			if err != nil {
+				log.WithError(err).Error("error storing the file")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		} else if strings.HasPrefix(ctype, "audio/") {
+			// TODO: Make this configurable.
+			opts := &AudioOptions{
+				Resample:   true,
+				Channels:   1,
+				Samplerate: 16000,
+				Bitrate:    96,
+			}
+			mediaURI, err = StoreUploadedAudio(
 				s.config, mediaFile,
 				mediaDir, "",
 				opts,

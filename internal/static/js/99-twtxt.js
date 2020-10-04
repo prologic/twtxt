@@ -610,7 +610,7 @@ u("#uploadVideo").on("change", function (e) {
         1000,
         function (errorData) {
       u("#uploadVideoButton").removeClass("icss-spinner icss-pulse");
-      u("#uploadVideoButton").addClass("icss-camera");
+      u("#uploadVideoButton").addClass("icss-video-camera");
       alert(
         "An error occurred uploading your video: " +
           errorData.error
@@ -632,7 +632,7 @@ u("#uploadVideo").on("change", function (e) {
     },
     error: function (statusCode, statusText) {
       u("#uploadVideoButton").removeClass("icss-spinner icss-pulse");
-      u("#uploadVideoButton").addClass("icss-camera");
+      u("#uploadVideoButton").addClass("icss-video-camera");
       alert(
         "An error occurred uploading your video: " +
           statusCode +

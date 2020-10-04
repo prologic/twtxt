@@ -147,13 +147,29 @@ type ProfileResponse struct {
 
 // FetchTwtsRequest ...
 type FetchTwtsRequest struct {
-	Slug string `json:"slug"`
+	URL  string `json:"url"`
 	Nick string `json:"nick"`
 	Page int    `json:"page"`
 }
 
 // NewFetchTwtsRequest ...
 func NewFetchTwtsRequest(r io.Reader) (req FetchTwtsRequest, err error) {
+	body, err := ioutil.ReadAll(r)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &req)
+	return
+}
+
+// ExternalProfileRequest ...
+type ExternalProfileRequest struct {
+	URL  string `json:"url"`
+	Nick string `json:"nick"`
+}
+
+// NewExternalProfileRequest ...
+func NewExternalProfileRequest(r io.Reader) (req ExternalProfileRequest, err error) {
 	body, err := ioutil.ReadAll(r)
 	if err != nil {
 		return

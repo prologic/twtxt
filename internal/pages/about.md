@@ -24,7 +24,7 @@ and read other user's feeds or external feeds. The following is a list of featur
 that are provided:
 
 - Decentralised micro-Blogging, or short-form Posts
-- Backed by the simple to read, parse and write [twtxt](ttps://twtxt.nreadthedocs.org) format specification
+- Backed by the simple to read, parse and write [twtxt](https://twtxt.nreadthedocs.org) format specification
 - Fully supports [Markdown](https://en.wikipedia.org/wiki/Markdown) rendering including 😺 pictures!
 - Supports [wee-are-twtxt](https://github.com/mdom/we-are-twtxt) feed sources format for discovering external feeds
 - Supports [IndieWeb[(https://indieweb.org/) formats and [WebMention(https://www.w3.org/TR/webmention/)

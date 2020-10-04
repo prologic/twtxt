@@ -80,8 +80,6 @@ const (
 )
 
 var (
-	slugs *sync.Map
-
 	specialUsernames = []string{
 		newsSpecialUser,
 		helpSpecialUser,
@@ -120,10 +118,6 @@ var (
 	}
 )
 
-func init() {
-	slugs = &sync.Map{}
-}
-
 func Slugify(uri string) string {
 	u, err := url.Parse(uri)
 	if err != nil {
@@ -131,10 +125,7 @@ func Slugify(uri string) string {
 		return ""
 	}
 
-	s := slug.Make(fmt.Sprintf("%s/%s", u.Hostname(), u.Path))
-	slugs.Store(s, u)
-
-	return s
+	return slug.Make(fmt.Sprintf("%s/%s", u.Hostname(), u.Path))
 }
 
 func GenerateAvatar(conf *Config, username string) (image.Image, error) {
@@ -192,11 +183,11 @@ func ImageToPng(fn string) error {
 }
 
 func GetExternalAvatar(conf *Config, nick, uri string) string {
-	name := Slugify(uri)
+	slug := Slugify(uri)
 
-	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.webp", name))
+	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.webp", slug))
 	if FileExists(fn) {
-		return URLForExternalAvatar(conf, nick, uri)
+		return URLForExternalAvatar(conf, uri)
 	}
 
 	if !strings.HasSuffix(uri, "/") {
@@ -223,7 +214,7 @@ func GetExternalAvatar(conf *Config, nick, uri string) string {
 		source, _ := base.Parse(candidate)
 		if ResourceExists(conf, source.String()) {
 			opts := &ImageOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: AvatarResolution}
-			_, err := DownloadImage(conf, source.String(), externalDir, name, opts)
+			_, err := DownloadImage(conf, source.String(), externalDir, slug, opts)
 			if err != nil {
 				log.WithError(err).
 					WithField("base", base.String()).
@@ -231,7 +222,7 @@ func GetExternalAvatar(conf *Config, nick, uri string) string {
 					Error("error downloading external avatar")
 				return ""
 			}
-			return URLForExternalAvatar(conf, nick, uri)
+			return URLForExternalAvatar(conf, uri)
 		}
 	}
 
@@ -1030,19 +1021,19 @@ func URLForAvatar(conf *Config, username string) string {
 	)
 }
 
-func URLForExternalProfile(conf *Config, nick, url string) string {
+func URLForExternalProfile(conf *Config, nick, uri string) string {
 	return fmt.Sprintf(
-		"%s/external/%s/%s",
+		"%s/external?uri=%s&nick%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
-		Slugify(url), nick,
+		uri, nick,
 	)
 }
 
-func URLForExternalAvatar(conf *Config, nick, url string) string {
+func URLForExternalAvatar(conf *Config, uri string) string {
 	return fmt.Sprintf(
-		"%s/external/%s/%s/avatar",
+		"%s/externalAvatar?uri=%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
-		Slugify(url), nick,
+		uri,
 	)
 }
 
@@ -1434,9 +1425,12 @@ func FormatMentionsAndTags(conf *Config, text string, format TwtTextFormat) stri
 		switch prefix {
 		case "@":
 			if isLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
-				return fmt.Sprintf(`[@%s](%s)`, nick, UserURL(url))
+				// Using (#) anchors to add the nick to URL for now. The Fluter app needs it since
+				// 	the Markdown plugin doesn't include the link text that contains the nick in its onTap callback
+				// https://github.com/flutter/flutter_markdown/issues/286
+				return fmt.Sprintf(`[@%s](%s#%s)`, nick, url, nick)
 			}
-			return fmt.Sprintf(`[@%s](%s)`, nick, URLForExternalProfile(conf, nick, url))
+			return fmt.Sprintf(`[@%s](%s#%s)`, nick, url, nick)
 		default:
 			return fmt.Sprintf(`[%s%s](%s)`, prefix, nick, url)
 		}

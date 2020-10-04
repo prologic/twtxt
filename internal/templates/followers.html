@@ -21,7 +21,7 @@
                 {{ if isLocalURL $URL }}
                   <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">{{ $Nick }}</a>
                 {{ else }}
-                  <a href="/external/{{ $URL | slugify }}/{{ $Nick  }}">
+                  <a href="/external?uri={{ $URL }}&nick={{ $Nick  }}">
                 {{ end }}
                 (<a href="{{ $URL }}">{{ $URL }}</a>)
 

@@ -4,18 +4,23 @@ import (
 	"encoding/base32"
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"regexp"
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/writeas/slug"
 	"golang.org/x/crypto/blake2b"
 )
 
 const (
 	HashLength = 7
+)
+
+var (
+	tagsRe    = regexp.MustCompile(`#[-\w]+`)
+	subjectRe = regexp.MustCompile(`^(@<.*>[, ]*)*(\(.*?\))(.*)`)
+
+	uriTagsRe     = regexp.MustCompile(`#<(.*?) .*?>`)
+	uriMentionsRe = regexp.MustCompile(`@<(.*?) (.*?)>`)
 )
 
 // Twter ...
@@ -30,33 +35,17 @@ func (twter Twter) IsZero() bool {
 	return twter.Nick == "" && twter.URL == ""
 }
 
-func (twter Twter) Slug() string {
-	u, err := url.Parse(twter.URL)
-	if err != nil {
-		log.WithError(err).Warnf("Twter.Slug(): error parsing url: %s", twter.URL)
-		return ""
-	}
-
-	return slug.Make(fmt.Sprintf("%s/%s", u.Hostname(), u.Path))
-}
-
 func (twter Twter) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		Nick    string `json:"nick"`
 		URL     string `json:"url"`
 		Avatar  string `json:"avatar"`
 		Tagline string `json:"tagline"`
-
-		// Dynamic Fields
-		Slug string `json:"slug"`
 	}{
 		Nick:    twter.Nick,
 		URL:     twter.URL,
 		Avatar:  twter.Avatar,
 		Tagline: twter.Tagline,
-
-		// Dynamic Fields
-		Slug: twter.Slug(),
 	})
 }
 
@@ -76,14 +65,18 @@ func (twt Twt) MarshalJSON() ([]byte, error) {
 		Created time.Time `json:"created"`
 
 		// Dynamic Fields
-		Hash string `json:"hash"`
+		Hash    string   `json:"hash"`
+		Tags    []string `json:"tags"`
+		Subject string   `json:"subject"`
 	}{
 		Twter:   twt.Twter,
 		Text:    twt.Text,
 		Created: twt.Created,
 
 		// Dynamic Fields
-		Hash: twt.Hash(),
+		Hash:    twt.Hash(),
+		Tags:    twt.Tags(),
+		Subject: twt.Subject(),
 	})
 }
 
@@ -92,8 +85,7 @@ func (twt Twt) Mentions() []Twter {
 	var mentions []Twter
 
 	seen := make(map[Twter]bool)
-	re := regexp.MustCompile(`@<(.*?) (.*?)>`)
-	matches := re.FindAllStringSubmatch(twt.Text, -1)
+	matches := uriMentionsRe.FindAllStringSubmatch(twt.Text, -1)
 	for _, match := range matches {
 		mention := Twter{Nick: match[1], URL: match[2]}
 		if !seen[mention] {
@@ -110,8 +102,7 @@ func (twt Twt) Tags() []string {
 	var tags []string
 
 	seen := make(map[string]bool)
-	re := regexp.MustCompile(`#<(.*?) .*?>`)
-	matches := re.FindAllStringSubmatch(twt.Text, -1)
+	matches := uriTagsRe.FindAllStringSubmatch(twt.Text, -1)
 	for _, match := range matches {
 		tag := match[1]
 		if !seen[tag] {
@@ -125,11 +116,17 @@ func (twt Twt) Tags() []string {
 
 // Subject ...
 func (twt Twt) Subject() string {
-	re := regexp.MustCompile(`^(@<.*>[, ]*)*(\(.*?\))(.*)`)
-	match := re.FindStringSubmatch(twt.Text)
+	match := subjectRe.FindStringSubmatch(twt.Text)
 	if match != nil {
-		return match[2]
+		matchingSubject := match[2]
+		matchedURITags := uriTagsRe.FindAllStringSubmatch(matchingSubject, -1)
+		if matchedURITags != nil {
+			// Re-add the (#xxx) back as the output
+			return fmt.Sprintf("(#%s)", matchedURITags[0][1])
+		}
+		return matchingSubject
 	}
+
 	// By default the subject is the Twt's Hash being replied to.
 	return fmt.Sprintf("(#%s)", twt.Hash())
 }
@@ -174,9 +171,8 @@ func (twts Twts) Swap(i, j int) {
 // Tags ...
 func (twts Twts) Tags() map[string]int {
 	tags := make(map[string]int)
-	re := regexp.MustCompile(`#[-\w]+`)
 	for _, twt := range twts {
-		for _, tag := range re.FindAllString(twt.Text, -1) {
+		for _, tag := range tagsRe.FindAllString(twt.Text, -1) {
 			tags[strings.TrimLeft(tag, "#")]++
 		}
 	}

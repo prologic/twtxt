@@ -826,21 +826,24 @@ func TranscodeVideo(conf *Config, ifn string, resource, name string, opts *Video
 	errors := 0
 	errs := make(chan error)
 
-	wg.Add(4)
+	wg.Add(3)
 
 	go TranscodeWebM(ctx, errs)
 	go TranscodeMP4(ctx, errs)
 	go GeneratePoster(ctx, errs)
 
 	go func(ctx context.Context) {
-		defer wg.Done()
-
-		select {
-		case err := <-errs:
-			log.WithError(err).Errorf("TranscodeVideo() error")
-			errors++
-		case <-ctx.Done():
-			return
+		for {
+			select {
+			case err, closed := <-errs:
+				if closed {
+					return
+				}
+				log.WithError(err).Errorf("TranscodeVideo() error")
+				errors++
+			case <-ctx.Done():
+				return
+			}
 		}
 	}(ctx)
 

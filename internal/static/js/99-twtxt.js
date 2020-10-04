@@ -569,6 +569,11 @@ function pollForTask(taskURL, max, delay, errorCallback, successCallback) {
     Twix.ajax({
         type: "GET",
         url: taskURL,
+        error: function (statusCode, statusText) {
+          errorCallback({
+            error: statusCode + " " + statusText
+          })
+        },
         success: function (data) {
             switch (data.state) {
                 case "pending":

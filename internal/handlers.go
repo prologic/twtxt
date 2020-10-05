@@ -893,6 +893,8 @@ func (s *Server) WebMentionHandler() httprouter.Handle {
 
 // PermalinkHandler ...
 func (s *Server) PermalinkHandler() httprouter.Handle {
+	formatTwt := FormatTwtFactory(s.config)
+
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
@@ -956,10 +958,15 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = fmt.Sprintf("%s @ %s > %s ", who, when, what)
+		title := fmt.Sprintf("%s at %s said", who, when)
+
+		ctx.Title = title
 		ctx.Meta = Meta{
+			Title:       title,
+			Description: string(formatTwt(what)),
 			Author:      who,
-			Description: what,
+			Image:       URLForAvatar(s.config, who),
+			URL:         r.URL.String(),
 			Keywords:    strings.Join(ks, ", "),
 		}
 		if strings.HasPrefix(twt.Twter.URL, s.config.BaseURL) {

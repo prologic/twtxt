@@ -21,6 +21,13 @@
     {{ with .Meta.Author }}<meta name="author" content="{{ . }}">{{ end }}
     {{ with .Meta.Keywords }}<meta name="keywords" content="{{ . }}">{{ end }}
     {{ with .Meta.Description }}<meta name="description" content="{{ . }}">{{ end }}
+
+    <!-- OpenGraph Meta Tags -->
+    {{ with .Meta.Title}}<meta property="og:title" content="{{ . }}">{{ end  }}
+    {{ with .Meta.Description}}<meta property="og:description" content="{{ . }}">{{ end  }}
+    {{ with .Meta.Image}}<meta property="og:image" content="{{ . }}">{{ end  }}
+    {{ with .Meta.URL}}<meta property="og:url" content="{{ . }}">{{ end  }}
+    <meta property="og:site_name" content="{{ .InstanceName }}">
   </head>
 <body>
   <nav id="mainNav" class="container-fluid">

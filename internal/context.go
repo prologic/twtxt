@@ -17,9 +17,11 @@ import (
 
 type Meta struct {
 	Title       string
-	Author      string
-	Keywords    string
 	Description string
+	Image       string
+	Author      string
+	URL         string
+	Keywords    string
 }
 
 type Context struct {
@@ -32,7 +34,7 @@ type Context struct {
 	TwtPrompt               string
 	MaxTwtLength            int
 	RegisterDisabled        bool
-	OpenProfiles			bool
+	OpenProfiles            bool
 	RegisterDisabledMessage string
 
 	Timezones []*timezones.Zoneinfo
@@ -44,7 +46,7 @@ type Context struct {
 	LastTwt       types.Twt
 	Profile       types.Profile
 	Authenticated bool
-	IsAdmin 	  bool
+	IsAdmin       bool
 
 	Error   bool
 	Message string
@@ -80,7 +82,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		TwtPrompt:        conf.RandomTwtPrompt(),
 		MaxTwtLength:     conf.MaxTwtLength,
 		RegisterDisabled: !conf.OpenRegistrations,
-		OpenProfiles:	  conf.OpenProfiles,
+		OpenProfiles:     conf.OpenProfiles,
 
 		Commit: twtxt.Commit,
 		Theme:  conf.Theme,

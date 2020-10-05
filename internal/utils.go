@@ -1194,7 +1194,7 @@ func URLForAvatar(conf *Config, username string) string {
 
 func URLForExternalProfile(conf *Config, nick, uri string) string {
 	return fmt.Sprintf(
-		"%s/external?uri=%s&nick%s",
+		"%s/external?uri=%s&nick=%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
 		uri, nick,
 	)

@@ -1003,8 +1003,8 @@ func TranscodeVideo(conf *Config, ifn string, resource, name string, opts *Video
 	go func(ctx context.Context) {
 		for {
 			select {
-			case err, closed := <-errs:
-				if closed {
+			case err, ok := <-errs:
+				if !ok {
 					return
 				}
 				log.WithError(err).Errorf("TranscodeVideo() error")

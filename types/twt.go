@@ -51,27 +51,30 @@ func (twter Twter) MarshalJSON() ([]byte, error) {
 
 // Twt ...
 type Twt struct {
-	Twter   Twter
-	Text    string
-	Created time.Time
+	Twter        Twter
+	Text         string
+	MarkdownText string
+	Created      time.Time
 
 	hash string
 }
 
 func (twt Twt) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Twter   Twter     `json:"twter"`
-		Text    string    `json:"text"`
-		Created time.Time `json:"created"`
+		Twter        Twter     `json:"twter"`
+		Text         string    `json:"text"`
+		Created      time.Time `json:"created"`
+		MarkdownText string    `json:"markdownText"`
 
 		// Dynamic Fields
 		Hash    string   `json:"hash"`
 		Tags    []string `json:"tags"`
 		Subject string   `json:"subject"`
 	}{
-		Twter:   twt.Twter,
-		Text:    twt.Text,
-		Created: twt.Created,
+		Twter:        twt.Twter,
+		Text:         twt.Text,
+		Created:      twt.Created,
+		MarkdownText: twt.MarkdownText,
 
 		// Dynamic Fields
 		Hash:    twt.Hash(),

@@ -116,9 +116,10 @@ func (a *API) formatTwtText(twts types.Twts) types.Twts {
 
 	for _, twt := range twts {
 		res = append(res, types.Twt{
-			Twter:   twt.Twter,
-			Text:    FormatMentionsAndTags(a.config, twt.Text, MarkdownFmt),
-			Created: twt.Created,
+			Twter:        twt.Twter,
+			Text:         twt.Text,
+			Created:      twt.Created,
+			MarkdownText: FormatMentionsAndTags(a.config, twt.Text, MarkdownFmt),
 		})
 	}
 

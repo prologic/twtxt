@@ -565,7 +565,9 @@ u("#uploadImage").on("change", function (e) {
   });
 });
 
-function pollForTask(taskURL, max, delay, errorCallback, successCallback) {
+const maxTaskWait = (1000 * 60 * 10); // ~10mins TODO: Make this configurable
+
+function pollForTask(taskURL, delay, maxDelay, timeout, errorCallback, successCallback) {
     Twix.ajax({
         type: "GET",
         url: taskURL,
@@ -578,9 +580,12 @@ function pollForTask(taskURL, max, delay, errorCallback, successCallback) {
             switch (data.state) {
                 case "pending":
                 case "running":
-                    if (max > 0) {
+                    if (Date.now() < timeout) {
+                        if (delay < maxDelay) {
+                            delay = delay * 2;
+                        }
                         setTimeout(function () {
-                            pollForTask(taskURL, --max, delay * 2, errorCallback, successCallback);
+                            pollForTask(taskURL, delay, maxDelay, timeout, errorCallback, successCallback);
                         }, delay);
                         return;
                     }
@@ -611,8 +616,9 @@ u("#uploadVideo").on("change", function (e) {
 
       pollForTask(
         data.Path,
-        10,
         1000,
+        30000,
+        Date.now() + maxTaskWait,
         function (errorData) {
       u("#uploadVideoButton").removeClass("icss-spinner icss-pulse");
       u("#uploadVideoButton").addClass("icss-video-camera");

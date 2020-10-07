@@ -1,0 +1,26 @@
+{{define "content"}}
+  <article class="grid">
+    <hgroup>
+      <h2>Manager Users</h2>
+      <h3>Add/Remove Users</h3>
+    </hgroup>
+  </article>
+  <div class="grid">
+    <div>
+      <h4>Add User</h4>
+      <form action="/manage/adduser" method="POST">
+        <input type="text" name="username" placeholder="Username" aria-label="Username" autocomplete="nickname" required>
+        <input type="text" name="email" placeholder="Email Address" aria-label="Email" autocomplete="email" required>
+        <p>Once created, the new user can reset their password via the "Reset Password" functionality.</p>
+        <button type="submit">Add</button>
+      </form>
+    </div>
+    <div>
+      <h4>Delete User</h4>
+      <form action="/manage/deluser" method="POST">
+        <input type="text" name="username" placeholder="Username" />
+        <button type="submit">Delete User</button>
+      </form>
+    </div>
+  </div>
+{{ end}}

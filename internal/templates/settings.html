@@ -95,12 +95,6 @@
         </div>
         <button type="submit" class="primary">Update</button>
       </form>
-      {{ if .IsAdmin }}
-      <form action="/manage" method="GET">
-        <button type="submit" class="contrast">Manage Pod</button>
-      </form>
-      {{ end }}
-      
         
       <details>
         <summary>API Tokens</summary>
@@ -129,7 +123,6 @@
           </tbody>
         </table>
       </details>  
-      
 
       <details>
         <summary>Delete account</summary>
@@ -141,6 +134,19 @@
           <button type="submit" class="contrast">Delete</button>
         </form>
       </details>
+
+      {{ if .IsAdmin }}
+        <details>
+          <summary>Pod Admin</summary>
+          <p>
+            <ul>
+              <li><a href="/manage/pod">Managee Pod</a></li>
+              <li><a href="/manage/users">Managee Users</a></li>
+            </ul>
+          </p>
+        </details>
+      {{ end }}
+
     </div>
   </article>
 {{end}}

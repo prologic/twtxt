@@ -16,8 +16,17 @@ import (
 
 // ManagePodHandler ...
 func (s *Server) ManagePodHandler() httprouter.Handle {
+	isAdminUser := IsAdminUserFactory(s.config)
+
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+
+		if !isAdminUser(ctx.User) {
+			ctx.Error = true
+			ctx.Message = "You are not a Pod Owner!"
+			s.render("403", w, ctx)
+			return
+		}
 
 		if r.Method == "GET" {
 			s.render("managePod", w, ctx)
@@ -99,8 +108,17 @@ func (s *Server) ManagePodHandler() httprouter.Handle {
 
 // ManageUsersHandler ...
 func (s *Server) ManageUsersHandler() httprouter.Handle {
+	isAdminUser := IsAdminUserFactory(s.config)
+
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+
+		if !isAdminUser(ctx.User) {
+			ctx.Error = true
+			ctx.Message = "You are not a Pod Owner!"
+			s.render("403", w, ctx)
+			return
+		}
 
 		s.render("manageUsers", w, ctx)
 		return
@@ -109,8 +127,17 @@ func (s *Server) ManageUsersHandler() httprouter.Handle {
 
 // AddUserHandler ...
 func (s *Server) AddUserHandler() httprouter.Handle {
+	isAdminUser := IsAdminUserFactory(s.config)
+
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+
+		if !isAdminUser(ctx.User) {
+			ctx.Error = true
+			ctx.Message = "You are not a Pod Owner!"
+			s.render("403", w, ctx)
+			return
+		}
 
 		username := NormalizeUsername(r.FormValue("username"))
 		email := r.FormValue("email")
@@ -181,8 +208,17 @@ func (s *Server) AddUserHandler() httprouter.Handle {
 
 // DelUserHandler ...
 func (s *Server) DelUserHandler() httprouter.Handle {
+	isAdminUser := IsAdminUserFactory(s.config)
+
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+
+		if !isAdminUser(ctx.User) {
+			ctx.Error = true
+			ctx.Message = "You are not a Pod Owner!"
+			s.render("403", w, ctx)
+			return
+		}
 
 		username := NormalizeUsername(r.FormValue("username"))
 

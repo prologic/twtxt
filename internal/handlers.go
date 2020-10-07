@@ -251,7 +251,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 		}
 
 		ctx.Title = fmt.Sprintf("%s's Profile", profile.Username)
-		ctx.Twts = pagedTwts
+		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 
 		s.render("profile", w, ctx)
@@ -876,7 +876,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			ctx.LastTwt = lastTwt
 		}
 
-		ctx.Twts = pagedTwts
+		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 
 		s.render("timeline", w, ctx)
@@ -1001,7 +1001,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			}...)
 		}
 
-		ctx.Twts = types.Twts{twt}
+		ctx.Twts = FilterTwts(ctx.User, types.Twts{twt})
 		s.render("permalink", w, ctx)
 		return
 	}
@@ -1043,7 +1043,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 		}
 
 		ctx.Title = "Local timeline"
-		ctx.Twts = pagedTwts
+		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 
 		s.render("timeline", w, ctx)
@@ -1097,7 +1097,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 		}
 
 		ctx.Title = "Mentions"
-		ctx.Twts = pagedTwts
+		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 		s.render("timeline", w, ctx)
 	}
@@ -1148,7 +1148,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Twts = pagedTwts
+		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 
 		s.render("timeline", w, ctx)
@@ -1938,7 +1938,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Twts = pagedTwts
+		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 		ctx.Twter = types.Twter{
 			Nick:   nick,

@@ -69,6 +69,10 @@ type Context struct {
 	FeedSources FeedSourceMap
 	Pager       *paginator.Paginator
 
+	// Report abuse
+	ReportNick string
+	ReportURL  string
+
 	// Reset Password Token
 	PasswordResetToken string
 }

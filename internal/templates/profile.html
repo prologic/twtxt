@@ -35,6 +35,40 @@
           </h3>
         {{ end}}
         <p><i>{{ .Profile.Tagline }}</i></p>
+        <details>
+          <summary>Block / Report User</summary>
+          <p>
+            If this use is violating this Pod's ({{ .InstanceName }})
+            community guidelines as set out in the <a href="/abuse">Abuse Policy</a>,
+            please report them immediately!
+          </p>
+          <p>
+            You are also free to Unfollow or Mute the user or feed. Muting will
+            also remove that user/feed's content from view and you will
+            no longer see content from that user/feed anywhere.
+          </p>
+          <ul>
+            <li>
+              {{ if $.User.HasMuted .Profile.URL }}
+                <a href="/unmute?nick={{ .Profile.Username }}">
+                  <i class="icss-sound-3"></i>
+                  Unmute
+                </a>
+              {{ else }}
+                <a href="/mute?nick={{ .Profile.Username }}&url={{ .Profile.URL }}">
+                  <i class="icss-sound-0"></i>
+                  Mute
+                </a>
+              {{ end }}
+            </li>
+            <li>
+              <a href="/report?nick={{ .Profile.Username  }}&url={{ .Profile.URL }}">
+                <i class="icss-exclamation-circle" style="color:red;"></i>
+                Report
+              </a>
+            </li>
+          </ul>
+        </details>
       </hgroup>
     </div>
     <div>

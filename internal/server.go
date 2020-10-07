@@ -557,6 +557,14 @@ func (s *Server) initRoutes() {
 	s.router.GET("/unfollow", s.am.MustAuth(s.UnfollowHandler()))
 	s.router.POST("/unfollow", s.am.MustAuth(s.UnfollowHandler()))
 
+	s.router.GET("/mute", s.am.MustAuth(s.MuteHandler()))
+	s.router.POST("/mute", s.am.MustAuth(s.MuteHandler()))
+	s.router.GET("/unmute", s.am.MustAuth(s.UnmuteHandler()))
+	s.router.POST("/unmute", s.am.MustAuth(s.UnmuteHandler()))
+
+	s.router.GET("/report", s.am.MustAuth(s.ReportHandler()))
+	s.router.POST("/report", s.am.MustAuth(s.ReportHandler()))
+
 	s.router.GET("/settings", s.am.MustAuth(s.SettingsHandler()))
 	s.router.POST("/settings", s.am.MustAuth(s.SettingsHandler()))
 	s.router.POST("/token/delete/:signature", s.am.MustAuth(s.DeleteTokenHandler()))

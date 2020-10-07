@@ -1357,6 +1357,14 @@ func UnparseTwtFactory(conf *Config) func(text string) string {
 	}
 }
 
+// FilterTwts filters out Twts from users/feeds that a User has chosen to mute
+func FilterTwts(user *User, twts types.Twts) (filtered types.Twts) {
+	if user == nil {
+		return twts
+	}
+	return user.Filter(twts)
+}
+
 // CleanTwt cleans a twt's text, replacing new lines with spaces and
 // stripping surrounding spaces.
 func CleanTwt(text string) string {

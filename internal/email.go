@@ -41,6 +41,24 @@ Kind regards,
 
 {{ .Pod}} Support
 `))
+
+	reportAbuseEmailTemplate = template.Must(template.New("email").Parse(`Hello {{ .AdminUser }},
+
+{{ .Name }} <{{ .Email }} from {{ .Pod }} has sent the following abuse report:
+
+> Category: {{ .Category }}
+> 
+{{ .Message }}
+
+The offending user/feed in question is:
+
+- Nick: {{ .Nick }}
+- URL: {{ .URL }}
+
+Kind regards,
+
+{{ .Pod }} Support
+`))
 )
 
 type PasswordResetEmailContext struct {
@@ -59,6 +77,19 @@ type SupportRequestEmailContext struct {
 	Email   string
 	Subject string
 	Message string
+}
+
+type ReportAbuseEmailContext struct {
+	Pod       string
+	AdminUser string
+
+	Nick string
+	URL  string
+
+	Name     string
+	Email    string
+	Category string
+	Message  string
 }
 
 // indents a block of text with an indent string
@@ -148,6 +179,39 @@ func SendSupportRequestEmail(conf *Config, name, email, subject, message string)
 
 	if err := SendEmail(conf, recipients, email, emailSubject, buf.String()); err != nil {
 		log.WithError(err).Errorf("error sending support request to %s", recipients[0])
+		return err
+	}
+
+	return nil
+}
+
+func SendReportAbuseEmail(conf *Config, nick, url, name, email, category, message string) error {
+	recipients := []string{conf.AdminEmail, email}
+	emailSubject := fmt.Sprintf(
+		"[%s Report Abuse]: %s",
+		conf.Name, category,
+	)
+	ctx := ReportAbuseEmailContext{
+		Pod:       conf.Name,
+		AdminUser: conf.AdminUser,
+
+		Nick: nick,
+		URL:  url,
+
+		Name:     name,
+		Email:    email,
+		Category: category,
+		Message:  Indent(message, "> "),
+	}
+
+	buf := &bytes.Buffer{}
+	if err := reportAbuseEmailTemplate.Execute(buf, ctx); err != nil {
+		log.WithError(err).Error("error rendering email template")
+		return err
+	}
+
+	if err := SendEmail(conf, recipients, email, emailSubject, buf.String()); err != nil {
+		log.WithError(err).Errorf("error sending report abuse to %s", recipients[0])
 		return err
 	}
 

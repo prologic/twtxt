@@ -1,0 +1,47 @@
+{{define "content"}}
+  <article class="grid">
+    <div>
+      <hgroup>
+        <h2>Report Abuse</h2>
+        <p>
+          We take all reports very seriously! If you are unsure about our
+          community guidelines, please read the <a href="/abuse">Abuse Policy</a>.
+        </p>
+      </hgroup>
+      <form action="/report" method="POST">
+        <input type="hidden" name="nick" value="{{ .ReportNick }}">
+        <input type="hidden" name="url" value="{{ .ReportURL }}">
+
+        <input type="text" name="name" placeholder="Your name" aria-label="Name" autofocus required>
+        <input type="email" name="email" placeholder="Your email address" aria-label="Email" required>
+        <p>
+          Please provide your name and email address so we may contact you for further information
+          (<i>if necessary</i>) and so we can inform you of the outcome.
+        </p>
+
+        <select name="category">
+          <option value="" selected>Select type of abuse...</option>
+          <option value="harrasment">Harrasment</option>
+          <option value="hate">Hate Speech</option>
+          <option value="doxxing">Posting private information</option>
+          <option value="threat">Threats of violence</option>
+          <option value="illegal">Illegal activities</option>
+        </select>
+
+        <textarea name="message" placeholder="Message" aria-label="Message" rows="4" cols="50" required></textarea>
+        <p>
+          Please provide examples by linking to the content in question. You may paste the /twt/<hash>  URLs
+          or simply a list of the hashes. Please also give a brief reason why you believe the community guidelines
+          and therefore <a href="/abuse">Abuse Policy</a> is in direct violation.
+        </p>
+
+        <small>Please solve this simple math problem below so we know you're a human!</small>
+        <img id="captcha" src="/_captcha" alt="captcha" height="50" width="150" />
+        <input type="text" name="captchaInput" class="captchaInput" placeholder="Captcha" aria-label="Captcha" required>
+
+        <button type="submit" class="contrast">Submit</button>
+      </form>
+    </div>
+    <div></div>
+  </article>
+{{end}}

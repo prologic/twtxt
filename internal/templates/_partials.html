@@ -145,7 +145,7 @@
   <div class="grid h-feed">
     <div>
       {{ template "pager" $.Pager }}
-      {{ range $idx, $twt := $.Twts }}
+      {{ range $idx, $twt := $.Twts | $.User.Filter }}
         {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" $twt) }}
       {{ else }}
         <small><i>There are no twts yet... come back later!</i></small>

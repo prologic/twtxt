@@ -55,7 +55,9 @@ type User struct {
 
 	Followers map[string]string `default:"{}"`
 	Following map[string]string `default:"{}"`
+	Muted     map[string]string `default:"{}"`
 
+	muted   map[string]string
 	remotes map[string]string
 	sources map[string]string
 }
@@ -216,6 +218,14 @@ func LoadUser(data []byte) (user *User, err error) {
 		user.Following = make(map[string]string)
 	}
 
+	user.muted = make(map[string]string)
+	for n, u := range user.Muted {
+		if u = NormalizeURL(u); u == "" {
+			continue
+		}
+		user.muted[u] = n
+	}
+
 	user.remotes = make(map[string]string)
 	for n, u := range user.Followers {
 		if u = NormalizeURL(u); u == "" {
@@ -318,6 +328,15 @@ func (u *User) Follows(url string) bool {
 	return ok
 }
 
+func (u *User) Mute(nick, url string) {
+	u.Muted[nick] = url
+}
+
+func (u *User) HasMuted(url string) bool {
+	_, ok := u.muted[NormalizeURL(url)]
+	return ok
+}
+
 func (u *User) Source() types.Feeds {
 	feeds := make(types.Feeds)
 	feeds[types.Feed{Nick: u.Username, URL: u.URL}] = true
@@ -348,6 +367,16 @@ func (u *User) Profile(baseURL string) types.Profile {
 
 func (u *User) Twter() types.Twter {
 	return types.Twter{Nick: u.Username, URL: u.URL}
+}
+
+func (u *User) Filter(twts []types.Twt) (filtered []types.Twt) {
+	for _, twt := range twts {
+		if u.HasMuted(twt.Twter.URL) {
+			continue
+		}
+		filtered = append(filtered, twt)
+	}
+	return
 }
 
 func (u *User) Reply(twt types.Twt) string {

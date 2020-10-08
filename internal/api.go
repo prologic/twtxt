@@ -81,6 +81,10 @@ func (a *API) initRoutes() {
 	router.POST("/external", a.ExternalProfileEndpoint())
 
 	router.POST("/mentions", a.isAuthorized(a.MentionsEndpoint()))
+
+	// Support / Report endpoints
+	router.POST("/support", a.isAuthorized(a.SupportEndpoint()))
+	router.POST("/report", a.isAuthorized(a.ReportEndpoint()))
 }
 
 // CreateToken ...
@@ -1012,5 +1016,72 @@ func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
+	}
+}
+
+// SupportEndpoint ...
+func (a *API) SupportEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		req, err := types.NewSupportRequest(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing support request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		name := req.Name
+		email := req.Email
+		subject := req.Subject
+		message := req.Message
+
+		if err := SendSupportRequestEmail(a.config, name, email, subject, message); err != nil {
+			log.WithError(err).Errorf("unable to send support email for %s", email)
+			log.WithError(err).Error("error sending support request")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		log.Infof("support message email sent for %s", email)
+
+		// No real response
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+		return
+	}
+}
+
+// ReportEndpoint ...
+func (a *API) ReportEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		req, err := types.NewReportRequest(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing report request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		nick := req.Nick
+		url := req.URL
+
+		if nick == "" || url == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		name := req.Name
+		email := req.Email
+		category := req.Category
+		message := req.Message
+
+		if err := SendReportAbuseEmail(a.config, nick, url, name, email, category, message); err != nil {
+			log.WithError(err).Errorf("unable to send report email for %s", email)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		// No real response
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+		return
 	}
 }

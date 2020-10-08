@@ -177,3 +177,42 @@ func NewExternalProfileRequest(r io.Reader) (req ExternalProfileRequest, err err
 	err = json.Unmarshal(body, &req)
 	return
 }
+
+// SupportRequest ...
+type SupportRequest struct {
+	Name    string `json:"name"`
+	Email   string `json:"email"`
+	Subject string `json:"subject"`
+	Message string `json:"message"`
+}
+
+// NewSupportRequest ...
+func NewSupportRequest(r io.Reader) (req SupportRequest, err error) {
+	body, err := ioutil.ReadAll(r)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &req)
+	return
+}
+
+// ReportRequest ...
+type ReportRequest struct {
+	Nick string `json:"nick"`
+	URL  string `json:"url"`
+
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Category string `json:"subject"`
+	Message  string `json:"message"`
+}
+
+// NewReportRequest ...
+func NewReportRequest(r io.Reader) (req ReportRequest, err error) {
+	body, err := ioutil.ReadAll(r)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &req)
+	return
+}

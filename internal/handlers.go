@@ -2588,7 +2588,7 @@ func (s *Server) TransferFeedHandler() httprouter.Handle {
 					return
 				}
 
-				ctx.Profile = feed.Profile()
+				ctx.Profile = feed.Profile(s.config.BaseURL)
 				s.render("transferFeed", w, ctx)
 				return
 			}

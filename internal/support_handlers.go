@@ -32,7 +32,7 @@ func (s *Server) CaptchaHandler() httprouter.Handle {
 
 		w.Header().Set("Content-Type", "image/png")
 		if err := img.WriteImage(w); err != nil {
-			log.WithError(err).Errorf("error sending captcha image repsonse")
+			log.WithError(err).Errorf("error sending captcha image response")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}

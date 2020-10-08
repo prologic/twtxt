@@ -30,7 +30,7 @@ func (s *Server) MuteHandler() httprouter.Handle {
 			return
 		}
 
-		user.Muted[nick] = url
+		user.Mute(nick, url)
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
 			ctx.Error = true
@@ -65,26 +65,17 @@ func (s *Server) UnmuteHandler() httprouter.Handle {
 			log.Fatalf("user not found in context")
 		}
 
-		url, ok := user.Muted[nick]
-		if !ok {
-			ctx.Error = true
-			ctx.Message = fmt.Sprintf("No muted feed found by the nick %s", nick)
-			s.render("error", w, ctx)
-			return
-		}
-
-		delete(user.Muted, nick)
-		delete(user.muted, url)
+		user.Unmute(nick)
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("Error unmuting feed %s: %s", nick, url)
+			ctx.Message = fmt.Sprintf("Error unmuting feed %s", nick)
 			s.render("error", w, ctx)
 			return
 		}
 
 		ctx.Error = false
-		ctx.Message = fmt.Sprintf("Successfully unmuted %s: %s", nick, url)
+		ctx.Message = fmt.Sprintf("Successfully unmuted %s", nick)
 		s.render("error", w, ctx)
 		return
 	}

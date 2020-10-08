@@ -72,6 +72,9 @@ func (a *API) initRoutes() {
 	router.POST("/follow", a.isAuthorized(a.FollowEndpoint()))
 	router.POST("/unfollow", a.isAuthorized(a.UnfollowEndpoint()))
 
+	router.POST("/mute", a.isAuthorized(a.MuteEndpoint()))
+	router.POST("/unmute", a.isAuthorized(a.UnmuteEndpoint()))
+
 	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
 	router.POST("/discover", a.DiscoverEndpoint())
 
@@ -1016,6 +1019,75 @@ func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
+	}
+}
+
+// MuteEndpoint ...
+func (a *API) MuteEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		user := r.Context().Value(UserContextKey).(*User)
+
+		req, err := types.NewMuteRequest(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing mute request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		nick := req.Nick
+		url := req.URL
+
+		if nick == "" || url == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		user.Mute(nick, url)
+
+		if err := a.db.SetUser(user.Username, user); err != nil {
+			log.WithError(err).Error("error updating user object")
+			http.Error(w, "User Update Failed", http.StatusInternalServerError)
+			return
+		}
+
+		// No real response
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+		return
+	}
+}
+
+// UnmuteEndpoint ...
+func (a *API) UnmuteEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		user := r.Context().Value(UserContextKey).(*User)
+
+		req, err := types.NewUnmuteRequest(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing unmute request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		nick := req.Nick
+
+		if nick == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		user.Unmute(nick)
+
+		if err := a.db.SetUser(user.Username, user); err != nil {
+			log.WithError(err).Error("error updating user object")
+			http.Error(w, "User Update Failed", http.StatusInternalServerError)
+			return
+		}
+
+		// No real response
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+		return
 	}
 }
 

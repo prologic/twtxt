@@ -334,6 +334,21 @@ func (u *User) FollowedBy(url string) bool {
 	return ok
 }
 
+func (u *User) Mute(nick, url string) {
+	if !u.HasMuted(url) {
+		u.Muted[nick] = url
+		u.muted[url] = nick
+	}
+}
+
+func (u *User) Unmute(nick string) {
+	url, ok := u.Muted[nick]
+	if ok {
+		delete(u.Muted, nick)
+		delete(u.muted, url)
+	}
+}
+
 func (u *User) Follow(nick, url string) {
 	if !u.Follows(url) {
 		u.Following[nick] = url
@@ -344,10 +359,6 @@ func (u *User) Follow(nick, url string) {
 func (u *User) Follows(url string) bool {
 	_, ok := u.sources[NormalizeURL(url)]
 	return ok
-}
-
-func (u *User) Mute(nick, url string) {
-	u.Muted[nick] = url
 }
 
 func (u *User) HasMuted(url string) bool {

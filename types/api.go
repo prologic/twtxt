@@ -162,6 +162,37 @@ func NewFetchTwtsRequest(r io.Reader) (req FetchTwtsRequest, err error) {
 	return
 }
 
+// MuteRequest ...
+type MuteRequest struct {
+	Nick string `json:"nick"`
+	URL  string `json:"url"`
+}
+
+// NewMuteRequest ...
+func NewMuteRequest(r io.Reader) (req MuteRequest, err error) {
+	body, err := ioutil.ReadAll(r)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &req)
+	return
+}
+
+// UnmuteRequest ...
+type UnmuteRequest struct {
+	Nick string `json:"nick"`
+}
+
+// NewUnmuteRequest ...
+func NewUnmuteRequest(r io.Reader) (req UnmuteRequest, err error) {
+	body, err := ioutil.ReadAll(r)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &req)
+	return
+}
+
 // ExternalProfileRequest ...
 type ExternalProfileRequest struct {
 	URL  string `json:"url"`

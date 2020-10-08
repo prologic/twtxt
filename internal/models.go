@@ -21,6 +21,7 @@ const (
 
 var (
 	ErrFeedAlreadyExists = errors.New("error: feed already exists by that name")
+	ErrAlreadyFollows    = errors.New("error: you already follow this feed")
 	ErrTooManyFeeds      = errors.New("error: you have too many feeds")
 )
 
@@ -354,6 +355,21 @@ func (u *User) Follow(nick, url string) {
 		u.Following[nick] = url
 		u.sources[url] = nick
 	}
+}
+
+func (u *User) FollowAndValidate(conf *Config, nick, url string) error {
+	if err := ValidateFeed(conf, nick, url); err != nil {
+		return err
+	}
+
+	if u.Follows(url) {
+		return ErrAlreadyFollows
+	}
+
+	u.Following[nick] = url
+	u.sources[url] = nick
+
+	return nil
 }
 
 func (u *User) Follows(url string) bool {

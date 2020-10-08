@@ -602,7 +602,11 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 			return
 		}
 
-		user.Following[nick] = url
+		if err := user.FollowAndValidate(a.config, nick, url); err != nil {
+			log.WithError(err).Errorf("error validating new feed @<%s %s>", nick, url)
+			http.Error(w, "Invalid Feed", http.StatusBadRequest)
+			return
+		}
 
 		if err := a.db.SetUser(user.Username, user); err != nil {
 			log.WithError(err).Error("error saving user object")

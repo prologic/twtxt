@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"errors"
@@ -102,6 +103,7 @@ var (
 	userAgentRegex = regexp.MustCompile(`(.*?)\/(.*?) ?\(\+(https?://.*); @(.*)\)`)
 
 	ErrInvalidFeedName   = errors.New("error: invalid feed name")
+	ErrBadRequest        = errors.New("error: request failed with non-200 response")
 	ErrFeedNameTooLong   = errors.New("error: feed name is too long")
 	ErrInvalidUsername   = errors.New("error: invalid username")
 	ErrUsernameTooLong   = errors.New("error: username is too long")
@@ -1056,6 +1058,29 @@ func NormalizeFeedName(name string) string {
 	name = strings.ReplaceAll(name, " ", "_")
 	name = strings.ToLower(name)
 	return name
+}
+
+func ValidateFeed(conf *Config, nick, url string) error {
+	res, err := Request(conf, http.MethodGet, url, nil)
+	if err != nil {
+		log.WithError(err).Errorf("error fetching feed %s", url)
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != 200 {
+		return ErrBadRequest
+	}
+
+	limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
+	scanner := bufio.NewScanner(limitedReader)
+	twter := types.Twter{Nick: nick, URL: url}
+	_, _, err = ParseFile(scanner, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func ValidateFeedName(path string, name string) error {

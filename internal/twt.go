@@ -26,6 +26,7 @@ const (
 
 var (
 	ErrInvalidTwtLine = errors.New("error: invalid twt line parsed")
+	ErrInvalidFeed    = errors.New("error: erroneous feed detected")
 )
 
 // ExpandMentions turns "@nick" into "@<nick URL>" if we're following the user or feed
@@ -267,11 +268,15 @@ func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
 		return
 	}
 
-	twt = types.Twt{
-		Twter:   twter,
-		Created: ParseTime(parts[1]),
-		Text:    parts[3],
+	created, err := ParseTime(parts[1])
+	if err != nil {
+		err = ErrInvalidTwtLine
+		return
 	}
+
+	text := parts[3]
+
+	twt = types.Twt{Twter: twter, Created: created, Text: text}
 
 	return
 }
@@ -284,10 +289,15 @@ func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N i
 
 	oldTime := time.Now().Add(-ttl)
 
+	nLines, nErrors := 0, 0
+
 	for scanner.Scan() {
 		line := scanner.Text()
+		nLines++
+
 		twt, err := ParseLine(line, twter)
 		if err != nil {
+			nErrors++
 			log.Warnf("could not parse: '%s' (source:%s)\n", line, twter.URL)
 			continue
 		}
@@ -303,6 +313,11 @@ func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N i
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, nil, err
+	}
+
+	if (nLines+nErrors > 0) && nLines == nErrors {
+		log.Warnf("erroneous feed dtected (nLines + nErrors > 0 && nLines == nErrors): %d/%d", nLines, nErrors)
+		return nil, nil, ErrInvalidFeed
 	}
 
 	// Sort by CreatedAt timestamp
@@ -321,9 +336,7 @@ func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N i
 	return twts, old, nil
 }
 
-func ParseTime(timestr string) time.Time {
-	var tm time.Time
-	var err error
+func ParseTime(timestr string) (tm time.Time, err error) {
 	// Twtxt clients generally uses basically time.RFC3339Nano, but sometimes
 	// there's a colon in the timezone, or no timezone at all.
 	for _, layout := range []string{
@@ -337,12 +350,8 @@ func ParseTime(timestr string) time.Time {
 		tm, err = time.Parse(layout, strings.ToUpper(timestr))
 		if err != nil {
 			continue
-		} else {
-			break
 		}
+		return
 	}
-	if err != nil {
-		return time.Unix(0, 0)
-	}
-	return tm
+	return
 }

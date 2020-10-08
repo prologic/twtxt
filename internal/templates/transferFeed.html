@@ -12,11 +12,7 @@
               {{ if $.User.Is $URL }}
                 me
               {{ else }}
-                {{ if isLocal $URL }}
-                  {{ $Nick }}
-                {{ else }}
-                  {{ $Nick }}
-                {{ end }}
+                {{ $Nick }}
                 ({{ $URL }})
 
                 {{ if $.Authenticated }}

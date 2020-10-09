@@ -173,3 +173,8 @@ video {
 .captchaInput {
   width: 50% !important;
 }
+
+/* Fix spacing for Post/Publish button and icons */
+.icss-print, .icss-paper-plane {
+  margin-right:20px !important;
+}

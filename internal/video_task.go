@@ -1,26 +1,21 @@
 package internal
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
 	log "github.com/sirupsen/logrus"
 )
 
-var (
-	ErrNoMediaFile = errors.New("error: no video or image file")
-)
-
-type TranscodeTask struct {
+type VideoTask struct {
 	*BaseTask
 
 	conf *Config
 	fn   string
 }
 
-func NewTranscodeTask(conf *Config, fn string) *TranscodeTask {
-	return &TranscodeTask{
+func NewVideoTask(conf *Config, fn string) *VideoTask {
+	return &VideoTask{
 		BaseTask: NewBaseTask(),
 
 		conf: conf,
@@ -28,12 +23,12 @@ func NewTranscodeTask(conf *Config, fn string) *TranscodeTask {
 	}
 }
 
-func (t *TranscodeTask) String() string { return fmt.Sprintf("%T: %s", t, t.ID()) }
-func (t *TranscodeTask) Run() error {
+func (t *VideoTask) String() string { return fmt.Sprintf("%T: %s", t, t.ID()) }
+func (t *VideoTask) Run() error {
 	defer t.Done()
 	t.SetState(TaskStateRunning)
 
-	log.Infof("starting transcode task for %s", t.fn)
+	log.Infof("starting video transcode task for %s", t.fn)
 
 	opts := &VideoOptions{} // Resize: true, Size: MediaResolution}
 	mediaURI, err := TranscodeVideo(t.conf, t.fn, mediaDir, "", opts)
@@ -41,7 +36,7 @@ func (t *TranscodeTask) Run() error {
 		log.WithError(err).Errorf("error transcoding video %s", t.fn)
 		return t.Fail(err)
 	}
-	log.Infof("transcode complete for %s with uri %s", t.fn, mediaURI)
+	log.Infof("video transcode complete for %s with uri %s", t.fn, mediaURI)
 
 	if err := os.Remove(t.fn); err != nil {
 		log.WithError(err).Warn("error removing temporary video file")

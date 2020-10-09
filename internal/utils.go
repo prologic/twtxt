@@ -631,103 +631,14 @@ func DownloadImage(conf *Config, url string, resource, name string, opts *ImageO
 	), nil
 }
 
-func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *ImageOptions) (string, error) {
+func ReceiveAudio(r io.Reader) (string, error) {
 	tf, err := ioutil.TempFile("", "twtxt-upload-*")
 	if err != nil {
 		log.WithError(err).Error("error creating temporary file")
 		return "", err
 	}
-	defer tf.Close()
 
-	if _, err := io.Copy(tf, f); err != nil {
-		log.WithError(err).Error("error writng temporary file")
-		return "", err
-	}
-
-	if _, err := tf.Seek(0, io.SeekStart); err != nil {
-		log.WithError(err).Error("error seeking temporary file")
-		return "", err
-	}
-
-	if !IsImage(tf.Name()) {
-		return "", ErrInvalidImage
-	}
-
-	if _, err := tf.Seek(0, io.SeekStart); err != nil {
-		log.WithError(err).Error("error seeking temporary file")
-		return "", err
-	}
-
-	p := filepath.Join(conf.Data, resource)
-	if err := os.MkdirAll(p, 0755); err != nil {
-		log.WithError(err).Error("error creating avatars directory")
-		return "", err
-	}
-
-	var fn string
-
-	if name == "" {
-		uuid := shortuuid.New()
-		fn = filepath.Join(p, fmt.Sprintf("%s.webp", uuid))
-	} else {
-		fn = fmt.Sprintf("%s.webp", filepath.Join(p, name))
-	}
-
-	of, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		log.WithError(err).Error("error opening output file")
-		return "", err
-	}
-	defer of.Close()
-
-	if _, err := tf.Seek(0, io.SeekStart); err != nil {
-		log.WithError(err).Error("error seeking temporary file")
-		return "", err
-	}
-
-	img, _, err := imageorient.Decode(tf)
-	if err != nil {
-		log.WithError(err).Error("imageorient.Decode failed")
-		return "", err
-	}
-
-	newImg := img
-
-	if opts != nil {
-		if opts.Resize && (opts.ResizeW+opts.ResizeH > 0) && (opts.ResizeH > 0 || img.Bounds().Size().X > opts.ResizeW) {
-			newImg = resize.Resize(uint(opts.ResizeW), uint(opts.ResizeH), img, resize.Lanczos3)
-		}
-	}
-
-	if err := webp.Encode(of, newImg, &webp.Options{Lossless: true}); err != nil {
-		log.WithError(err).Error("error reencoding image")
-		return "", err
-	}
-
-	// Re-encode to PNG (for older browsers)
-	if err := of.Close(); err != nil {
-		log.WithError(err).Warnf("error cloding file %s", fn)
-	}
-	if err := ImageToPng(fn); err != nil {
-		log.WithError(err).Warnf("error reencoding image to PNG (for older browsers: %s", fn)
-	}
-
-	return fmt.Sprintf(
-		"%s/%s/%s",
-		strings.TrimSuffix(conf.BaseURL, "/"),
-		resource, strings.TrimSuffix(filepath.Base(fn), filepath.Ext(fn)),
-	), nil
-}
-
-func StoreUploadedAudio(conf *Config, f io.Reader, resource, name string, opts *AudioOptions) (string, error) {
-	tf, err := ioutil.TempFile("", "twtxt-upload-*")
-	if err != nil {
-		log.WithError(err).Error("error creating temporary file")
-		return "", err
-	}
-	defer tf.Close()
-
-	if _, err := io.Copy(tf, f); err != nil {
+	if _, err := io.Copy(tf, r); err != nil {
 		log.WithError(err).Error("error writng temporary file")
 		return "", err
 	}
@@ -741,47 +652,86 @@ func StoreUploadedAudio(conf *Config, f io.Reader, resource, name string, opts *
 		return "", ErrInvalidAudio
 	}
 
+	return tf.Name(), nil
+}
+
+func ReceiveImage(r io.Reader) (string, error) {
+	tf, err := ioutil.TempFile("", "twtxt-upload-*")
+	if err != nil {
+		log.WithError(err).Error("error creating temporary file")
+		return "", err
+	}
+
+	if _, err := io.Copy(tf, r); err != nil {
+		log.WithError(err).Error("error writng temporary file")
+		return "", err
+	}
+
 	if _, err := tf.Seek(0, io.SeekStart); err != nil {
 		log.WithError(err).Error("error seeking temporary file")
 		return "", err
 	}
 
+	if !IsImage(tf.Name()) {
+		return "", ErrInvalidImage
+	}
+
+	return tf.Name(), nil
+}
+
+func ReceiveVideo(r io.Reader) (string, error) {
+	tf, err := ioutil.TempFile("", "twtxt-upload-*")
+	if err != nil {
+		log.WithError(err).Error("error creating temporary file")
+		return "", err
+	}
+
+	if _, err := io.Copy(tf, r); err != nil {
+		log.WithError(err).Error("error writng temporary file")
+		return "", err
+	}
+
+	if _, err := tf.Seek(0, io.SeekStart); err != nil {
+		log.WithError(err).Error("error seeking temporary file")
+		return "", err
+	}
+
+	if !IsVideo(tf.Name()) {
+		return "", ErrInvalidVideo
+	}
+
+	return tf.Name(), nil
+}
+
+func TranscodeAudio(conf *Config, ifn string, resource, name string, opts *AudioOptions) (string, error) {
 	p := filepath.Join(conf.Data, resource)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Errorf("error creating %s directory", resource)
 		return "", err
 	}
 
-	var fn string
+	var ofn string
 
 	if name == "" {
 		uuid := shortuuid.New()
-		fn = filepath.Join(p, fmt.Sprintf("%s.ogg", uuid))
+		ofn = filepath.Join(p, fmt.Sprintf("%s.ogg", uuid))
 	} else {
-		fn = fmt.Sprintf("%s.ogg", filepath.Join(p, name))
+		ofn = fmt.Sprintf("%s.ogg", filepath.Join(p, name))
 	}
 
-	of, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE, 0644)
+	of, err := os.OpenFile(ofn, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		log.WithError(err).Error("error opening output file")
 		return "", err
 	}
 	defer of.Close()
 
-	if _, err := tf.Seek(0, io.SeekStart); err != nil {
-		log.WithError(err).Error("error seeking temporary file")
-		return "", err
-	}
-
 	wg := sync.WaitGroup{}
 
 	TranscodeOGG := func(ctx context.Context, errs chan error) {
 		defer wg.Done()
 
-		args := []string{
-			"-y",
-			"-i", tf.Name(),
-		}
+		args := []string{"-y", "-i", ifn}
 
 		if opts.Resample {
 			args = append(args, []string{
@@ -816,11 +766,11 @@ func StoreUploadedAudio(conf *Config, f io.Reader, resource, name string, opts *
 			conf.TranscoderTimeout,
 			"ffmpeg",
 			"-y",
-			"-i", tf.Name(),
+			"-i", ifn,
 			"-acodec", "mp3",
 			"-strict", "-2",
 			"-loglevel", "quiet",
-			ReplaceExt(fn, ".mp3"),
+			ReplaceExt(ofn, ".mp3"),
 		); err != nil {
 			log.WithError(err).Error("error transcoding video")
 			errs <- err
@@ -842,44 +792,84 @@ func StoreUploadedAudio(conf *Config, f io.Reader, resource, name string, opts *
 
 	errors := 0
 	for err := range errs {
-		log.WithError(err).Error("StoreUploadedAudio() error")
+		log.WithError(err).Error("TranscodeAudio() error")
 		errors++
 	}
 
 	if errors > 0 {
-		log.Error("StoreUploadedAudio() too many errors")
+		log.Error("TranscodeAudio() too many errors")
 		return "", ErrVideoUploadFailed
 	}
 
 	return fmt.Sprintf(
 		"%s/%s/%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
-		resource, filepath.Base(fn),
+		resource, filepath.Base(ofn),
 	), nil
 }
 
-func ReceiveVideo(r io.Reader) (string, error) {
-	tf, err := ioutil.TempFile("", "twtxt-upload-*")
+func ProcessImage(conf *Config, ifn string, resource, name string, opts *ImageOptions) (string, error) {
+	p := filepath.Join(conf.Data, resource)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating avatars directory")
+		return "", err
+	}
+
+	var ofn string
+
+	if name == "" {
+		uuid := shortuuid.New()
+		ofn = filepath.Join(p, fmt.Sprintf("%s.webp", uuid))
+	} else {
+		ofn = fmt.Sprintf("%s.webp", filepath.Join(p, name))
+	}
+
+	f, err := os.Open(ifn)
 	if err != nil {
-		log.WithError(err).Error("error creating temporary file")
+		log.WithError(err).Error("error opening input file")
+		return "", err
+	}
+	defer f.Close()
+
+	img, _, err := imageorient.Decode(f)
+	if err != nil {
+		log.WithError(err).Error("imageorient.Decode failed")
 		return "", err
 	}
 
-	if _, err := io.Copy(tf, r); err != nil {
-		log.WithError(err).Error("error writng temporary file")
+	newImg := img
+
+	if opts != nil {
+		if opts.Resize && (opts.ResizeW+opts.ResizeH > 0) && (opts.ResizeH > 0 || img.Bounds().Size().X > opts.ResizeW) {
+			newImg = resize.Resize(uint(opts.ResizeW), uint(opts.ResizeH), img, resize.Lanczos3)
+		}
+	}
+
+	of, err := os.OpenFile(ofn, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		log.WithError(err).Error("error opening output file")
+		return "", err
+	}
+	defer of.Close()
+
+	if err := webp.Encode(of, newImg, &webp.Options{Lossless: true}); err != nil {
+		log.WithError(err).Error("error reencoding image")
 		return "", err
 	}
 
-	if _, err := tf.Seek(0, io.SeekStart); err != nil {
-		log.WithError(err).Error("error seeking temporary file")
-		return "", err
+	// Re-encode to PNG (for older browsers)
+	if err := of.Close(); err != nil {
+		log.WithError(err).Warnf("error closing file %s", ofn)
+	}
+	if err := ImageToPng(ofn); err != nil {
+		log.WithError(err).Warnf("error reencoding image to PNG (for older browsers: %s", ofn)
 	}
 
-	if !IsVideo(tf.Name()) {
-		return "", ErrInvalidVideo
-	}
-
-	return tf.Name(), nil
+	return fmt.Sprintf(
+		"%s/%s/%s",
+		strings.TrimSuffix(conf.BaseURL, "/"),
+		resource, strings.TrimSuffix(filepath.Base(ofn), filepath.Ext(ofn)),
+	), nil
 }
 
 func TranscodeVideo(conf *Config, ifn string, resource, name string, opts *VideoOptions) (string, error) {
@@ -1049,6 +1039,16 @@ func TranscodeVideo(conf *Config, ifn string, resource, name string, opts *Video
 		strings.TrimSuffix(conf.BaseURL, "/"),
 		resource, filepath.Base(ofn),
 	), nil
+}
+
+func StoreUploadedImage(conf *Config, r io.Reader, resource, name string, opts *ImageOptions) (string, error) {
+	fn, err := ReceiveImage(r)
+	if err != nil {
+		log.WithError(err).Error("error receiving image")
+		return "", err
+	}
+
+	return ProcessImage(conf, fn, resource, name, opts)
 }
 
 func NormalizeFeedName(name string) string {

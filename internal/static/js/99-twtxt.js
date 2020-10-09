@@ -527,44 +527,6 @@ u("#mentioned-list").on("click", function (e) {
   u("#mentioned-list").first().classList.remove("show");
 });
 
-u("#uploadImage").on("change", function (e) {
-  u("#uploadImageButton").removeClass("icss-camera");
-  u("#uploadImageButton").addClass("icss-spinner icss-pulse");
-  u("#uploadImageForm").data("tooltip", "Uploading...");
-
-  u("#uploadImage").html('<i class="icss-spinner icss-pulse"></i>');
-  Twix.ajax({
-    type: "POST",
-    url: u("#imageUploadForm").attr("action"),
-    data: new FormData(u("#imageUploadForm").first()),
-    success: function (data) {
-      var el = u("textarea#text");
-      var text = document.getElementById("text");
-
-      text.value += " ![](" + data.Path + ") ";
-      el.scroll();
-      text.focus();
-
-      var size = el.text().length;
-      text.setSelectionRange(size, size);
-
-      u("#uploadImageButton").removeClass("icss-spinner icss-pulse");
-      u("#uploadImageButton").addClass("icss-camera");
-      u("#uploadImage").data("tooltip", "Upload");
-    },
-    error: function (statusCode, statusText) {
-      u("#uploadImageButton").removeClass("icss-spinner icss-pulse");
-      u("#uploadImageButton").addClass("icss-camera");
-      alert(
-        "An error occurred uploading your image: " +
-          statusCode +
-          " " +
-          statusText
-      );
-    },
-  });
-});
-
 var maxTaskWait = (1000 * 60 * 10); // ~10mins TODO: Make this configurable
 
 function pollForTask(taskURL, delay, maxDelay, timeout, errorCallback, successCallback) {
@@ -600,8 +562,116 @@ function pollForTask(taskURL, delay, maxDelay, timeout, errorCallback, successCa
     });
 }
 
+u("#uploadImage").on("change", function (e) {
+  u("#uploadImageButton").removeClass("icss-camera");
+  u("#uploadImageButton").addClass("icss-spinner icss-pulse");
+  u("#uploadImageForm").data("tooltip", "Uploading...");
+
+  u("#uploadImage").html('<i class="icss-spinner icss-pulse"></i>');
+  Twix.ajax({
+    type: "POST",
+    url: u("#imageUploadForm").attr("action"),
+    data: new FormData(u("#imageUploadForm").first()),
+    success: function (data) {
+      var el = u("textarea#text");
+      var text = document.getElementById("text");
+
+      pollForTask(
+        data.Path,
+        1000,
+        30000,
+        Date.now() + maxTaskWait,
+        function (errorData) {
+      u("#uploadImageButton").removeClass("icss-spinner icss-pulse");
+      u("#uploadImageButton").addClass("icss-camera");
+      alert(
+        "An error occurred uploading your image: " +
+          errorData.error
+      )
+        },
+        function (successData) {
+          text.value += " ![](" + successData.data.mediaURI + ") ";
+          el.scroll();
+          text.focus();
+
+          var size = el.text().length;
+          text.setSelectionRange(size, size);
+
+          u("#uploadImageButton").removeClass("icss-spinner icss-pulse");
+          u("#uploadImageButton").addClass("icss-camera");
+          u("#uploadImage").data("tooltip", "Upload");
+        }
+      );
+    },
+    error: function (statusCode, statusText) {
+      u("#uploadImageButton").removeClass("icss-spinner icss-pulse");
+      u("#uploadImageButton").addClass("icss-camera");
+      alert(
+        "An error occurred uploading your image: " +
+          statusCode +
+          " " +
+          statusText
+      );
+    },
+  });
+});
+
+u("#uploadAudio").on("change", function (e) {
+  u("#uploadAudioButton").removeClass("icss-microphone");
+  u("#uploadAudioButton").addClass("icss-spinner icss-pulse");
+  u("#uploadAudioForm").data("tooltip", "Uploading...");
+
+  u("#uploadAudio").html('<i class="icss-spinner icss-pulse"></i>');
+  Twix.ajax({
+    type: "POST",
+    url: u("#audioUploadForm").attr("action"),
+    data: new FormData(u("#audioUploadForm").first()),
+    success: function (data) {
+      var el = u("textarea#text");
+      var text = document.getElementById("text");
+
+      pollForTask(
+        data.Path,
+        1000,
+        30000,
+        Date.now() + maxTaskWait,
+        function (errorData) {
+      u("#uploadAudioButton").removeClass("icss-spinner icss-pulse");
+      u("#uploadAudioButton").addClass("icss-microphone");
+      alert(
+        "An error occurred uploading your audio: " +
+          errorData.error
+      )
+        },
+        function (successData) {
+          text.value += " ![](" + successData.data.mediaURI + ") ";
+          el.scroll();
+          text.focus();
+
+          var size = el.text().length;
+          text.setSelectionRange(size, size);
+
+          u("#uploadAudioButton").removeClass("icss-spinner icss-pulse");
+          u("#uploadAudioButton").addClass("icss-microphone");
+          u("#uploadAudio").data("tooltip", "Upload");
+        }
+      );
+    },
+    error: function (statusCode, statusText) {
+      u("#uploadAudioButton").removeClass("icss-spinner icss-pulse");
+      u("#uploadAudioButton").addClass("icss-microphone");
+      alert(
+        "An error occurred uploading your audio: " +
+          statusCode +
+          " " +
+          statusText
+      );
+    },
+  });
+});
+
 u("#uploadVideo").on("change", function (e) {
-  u("#uploadVideoButton").removeClass("icss-camera");
+  u("#uploadVideoButton").removeClass("icss-video-camera");
   u("#uploadVideoButton").addClass("icss-spinner icss-pulse");
   u("#uploadVideoForm").data("tooltip", "Uploading...");
 

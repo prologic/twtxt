@@ -24,6 +24,14 @@
           </form>
         </li>
         <li>
+          <form id="audioUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload">
+            <label for="uploadAudio">
+              <i id="uploadAudioButton" class="icss-microphone"></i>
+            </label>
+            <input id="uploadAudio" class="invisible" type="file" accept="audio/*" name="media_file" />
+          </form>
+        </li>
+        <li>
           <form id="videoUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload">
             <label for="uploadVideo">
               <i id="uploadVideoButton" class="icss-video-camera"></i>

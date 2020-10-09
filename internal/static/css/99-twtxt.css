@@ -33,6 +33,10 @@ article hgroup footer {
     z-index: 1050;
 }
 
+.toolbar-form-button {
+  width: 4% !important;
+}
+
 /* 480p */
 video {
   object-fit: contain;
@@ -53,6 +57,19 @@ video {
 }
 
 #uploadImage {
+    margin: 0;
+    padding: 0;
+}
+
+#audioUploadForm {
+    display: inline;
+}
+
+#audioUploadForm label {
+    display: inline;
+}
+
+#uploadAudio {
     margin: 0;
     padding: 0;
 }

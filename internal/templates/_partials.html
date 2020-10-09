@@ -15,7 +15,7 @@
           <li>&nbsp;</li>
           <li><a id="writeBtn" href="#" data-tooltip="Open blog post editor"><i class="icss-quill-pen"></i></a></li>
         {{ end }}
-        <li>
+        <li class="toolbar-form-button">
           <form id="imageUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload">
             <label for="uploadImage">
               <i id="uploadImageButton" class="icss-camera"></i>
@@ -23,7 +23,7 @@
             <input id="uploadImage" class="invisible" type="file" accept="image/*" name="media_file" />
           </form>
         </li>
-        <li>
+        <li class="toolbar-form-button">
           <form id="audioUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload">
             <label for="uploadAudio">
               <i id="uploadAudioButton" class="icss-microphone"></i>
@@ -31,7 +31,7 @@
             <input id="uploadAudio" class="invisible" type="file" accept="audio/*" name="media_file" />
           </form>
         </li>
-        <li>
+        <li class="toolbar-form-button">
           <form id="videoUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload">
             <label for="uploadVideo">
               <i id="uploadVideoButton" class="icss-video-camera"></i>

@@ -275,14 +275,21 @@ func (f *Feed) Source() types.Feeds {
 	return feeds
 }
 
-func (f *Feed) Profile(baseURL string) types.Profile {
+func (f *Feed) Profile(conf *Config, viewer *User) types.Profile {
+	muted := false
+	if viewer != nil {
+		muted = viewer.HasMuted(f.URL)
+	}
+
 	return types.Profile{
 		Type: "Feed",
 
 		Username: f.Name,
 		Tagline:  f.Description,
 		URL:      f.URL,
-		BlogsURL: URLForBlogs(baseURL, f.Name),
+		BlogsURL: URLForBlogs(conf.BaseURL, f.Name),
+
+		Muted: muted,
 
 		Followers: f.Followers,
 	}
@@ -396,14 +403,21 @@ func (u *User) Sources() types.Feeds {
 	return feeds
 }
 
-func (u *User) Profile(baseURL string) types.Profile {
+func (u *User) Profile(conf *Config, viewer *User) types.Profile {
+	muted := false
+	if viewer != nil {
+		muted = viewer.HasMuted(u.URL)
+	}
+
 	return types.Profile{
 		Type: "User",
 
 		Username: u.Username,
 		Tagline:  u.Tagline,
 		URL:      u.URL,
-		BlogsURL: URLForBlogs(baseURL, u.Username),
+		BlogsURL: URLForBlogs(conf.BaseURL, u.Username),
+
+		Muted: muted,
 
 		Followers: u.Followers,
 		Following: u.Following,

@@ -810,6 +810,7 @@ func (a *API) UploadMediaEndpoint() httprouter.Handle {
 func (a *API) ProfileEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		loggedInUser := a.getLoggedInUser(r)
+
 		nick := NormalizeUsername(p.ByName("nick"))
 		if nick == "" {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -827,7 +828,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = user.Profile(a.config.BaseURL)
+			profile = user.Profile(a.config, loggedInUser)
 
 			if loggedInUser == nil {
 				if !user.IsFollowersPubliclyVisible {
@@ -844,7 +845,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = feed.Profile(a.config.BaseURL)
+			profile = feed.Profile(a.config, loggedInUser)
 		} else {
 			http.Error(w, "User/Feed not found", http.StatusNotFound)
 			return
@@ -894,9 +895,11 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 	}
 }
 
-// ProfileTwtsEndpoint ...
+// FetchTwtsEndpoint ...
 func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		loggedInUser := a.getLoggedInUser(r)
+
 		req, err := types.NewFetchTwtsRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing fetch twts request")
@@ -920,7 +923,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = user.Profile(a.config.BaseURL)
+			profile = user.Profile(a.config, loggedInUser)
 			twts = a.cache.GetByURL(profile.URL)
 		} else if a.db.HasFeed(nick) {
 			feed, err := a.db.GetFeed(nick)
@@ -929,7 +932,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = feed.Profile(a.config.BaseURL)
+			profile = feed.Profile(a.config, loggedInUser)
 
 			twts = a.cache.GetByURL(profile.URL)
 		} else if req.URL != "" {

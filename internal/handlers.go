@@ -191,7 +191,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 				s.render("error", w, ctx)
 				return
 			}
-			profile = user.Profile(s.config.BaseURL)
+			profile = user.Profile(s.config, ctx.User)
 		} else if s.db.HasFeed(nick) {
 			feed, err := s.db.GetFeed(nick)
 			if err != nil {
@@ -201,7 +201,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 				s.render("error", w, ctx)
 				return
 			}
-			profile = feed.Profile(s.config.BaseURL)
+			profile = feed.Profile(s.config, ctx.User)
 		} else {
 			ctx.Error = true
 			ctx.Message = "User or Feed Not Found"
@@ -290,7 +290,7 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 
 		switch r.Method {
 		case http.MethodGet:
-			ctx.Profile = feed.Profile(s.config.BaseURL)
+			ctx.Profile = feed.Profile(s.config, ctx.User)
 			ctx.Title = fmt.Sprintf("Manage feed %s", feed.Name)
 			s.render("manageFeed", w, ctx)
 			return
@@ -1475,7 +1475,7 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 				s.render("401", w, ctx)
 				return
 			}
-			ctx.Profile = user.Profile(s.config.BaseURL)
+			ctx.Profile = user.Profile(s.config, ctx.User)
 		} else if s.db.HasFeed(nick) {
 			feed, err := s.db.GetFeed(nick)
 			if err != nil {
@@ -1485,7 +1485,7 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 				s.render("error", w, ctx)
 				return
 			}
-			ctx.Profile = feed.Profile(s.config.BaseURL)
+			ctx.Profile = feed.Profile(s.config, ctx.User)
 		} else {
 			ctx.Error = true
 			ctx.Message = "User or Feed Not Found"
@@ -1531,7 +1531,7 @@ func (s *Server) FollowingHandler() httprouter.Handle {
 				s.render("401", w, ctx)
 				return
 			}
-			ctx.Profile = user.Profile(s.config.BaseURL)
+			ctx.Profile = user.Profile(s.config, ctx.User)
 		} else {
 			ctx.Error = true
 			ctx.Message = "User Not Found"
@@ -1917,7 +1917,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 		if nick != "" {
 			if s.db.HasUser(nick) {
 				if user, err := s.db.GetUser(nick); err == nil {
-					profile = user.Profile(s.config.BaseURL)
+					profile = user.Profile(s.config, nil)
 					twts = s.cache.GetByURL(profile.URL)
 				} else {
 					log.WithError(err).Error("error loading user object")
@@ -1926,7 +1926,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 				}
 			} else if s.db.HasFeed(nick) {
 				if feed, err := s.db.GetFeed(nick); err == nil {
-					profile = feed.Profile(s.config.BaseURL)
+					profile = feed.Profile(s.config, nil)
 					twts = s.cache.GetByURL(profile.URL)
 				} else {
 					log.WithError(err).Error("error loading user object")
@@ -2079,7 +2079,7 @@ func (s *Server) TransferFeedHandler() httprouter.Handle {
 					return
 				}
 
-				ctx.Profile = feed.Profile(s.config.BaseURL)
+				ctx.Profile = feed.Profile(s.config, ctx.User)
 				s.render("transferFeed", w, ctx)
 				return
 			}

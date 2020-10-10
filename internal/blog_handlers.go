@@ -242,7 +242,7 @@ func (s *Server) BlogsHandler() httprouter.Handle {
 				s.render("error", w, ctx)
 				return
 			}
-			profile = user.Profile(s.config.BaseURL)
+			profile = user.Profile(s.config, ctx.User)
 		} else if s.db.HasFeed(author) {
 			feed, err := s.db.GetFeed(author)
 			if err != nil {
@@ -252,7 +252,7 @@ func (s *Server) BlogsHandler() httprouter.Handle {
 				s.render("error", w, ctx)
 				return
 			}
-			profile = feed.Profile(s.config.BaseURL)
+			profile = feed.Profile(s.config, ctx.User)
 		} else {
 			ctx.Error = true
 			ctx.Message = "No author found by that name"

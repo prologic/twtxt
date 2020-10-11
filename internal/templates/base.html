@@ -2,8 +2,16 @@
 <!DOCTYPE html>
 <html lang="en" {{ with .Theme }}data-theme="{{ . }}"{{ end }}>
   <head>
-    <link href="/css/{{ .Commit }}/twtxt.min.css" rel="stylesheet" />
-    <link rel="icon" type="image/png" href="/img/{{ .Commit}}/favicon.png" />
+    {{ if $.Debug }}
+      <link href="/css/01-pico.css" rel="stylesheet" />
+      <link href="/css/02-icss.css" rel="stylesheet" />
+      <link href="/css/03-icons.css" rel="stylesheet" />
+      <link href="/css/99-twtxt.css" rel="stylesheet" />
+      <link rel="icon" type="image/png" href="/img/favicon.png" />
+    {{ else }}
+      <link href="/css/{{ .Commit }}/twtxt.min.css" rel="stylesheet" />
+      <link rel="icon" type="image/png" href="/img/{{ .Commit}}/favicon.png" />
+    {{ end }}
 
     {{ range .Alternatives }}
       <link rel="alternate" type="{{ .Type }}" title="{{ .Title }}" href="{{ .URL }}" />
@@ -149,7 +157,15 @@
       </small>
     </div>
   </footer>
-  <script type="application/javascript" src="/js/{{ .Commit }}/twtxt.min.js"></script>
+  {{ if $.Debug }}
+    <script type="application/javascript" src="/js/01-umbrella.js"></script>
+    <script type="application/javascript" src="/js/02-polyfill.js"></script>
+    <script type="application/javascript" src="/js/03-twix.js"></script>
+    <script type="application/javascript" src="/js/99-twtxt.js"></script>
+    <script type="application/javascript" src="/js/ie11CustomProperties.min.js"></script>
+  {{ else }}
+    <script type="application/javascript" src="/js/{{ .Commit }}/twtxt.min.js"></script>
+  {{ end }}
 </body>
 </html>
 {{end}}

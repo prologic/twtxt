@@ -1577,11 +1577,17 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 
 		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
-		ctx.Twter = types.Twter{
-			Nick:   nick,
-			URL:    uri,
-			Avatar: URLForExternalAvatar(s.config, uri),
+
+		if len(ctx.Twts) > 0 {
+			ctx.Twter = ctx.Twts[0].Twter
+		} else {
+			ctx.Twter = types.Twter{Nick: nick, URL: uri}
+			avatar := GetExternalAvatar(s.config, nick, uri)
+			if avatar != "" {
+				ctx.Twter.Avatar = URLForExternalAvatar(s.config, uri)
+			}
 		}
+
 		ctx.Profile = types.Profile{
 			Username: nick,
 			TwtURL:   uri,

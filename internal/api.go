@@ -443,7 +443,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: a.formatTwtText(pagedTwts),
+			Twts: a.formatTwtText(FilterTwts(user, pagedTwts)),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
@@ -466,6 +466,8 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 // DiscoverEndpoint ...
 func (a *API) DiscoverEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		loggedInUser := a.getLoggedInUser(r)
+
 		req, err := types.NewPagedRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing post request")
@@ -489,7 +491,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: a.formatTwtText(pagedTwts),
+			Twts: a.formatTwtText(FilterTwts(loggedInUser, pagedTwts)),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
@@ -536,7 +538,7 @@ func (a *API) MentionsEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: a.formatTwtText(pagedTwts),
+			Twts: a.formatTwtText(FilterTwts(user, pagedTwts)),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
@@ -937,7 +939,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: a.formatTwtText(pagedTwts),
+			Twts: a.formatTwtText(FilterTwts(loggedInUser, pagedTwts)),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),

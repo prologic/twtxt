@@ -32,6 +32,8 @@ type Settings struct {
 
 // Config contains the server configuration parameters
 type Config struct {
+	Debug bool
+
 	Data              string
 	Name              string
 	Description       string

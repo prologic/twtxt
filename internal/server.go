@@ -422,20 +422,19 @@ func (s *Server) runStartupJobs() {
 }
 
 func (s *Server) initRoutes() {
-	s.router.ServeFilesWithCacheControl(
-		"/css/:commit/*filepath",
-		rice.MustFindBox("static/css").HTTPBox(),
-	)
+	cssBox := rice.MustFindBox("static/css").HTTPBox()
+	imgBox := rice.MustFindBox("static/img").HTTPBox()
+	jsBox := rice.MustFindBox("static/js").HTTPBox()
 
-	s.router.ServeFilesWithCacheControl(
-		"/img/:commit/*filepath",
-		rice.MustFindBox("static/img").HTTPBox(),
-	)
-
-	s.router.ServeFilesWithCacheControl(
-		"/js/:commit/*filepath",
-		rice.MustFindBox("static/js").HTTPBox(),
-	)
+	if s.config.Debug {
+		s.router.ServeFilesWithCacheControl("/css/*filepath", cssBox)
+		s.router.ServeFilesWithCacheControl("/img/*filepath", imgBox)
+		s.router.ServeFilesWithCacheControl("/js/*filepath", jsBox)
+	} else {
+		s.router.ServeFilesWithCacheControl("/css/:commit/*filepath", cssBox)
+		s.router.ServeFilesWithCacheControl("/img/:commit/*filepath", imgBox)
+		s.router.ServeFilesWithCacheControl("/js/:commit/*filepath", jsBox)
+	}
 
 	s.router.NotFound = http.HandlerFunc(s.NotFoundHandler)
 

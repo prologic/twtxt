@@ -7,6 +7,9 @@ import (
 )
 
 const (
+	// DebugMode is the default debug mode
+	DefaultDebug = false
+
 	// DefaultData is the default data directory for storage
 	DefaultData = "./data"
 
@@ -120,6 +123,8 @@ var (
 
 func NewConfig() *Config {
 	return &Config{
+		Debug: DefaultDebug,
+
 		Name:              DefaultName,
 		Description:       DefaultMetaDescription,
 		Store:             DefaultStore,
@@ -145,6 +150,14 @@ func NewConfig() *Config {
 
 // Option is a function that takes a config struct and modifies it
 type Option func(*Config) error
+
+// WithDebug sets the debug mode lfag
+func WithDebug(debug bool) Option {
+	return func(cfg *Config) error {
+		cfg.Debug = debug
+		return nil
+	}
+}
 
 // WithData sets the data directory to use for storage
 func WithData(data string) Option {

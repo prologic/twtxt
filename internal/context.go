@@ -27,6 +27,8 @@ type Meta struct {
 type Context struct {
 	Config string
 
+	Debug bool
+
 	BaseURL                 string
 	InstanceName            string
 	SoftwareVersion         string
@@ -79,6 +81,8 @@ type Context struct {
 
 func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	ctx := &Context{
+		Debug: conf.Debug,
+
 		BaseURL:          conf.BaseURL,
 		InstanceName:     conf.Name,
 		SoftwareVersion:  twtxt.FullVersion(),

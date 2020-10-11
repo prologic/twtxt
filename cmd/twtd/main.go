@@ -23,12 +23,12 @@ var (
 	version bool
 
 	// Basic options
-	name    string
+	name        string
 	description string
-	data    string
-	store   string
-	theme   string
-	baseURL string
+	data        string
+	store       string
+	theme       string
+	baseURL     string
 
 	// Pod Oeprator
 	adminUser  string
@@ -223,6 +223,9 @@ func main() {
 	}
 
 	svr, err := internal.NewServer(bind,
+		// Debug mode
+		internal.WithDebug(debug),
+
 		// Basic options
 		internal.WithName(name),
 		internal.WithDescription(description),

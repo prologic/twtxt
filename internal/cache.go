@@ -300,6 +300,23 @@ func (cache *Cache) GetAll() types.Twts {
 	return alltwts
 }
 
+// GetMentions ...
+func (cache *Cache) GetMentions(u *User) (twts types.Twts) {
+	seen := make(map[string]bool)
+
+	// Search for @mentions in the cache against all Twts (local, followed and even external if any)
+	for _, twt := range cache.GetAll() {
+		for _, twter := range twt.Mentions() {
+			if u.Is(twter.URL) && !seen[twt.Hash()] {
+				twts = append(twts, twt)
+				seen[twt.Hash()] = true
+			}
+		}
+	}
+
+	return
+}
+
 // GetByPrefix ...
 func (cache *Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 	key := fmt.Sprintf("prefix:%s", prefix)

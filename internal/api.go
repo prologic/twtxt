@@ -521,32 +521,7 @@ func (a *API) MentionsEndpoint() httprouter.Handle {
 
 		user := r.Context().Value(UserContextKey).(*User)
 
-		var twts types.Twts
-
-		seen := make(map[string]bool)
-
-		// Search for @mentions on feeds user is following
-		for feed := range user.Sources() {
-			for _, twt := range a.cache.GetByURL(feed.URL) {
-				for _, twter := range twt.Mentions() {
-					if user.Is(twter.URL) && !seen[twt.Hash()] {
-						twts = append(twts, twt)
-						seen[twt.Hash()] = true
-					}
-				}
-			}
-		}
-
-		// Search for @mentions in local twts too (i.e: /discover)
-		for _, twt := range a.cache.GetByPrefix(a.config.BaseURL, false) {
-			for _, twter := range twt.Mentions() {
-				if user.Is(twter.URL) && !seen[twt.Hash()] {
-					twts = append(twts, twt)
-					seen[twt.Hash()] = true
-				}
-			}
-		}
-
+		twts := a.cache.GetMentions(user)
 		sort.Sort(twts)
 
 		var pagedTwts types.Twts

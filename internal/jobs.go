@@ -134,7 +134,7 @@ func (job *StatsJob) Run() {
 	}
 
 	text := fmt.Sprintf(
-		"🧮 USERS:%d FEEDS:%d TWTS:%d BLOGS:%d ARCHIVED:%d CACHED:%d FOLLOWERS:%d FOLLOWING:%d",
+		"🧮 USERS:%d FEEDS:%d TWTS:%d BLOGS:%d ARCHIVED:%d CACHE:%d FOLLOWERS:%d FOLLOWING:%d",
 		len(users), len(feeds), twts, job.blogs.Count(),
 		archiveSize, job.cache.Count(), len(followers), len(following),
 	)

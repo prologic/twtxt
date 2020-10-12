@@ -2038,6 +2038,21 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 	}
 }
 
+// PodConfigHandler ...
+func (s *Server) PodConfigHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		data, err := json.Marshal(s.config.Settings())
+		if err != nil {
+			log.WithError(err).Error("error serializing pod config response")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+	}
+}
+
 // PodAvatarHandler ...
 func (s *Server) PodAvatarHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

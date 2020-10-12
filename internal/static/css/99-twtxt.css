@@ -29,13 +29,19 @@ article hgroup footer {
     width:0;
     height:0;
 }
+.invisible.width-none{
+  width: 0px !important;
+  }
 
 .nav {
     z-index: 1050;
 }
-
+nav.toolbar-nav ul{
+  margin-left: 0px;
+  margin-right: 0px;
+}
 .toolbar-form-button {
-  width: 45px !important;
+  width: auto;
 }
 
 audio {
@@ -234,10 +240,32 @@ video {
   display: flex;
   flex-direction: row;
 }
+[data-tooltip]:not(a):not(button):not(input){
+  border-bottom: none;
+}
 
 /* Toolbar styling */
 @media (max-width: 576px) {
   .toolbar-nav li {
     padding: 1rem .2rem;
+  }
+  nav{
+    justify-content: unset;
+  }
+  nav.toolbar-nav ul{
+    margin-right: 0px;
+    margin-left: 0px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+  }
+  nav.toolbar-nav ul li{
+    padding: 0.5rem 0px;
+    flex: 1;
+    text-align: center;
+  }
+  [data-tooltip]:not(a):not(button):not(input){
+    border-bottom: none;
   }
 }

@@ -6,7 +6,6 @@
         <li><a id="iBtn" href="#" data-tooltip="Italic"><i class="icss-text-italic"></i></a></li>
         <li><a id="cBtn" href="#" data-tooltip="Code"><i class="icss-text-width"></i></a></li>
         <li><a id="sBtn" href="#" data-tooltip="Strikethrough"><i class="icss-x"></i></a></li>
-        <li>&nbsp;</li>
         <li><a id="usrBtn" href="#" data-tooltip="Mention"><i class="icss-user-circle"></i></a></li>
         <li><a id="lnkBtn" href="#" data-tooltip="Link"><i class="icss-link"></i></a></li>
         <li><a id="imgBtn" href="#" data-tooltip="Image"><i class="icss-image"></i></a></li>
@@ -14,13 +13,12 @@
         {{ else }}
           <li><a id="writeBtn" href="#" data-tooltip="Open blog post editor"><i class="icss-quill-pen"></i></a></li>
         {{ end }}
-          <li>&nbsp;</li>
         <li class="toolbar-form-button">
           <form id="imageUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload image">
             <label for="uploadImage">
               <i id="uploadImageButton" class="icss-camera"></i>
             </label>
-            <input id="uploadImage" class="invisible" type="file" accept="image/*" name="media_file" />
+            <input id="uploadImage" class="invisible width-none" type="file" accept="image/*" name="media_file" />
           </form>
         </li>
         <li class="toolbar-form-button">
@@ -28,7 +26,7 @@
             <label for="uploadAudio">
               <i id="uploadAudioButton" class="icss-microphone"></i>
             </label>
-            <input id="uploadAudio" class="invisible" type="file" accept="audio/*" name="media_file" />
+            <input id="uploadAudio" class="invisible width-none" type="file" accept="audio/*" name="media_file" />
           </form>
         </li>
         <li class="toolbar-form-button">
@@ -36,7 +34,7 @@
             <label for="uploadVideo">
               <i id="uploadVideoButton" class="icss-video-camera"></i>
             </label>
-            <input id="uploadVideo" class="invisible" type="file" accept="video/*" name="media_file" />
+            <input id="uploadVideo" class="invisible width-none" type="file" accept="video/*" name="media_file" />
           </form>
         </li>
       </ul>

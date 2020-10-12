@@ -31,7 +31,7 @@ article hgroup footer {
 }
 .invisible.width-none{
   width: 0px !important;
-  }
+}
 
 .nav {
     z-index: 1050;
@@ -251,18 +251,35 @@ video {
   }
   nav{
     justify-content: unset;
+    -webkit-justify-content: unset;
+    -moz-justify-content: unset;
+    -ms-justify-content: unset;
   }
   nav.toolbar-nav ul{
     margin-right: 0px;
     margin-left: 0px;
     display: flex;
+    display: -moz-box;
+    display: -webkit-flexbox;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: -moz-flex;
     flex-direction: row;
+    -webkit-flex-direction: row;
+    -moz-flex-direction: row;
+    -ms-flex-direction: row;
     justify-content: space-between;
+    -webkit-justify-content: space-between;
+    -moz-justify-content: space-between;
+    -ms-justify-content: space-between;
     width: 100%;
   }
   nav.toolbar-nav ul li{
     padding: 0.5rem 0px;
     flex: 1;
+    -webkit-flex: 0 1 100%;
+    -moz-flex: 0 1 100%;
+    -ms-flex: 0 1 100%;
     text-align: center;
   }
   [data-tooltip]:not(a):not(button):not(input){

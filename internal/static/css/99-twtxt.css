@@ -244,6 +244,28 @@ video {
   border-bottom: none;
 }
 
+#cookie-law{
+  background-color: rgb(50, 50, 50) !important;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+#cookie-law p{
+  color: #ffffff;
+  font-size: 13px;
+  text-align: center;
+  background-color: rgb(50, 50, 50)  !important;
+  margin-bottom: 0px;
+}
+#cookie-law p a[role=button]{
+  margin: 10px 0px 0px 10px;
+  padding: 5px 15px;
+  font-size: 13px;
+  color: #dcdcdc !important;
+  border-color: 1px solid #1095c1 !important; 
+  border-radius: 0.25rem !important;
+}
+
 /* Toolbar styling */
 @media (max-width: 576px) {
   .toolbar-nav li {
@@ -284,5 +306,11 @@ video {
   }
   [data-tooltip]:not(a):not(button):not(input){
     border-bottom: none;
+  }
+  #cookie-law p a[role=button]{
+    display: block;
+    width: 20%;
+    margin: 10px auto 0px;
+    padding: 5px;
   }
 }

@@ -1124,6 +1124,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 
 // LoginHandler ...
 func (s *Server) LoginHandler() httprouter.Handle {
+	// #239: Throttle failed login attempts and lock user  account.
 	failures := NewTTLCache(5 * time.Minute)
 
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

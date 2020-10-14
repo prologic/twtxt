@@ -289,6 +289,9 @@ func (a *API) RegisterEndpoint() httprouter.Handle {
 
 // AuthEndpoint ...
 func (a *API) AuthEndpoint() httprouter.Handle {
+	// #239: Throttle failed login attempts and lock user  account.
+	failures := NewTTLCache(5 * time.Minute)
+
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		req, err := types.NewAuthRequest(r.Body)
 		if err != nil {
@@ -315,13 +318,26 @@ func (a *API) AuthEndpoint() httprouter.Handle {
 			return
 		}
 
+		// #239: Throttle failed login attempts and lock user  account.
+		if failures.Get(user.Username) > MaxFailedLogins {
+			http.Error(w, "Account Locked", http.StatusTooManyRequests)
+			return
+		}
+
 		// Validate cleartext password against KDF hash
 		err = a.pm.CheckPassword(user.Password, password)
 		if err != nil {
+			// #239: Throttle failed login attempts and lock user  account.
+			failed := failures.Inc(user.Username)
+			time.Sleep(time.Duration(IntPow(2, failed)) * time.Second)
+
 			log.WithField("username", username).Warn("login attempt with invalid credentials")
 			http.Error(w, "Invalid Credentials", http.StatusUnauthorized)
 			return
 		}
+
+		// #239: Throttle failed login attempts and lock user  account.
+		failures.Reset(user.Username)
 
 		// Login successful
 		log.WithField("username", username).Info("login successful")

@@ -10,6 +10,7 @@ import (
 	"image"
 	"io"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -122,6 +123,10 @@ var (
 		},
 	}
 )
+
+func IntPow(x, y int) int {
+	return int(math.Pow(float64(x), float64(y)))
+}
 
 func Slugify(uri string) string {
 	u, err := url.Parse(uri)

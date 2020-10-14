@@ -40,7 +40,7 @@ const (
 	MediaResolution  = 640 // 640x480
 	AvatarResolution = 60  // 60x60
 	AsyncTaskLimit   = 5
-	MaxAsyncTime     = 5 * time.Second
+	MaxFailedLogins  = 3 // By default 3 failed login attempts per 5 minutes
 )
 
 var (
@@ -1124,6 +1124,8 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 
 // LoginHandler ...
 func (s *Server) LoginHandler() httprouter.Handle {
+	failures := NewTTLCache(5 * time.Minute)
+
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
@@ -1152,14 +1154,29 @@ func (s *Server) LoginHandler() httprouter.Handle {
 			return
 		}
 
+		// #239: Throttle failed login attempts and lock user  account.
+		if failures.Get(user.Username) > MaxFailedLogins {
+			ctx.Error = true
+			ctx.Message = "Too many failed login attempts. Account temporarily locked! Please try again later."
+			s.render("error", w, ctx)
+			return
+		}
+
 		// Validate cleartext password against KDF hash
 		err = s.pm.CheckPassword(user.Password, password)
 		if err != nil {
+			// #239: Throttle failed login attempts and lock user  account.
+			failed := failures.Inc(user.Username)
+			time.Sleep(time.Duration(IntPow(2, failed)) * time.Second)
+
 			ctx.Error = true
 			ctx.Message = "Invalid password! Hint: Reset your password?"
 			s.render("error", w, ctx)
 			return
 		}
+
+		// #239: Throttle failed login attempts and lock user  account.
+		failures.Reset(user.Username)
 
 		// Login successful
 		log.Infof("login successful: %s", username)

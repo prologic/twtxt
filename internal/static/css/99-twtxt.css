@@ -266,6 +266,12 @@ video {
   border-radius: 0.25rem !important;
 }
 
+/* Video Summary Content Styling */
+article .p-summary p video,
+article .p-summary p img{
+  width: auto;
+}
+
 /* Toolbar styling */
 @media (max-width: 576px) {
   .toolbar-nav li {

@@ -60,7 +60,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/steambap/captcha v1.3.0
 	github.com/stretchr/testify v1.6.1
-	github.com/tdewolff/minify/v2 v2.9.7 // indirect
+	github.com/tdewolff/minify/v2 v2.9.9 // indirect
 	github.com/tebeka/selenium v0.9.9
 	github.com/theplant-retired/timezones v0.0.0-20150304063004-f9bd3c0ef9db
 	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
@@ -71,7 +71,7 @@ require (
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
-	golang.org/x/sys v0.0.0-20201015000850-e3ed0017c211 // indirect
+	golang.org/x/sys v0.0.0-20201017003518-b09fb700fbb7 // indirect
 	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df

@@ -718,7 +718,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 		}
 
 		// Update user's own timeline with their own new post.
-		s.cache.FetchTwts(s.config, s.archive, user.Source())
+		s.cache.FetchTwts(s.config, s.archive, user.Source(), nil)
 
 		// Re-populate/Warm cache with local twts for this pod
 		s.cache.GetByPrefix(s.config.BaseURL, true)
@@ -1572,7 +1572,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 		if !s.cache.IsCached(uri) {
 			sources := make(types.Feeds)
 			sources[types.Feed{Nick: nick, URL: uri}] = true
-			s.cache.FetchTwts(s.config, s.archive, sources)
+			s.cache.FetchTwts(s.config, s.archive, sources, nil)
 		}
 
 		twts := s.cache.GetByURL(uri)

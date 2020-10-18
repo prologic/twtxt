@@ -252,13 +252,17 @@ func Request(conf *Config, method, url string, headers http.Header) (*http.Respo
 		headers = make(http.Header)
 	}
 
-	headers.Set(
-		"User-Agent",
-		fmt.Sprintf(
-			"twtxt/%s (Pod: %s Support: %s)",
-			twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURL, "support"),
-		),
-	)
+	// Set a default User-Agent (if none set)
+	if headers.Get("User-Agent") == "" {
+		headers.Set(
+			"User-Agent",
+			fmt.Sprintf(
+				"twtxt/%s (Pod: %s Support: %s)",
+				twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURL, "support"),
+			),
+		)
+	}
+
 	req.Header = headers
 
 	client := http.Client{

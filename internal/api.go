@@ -416,7 +416,7 @@ func (a *API) PostEndpoint() httprouter.Handle {
 		}
 
 		// Update user's own timeline with their own new post.
-		a.cache.FetchTwts(a.config, a.archive, user.Source())
+		a.cache.FetchTwts(a.config, a.archive, user.Source(), nil)
 
 		// Re-populate/Warm cache with local twts for this pod
 		a.cache.GetByPrefix(a.config.BaseURL, true)
@@ -1020,7 +1020,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 			if !a.cache.IsCached(req.URL) {
 				sources := make(types.Feeds)
 				sources[types.Feed{Nick: nick, URL: req.URL}] = true
-				a.cache.FetchTwts(a.config, a.archive, sources)
+				a.cache.FetchTwts(a.config, a.archive, sources, nil)
 			}
 
 			twts = a.cache.GetByURL(req.URL)

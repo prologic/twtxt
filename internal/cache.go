@@ -15,6 +15,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/types"
 )
 
@@ -162,6 +163,16 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds)
 			}()
 
 			headers := make(http.Header)
+
+			headers.Set(
+				"User-Agent",
+				fmt.Sprintf(
+					"twtxt/%s (Pod: %s Query: %s Support: %s)",
+					twtxt.FullVersion(), conf.Name,
+					URLForWhoFollows(conf.BaseURL, feed),
+					URLForPage(conf.BaseURL, "support"),
+				),
+			)
 
 			cache.mu.RLock()
 			if cached, ok := cache.Twts[feed.URL]; ok {

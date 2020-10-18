@@ -78,7 +78,12 @@ func (s *Server) BlogHandler() httprouter.Handle {
 			return
 		}
 
-		extensions := parser.CommonExtensions | parser.AutoHeadingIDs
+		extensions := parser.CommonExtensions |
+			parser.NoEmptyLineBeforeBlock |
+			parser.AutoHeadingIDs |
+			parser.HardLineBreak |
+			parser.Footnotes
+
 		mdParser := parser.NewWithExtensions(extensions)
 
 		htmlFlags := html.CommonFlags

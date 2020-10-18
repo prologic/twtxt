@@ -270,6 +270,7 @@ video {
 article .p-summary p video,
 article .p-summary p img{
   width: auto;
+  height: auto;
 }
 
 /* Blockquotes */

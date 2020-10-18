@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -276,8 +277,15 @@ func (f *Feed) Source() types.Feeds {
 }
 
 func (f *Feed) Profile(baseURL string, viewer *User) types.Profile {
-	muted := false
+	var (
+		follows    bool
+		followedBy bool
+		muted      bool
+	)
+
 	if viewer != nil {
+		follows = viewer.Follows(f.URL)
+		followedBy = viewer.FollowedBy(f.URL)
 		muted = viewer.HasMuted(f.URL)
 	}
 
@@ -289,7 +297,9 @@ func (f *Feed) Profile(baseURL string, viewer *User) types.Profile {
 		URL:      f.URL,
 		BlogsURL: URLForBlogs(baseURL, f.Name),
 
-		Muted: muted,
+		Follows:    follows,
+		FollowedBy: followedBy,
+		Muted:      muted,
 
 		Followers: f.Followers,
 	}
@@ -301,6 +311,15 @@ func (f *Feed) Bytes() ([]byte, error) {
 		return nil, err
 	}
 	return data, nil
+}
+
+func (u *User) String() string {
+	url, err := url.Parse(u.URL)
+	if err != nil {
+		log.WithError(err).Warn("error parsing user url")
+		return u.Username
+	}
+	return fmt.Sprintf("%s@%s", u.Username, url.Hostname())
 }
 
 // HasToken will add a token to a user if it doesn't exist already
@@ -404,8 +423,21 @@ func (u *User) Sources() types.Feeds {
 }
 
 func (u *User) Profile(baseURL string, viewer *User) types.Profile {
-	muted := false
+	var (
+		follows    bool
+		followedBy bool
+		muted      bool
+	)
+
 	if viewer != nil {
+		if viewer.Is(u.URL) {
+			follows = true
+			followedBy = true
+		} else {
+			follows = viewer.Follows(u.URL)
+			followedBy = viewer.FollowedBy(u.URL)
+		}
+
 		muted = viewer.HasMuted(u.URL)
 	}
 
@@ -417,7 +449,9 @@ func (u *User) Profile(baseURL string, viewer *User) types.Profile {
 		URL:      u.URL,
 		BlogsURL: URLForBlogs(baseURL, u.Username),
 
-		Muted: muted,
+		Follows:    follows,
+		FollowedBy: followedBy,
+		Muted:      muted,
 
 		Followers: u.Followers,
 		Following: u.Following,

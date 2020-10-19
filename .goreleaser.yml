@@ -20,28 +20,6 @@ builds:
     goarm:
       - 6
       - 7
-  - id: twtd
-    binary: twtd
-    main: ./cmd/twtd
-    flags: -tags "static_build"
-    ldflags: -w -X github.com/prologic/twtxt.Version={{.Version}} -X github.com/prologic/twtxt.Commit={{.Commit}}
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - darwin
-      - freebsd
-      - linux
-      - windows
-    goarch:
-      - i386
-      - amd64
-      - arm
-      - arm64
-    goarm:
-      - 6
-      - 7
-    hooks:
-      pre: rice embed-go
 signs:
   - artifacts: checksum
 brews:

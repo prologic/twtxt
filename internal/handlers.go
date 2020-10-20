@@ -1610,6 +1610,10 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 			Username: nick,
 			TwtURL:   uri,
 			URL:      URLForExternalProfile(s.config, nick, uri),
+
+			Follows:    ctx.User.Follows(uri),
+			FollowedBy: ctx.User.FollowedBy(uri),
+			Muted:      ctx.User.HasMuted(uri),
 		}
 
 		ctx.Title = fmt.Sprintf("External profile for @<%s %s>", nick, uri)

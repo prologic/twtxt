@@ -942,3 +942,19 @@ i.icss-microphone:before {
 }
 i.icss-microphone:after {
 }
+i.icss-exchange {
+    background-color: transparent;
+    border:0.2em solid transparent;
+    border-left-color: currentColor;
+    border-right-width: 0.8em;
+    box-shadow: -0.7em 0 0 -0.13em;
+    margin: .5em -.8em .05em 0.8em;
+}
+i.icss-exchange:before {
+    border:0.2em solid transparent;
+    border-right-color: currentColor;
+    border-left-width: 0.8em;
+    box-shadow: 0.7em 0 0 -0.13em;
+    top: -.5em;
+    left: -1.8em
+}

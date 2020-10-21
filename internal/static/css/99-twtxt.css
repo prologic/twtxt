@@ -219,13 +219,13 @@ video {
 /* Timeline styline */
 .u-author {
   display: flex;
-  flex-direction: row !important;
-  align-items: center !important;
+  flex-direction: row;
+  align-items: center;
 }
 
 .p-name {
   left: 0px !important;
-  font-size: 34px !important;
+  font-size: 34px;
   color: #1095c1;
 }
 
@@ -328,5 +328,38 @@ article .p-summary blockquote {
     width: 20%;
     margin: 10px auto 0px;
     padding: 5px;
+  }
+
+  /* Name off timeline author */
+  .u-author.h-card{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .u-author.h-card>div{
+    flex: 20%;
+  }
+  .u-author.h-card>div a{
+    display: block;
+  }
+  .u-author.h-card>div img.avatar{
+    width: auto;
+    height: auto;
+  }
+  .u-author.h-card .author{
+    flex: 80%;
+  }
+  .u-author.h-card .author .p-name{
+    font-size: 20px;
+    line-height: 25px;
+    overflow-wrap: anywhere;
+  }
+  .u-author.h-card .publish-time{
+    font-size: 14px;
+  }
+  nav.pagination-nav{
+    justify-content: space-between;
   }
 }

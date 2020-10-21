@@ -421,6 +421,7 @@ func (u *User) Source() types.Feeds {
 }
 
 func (u *User) Sources() types.Feeds {
+	// Ensure we fetch the user's own posts in the cache
 	feeds := u.Source()
 	for url, nick := range u.sources {
 		feeds[types.Feed{Nick: nick, URL: url}] = true

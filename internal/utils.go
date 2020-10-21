@@ -253,7 +253,8 @@ func Request(conf *Config, method, url string, headers http.Header) (*http.Respo
 		headers = make(http.Header)
 	}
 
-	if headers.Get("User-Agent") != "" {
+	// Set a default User-Agent (if none set)
+	if headers.Get("User-Agent") == "" {
 		headers.Set(
 			"User-Agent",
 			fmt.Sprintf(

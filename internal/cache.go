@@ -131,7 +131,7 @@ func LoadCache(path string) (*Cache, error) {
 const maxfetchers = 50
 
 // FetchTwts ...
-func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) {
+func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds, followers map[types.Feed][]string) {
 	stime := time.Now()
 	defer func() {
 		metrics.Gauge(
@@ -169,15 +169,34 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds)
 
 			headers := make(http.Header)
 
-			headers.Set(
-				"User-Agent",
-				fmt.Sprintf(
-					"twtxt/%s (Pod: %s Query: %s Support: %s)",
-					twtxt.FullVersion(), conf.Name,
-					URLForWhoFollows(conf.BaseURL, feed),
-					URLForPage(conf.BaseURL, "support"),
-				),
-			)
+			if followers != nil {
+				feedFollowers := followers[feed]
+				if len(feedFollowers) == 1 {
+					headers.Set(
+						"User-Agent",
+						fmt.Sprintf(
+							"twtxt/%s (+%s; @%s)",
+							twtxt.FullVersion(),
+							URLForUser(conf, feedFollowers[0]), feedFollowers[0],
+						),
+					)
+
+				} else {
+					followersString := strings.Join(feedFollowers[:5], " ")
+					if len(feedFollowers) > 5 {
+						followersString += fmt.Sprintf(" and %d more...", (len(feedFollowers) - 5))
+					}
+
+					headers.Set(
+						"User-Agent",
+						fmt.Sprintf(
+							"twtxt/%s (Pod: %s Followers: %s Support: %s)",
+							twtxt.FullVersion(), followersString,
+							conf.Name, URLForPage(conf.BaseURL, "support"),
+						),
+					)
+				}
+			}
 
 			cache.mu.RLock()
 			if cached, ok := cache.Twts[feed.URL]; ok {

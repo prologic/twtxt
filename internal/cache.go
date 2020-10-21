@@ -182,11 +182,13 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 					)
 				} else {
 					var followersString string
+
 					if len(feedFollowers) > 5 {
 						followersString = fmt.Sprintf(
+							"%s and %d more... %s",
 							strings.Join(feedFollowers[:5], " "),
-							"%s and %d more...",
-							(len(feedFollowers) - 5))
+							(len(feedFollowers) - 5), URLForWhoFollows(conf.BaseURL, feed),
+						)
 					} else {
 						followersString = strings.Join(feedFollowers, " ")
 					}
@@ -195,8 +197,8 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 						"User-Agent",
 						fmt.Sprintf(
 							"twtxt/%s (Pod: %s Followers: %s Support: %s)",
-							twtxt.FullVersion(), followersString,
-							conf.Name, URLForPage(conf.BaseURL, "support"),
+							twtxt.FullVersion(), conf.Name,
+							followersString, URLForPage(conf.BaseURL, "support"),
 						),
 					)
 				}

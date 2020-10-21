@@ -252,13 +252,16 @@ func Request(conf *Config, method, url string, headers http.Header) (*http.Respo
 		headers = make(http.Header)
 	}
 
-	headers.Set(
-		"User-Agent",
-		fmt.Sprintf(
-			"twtxt/%s (Pod: %s Support: %s)",
-			twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURL, "support"),
-		),
-	)
+	if headers.Get("User-Agent") != "" {
+		headers.Set(
+			"User-Agent",
+			fmt.Sprintf(
+				"twtxt/%s (Pod: %s Support: %s)",
+				twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURL, "support"),
+			),
+		)
+	}
+
 	req.Header = headers
 
 	client := http.Client{
@@ -1335,6 +1338,16 @@ func URLForTask(baseURL, uuid string) string {
 		"%s/task/%s",
 		strings.TrimSuffix(baseURL, "/"),
 		uuid,
+	)
+}
+
+func URLForWhoFollows(baseURL string, feed types.Feed) string {
+	token := GenerateToken()
+
+	return fmt.Sprintf(
+		"%s/whoFollows?uri=%s&nick=%s&token=%s",
+		strings.TrimSuffix(baseURL, "/"),
+		feed.URL, feed.Nick, token,
 	)
 }
 

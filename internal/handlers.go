@@ -593,10 +593,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 					); err != nil {
 						log.WithError(err).Warnf("error appending special FOLLOW post")
 					}
-					if user.Followers == nil {
-						user.Followers = make(map[string]string)
-					}
-					user.Followers[followerClient.Nick] = followerClient.URL
+					user.AddFollower(followerClient.Nick, followerClient.URL)
 					if err := s.db.SetUser(nick, user); err != nil {
 						log.WithError(err).Warnf("error updating user object for %s", nick)
 					}

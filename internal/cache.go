@@ -180,11 +180,15 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 							URLForUser(conf, feedFollowers[0]), feedFollowers[0],
 						),
 					)
-
 				} else {
-					followersString := strings.Join(feedFollowers[:5], " ")
+					var followersString string
 					if len(feedFollowers) > 5 {
-						followersString += fmt.Sprintf(" and %d more...", (len(feedFollowers) - 5))
+						followersString = fmt.Sprintf(
+							strings.Join(feedFollowers[:5], " "),
+							"%s and %d more...",
+							(len(feedFollowers) - 5))
+					} else {
+						followersString = strings.Join(feedFollowers, " ")
 					}
 
 					headers.Set(

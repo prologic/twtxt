@@ -40,7 +40,7 @@ func (s *Server) WhoFollowsHandler() httprouter.Handle {
 			nick = "unknown"
 		}
 
-		if !ctx.Authenticated || tokenCache.Get(token) == 0 {
+		if !ctx.Authenticated && tokenCache.Get(token) == 0 {
 			log.Warn("unauthenticated or invalid token for whoFollows request")
 			if ctype == "html" {
 				ctx.Error = true

@@ -68,6 +68,7 @@ func (a *API) initRoutes() {
 
 	router.POST("/post", a.isAuthorized(a.PostEndpoint()))
 	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
+	router.POST("/settings", a.isAuthorized(a.SettingsEndpoint()))
 
 	router.POST("/follow", a.isAuthorized(a.FollowEndpoint()))
 	router.POST("/unfollow", a.isAuthorized(a.UnfollowEndpoint()))
@@ -753,6 +754,80 @@ func (a *API) UnfollowEndpoint() httprouter.Handle {
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{}`))
+	}
+}
+
+// SettingsEndpoint ...
+func (a *API) SettingsEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		// Limit request body to to abuse
+		r.Body = http.MaxBytesReader(w, r.Body, a.config.MaxUploadSize)
+
+		email := strings.TrimSpace(r.FormValue("email"))
+		tagline := strings.TrimSpace(r.FormValue("tagline"))
+		password := r.FormValue("password")
+
+		theme := r.FormValue("theme")
+		displayDatesInTimezone := r.FormValue("displayDatesInTimezone")
+		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
+		isFollowingPubliclyVisible := r.FormValue("isFollowingPubliclyVisible") == "on"
+
+		avatarFile, _, err := r.FormFile("avatar_file")
+		if err != nil && err != http.ErrMissingFile {
+			log.WithError(err).Error("error parsing form file")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		user := r.Context().Value(UserContextKey).(*User)
+
+		if password != "" {
+			hash, err := a.pm.CreatePassword(password)
+			if err != nil {
+				log.WithError(err).Error("error creating password hash")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			user.Password = hash
+		}
+
+		if avatarFile != nil {
+			opts := &ImageOptions{
+				Resize:  true,
+				ResizeW: AvatarResolution,
+				ResizeH: AvatarResolution,
+			}
+			_, err = StoreUploadedImage(
+				a.config, avatarFile,
+				avatarsDir, user.Username,
+				opts,
+			)
+			if err != nil {
+				log.WithError(err).Error("error updating user avatar")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+
+		user.Email = email
+		user.Tagline = tagline
+
+		user.Theme = theme
+		user.DisplayDatesInTimezone = displayDatesInTimezone
+		user.IsFollowersPubliclyVisible = isFollowersPubliclyVisible
+		user.IsFollowingPubliclyVisible = isFollowingPubliclyVisible
+
+		if err := a.db.SetUser(user.Username, user); err != nil {
+			log.WithError(err).Error("error updating user object")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// No real response
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+		return
 	}
 }
 

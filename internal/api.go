@@ -767,8 +767,11 @@ func (a *API) SettingsEndpoint() httprouter.Handle {
 		tagline := strings.TrimSpace(r.FormValue("tagline"))
 		password := r.FormValue("password")
 
-		theme := r.FormValue("theme")
-		displayDatesInTimezone := r.FormValue("displayDatesInTimezone")
+		// XXX: Commented out as these are more specific to the Web App currently.
+		// API clients such as Goryon (the Flutter iOS/Android app) have their own mechanisms.
+		// theme := r.FormValue("theme")
+		// displayDatesInTimezone := r.FormValue("displayDatesInTimezone")
+
 		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
 		isFollowingPubliclyVisible := r.FormValue("isFollowingPubliclyVisible") == "on"
 
@@ -813,8 +816,11 @@ func (a *API) SettingsEndpoint() httprouter.Handle {
 		user.Email = email
 		user.Tagline = tagline
 
-		user.Theme = theme
-		user.DisplayDatesInTimezone = displayDatesInTimezone
+		// XXX: Commented out as these are more specific to the Web App currently.
+		// API clients such as Goryon (the Flutter iOS/Android app) have their own mechanisms.
+		// user.Theme = theme
+		// user.DisplayDatesInTimezone = displayDatesInTimezone
+
 		user.IsFollowersPubliclyVisible = isFollowersPubliclyVisible
 		user.IsFollowingPubliclyVisible = isFollowingPubliclyVisible
 

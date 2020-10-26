@@ -285,7 +285,7 @@ article .p-summary blockquote {
 /* Footer Style */
 footer{
   border-top: 1px solid var(--primary);
-  background: #f5f5f5;
+  background-color: rgba(234, 232, 232, 0.1);
 }
 footer small{
   display: flex;

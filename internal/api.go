@@ -68,6 +68,8 @@ func (a *API) initRoutes() {
 
 	router.POST("/post", a.isAuthorized(a.PostEndpoint()))
 	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
+
+	router.GET("/settings", a.isAuthorized(a.SettingsEndpoint()))
 	router.POST("/settings", a.isAuthorized(a.SettingsEndpoint()))
 
 	router.POST("/follow", a.isAuthorized(a.FollowEndpoint()))
@@ -763,6 +765,20 @@ func (a *API) SettingsEndpoint() httprouter.Handle {
 		// Limit request body to to abuse
 		r.Body = http.MaxBytesReader(w, r.Body, a.config.MaxUploadSize)
 
+		user := r.Context().Value(UserContextKey).(*User)
+
+		if r.Method == http.MethodGet {
+			data, err := json.Marshal(user)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(data)
+			return
+		}
+
 		email := strings.TrimSpace(r.FormValue("email"))
 		tagline := strings.TrimSpace(r.FormValue("tagline"))
 		password := r.FormValue("password")
@@ -781,8 +797,6 @@ func (a *API) SettingsEndpoint() httprouter.Handle {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		user := r.Context().Value(UserContextKey).(*User)
 
 		if password != "" {
 			hash, err := a.pm.CreatePassword(password)

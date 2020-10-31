@@ -434,7 +434,7 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 		s.blogs.Add(blogPost)
 
 		// Update user's own timeline with their own new post.
-		s.cache.FetchTwts(s.config, s.archive, user.Source())
+		s.cache.FetchTwts(s.config, s.archive, user.Source(), nil)
 
 		// Re-populate/Warm cache with local twts for this pod
 		s.cache.GetByPrefix(s.config.BaseURL, true)

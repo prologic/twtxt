@@ -585,18 +585,15 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 						s.config, s.db,
 						twtxtBot,
 						fmt.Sprintf(
-							"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+							"FOLLOW: @<%s %s> from @<%s %s> using %s",
 							nick, URLForUser(s.config, nick),
 							followerClient.Nick, followerClient.URL,
-							followerClient.ClientName, followerClient.ClientVersion,
+							followerClient.Client,
 						),
 					); err != nil {
 						log.WithError(err).Warnf("error appending special FOLLOW post")
 					}
-					if user.Followers == nil {
-						user.Followers = make(map[string]string)
-					}
-					user.Followers[followerClient.Nick] = followerClient.URL
+					user.AddFollower(followerClient.Nick, followerClient.URL)
 					if err := s.db.SetUser(nick, user); err != nil {
 						log.WithError(err).Warnf("error updating user object for %s", nick)
 					}
@@ -718,7 +715,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 		}
 
 		// Update user's own timeline with their own new post.
-		s.cache.FetchTwts(s.config, s.archive, user.Source())
+		s.cache.FetchTwts(s.config, s.archive, user.Source(), nil)
 
 		// Re-populate/Warm cache with local twts for this pod
 		s.cache.GetByPrefix(s.config.BaseURL, true)
@@ -1572,7 +1569,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 		if !s.cache.IsCached(uri) {
 			sources := make(types.Feeds)
 			sources[types.Feed{Nick: nick, URL: uri}] = true
-			s.cache.FetchTwts(s.config, s.archive, sources)
+			s.cache.FetchTwts(s.config, s.archive, sources, nil)
 		}
 
 		twts := s.cache.GetByURL(uri)

@@ -507,6 +507,9 @@ func (s *Server) initRoutes() {
 	s.router.GET("/externalAvatar", s.ExternalAvatarHandler())
 	s.router.HEAD("/externalAvatar", s.ExternalAvatarHandler())
 
+	// External Queries (protected by a short-lived token)
+	s.router.GET("/whoFollows", s.WhoFollowsHandler())
+
 	// Syndication Formats (RSS, Atom, JSON Feed)
 	s.router.HEAD("/atom.xml", s.SyndicationHandler())
 	s.router.HEAD("/user/:nick/atom.xml", s.SyndicationHandler())

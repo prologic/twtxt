@@ -41,12 +41,12 @@
 <body>
   <nav id="mainNav" class="container-fluid">
     <ul>
-      <li>
+      <li class="mobile-menu">
         <a id="burgerMenu" href="javascript:void(0);">
           <i class="icss-bars"></i>
         </a>
       </li>
-      <li>
+      <li class="logo">
         <a href="/" class="contrast">
           <svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 449 249.1" style="enable-background:new 0 0 449 249.1;" height="3.5rem">
             <path fill="currentColor" d="m73.1 156.6v-93.3h-48.4v-22.2h122.8v22.2h-48.5v93.3z"></path>
@@ -140,21 +140,19 @@
   <footer>
     <div class="container">
       <small>
-        <a href="https://github.com/prologic/twtxt" target="_blank">twtxt v{{ .SoftwareVersion }}</a>
-        ·
-        Created with 💚 by <a att href="https://github.com/prologic" target="_blank">James Mills</a>
-        ·
-        &copy; 2020 <a href="https://github.com/prologic" target="_blank">James Mills</a>. All rights reserved.
-        ·
-        <a href="/about" target="_blank">About</a>
-        |
-        <a href="/privacy" target="_blank">Privacy</a>
-        |
-        <a href="/abuse" target="_blank">Abuse</a>
-        |
-        <a href="/help" target="_blank">Help</a>
-        |
-        <a href="/support" target="_blank">Support</a>
+        <div class="footer-copyright"><a href="https://github.com/prologic/twtxt" target="_blank">twtxt v{{ .SoftwareVersion }}</a>
+            ·
+            Created with 💚 by <a att href="https://github.com/prologic" target="_blank">James Mills</a>
+            ·
+            &copy; 2020 <a href="https://github.com/prologic" target="_blank">James Mills</a>. All rights reserved.
+        </div>
+        <div class="footer-menu">
+          <a href="/about" target="_blank" class="menu-item">About</a>
+          <a href="/privacy" target="_blank" class="menu-item">Privacy</a>
+          <a href="/abuse" target="_blank" class="menu-item">Abuse</a>
+          <a href="/help" target="_blank" class="menu-item">Help</a>
+          <a href="/support" target="_blank" class="menu-item">Support</a>
+        </div>
       </small>
     </div>
   </footer>

@@ -356,6 +356,12 @@ func (u *User) Is(url string) bool {
 	return u.URL == NormalizeURL(url)
 }
 
+func (u *User) AddFollower(nick, url string) {
+	url = NormalizeURL(url)
+	u.Followers[nick] = url
+	u.remotes[url] = nick
+}
+
 func (u *User) FollowedBy(url string) bool {
 	_, ok := u.remotes[NormalizeURL(url)]
 	return ok
@@ -415,6 +421,7 @@ func (u *User) Source() types.Feeds {
 }
 
 func (u *User) Sources() types.Feeds {
+	// Ensure we fetch the user's own posts in the cache
 	feeds := u.Source()
 	for url, nick := range u.sources {
 		feeds[types.Feed{Nick: nick, URL: url}] = true

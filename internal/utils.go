@@ -101,7 +101,7 @@ var (
 
 	validFeedName  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
 	validUsername  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]+$`)
-	userAgentRegex = regexp.MustCompile(`(.*?)\/(.*?) ?\(\+(https?://.*); @(.*)\)`)
+	userAgentRegex = regexp.MustCompile(`(.*?)\s+?\(\+?(https?://.*?);? @?(.*)\)`)
 
 	ErrInvalidFeedName   = errors.New("error: invalid feed name")
 	ErrBadRequest        = errors.New("error: request failed with non-200 response")
@@ -252,13 +252,17 @@ func Request(conf *Config, method, url string, headers http.Header) (*http.Respo
 		headers = make(http.Header)
 	}
 
-	headers.Set(
-		"User-Agent",
-		fmt.Sprintf(
-			"twtxt/%s (Pod: %s Support: %s)",
-			twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURL, "support"),
-		),
-	)
+	// Set a default User-Agent (if none set)
+	if headers.Get("User-Agent") == "" {
+		headers.Set(
+			"User-Agent",
+			fmt.Sprintf(
+				"twtxt/%s (Pod: %s Support: %s)",
+				twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURL, "support"),
+			),
+		)
+	}
+
 	req.Header = headers
 
 	client := http.Client{
@@ -1113,10 +1117,9 @@ func (u URI) String() string {
 }
 
 type TwtxtUserAgent struct {
-	ClientName    string
-	ClientVersion string
-	Nick          string
-	URL           string
+	Client string
+	Nick   string
+	URL    string
 }
 
 func DetectFollowerFromUserAgent(ua string) (*TwtxtUserAgent, error) {
@@ -1124,11 +1127,11 @@ func DetectFollowerFromUserAgent(ua string) (*TwtxtUserAgent, error) {
 	if match == nil {
 		return nil, ErrInvalidUserAgent
 	}
+
 	return &TwtxtUserAgent{
-		ClientName:    match[1],
-		ClientVersion: match[2],
-		URL:           match[3],
-		Nick:          match[4],
+		Client: match[1],
+		URL:    match[2],
+		Nick:   match[3],
 	}, nil
 }
 
@@ -1335,6 +1338,16 @@ func URLForTask(baseURL, uuid string) string {
 		"%s/task/%s",
 		strings.TrimSuffix(baseURL, "/"),
 		uuid,
+	)
+}
+
+func URLForWhoFollows(baseURL string, feed types.Feed) string {
+	token := GenerateToken()
+
+	return fmt.Sprintf(
+		"%s/whoFollows?uri=%s&nick=%s&token=%s",
+		strings.TrimSuffix(baseURL, "/"),
+		feed.URL, feed.Nick, token,
 	)
 }
 
@@ -1603,7 +1616,8 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 		// Replace  `LS: Line Separator, U+2028` with `\n` so the Markdown
 		// renderer can interpreter newlines as `<br />` and `<p>`.
 		text = strings.ReplaceAll(text, "\u2028", "\n")
-
+		// Replace simple '#just-tag' entrys with local link
+		text = ExpandTag(conf, nil, nil, text)
 		extensions := parser.CommonExtensions | parser.HardLineBreak | parser.NoEmptyLineBeforeBlock
 		mdParser := parser.NewWithExtensions(extensions)
 

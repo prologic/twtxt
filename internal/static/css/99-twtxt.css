@@ -219,13 +219,13 @@ video {
 /* Timeline styline */
 .u-author {
   display: flex;
-  flex-direction: row !important;
-  align-items: center !important;
+  flex-direction: row;
+  align-items: center;
 }
 
 .p-name {
   left: 0px !important;
-  font-size: 34px !important;
+  font-size: 34px;
   color: #1095c1;
 }
 
@@ -262,7 +262,7 @@ video {
   padding: 5px 15px;
   font-size: 13px;
   color: #dcdcdc !important;
-  border-color: 1px solid #1095c1 !important; 
+  border-color: 1px solid var(--primary) !important; 
   border-radius: 0.25rem !important;
 }
 
@@ -271,6 +271,53 @@ article .p-summary p video,
 article .p-summary p img{
   width: auto;
   height: auto;
+}
+
+/* Blockquotes */
+article .p-summary blockquote {
+  border-left: 5px solid var(--primary) !important;
+  margin: 1.5em 10px;
+  padding: 10px 10px 10px 25px;
+  font-style: italic;
+  position: relative;
+}
+
+/* Footer Style */
+footer{
+  border-top: 1px solid var(--primary);
+  background-color: rgba(234, 232, 232, 0.1);
+}
+footer small{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-content: center;
+}
+footer small .footer-menu{
+  display: flex;
+  flex-direction: row;
+}
+footer small .footer-menu a{
+  margin-right: 10px;
+  padding-right: 10px;
+  position: relative;
+}
+footer small .footer-menu a::after{
+  content: '';
+  height: 12px;
+  width: 1px;
+  background-color: #929292;
+  position: absolute;
+  right: 0px;
+  bottom: 4px;
+}
+footer small .footer-menu a:last-child{
+  border: none;
+  padding-right: 0px;
+  margin-right: 0px;
+}
+footer small .footer-menu a:last-child::after{
+  content: none;
 }
 
 /* Toolbar styling */
@@ -319,5 +366,49 @@ article .p-summary p img{
     width: 20%;
     margin: 10px auto 0px;
     padding: 5px;
+  }
+
+  /* Name off timeline author */
+  .u-author.h-card{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .u-author.h-card>div{
+    flex: 20%;
+  }
+  .u-author.h-card>div a{
+    display: block;
+  }
+  .u-author.h-card>div img.avatar{
+    width: auto;
+    height: auto;
+  }
+  .u-author.h-card .author{
+    flex: 80%;
+  }
+  .u-author.h-card .author .p-name{
+    font-size: 20px;
+    line-height: 25px;
+    overflow-wrap: anywhere;
+  }
+  .u-author.h-card .publish-time{
+    font-size: 14px;
+  }
+  nav.pagination-nav{
+    justify-content: space-between;
+  }
+  /* Footer Style */
+  footer small{
+    text-align: center;
+    flex-direction: column-reverse;
+  }
+  footer small .footer-copyright{
+    margin-top: 10px;
+  }
+  footer small .footer-menu{
+    justify-content: center;
   }
 }

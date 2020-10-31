@@ -69,6 +69,9 @@ func (a *API) initRoutes() {
 	router.POST("/post", a.isAuthorized(a.PostEndpoint()))
 	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
 
+	router.GET("/settings", a.isAuthorized(a.SettingsEndpoint()))
+	router.POST("/settings", a.isAuthorized(a.SettingsEndpoint()))
+
 	router.POST("/follow", a.isAuthorized(a.FollowEndpoint()))
 	router.POST("/unfollow", a.isAuthorized(a.UnfollowEndpoint()))
 
@@ -416,7 +419,7 @@ func (a *API) PostEndpoint() httprouter.Handle {
 		}
 
 		// Update user's own timeline with their own new post.
-		a.cache.FetchTwts(a.config, a.archive, user.Source())
+		a.cache.FetchTwts(a.config, a.archive, user.Source(), nil)
 
 		// Re-populate/Warm cache with local twts for this pod
 		a.cache.GetByPrefix(a.config.BaseURL, true)
@@ -756,6 +759,98 @@ func (a *API) UnfollowEndpoint() httprouter.Handle {
 	}
 }
 
+// SettingsEndpoint ...
+func (a *API) SettingsEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		// Limit request body to to abuse
+		r.Body = http.MaxBytesReader(w, r.Body, a.config.MaxUploadSize)
+
+		user := r.Context().Value(UserContextKey).(*User)
+
+		if r.Method == http.MethodGet {
+			data, err := json.Marshal(user)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(data)
+			return
+		}
+
+		email := strings.TrimSpace(r.FormValue("email"))
+		tagline := strings.TrimSpace(r.FormValue("tagline"))
+		password := r.FormValue("password")
+
+		// XXX: Commented out as these are more specific to the Web App currently.
+		// API clients such as Goryon (the Flutter iOS/Android app) have their own mechanisms.
+		// theme := r.FormValue("theme")
+		// displayDatesInTimezone := r.FormValue("displayDatesInTimezone")
+
+		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
+		isFollowingPubliclyVisible := r.FormValue("isFollowingPubliclyVisible") == "on"
+
+		avatarFile, _, err := r.FormFile("avatar_file")
+		if err != nil && err != http.ErrMissingFile {
+			log.WithError(err).Error("error parsing form file")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if password != "" {
+			hash, err := a.pm.CreatePassword(password)
+			if err != nil {
+				log.WithError(err).Error("error creating password hash")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			user.Password = hash
+		}
+
+		if avatarFile != nil {
+			opts := &ImageOptions{
+				Resize:  true,
+				ResizeW: AvatarResolution,
+				ResizeH: AvatarResolution,
+			}
+			_, err = StoreUploadedImage(
+				a.config, avatarFile,
+				avatarsDir, user.Username,
+				opts,
+			)
+			if err != nil {
+				log.WithError(err).Error("error updating user avatar")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+
+		user.Email = email
+		user.Tagline = tagline
+
+		// XXX: Commented out as these are more specific to the Web App currently.
+		// API clients such as Goryon (the Flutter iOS/Android app) have their own mechanisms.
+		// user.Theme = theme
+		// user.DisplayDatesInTimezone = displayDatesInTimezone
+
+		user.IsFollowersPubliclyVisible = isFollowersPubliclyVisible
+		user.IsFollowingPubliclyVisible = isFollowingPubliclyVisible
+
+		if err := a.db.SetUser(user.Username, user); err != nil {
+			log.WithError(err).Error("error updating user object")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// No real response
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+		return
+	}
+}
+
 // UploadMediaEndpoint ...
 func (a *API) UploadMediaEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -1020,7 +1115,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 			if !a.cache.IsCached(req.URL) {
 				sources := make(types.Feeds)
 				sources[types.Feed{Nick: nick, URL: req.URL}] = true
-				a.cache.FetchTwts(a.config, a.archive, sources)
+				a.cache.FetchTwts(a.config, a.archive, sources, nil)
 			}
 
 			twts = a.cache.GetByURL(req.URL)

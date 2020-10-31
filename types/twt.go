@@ -16,7 +16,7 @@ const (
 )
 
 var (
-	tagsRe    = regexp.MustCompile(`#[-\w]+`)
+	tagsRe    = regexp.MustCompile(`#([-\w]+)`)
 	subjectRe = regexp.MustCompile(`^(@<.*>[, ]*)*(\(.*?\))(.*)`)
 
 	uriTagsRe     = regexp.MustCompile(`#<(.*?) .*?>`)
@@ -105,7 +105,10 @@ func (twt Twt) Tags() []string {
 	var tags []string
 
 	seen := make(map[string]bool)
-	matches := uriTagsRe.FindAllStringSubmatch(twt.Text, -1)
+
+	matches := tagsRe.FindAllStringSubmatch(twt.Text, -1)
+	matches = append(matches, uriTagsRe.FindAllStringSubmatch(twt.Text, -1)...)
+
 	for _, match := range matches {
 		tag := match[1]
 		if !seen[tag] {

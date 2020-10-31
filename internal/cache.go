@@ -255,6 +255,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 					twtsch <- nil
 					return
 				}
+
 				log.Infof("fetched %d new and %d old twts from %s", len(twts), len(old), feed)
 
 				// Archive old twts

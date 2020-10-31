@@ -359,7 +359,7 @@ func (u *User) Is(url string) bool {
 func (u *User) AddFollower(nick, url string) {
 	url = NormalizeURL(url)
 	u.Followers[nick] = url
-	u.sources[url] = nick
+	u.remotes[url] = nick
 }
 
 func (u *User) FollowedBy(url string) bool {

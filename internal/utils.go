@@ -1123,14 +1123,10 @@ type TwtxtUserAgent struct {
 }
 
 func DetectFollowerFromUserAgent(ua string) (*TwtxtUserAgent, error) {
-	log.Infof("ua: %q", ua)
-
 	match := userAgentRegex.FindStringSubmatch(ua)
 	if match == nil {
 		return nil, ErrInvalidUserAgent
 	}
-
-	log.Infof("match: %q", match)
 
 	return &TwtxtUserAgent{
 		Client: match[1],
@@ -1620,7 +1616,8 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 		// Replace  `LS: Line Separator, U+2028` with `\n` so the Markdown
 		// renderer can interpreter newlines as `<br />` and `<p>`.
 		text = strings.ReplaceAll(text, "\u2028", "\n")
-
+		// Replace simple '#just-tag' entrys with local link
+		text = ExpandTag(conf, nil, nil, text)
 		extensions := parser.CommonExtensions | parser.HardLineBreak | parser.NoEmptyLineBeforeBlock
 		mdParser := parser.NewWithExtensions(extensions)
 

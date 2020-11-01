@@ -66,19 +66,13 @@
         <li>
           <a href="/">
             <i class="icss-chat"></i>
-            Timeline
+            Social
           </a>
         </li>
         <li>
-          <a href="/discover">
-            <i class="icss-users"></i>
-            Discover
-          </a>
-        </li>
-        <li>
-          <a href="/mentions">
-            <i class="icss-smiley"></i>
-            Mentions
+          <a href="/messages">
+            <i class="icss-mail-box"></i>
+            Messages
           </a>
         </li>
         <li>
@@ -135,6 +129,32 @@
     </ul>
   </nav>
   <main class="container">
+    {{ if .Authenticated }}
+      <aside>
+        <nav>
+          <ul>
+            <li>
+              <a href="/">
+                <i class="icss-chat"></i>
+                Timeline
+              </a>
+            </li>
+            <li>
+              <a href="/discover">
+                <i class="icss-users"></i>
+                Discover
+              </a>
+            </li>
+            <li>
+              <a href="/mentions">
+                <i class="icss-smiley"></i>
+                Mentions
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+    {{ end }}
     {{template "content" . }}
   </main>
   <footer>

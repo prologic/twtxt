@@ -128,54 +128,60 @@
       {{ end }}
     </ul>
   </nav>
-  <main class="container">
-    {{ if .Authenticated }}
-      <aside>
-        <nav>
-          <ul>
-            <li>
-              <a href="/">
-                <i class="icss-chat"></i>
-                Timeline
-              </a>
-            </li>
-            <li>
-              <a href="/discover">
-                <i class="icss-users"></i>
-                Discover
-              </a>
-            </li>
-            <li>
-              <a href="/mentions">
-                <i class="icss-smiley"></i>
-                Mentions
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </aside>
-    {{ end }}
-    {{template "content" . }}
-  </main>
-  <footer>
-    <div class="container">
-      <small>
-        <div class="footer-copyright"><a href="https://github.com/prologic/twtxt" target="_blank">twtxt v{{ .SoftwareVersion }}</a>
-            ·
-            Created with 💚 by <a att href="https://github.com/prologic" target="_blank">James Mills</a>
-            ·
-            &copy; 2020 <a href="https://github.com/prologic" target="_blank">James Mills</a>. All rights reserved.
-        </div>
-        <div class="footer-menu">
-          <a href="/about" target="_blank" class="menu-item">About</a>
-          <a href="/privacy" target="_blank" class="menu-item">Privacy</a>
-          <a href="/abuse" target="_blank" class="menu-item">Abuse</a>
-          <a href="/help" target="_blank" class="menu-item">Help</a>
-          <a href="/support" target="_blank" class="menu-item">Support</a>
-        </div>
-      </small>
-    </div>
-  </footer>
+  {{ if .Authenticated }}
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <li>
+            <a href="/">
+              <i class="icss-chat"></i>
+              Timeline
+            </a>
+          </li>
+          <li>
+            <a href="/discover">
+              <i class="icss-users"></i>
+              Discover
+            </a>
+          </li>
+          <li>
+            <a href="/mentions">
+              <i class="icss-smiley"></i>
+              Mentions
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+  {{ end }}
+  {{ if .Authenticated }}
+  <div class="main-content">
+  {{end}}
+    <main class="container entry-content">
+      {{template "content" . }}
+    </main>
+    <footer class="footer-main">
+      <div class="container">
+        <small>
+          <div class="footer-copyright"><a href="https://github.com/prologic/twtxt" target="_blank">twtxt v{{ .SoftwareVersion }}</a>
+              ·
+              Created with 💚 by <a att href="https://github.com/prologic" target="_blank">James Mills</a>
+              ·
+              &copy; 2020 <a href="https://github.com/prologic" target="_blank">James Mills</a>. All rights reserved.
+          </div>
+          <div class="footer-menu">
+            <a href="/about" target="_blank" class="menu-item">About</a>
+            <a href="/privacy" target="_blank" class="menu-item">Privacy</a>
+            <a href="/abuse" target="_blank" class="menu-item">Abuse</a>
+            <a href="/help" target="_blank" class="menu-item">Help</a>
+            <a href="/support" target="_blank" class="menu-item">Support</a>
+          </div>
+        </small>
+      </div>
+    </footer>
+  {{ if .Authenticated }}
+  </div>
+  {{end}}
   {{ if $.Debug }}
     <script type="application/javascript" src="/js/01-umbrella.js"></script>
     <script type="application/javascript" src="/js/02-polyfill.js"></script>

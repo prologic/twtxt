@@ -1232,7 +1232,8 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 
 		username := NormalizeUsername(r.FormValue("username"))
 		password := r.FormValue("password")
-		email := r.FormValue("email")
+		// XXX: We DO NOT store this! (EVER)
+		email := strings.TrimSpace(r.FormValue("email"))
 
 		if err := ValidateUsername(username); err != nil {
 			ctx.Error = true
@@ -1276,10 +1277,12 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			return
 		}
 
+		recoveryHash := fmt.Sprintf("email:%s", FastHash(email))
+
 		user := NewUser()
 		user.Username = username
-		user.Email = email
 		user.Password = hash
+		user.Recovery = recoveryHash
 		user.URL = URLForUser(s.config, username)
 		user.CreatedAt = time.Now()
 
@@ -1349,6 +1352,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		// Limit request body to to abuse
 		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
 
+		// XXX: We DO NOT store this! (EVER)
 		email := strings.TrimSpace(r.FormValue("email"))
 		tagline := strings.TrimSpace(r.FormValue("tagline"))
 		password := r.FormValue("password")
@@ -1400,7 +1404,9 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 			}
 		}
 
-		user.Email = email
+		recoveryHash := fmt.Sprintf("email:%s", FastHash(email))
+
+		user.Recovery = recoveryHash
 		user.Tagline = tagline
 
 		user.Theme = theme
@@ -1703,6 +1709,8 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 		}
 
 		username := NormalizeUsername(r.FormValue("username"))
+		email := strings.TrimSpace(r.FormValue("email"))
+		recovery := fmt.Sprintf("email:%s", FastHash(email))
 
 		if err := ValidateUsername(username); err != nil {
 			ctx.Error = true
@@ -1728,6 +1736,13 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 			return
 		}
 
+		if recovery != user.Recovery {
+			ctx.Error = true
+			ctx.Message = "Error! The email address you supplied does not match what you registered with :/"
+			s.render("error", w, ctx)
+			return
+		}
+
 		// Create magic link expiry time
 		now := time.Now()
 		secs := now.Unix()
@@ -1748,8 +1763,8 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 			return
 		}
 
-		if err := SendPasswordResetEmail(s.config, user, tokenString); err != nil {
-			log.WithError(err).Errorf("unable to send reset password email to %s", user.Email)
+		if err := SendPasswordResetEmail(s.config, user, email, tokenString); err != nil {
+			log.WithError(err).Errorf("unable to send reset password email to %s", user.Username)
 			ctx.Error = true
 			ctx.Message = err.Error()
 			s.render("error", w, ctx)

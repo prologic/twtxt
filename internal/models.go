@@ -43,11 +43,12 @@ type User struct {
 	Username  string
 	Password  string
 	Tagline   string
-	Email     string
+	Email     string // DEPRECATED: In favor of storing a Hashed Email
 	URL       string
 	CreatedAt time.Time
 
 	Theme                      string `default:"auto"`
+	Recovery                   string `default:"auto"`
 	DisplayDatesInTimezone     string `default:"UTC"`
 	IsFollowersPubliclyVisible bool   `default:"true"`
 	IsFollowingPubliclyVisible bool   `default:"true"`

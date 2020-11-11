@@ -241,7 +241,8 @@ func (a *API) RegisterEndpoint() httprouter.Handle {
 
 		username := NormalizeUsername(req.Username)
 		password := req.Password
-		email := req.Email
+		// XXX: We DO NOT store this! (EVER)
+		email := strings.TrimSpace(req.Email)
 
 		if err := ValidateUsername(username); err != nil {
 			http.Error(w, "Bad Username", http.StatusBadRequest)
@@ -272,10 +273,12 @@ func (a *API) RegisterEndpoint() httprouter.Handle {
 			return
 		}
 
+		recoveryHash := fmt.Sprintf("email:%s", FastHash(email))
+
 		user := &User{
 			Username:  username,
-			Email:     email,
 			Password:  hash,
+			Recovery:  recoveryHash,
 			URL:       URLForUser(a.config, username),
 			CreatedAt: time.Now(),
 		}
@@ -779,14 +782,10 @@ func (a *API) SettingsEndpoint() httprouter.Handle {
 			return
 		}
 
+		// XXX: We DO NOT store this! (EVER)
 		email := strings.TrimSpace(r.FormValue("email"))
 		tagline := strings.TrimSpace(r.FormValue("tagline"))
 		password := r.FormValue("password")
-
-		// XXX: Commented out as these are more specific to the Web App currently.
-		// API clients such as Goryon (the Flutter iOS/Android app) have their own mechanisms.
-		// theme := r.FormValue("theme")
-		// displayDatesInTimezone := r.FormValue("displayDatesInTimezone")
 
 		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
 		isFollowingPubliclyVisible := r.FormValue("isFollowingPubliclyVisible") == "on"
@@ -827,7 +826,9 @@ func (a *API) SettingsEndpoint() httprouter.Handle {
 			}
 		}
 
-		user.Email = email
+		recoveryHash := fmt.Sprintf("email:%s", FastHash(email))
+
+		user.Recovery = recoveryHash
 		user.Tagline = tagline
 
 		// XXX: Commented out as these are more specific to the Web App currently.

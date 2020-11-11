@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"encoding/base32"
 	"errors"
 	"fmt"
 	"html/template"
@@ -45,6 +46,7 @@ import (
 	"github.com/prologic/twtxt/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/writeas/slug"
+	"golang.org/x/crypto/blake2b"
 )
 
 const (
@@ -123,6 +125,16 @@ var (
 		},
 	}
 )
+
+func FastHash(s string) string {
+	sum := blake2b.Sum256([]byte(s))
+
+	// Base32 is URL-safe, unlike Base64, and shorter than hex.
+	encoding := base32.StdEncoding.WithPadding(base32.NoPadding)
+	hash := strings.ToLower(encoding.EncodeToString(sum[:]))
+
+	return hash
+}
 
 func IntPow(x, y int) int {
 	return int(math.Pow(float64(x), float64(y)))

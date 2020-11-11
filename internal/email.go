@@ -127,8 +127,8 @@ func SendEmail(conf *Config, recipients []string, replyTo, subject string, body 
 	return nil
 }
 
-func SendPasswordResetEmail(conf *Config, user *User, tokenString string) error {
-	recipients := []string{user.Email}
+func SendPasswordResetEmail(conf *Config, user *User, email, token string) error {
+	recipients := []string{email}
 	subject := fmt.Sprintf(
 		"[%s]: Password Reset Request for %s",
 		conf.Name, user.Username,
@@ -137,7 +137,7 @@ func SendPasswordResetEmail(conf *Config, user *User, tokenString string) error 
 		Pod:     conf.Name,
 		BaseURL: conf.BaseURL,
 
-		Token:    tokenString,
+		Token:    token,
 		Username: user.Username,
 	}
 

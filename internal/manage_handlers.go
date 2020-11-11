@@ -140,7 +140,8 @@ func (s *Server) AddUserHandler() httprouter.Handle {
 		}
 
 		username := NormalizeUsername(r.FormValue("username"))
-		email := r.FormValue("email")
+		// XXX: We DO NOT store this! (EVER)
+		email := strings.TrimSpace(r.FormValue("email"))
 
 		// Random password -- User is expected to user "Password Reset"
 		password := shortuuid.New()
@@ -187,9 +188,11 @@ func (s *Server) AddUserHandler() httprouter.Handle {
 			return
 		}
 
+		recoveryHash := fmt.Sprintf("email:%s", FastHash(email))
+
 		user := NewUser()
 		user.Username = username
-		user.Email = email
+		user.Recovery = recoveryHash
 		user.Password = hash
 		user.URL = URLForUser(s.config, username)
 		user.CreatedAt = time.Now()

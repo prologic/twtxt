@@ -31,10 +31,11 @@
     {{ with .Meta.Description }}<meta name="description" content="{{ . }}">{{ end }}
 
     <!-- OpenGraph Meta Tags -->
-    {{ with .Meta.Title}}<meta property="og:title" content="{{ . }}">{{ end  }}
-    {{ with .Meta.Description}}<meta property="og:description" content="{{ . }}">{{ end  }}
-    {{ with .Meta.Image}}<meta property="og:image" content="{{ . }}">{{ end  }}
-    {{ with .Meta.URL}}<meta property="og:url" content="{{ . }}">{{ end  }}
+    {{ with .Meta.Title }}<meta property="og:title" content="{{ . }}">{{ end  }}
+    {{ with .Meta.Description }}<meta property="og:description" content="{{ . }}">{{ end  }}
+    {{ with .Meta.UpdatedAt }}<meta property="og:updated_time" content="{{ . }}" />{{ end  }}
+    {{ with .Meta.Image }}<meta property="og:image" content="{{ . }}">{{ end  }}
+    {{ with .Meta.URL }}<meta property="og:url" content="{{ . }}">{{ end  }}
     <meta property="og:site_name" content="{{ .InstanceName }}">
   </head>
 <body>
@@ -175,21 +176,19 @@
   <footer>
     <div class="container">
       <small>
-        <a href="https://github.com/prologic/twtxt" target="_blank">twtxt v{{ .SoftwareVersion }}</a>
-        ·
-        Created with 💚 by <a att href="https://github.com/prologic" target="_blank">James Mills</a>
-        ·
-        &copy; 2020 <a href="https://github.com/prologic" target="_blank">James Mills</a>. All rights reserved.
-        ·
-        <a href="/about" target="_blank">About</a>
-        |
-        <a href="/privacy" target="_blank">Privacy</a>
-        |
-        <a href="/abuse" target="_blank">Abuse</a>
-        |
-        <a href="/help" target="_blank">Help</a>
-        |
-        <a href="/support" target="_blank">Support</a>
+        <div class="footer-copyright"><a href="https://github.com/prologic/twtxt" target="_blank">twtxt v{{ .SoftwareVersion }}</a>
+            ·
+            Created with 💚 by <a att href="https://github.com/prologic" target="_blank">James Mills</a>
+            ·
+            &copy; 2020 <a href="https://github.com/prologic" target="_blank">James Mills</a>. All rights reserved.
+        </div>
+        <div class="footer-menu">
+          <a href="/about" target="_blank" class="menu-item">About</a>
+          <a href="/privacy" target="_blank" class="menu-item">Privacy</a>
+          <a href="/abuse" target="_blank" class="menu-item">Abuse</a>
+          <a href="/help" target="_blank" class="menu-item">Help</a>
+          <a href="/support" target="_blank" class="menu-item">Support</a>
+        </div>
       </small>
     </div>
   </footer>

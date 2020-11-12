@@ -30,7 +30,7 @@ func (t *ImageTask) Run() error {
 
 	log.Infof("starting image processing task for %s", t.fn)
 
-	opts := &ImageOptions{Resize: true, ResizeW: MediaResolution, ResizeH: 0}
+	opts := &ImageOptions{Resize: true, Width: MediaResolution, Height: 0}
 	mediaURI, err := ProcessImage(t.conf, t.fn, mediaDir, "", opts)
 	if err != nil {
 		log.WithError(err).Errorf("error processing image %s", t.fn)

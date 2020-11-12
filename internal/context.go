@@ -18,6 +18,7 @@ import (
 type Meta struct {
 	Title       string
 	Description string
+	UpdatedAt   string
 	Image       string
 	Author      string
 	URL         string

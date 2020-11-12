@@ -15,6 +15,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/types"
 )
 
@@ -24,6 +25,7 @@ const (
 
 // Cached ...
 type Cached struct {
+	mu           sync.RWMutex
 	cache        types.TwtMap
 	Twts         types.Twts
 	Lastmodified string
@@ -31,17 +33,21 @@ type Cached struct {
 
 // Lookup ...
 func (cached Cached) Lookup(hash string) (types.Twt, bool) {
+	cached.mu.RLock()
 	twt, ok := cached.cache[hash]
+	cached.mu.RUnlock()
 	if ok {
 		return twt, true
 	}
 
 	for _, twt := range cached.Twts {
 		if twt.Hash() == hash {
+			cached.mu.Lock()
 			if cached.cache == nil {
 				cached.cache = make(map[string]types.Twt)
 			}
 			cached.cache[hash] = twt
+			cached.mu.Unlock()
 			return twt, true
 		}
 	}
@@ -125,7 +131,7 @@ func LoadCache(path string) (*Cache, error) {
 const maxfetchers = 50
 
 // FetchTwts ...
-func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) {
+func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds, followers map[types.Feed][]string) {
 	stime := time.Now()
 	defer func() {
 		metrics.Gauge(
@@ -162,6 +168,41 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds)
 			}()
 
 			headers := make(http.Header)
+
+			if followers != nil {
+				feedFollowers := followers[feed]
+				if len(feedFollowers) == 1 {
+					headers.Set(
+						"User-Agent",
+						fmt.Sprintf(
+							"twtxt/%s (+%s; @%s)",
+							twtxt.FullVersion(),
+							URLForUser(conf, feedFollowers[0]), feedFollowers[0],
+						),
+					)
+				} else {
+					var followersString string
+
+					if len(feedFollowers) > 5 {
+						followersString = fmt.Sprintf(
+							"%s and %d more... %s",
+							strings.Join(feedFollowers[:5], " "),
+							(len(feedFollowers) - 5), URLForWhoFollows(conf.BaseURL, feed),
+						)
+					} else {
+						followersString = strings.Join(feedFollowers, " ")
+					}
+
+					headers.Set(
+						"User-Agent",
+						fmt.Sprintf(
+							"twtxt/%s (Pod: %s Followers: %s Support: %s)",
+							twtxt.FullVersion(), conf.Name,
+							followersString, URLForPage(conf.BaseURL, "support"),
+						),
+					)
+				}
+			}
 
 			cache.mu.RLock()
 			if cached, ok := cache.Twts[feed.URL]; ok {
@@ -214,6 +255,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds)
 					twtsch <- nil
 					return
 				}
+
 				log.Infof("fetched %d new and %d old twts from %s", len(twts), len(old), feed)
 
 				// Archive old twts
@@ -298,6 +340,23 @@ func (cache *Cache) GetAll() types.Twts {
 	}
 	cache.mu.RUnlock()
 	return alltwts
+}
+
+// GetMentions ...
+func (cache *Cache) GetMentions(u *User) (twts types.Twts) {
+	seen := make(map[string]bool)
+
+	// Search for @mentions in the cache against all Twts (local, followed and even external if any)
+	for _, twt := range cache.GetAll() {
+		for _, twter := range twt.Mentions() {
+			if u.Is(twter.URL) && !seen[twt.Hash()] {
+				twts = append(twts, twt)
+				seen[twt.Hash()] = true
+			}
+		}
+	}
+
+	return
 }
 
 // GetByPrefix ...

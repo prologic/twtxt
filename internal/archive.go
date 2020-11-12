@@ -22,6 +22,7 @@ const (
 var (
 	ErrTwtAlreadyArchived = errors.New("error: twt already archived")
 	ErrTwtNotArchived     = errors.New("error: twt not found in archived")
+	ErrInvalidTwtHash     = errors.New("error: invalid twt hash")
 )
 
 // Archiver is an interface for retrieving old twts from an archive storage
@@ -70,6 +71,10 @@ func (a *DiskArchiver) makePath(hash string) (string, error) {
 	if err != nil {
 		log.WithError(err).Warnf("error decoding hash %s", hash)
 		return "", err
+	}
+
+	if len(bs) < 2 {
+		return "", ErrInvalidTwtHash
 	}
 
 	// Produces a path structure of:

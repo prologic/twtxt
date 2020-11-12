@@ -20,6 +20,7 @@ require (
 	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20200620013148-b91950f658ec // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/disintegration/gift v1.2.1
 	github.com/disintegration/imageorient v0.0.0-20180920195336-8147d86e83ec
 	github.com/dustin/go-humanize v1.0.0
 	github.com/elithrar/simple-scrypt v1.3.0
@@ -38,6 +39,8 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/lib/pq v1.7.0 // indirect
 	github.com/lithammer/shortuuid/v3 v3.0.4
+	github.com/marksalpeter/sugar v0.0.0-20160713164314-a69afe358ea8 // indirect
+	github.com/marksalpeter/token/v2 v2.0.0
 	github.com/microcosm-cc/bluemonday v1.0.3
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
@@ -69,6 +72,7 @@ require (
 	github.com/writeas/slug v1.2.0
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
+	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
 	golang.org/x/sys v0.0.0-20201112073958-5cba982894dd // indirect
 	golang.org/x/text v0.3.3 // indirect

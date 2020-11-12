@@ -37,10 +37,10 @@ import (
 )
 
 const (
-	MediaResolution  = 640 // 640x480
-	AvatarResolution = 60  // 60x60
+	MediaResolution  = 720 // 720x576
+	AvatarResolution = 360 // 360x360
 	AsyncTaskLimit   = 5
-	MaxAsyncTime     = 5 * time.Second
+	MaxFailedLogins  = 3 // By default 3 failed login attempts per 5 minutes
 )
 
 var (
@@ -247,7 +247,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = fmt.Sprintf("%s's Profile", profile.Username)
+		ctx.Title = fmt.Sprintf("%s's Profile: %s", profile.Username, profile.Tagline)
 		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 
@@ -307,9 +307,9 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 
 			if avatarFile != nil {
 				opts := &ImageOptions{
-					Resize:  true,
-					ResizeW: AvatarResolution,
-					ResizeH: AvatarResolution,
+					Resize: true,
+					Width:  AvatarResolution,
+					Height: AvatarResolution,
 				}
 				_, err = StoreUploadedImage(
 					s.config, avatarFile,
@@ -585,18 +585,15 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 						s.config, s.db,
 						twtxtBot,
 						fmt.Sprintf(
-							"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+							"FOLLOW: @<%s %s> from @<%s %s> using %s",
 							nick, URLForUser(s.config, nick),
 							followerClient.Nick, followerClient.URL,
-							followerClient.ClientName, followerClient.ClientVersion,
+							followerClient.Client,
 						),
 					); err != nil {
 						log.WithError(err).Warnf("error appending special FOLLOW post")
 					}
-					if user.Followers == nil {
-						user.Followers = make(map[string]string)
-					}
-					user.Followers[followerClient.Nick] = followerClient.URL
+					user.AddFollower(followerClient.Nick, followerClient.URL)
 					if err := s.db.SetUser(nick, user); err != nil {
 						log.WithError(err).Warnf("error updating user object for %s", nick)
 					}
@@ -718,7 +715,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 		}
 
 		// Update user's own timeline with their own new post.
-		s.cache.FetchTwts(s.config, s.archive, user.Source())
+		s.cache.FetchTwts(s.config, s.archive, user.Source(), nil)
 
 		// Re-populate/Warm cache with local twts for this pod
 		s.cache.GetByPrefix(s.config.BaseURL, true)
@@ -855,7 +852,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 		}
 
 		when := twt.Created.Format(time.RFC3339)
-		what := twt.Text
+		what := FormatMentionsAndTags(s.config, twt.Text, TextFmt)
 
 		var ks []string
 		if ks, err = keywords.Extract(what); err != nil {
@@ -884,13 +881,13 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			return
 		}
 
-		title := fmt.Sprintf("%s at %s said", who, when)
-		description := FormatMentionsAndTags(s.config, twt.Text, TextFmt)
+		title := fmt.Sprintf("%s \"%s\"", who, what)
 
 		ctx.Title = title
 		ctx.Meta = Meta{
-			Title:       title,
-			Description: description,
+			Title:       fmt.Sprintf("Twt #%s", twt.Hash()),
+			Description: what,
+			UpdatedAt:   when,
 			Author:      who,
 			Image:       image,
 			URL:         URLForTwt(s.config.BaseURL, hash),
@@ -969,32 +966,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		var twts types.Twts
-
-		seen := make(map[string]bool)
-
-		// Search for @mentions on feeds user is following
-		for feed := range ctx.User.Sources() {
-			for _, twt := range s.cache.GetByURL(feed.URL) {
-				for _, twter := range twt.Mentions() {
-					if ctx.User.Is(twter.URL) && !seen[twt.Hash()] {
-						twts = append(twts, twt)
-						seen[twt.Hash()] = true
-					}
-				}
-			}
-		}
-
-		// Search for @mentions in local twts too (i.e: /discover)
-		for _, twt := range s.cache.GetByPrefix(s.config.BaseURL, false) {
-			for _, twter := range twt.Mentions() {
-				if ctx.User.Is(twter.URL) && !seen[twt.Hash()] {
-					twts = append(twts, twt)
-					seen[twt.Hash()] = true
-				}
-			}
-		}
-
+		twts := s.cache.GetMentions(ctx.User)
 		sort.Sort(twts)
 
 		var pagedTwts types.Twts
@@ -1139,7 +1111,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = "Local and external feeds"
+		ctx.Title = "Feeds"
 		ctx.Feeds = feeds
 		ctx.FeedSources = feedsources.Sources
 
@@ -1149,6 +1121,9 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 
 // LoginHandler ...
 func (s *Server) LoginHandler() httprouter.Handle {
+	// #239: Throttle failed login attempts and lock user  account.
+	failures := NewTTLCache(5 * time.Minute)
+
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
@@ -1177,14 +1152,29 @@ func (s *Server) LoginHandler() httprouter.Handle {
 			return
 		}
 
+		// #239: Throttle failed login attempts and lock user  account.
+		if failures.Get(user.Username) > MaxFailedLogins {
+			ctx.Error = true
+			ctx.Message = "Too many failed login attempts. Account temporarily locked! Please try again later."
+			s.render("error", w, ctx)
+			return
+		}
+
 		// Validate cleartext password against KDF hash
 		err = s.pm.CheckPassword(user.Password, password)
 		if err != nil {
+			// #239: Throttle failed login attempts and lock user  account.
+			failed := failures.Inc(user.Username)
+			time.Sleep(time.Duration(IntPow(2, failed)) * time.Second)
+
 			ctx.Error = true
 			ctx.Message = "Invalid password! Hint: Reset your password?"
 			s.render("error", w, ctx)
 			return
 		}
+
+		// #239: Throttle failed login attempts and lock user  account.
+		failures.Reset(user.Username)
 
 		// Login successful
 		log.Infof("login successful: %s", username)
@@ -1351,7 +1341,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
-			ctx.Title = "Account and profile settings"
+			ctx.Title = "Settings"
 			s.render("settings", w, ctx)
 			return
 		}
@@ -1393,9 +1383,9 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 
 		if avatarFile != nil {
 			opts := &ImageOptions{
-				Resize:  true,
-				ResizeW: AvatarResolution,
-				ResizeH: AvatarResolution,
+				Resize: true,
+				Width:  AvatarResolution,
+				Height: AvatarResolution,
 			}
 			_, err = StoreUploadedImage(
 				s.config, avatarFile,
@@ -1579,7 +1569,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 		if !s.cache.IsCached(uri) {
 			sources := make(types.Feeds)
 			sources[types.Feed{Nick: nick, URL: uri}] = true
-			s.cache.FetchTwts(s.config, s.archive, sources)
+			s.cache.FetchTwts(s.config, s.archive, sources, nil)
 		}
 
 		twts := s.cache.GetByURL(uri)
@@ -1617,9 +1607,13 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 			Username: nick,
 			TwtURL:   uri,
 			URL:      URLForExternalProfile(s.config, nick, uri),
+
+			Follows:    ctx.User.Follows(uri),
+			FollowedBy: ctx.User.FollowedBy(uri),
+			Muted:      ctx.User.HasMuted(uri),
 		}
 
-		ctx.Title = fmt.Sprintf("External feed for @<%s %s>", nick, uri)
+		ctx.Title = fmt.Sprintf("External profile for @<%s %s>", nick, uri)
 		s.render("externalProfile", w, ctx)
 	}
 }

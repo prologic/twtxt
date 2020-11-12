@@ -69,6 +69,9 @@ func (a *API) initRoutes() {
 	router.POST("/post", a.isAuthorized(a.PostEndpoint()))
 	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
 
+	router.GET("/settings", a.isAuthorized(a.SettingsEndpoint()))
+	router.POST("/settings", a.isAuthorized(a.SettingsEndpoint()))
+
 	router.POST("/follow", a.isAuthorized(a.FollowEndpoint()))
 	router.POST("/unfollow", a.isAuthorized(a.UnfollowEndpoint()))
 
@@ -80,6 +83,7 @@ func (a *API) initRoutes() {
 
 	router.GET("/profile/:nick", a.ProfileEndpoint())
 	router.POST("/fetch-twts", a.FetchTwtsEndpoint())
+	router.POST("/conv", a.ConversationEndpoint())
 
 	router.POST("/external", a.ExternalProfileEndpoint())
 
@@ -288,6 +292,9 @@ func (a *API) RegisterEndpoint() httprouter.Handle {
 
 // AuthEndpoint ...
 func (a *API) AuthEndpoint() httprouter.Handle {
+	// #239: Throttle failed login attempts and lock user  account.
+	failures := NewTTLCache(5 * time.Minute)
+
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		req, err := types.NewAuthRequest(r.Body)
 		if err != nil {
@@ -314,13 +321,26 @@ func (a *API) AuthEndpoint() httprouter.Handle {
 			return
 		}
 
+		// #239: Throttle failed login attempts and lock user  account.
+		if failures.Get(user.Username) > MaxFailedLogins {
+			http.Error(w, "Account Locked", http.StatusTooManyRequests)
+			return
+		}
+
 		// Validate cleartext password against KDF hash
 		err = a.pm.CheckPassword(user.Password, password)
 		if err != nil {
+			// #239: Throttle failed login attempts and lock user  account.
+			failed := failures.Inc(user.Username)
+			time.Sleep(time.Duration(IntPow(2, failed)) * time.Second)
+
 			log.WithField("username", username).Warn("login attempt with invalid credentials")
 			http.Error(w, "Invalid Credentials", http.StatusUnauthorized)
 			return
 		}
+
+		// #239: Throttle failed login attempts and lock user  account.
+		failures.Reset(user.Username)
 
 		// Login successful
 		log.WithField("username", username).Info("login successful")
@@ -399,7 +419,7 @@ func (a *API) PostEndpoint() httprouter.Handle {
 		}
 
 		// Update user's own timeline with their own new post.
-		a.cache.FetchTwts(a.config, a.archive, user.Source())
+		a.cache.FetchTwts(a.config, a.archive, user.Source(), nil)
 
 		// Re-populate/Warm cache with local twts for this pod
 		a.cache.GetByPrefix(a.config.BaseURL, true)
@@ -523,32 +543,7 @@ func (a *API) MentionsEndpoint() httprouter.Handle {
 
 		user := r.Context().Value(UserContextKey).(*User)
 
-		var twts types.Twts
-
-		seen := make(map[string]bool)
-
-		// Search for @mentions on feeds user is following
-		for feed := range user.Sources() {
-			for _, twt := range a.cache.GetByURL(feed.URL) {
-				for _, twter := range twt.Mentions() {
-					if user.Is(twter.URL) && !seen[twt.Hash()] {
-						twts = append(twts, twt)
-						seen[twt.Hash()] = true
-					}
-				}
-			}
-		}
-
-		// Search for @mentions in local twts too (i.e: /discover)
-		for _, twt := range a.cache.GetByPrefix(a.config.BaseURL, false) {
-			for _, twter := range twt.Mentions() {
-				if user.Is(twter.URL) && !seen[twt.Hash()] {
-					twts = append(twts, twt)
-					seen[twt.Hash()] = true
-				}
-			}
-		}
-
+		twts := a.cache.GetMentions(user)
 		sort.Sort(twts)
 
 		var pagedTwts types.Twts
@@ -764,6 +759,98 @@ func (a *API) UnfollowEndpoint() httprouter.Handle {
 	}
 }
 
+// SettingsEndpoint ...
+func (a *API) SettingsEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		// Limit request body to to abuse
+		r.Body = http.MaxBytesReader(w, r.Body, a.config.MaxUploadSize)
+
+		user := r.Context().Value(UserContextKey).(*User)
+
+		if r.Method == http.MethodGet {
+			data, err := json.Marshal(user)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(data)
+			return
+		}
+
+		email := strings.TrimSpace(r.FormValue("email"))
+		tagline := strings.TrimSpace(r.FormValue("tagline"))
+		password := r.FormValue("password")
+
+		// XXX: Commented out as these are more specific to the Web App currently.
+		// API clients such as Goryon (the Flutter iOS/Android app) have their own mechanisms.
+		// theme := r.FormValue("theme")
+		// displayDatesInTimezone := r.FormValue("displayDatesInTimezone")
+
+		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
+		isFollowingPubliclyVisible := r.FormValue("isFollowingPubliclyVisible") == "on"
+
+		avatarFile, _, err := r.FormFile("avatar_file")
+		if err != nil && err != http.ErrMissingFile {
+			log.WithError(err).Error("error parsing form file")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if password != "" {
+			hash, err := a.pm.CreatePassword(password)
+			if err != nil {
+				log.WithError(err).Error("error creating password hash")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			user.Password = hash
+		}
+
+		if avatarFile != nil {
+			opts := &ImageOptions{
+				Resize: true,
+				Width:  AvatarResolution,
+				Height: AvatarResolution,
+			}
+			_, err = StoreUploadedImage(
+				a.config, avatarFile,
+				avatarsDir, user.Username,
+				opts,
+			)
+			if err != nil {
+				log.WithError(err).Error("error updating user avatar")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+
+		user.Email = email
+		user.Tagline = tagline
+
+		// XXX: Commented out as these are more specific to the Web App currently.
+		// API clients such as Goryon (the Flutter iOS/Android app) have their own mechanisms.
+		// user.Theme = theme
+		// user.DisplayDatesInTimezone = displayDatesInTimezone
+
+		user.IsFollowersPubliclyVisible = isFollowersPubliclyVisible
+		user.IsFollowingPubliclyVisible = isFollowingPubliclyVisible
+
+		if err := a.db.SetUser(user.Username, user); err != nil {
+			log.WithError(err).Error("error updating user object")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// No real response
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+		return
+	}
+}
+
 // UploadMediaEndpoint ...
 func (a *API) UploadMediaEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -780,7 +867,7 @@ func (a *API) UploadMediaEndpoint() httprouter.Handle {
 		var mediaURI string
 
 		if mediaFile != nil {
-			opts := &ImageOptions{Resize: true, ResizeW: MediaResolution, ResizeH: 0}
+			opts := &ImageOptions{Resize: true, Width: MediaResolution, Height: 0}
 			mediaURI, err = StoreUploadedImage(
 				a.config, mediaFile,
 				mediaDir, "",
@@ -897,6 +984,93 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 	}
 }
 
+// ConversationEndpoint ...
+func (a *API) ConversationEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		loggedInUser := a.getLoggedInUser(r)
+
+		req, err := types.NewConversationRequest(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing conversation request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		hash := req.Hash
+
+		if hash == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		twt, ok := a.cache.Lookup(hash)
+		if !ok {
+			// If the twt is not in the cache look for it in the archive
+			if a.archive.Has(hash) {
+				twt, err = a.archive.Get(hash)
+				if err != nil {
+					log.WithError(err).Errorf("error fetching twt %s from archive", hash)
+					http.Error(w, "Bad Request", http.StatusBadRequest)
+					return
+				}
+			}
+		}
+
+		if twt.IsZero() {
+			http.Error(w, "Conversation Not Found", http.StatusNotFound)
+			return
+		}
+
+		getTweetsByHash := func(hash string, replyTo types.Twt) types.Twts {
+			var result types.Twts
+			seen := make(map[string]bool)
+			// TODO: Improve this by making this an O(1) lookup on the tag
+			for _, twt := range a.cache.GetAll() {
+				if HasString(UniqStrings(twt.Tags()), hash) && !seen[twt.Hash()] {
+					result = append(result, twt)
+					seen[twt.Hash()] = true
+				}
+			}
+			if !seen[replyTo.Hash()] {
+				result = append(result, replyTo)
+			}
+			return result
+		}
+
+		twts := getTweetsByHash(hash, twt)
+		sort.Sort(sort.Reverse(twts))
+
+		var pagedTwts types.Twts
+
+		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.TwtsPerPage)
+		pager.SetPage(req.Page)
+
+		if err = pager.Results(&pagedTwts); err != nil {
+			log.WithError(err).Error("error loading twts")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		res := types.PagedResponse{
+			Twts: a.formatTwtText(FilterTwts(loggedInUser, pagedTwts)),
+			Pager: types.PagerResponse{
+				Current:   pager.Page(),
+				MaxPages:  pager.PageNums(),
+				TotalTwts: pager.Nums(),
+			},
+		}
+
+		data, err := json.Marshal(res)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+	}
+}
+
 // FetchTwtsEndpoint ...
 func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -941,7 +1115,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 			if !a.cache.IsCached(req.URL) {
 				sources := make(types.Feeds)
 				sources[types.Feed{Nick: nick, URL: req.URL}] = true
-				a.cache.FetchTwts(a.config, a.archive, sources)
+				a.cache.FetchTwts(a.config, a.archive, sources, nil)
 			}
 
 			twts = a.cache.GetByURL(req.URL)
@@ -986,6 +1160,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 // ExternalProfileEndpoint ...
 func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		loggedInUser := a.getLoggedInUser(r)
 		req, err := types.NewExternalProfileRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing external profile request")
@@ -1012,6 +1187,10 @@ func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 			Username: nick,
 			TwtURL:   url,
 			URL:      url,
+
+			Follows:    loggedInUser.Follows(url),
+			FollowedBy: loggedInUser.FollowedBy(url),
+			Muted:      loggedInUser.HasMuted(url),
 		}
 
 		profileResponse.Twter = types.Twter{

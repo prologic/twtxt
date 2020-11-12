@@ -18,6 +18,8 @@ import (
 
 // ConversationHandler ...
 func (s *Server) ConversationHandler() httprouter.Handle {
+	isLocal := IsLocalURLFactory(s.config)
+
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
@@ -50,9 +52,21 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 			return
 		}
 
-		who := fmt.Sprintf("%s %s", twt.Twter.Nick, twt.Twter.URL)
+		var (
+			who   string
+			image string
+		)
+
+		if isLocal(twt.Twter.URL) {
+			who = fmt.Sprintf("%s@%s", twt.Twter.Nick, s.config.baseURL.Hostname())
+			image = URLForAvatar(s.config, twt.Twter.Nick)
+		} else {
+			who = fmt.Sprintf("@<%s %s>", twt.Twter.Nick, twt.Twter.URL)
+			image = URLForExternalAvatar(s.config, twt.Twter.URL)
+		}
+
 		when := twt.Created.Format(time.RFC3339)
-		what := twt.Text
+		what := FormatMentionsAndTags(s.config, twt.Text, TextFmt)
 
 		var ks []string
 		if ks, err = keywords.Extract(what); err != nil {
@@ -113,12 +127,19 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = fmt.Sprintf("%s @ %s > %s ", who, when, what)
+		title := fmt.Sprintf("%s \"%s\"", who, what)
+
+		ctx.Title = title
 		ctx.Meta = Meta{
-			Author:      who,
+			Title:       fmt.Sprintf("Conv #%s", twt.Hash()),
 			Description: what,
+			UpdatedAt:   when,
+			Author:      who,
+			Image:       image,
+			URL:         URLForTwt(s.config.BaseURL, hash),
 			Keywords:    strings.Join(ks, ", "),
 		}
+
 		if strings.HasPrefix(twt.Twter.URL, s.config.BaseURL) {
 			ctx.Links = append(ctx.Links, types.Link{
 				Href: fmt.Sprintf("%s/webmention", UserURL(twt.Twter.URL)),
@@ -151,7 +172,7 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 		}
 
 		ctx.Reply = fmt.Sprintf("#%s", twt.Hash())
-		ctx.Twts = pagedTwts
+		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 		s.render("conversation", w, ctx)
 		return

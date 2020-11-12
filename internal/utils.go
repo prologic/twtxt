@@ -10,6 +10,7 @@ import (
 	"image"
 	"io"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -29,6 +30,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/bakape/thumbnailer/v2"
 	"github.com/chai2010/webp"
+	"github.com/disintegration/gift"
 	"github.com/disintegration/imageorient"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
@@ -38,7 +40,6 @@ import (
 	"github.com/h2non/filetype"
 	shortuuid "github.com/lithammer/shortuuid/v3"
 	"github.com/microcosm-cc/bluemonday"
-	"github.com/nfnt/resize"
 	"github.com/nullrocks/identicon"
 	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/types"
@@ -100,7 +101,7 @@ var (
 
 	validFeedName  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
 	validUsername  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]+$`)
-	userAgentRegex = regexp.MustCompile(`(.*?)\/(.*?) ?\(\+(https?://.*); @(.*)\)`)
+	userAgentRegex = regexp.MustCompile(`(.*?)\s+?\(\+?(https?://.*?);? @?(.*)\)`)
 
 	ErrInvalidFeedName   = errors.New("error: invalid feed name")
 	ErrBadRequest        = errors.New("error: request failed with non-200 response")
@@ -123,6 +124,10 @@ var (
 	}
 )
 
+func IntPow(x, y int) int {
+	return int(math.Pow(float64(x), float64(y)))
+}
+
 func Slugify(uri string) string {
 	u, err := url.Parse(uri)
 	if err != nil {
@@ -134,7 +139,7 @@ func Slugify(uri string) string {
 }
 
 func GenerateAvatar(conf *Config, username string) (image.Image, error) {
-	ig, err := identicon.New(conf.Name, 5, 3)
+	ig, err := identicon.New(conf.Name, 7, 4)
 	if err != nil {
 		log.WithError(err).Error("error creating identicon generator")
 		return nil, err
@@ -218,7 +223,7 @@ func GetExternalAvatar(conf *Config, nick, uri string) string {
 	for _, candidate := range candidates {
 		source, _ := base.Parse(candidate)
 		if ResourceExists(conf, source.String()) {
-			opts := &ImageOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: AvatarResolution}
+			opts := &ImageOptions{Resize: true, Width: AvatarResolution, Height: AvatarResolution}
 			_, err := DownloadImage(conf, source.String(), externalDir, slug, opts)
 			if err != nil {
 				log.WithError(err).
@@ -247,13 +252,17 @@ func Request(conf *Config, method, url string, headers http.Header) (*http.Respo
 		headers = make(http.Header)
 	}
 
-	headers.Set(
-		"User-Agent",
-		fmt.Sprintf(
-			"twtxt/%s (Pod: %s Support: %s)",
-			twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURL, "support"),
-		),
-	)
+	// Set a default User-Agent (if none set)
+	if headers.Get("User-Agent") == "" {
+		headers.Set(
+			"User-Agent",
+			fmt.Sprintf(
+				"twtxt/%s (Pod: %s Support: %s)",
+				twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURL, "support"),
+			),
+		)
+	}
+
 	req.Header = headers
 
 	client := http.Client{
@@ -521,9 +530,9 @@ func IsVideo(fn string) bool {
 }
 
 type ImageOptions struct {
-	Resize  bool
-	ResizeW int
-	ResizeH int
+	Resize bool
+	Width  int
+	Height int
 }
 
 type AudioOptions struct {
@@ -572,65 +581,7 @@ func DownloadImage(conf *Config, url string, resource, name string, opts *ImageO
 		return "", err
 	}
 
-	if _, err := tf.Seek(0, io.SeekStart); err != nil {
-		log.WithError(err).Error("error seeking temporary file")
-		return "", err
-	}
-
-	img, _, err := image.Decode(tf)
-	if err != nil {
-		log.WithError(err).Error("jpeg.Decode failed")
-		return "", err
-	}
-
-	newImg := img
-
-	if opts != nil {
-		if opts.Resize && (opts.ResizeW+opts.ResizeH > 0) && (opts.ResizeH > 0 || img.Bounds().Size().X > opts.ResizeW) {
-			newImg = resize.Resize(uint(opts.ResizeW), uint(opts.ResizeH), img, resize.Lanczos3)
-		}
-	}
-
-	p := filepath.Join(conf.Data, resource)
-	if err := os.MkdirAll(p, 0755); err != nil {
-		log.WithError(err).Error("error creating avatars directory")
-		return "", err
-	}
-
-	var fn string
-
-	if name == "" {
-		uuid := shortuuid.New()
-		fn = filepath.Join(p, fmt.Sprintf("%s.webp", uuid))
-	} else {
-		fn = fmt.Sprintf("%s.webp", filepath.Join(p, name))
-	}
-
-	of, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		log.WithError(err).Error("error opening output file")
-		return "", err
-	}
-	defer of.Close()
-
-	if err := webp.Encode(of, newImg, &webp.Options{Lossless: true}); err != nil {
-		log.WithError(err).Error("error reencoding image")
-		return "", err
-	}
-
-	// Re-encode to PNG (for older browsers)
-	if err := of.Close(); err != nil {
-		log.WithError(err).Warnf("error cloding file %s", fn)
-	}
-	if err := ImageToPng(fn); err != nil {
-		log.WithError(err).Warnf("error reencoding image to PNG (for older browsers: %s", fn)
-	}
-
-	return fmt.Sprintf(
-		"%s/%s/%s",
-		strings.TrimSuffix(conf.BaseURL, "/"),
-		resource, strings.TrimSuffix(filepath.Base(fn), filepath.Ext(fn)),
-	), nil
+	return ProcessImage(conf, tf.Name(), resource, name, opts)
 }
 
 func ReceiveAudio(r io.Reader) (string, error) {
@@ -839,13 +790,26 @@ func ProcessImage(conf *Config, ifn string, resource, name string, opts *ImageOp
 		return "", err
 	}
 
-	newImg := img
+	g := gift.New(
+		gift.UnsharpMask(1, 1, 0),
+	)
 
-	if opts != nil {
-		if opts.Resize && (opts.ResizeW+opts.ResizeH > 0) && (opts.ResizeH > 0 || img.Bounds().Size().X > opts.ResizeW) {
-			newImg = resize.Resize(uint(opts.ResizeW), uint(opts.ResizeH), img, resize.Lanczos3)
+	if opts != nil && opts.Resize {
+		if opts.Width > 0 && opts.Height > 0 {
+			g.Add(gift.ResizeToFit(opts.Width, opts.Height, gift.LanczosResampling))
+		} else if (opts.Width+opts.Height > 0) && (opts.Height > 0 || img.Bounds().Size().X > opts.Width) {
+			g.Add(gift.Resize(opts.Width, opts.Height, gift.LanczosResampling))
+		} else {
+			log.Warnf(
+				"not resizing image with bounds %s to %dx%d",
+				img.Bounds(), opts.Width, opts.Height,
+			)
 		}
 	}
+
+	newImg := image.NewRGBA(g.Bounds(img.Bounds()))
+
+	g.Draw(newImg, img)
 
 	of, err := os.OpenFile(ofn, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
@@ -1108,10 +1072,9 @@ func (u URI) String() string {
 }
 
 type TwtxtUserAgent struct {
-	ClientName    string
-	ClientVersion string
-	Nick          string
-	URL           string
+	Client string
+	Nick   string
+	URL    string
 }
 
 func DetectFollowerFromUserAgent(ua string) (*TwtxtUserAgent, error) {
@@ -1119,11 +1082,11 @@ func DetectFollowerFromUserAgent(ua string) (*TwtxtUserAgent, error) {
 	if match == nil {
 		return nil, ErrInvalidUserAgent
 	}
+
 	return &TwtxtUserAgent{
-		ClientName:    match[1],
-		ClientVersion: match[2],
-		URL:           match[3],
-		Nick:          match[4],
+		Client: match[1],
+		URL:    match[2],
+		Nick:   match[3],
 	}, nil
 }
 
@@ -1330,6 +1293,16 @@ func URLForTask(baseURL, uuid string) string {
 		"%s/task/%s",
 		strings.TrimSuffix(baseURL, "/"),
 		uuid,
+	)
+}
+
+func URLForWhoFollows(baseURL string, feed types.Feed) string {
+	token := GenerateToken()
+
+	return fmt.Sprintf(
+		"%s/whoFollows?uri=%s&nick=%s&token=%s",
+		strings.TrimSuffix(baseURL, "/"),
+		feed.URL, feed.Nick, token,
 	)
 }
 
@@ -1598,8 +1571,9 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 		// Replace  `LS: Line Separator, U+2028` with `\n` so the Markdown
 		// renderer can interpreter newlines as `<br />` and `<p>`.
 		text = strings.ReplaceAll(text, "\u2028", "\n")
-
-		extensions := parser.CommonExtensions | parser.HardLineBreak
+		// Replace simple '#just-tag' entrys with local link
+		text = ExpandTag(conf, nil, nil, text)
+		extensions := parser.CommonExtensions | parser.HardLineBreak | parser.NoEmptyLineBeforeBlock
 		mdParser := parser.NewWithExtensions(extensions)
 
 		htmlFlags := html.CommonFlags | html.HrefTargetBlank

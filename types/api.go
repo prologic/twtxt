@@ -145,6 +145,22 @@ type ProfileResponse struct {
 	Twter        Twter        `json:"twter"`
 }
 
+// ConversationRequest ...
+type ConversationRequest struct {
+	Hash string `json:"hash"`
+	Page int    `json:"page"`
+}
+
+// NewConversationRequest ...
+func NewConversationRequest(r io.Reader) (req ConversationRequest, err error) {
+	body, err := ioutil.ReadAll(r)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &req)
+	return
+}
+
 // FetchTwtsRequest ...
 type FetchTwtsRequest struct {
 	URL  string `json:"url"`

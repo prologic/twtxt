@@ -70,6 +70,19 @@
           </ul>
         </details>
       </hgroup>
+      <p>
+        {{ if $.Profile.FollowedBy }}
+          <a href="{{ .Profile.TwtURL }}">@{{ .Profile.Username }}
+            <i class="icss-exchagne"></i>
+          </a>
+          follows you
+        {{ else }}
+          <a href="{{ .Profile.TwtURL }}">@{{ .Profile.Username }}
+            <i class="icss-x"></i>
+          </a>
+          does not follow you (<i>they may not see your replies!</i>)
+        {{ end }}
+      </p>
     </div>
     <div>
       {{ template "profileLinks" (dict "Profile" .Profile "ShowConfig" false) }}

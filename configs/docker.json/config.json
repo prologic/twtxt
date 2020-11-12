@@ -1,9 +1,0 @@
-{
-	"auths": {
-		"r.mills.io": {}
-	},
-	"HttpHeaders": {
-		"User-Agent": "Docker-Client/19.03.12 (darwin)"
-	},
-	"credsStore": "osxkeychain"
-}

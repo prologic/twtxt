@@ -40,19 +40,22 @@
   </head>
 <body>
   <nav id="mainNav" class="container-fluid">
+  {{ if .Authenticated }}
+  <div class="mainNav-mobile">
+  {{ end }}
     {{ if .Authenticated }}
-      <span style="font-size:30px;cursor:pointer" onclick="openNav()" class="burger-menu"><i class="icss-bars"></i></span>
+      <span onclick="openNav()" class="burger-menu-desk"><i class="icss-bars"></i></span>
     {{ end }}
     {{ if .Authenticated }}
     <div class="move-right-menu">
     {{ end }}
       <ul>
-        <li>
+        <li class="mobile-menu">
           <a id="burgerMenu" href="javascript:void(0);">
             <i class="icss-bars"></i>
           </a>
         </li>
-        <li>
+        <li class="logo">
           <a href="/" class="contrast">
             <svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 449 249.1" style="enable-background:new 0 0 449 249.1;" height="3.5rem">
               <path fill="currentColor" d="m73.1 156.6v-93.3h-48.4v-22.2h122.8v22.2h-48.5v93.3z"></path>
@@ -72,19 +75,13 @@
           <li>
             <a href="/">
               <i class="icss-chat"></i>
-              Timeline
+              Social
             </a>
           </li>
           <li>
-            <a href="/discover">
-              <i class="icss-users"></i>
-              Discover
-            </a>
-          </li>
-          <li>
-            <a href="/mentions">
-              <i class="icss-smiley"></i>
-              Mentions
+            <a href="/messages">
+              <i class="icss-mail-box"></i>
+              Messages
             </a>
           </li>
           <li>
@@ -95,53 +92,56 @@
           </li>
         {{ end }}
       </ul>
-    {{ if .Authenticated }}
-    </div>
-    {{ end }}
-    <ul>
-      {{ if .Authenticated }}
-        <li>
-          <a href="/follow">
-            <i class="icss-plus"></i>
-            Follow
-          </a>
-        </li>
-        <li>
-          <a class="secondary" href="/settings">
-            <i class="icss-gear"></i>
-            Settings
-          </a>
-        </li>
-        <li>
-          <a class="secondary" href="/logout">
-            <i class="icss-exit"></i>
-            Logout
-          </a>
-        </li>
-      {{ else }}
-        <li>
-          <a href="/login">
-            <i class="icss-key"></i>
-            Login
-          </a>
-        </li>
-        {{ if .RegisterDisabled }}
+      <ul>
+        {{ if .Authenticated }}
           <li>
-            <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">
-              <i class="icss-exclamation-circle" style="color:red;"></i>
-              Register
+            <a href="/follow">
+              <i class="icss-plus"></i>
+              Follow
+            </a>
+          </li>
+          <li>
+            <a class="secondary" href="/settings">
+              <i class="icss-gear"></i>
+              Settings
+            </a>
+          </li>
+          <li>
+            <a class="secondary" href="/logout">
+              <i class="icss-exit"></i>
+              Logout
             </a>
           </li>
         {{ else }}
           <li>
-            <a href="/register">
-              <i class="icss-smiley"></i>
-              Register
+            <a href="/login">
+              <i class="icss-key"></i>
+              Login
             </a>
           </li>
+          {{ if .RegisterDisabled }}
+            <li>
+              <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">
+                <i class="icss-exclamation-circle" style="color:red;"></i>
+                Register
+              </a>
+            </li>
+          {{ else }}
+            <li>
+              <a href="/register">
+                <i class="icss-smiley"></i>
+                Register
+              </a>
+            </li>
+          {{ end }}
         {{ end }}
-      {{ end }}
-    </ul>
+      </ul>
+    {{ if .Authenticated }}
+    </div>
+    {{end}}
+  {{ if .Authenticated }}
+  </div>
+  {{ end }}
   </nav>
   {{ if .Authenticated }}
     <aside id="mySidenav" class="sidenav">

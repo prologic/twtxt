@@ -411,10 +411,16 @@ footer small .footer-menu a:last-child::after{
   width: 100%;
   z-index: 2;
 }
-#mainNav .burger-menu{
+#mainNav .burger-menu-desk{
+  font-size: 22px;
   cursor: pointer;
   line-height: 61px;
   position: absolute;
+}
+#mainNav .move-right-menu{
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
 }
 #mainNav .move-right-menu ul{
   padding-left: 50px;
@@ -433,7 +439,7 @@ aside.sidenav {
   z-index: 4;
   top: 0;
   left: 0;
-  background-color:#696e71;
+  background-color:#10181e;
   overflow-x: hidden;
   transition: 0.5s;
   padding-top: 60px;
@@ -461,7 +467,7 @@ aside.sidenav nav ul li a {
   color: #ffffff;
 }
 aside.sidenav nav ul li a:hover {
-  color: #000000;
+  color:#c5c5c5;
 }
 
 /* Toolbar styling */
@@ -601,5 +607,28 @@ aside.sidenav nav ul li a:hover {
     margin-left: 0px;
     position: relative;
     left: 25px;
+  }
+  .mainNav-mobile{
+    display: flex;
+    justify-content: flex-start;
+  }
+  #mainNav .burger-menu-desk{
+    position: unset;
+    font-size: 18px;
+    line-height: 48px;
+  }
+  #mainNav .move-right-menu{
+    display: block;
+    width: 100%;
+    margin-left: 90px;
+  }
+  #mainNav .move-right-menu ul{
+    display: block;
+    margin: 0 !important;
+    width: 100%;
+    padding-left: 0px;
+  }
+  #mainNav .move-right-menu ul li{
+    text-align: right;
   }
 }

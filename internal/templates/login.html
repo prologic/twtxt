@@ -15,6 +15,18 @@
           </label>
         </fieldset>
         <button type="submit" class="contrast">Login</button>
+        <p>
+          Don't have an account?
+          {{ if .RegisterDisabled }}
+            <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">/register</a>
+          {{ else }}
+            <a href="/register">/register</a>
+          {{ end }}
+          instead.
+        </p>
+        <p>
+          <a href="/resetPassword">Forgotten your password?</a>
+        </p>
       </form>
     </div>
     <div>

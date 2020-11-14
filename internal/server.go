@@ -395,6 +395,10 @@ func (s *Server) setupWebMentions() {
 
 func (s *Server) setupCronJobs() error {
 	for name, jobSpec := range Jobs {
+		if jobSpec.Schedule == "" {
+			continue
+		}
+
 		job := jobSpec.Factory(s.config, s.blogs, s.cache, s.archive, s.db)
 		if err := s.cron.AddJob(jobSpec.Schedule, job); err != nil {
 			return err

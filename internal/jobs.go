@@ -27,22 +27,24 @@ var (
 
 func init() {
 	Jobs = map[string]JobSpec{
-		"SyncStore":         NewJobSpec("@every 1m", NewSyncStoreJob),
-		"UpdateFeeds":       NewJobSpec("@every 5m", NewUpdateFeedsJob),
-		"UpdateFeedSources": NewJobSpec("@every 15m", NewUpdateFeedSourcesJob),
-		"FixUserAccounts":   NewJobSpec("@hourly", NewFixUserAccountsJob),
-		"DeleteOldSessions": NewJobSpec("@hourly", NewDeleteOldSessionsJob),
-		"FixMissingTwts":    NewJobSpec("@daily", NewFixMissingTwtsJob),
-		"Stats":             NewJobSpec("@daily", NewStatsJob),
-		"MergeStore":        NewJobSpec("@daily", NewMergeStoreJob),
+		"SyncStore":            NewJobSpec("@every 1m", NewSyncStoreJob),
+		"UpdateFeeds":          NewJobSpec("@every 5m", NewUpdateFeedsJob),
+		"UpdateFeedSources":    NewJobSpec("@every 15m", NewUpdateFeedSourcesJob),
+		"FixUserAccounts":      NewJobSpec("@hourly", NewFixUserAccountsJob),
+		"DeleteOldSessions":    NewJobSpec("@hourly", NewDeleteOldSessionsJob),
+		"FixMissingTwts":       NewJobSpec("@daily", NewFixMissingTwtsJob),
+		"Stats":                NewJobSpec("@daily", NewStatsJob),
+		"MergeStore":           NewJobSpec("@daily", NewMergeStoreJob),
+		"RemoveEmailAddresses": NewJobSpec("", NewRemoveEmailAddressesJob),
 	}
 
 	StartupJobs = map[string]JobSpec{
-		"UpdateFeeds":       Jobs["UpdateFeeds"],
-		"UpdateFeedSources": Jobs["UpdateFeedSources"],
-		"FixUserAccounts":   Jobs["FixUserAccounts"],
-		"FixMissingTwts":    Jobs["FixMissingTwts"],
-		"DeleteOldSessions": Jobs["DeleteOldSessions"],
+		"UpdateFeeds":          Jobs["UpdateFeeds"],
+		"UpdateFeedSources":    Jobs["UpdateFeedSources"],
+		"FixUserAccounts":      Jobs["FixUserAccounts"],
+		"FixMissingTwts":       Jobs["FixMissingTwts"],
+		"DeleteOldSessions":    Jobs["DeleteOldSessions"],
+		"RemoveEmailAddresses": Jobs["RemoveEmailAddresses"],
 	}
 }
 
@@ -380,4 +382,41 @@ func (job *MergeStoreJob) Run() {
 	}
 
 	log.Info("merged store")
+}
+
+type RemoveEmailAddresses struct {
+	conf    *Config
+	blogs   *BlogsCache
+	cache   *Cache
+	archive Archiver
+	db      Store
+}
+
+func NewRemoveEmailAddressesJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+	return &RemoveEmailAddresses{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
+}
+
+func (job *RemoveEmailAddresses) Run() {
+	log.Info("removing email addresses from all user accounts...")
+
+	users, err := job.db.GetAllUsers()
+	if err != nil {
+		log.WithError(err).Warn("unable to get all users from database")
+		return
+	}
+
+	for _, user := range users {
+		if user.Email != "" {
+			recoveryHash := fmt.Sprintf("email:%s", FastHash(user.Email))
+			user.Recovery = recoveryHash
+
+			if err := job.db.SetUser(user.Username, user); err != nil {
+				log.WithError(err).Warn("error saving user object for AdminUser")
+			}
+		} else {
+			log.Warnf("No email address for %s, skipping...", user.Username)
+		}
+	}
+
+	log.Info("finished removing email addresses from user accounts")
 }

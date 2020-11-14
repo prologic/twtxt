@@ -3,7 +3,7 @@
     <div>
       <hgroup>
         <h2>Sign up</h2>
-        <h3>Create and register a new twtxt account on {{ .InstanceName }}</h3>
+        <p>Create and register a new Twt.social account on {{ .InstanceName }}</p>
       </hgroup>
       <form id="register" action="/register" method="POST">
         <input type="text" name="username" placeholder="Username" aria-label="Username" autocomplete="nickname" autofocus required>
@@ -28,6 +28,30 @@
         by the Community Guidelines set out in the <a href="/abuse">Abuse Policy</a>.
       </p>
     </div>
-    <div></div>
+    <div>
+      <hgroup>
+        <h2>How to create an account</h2>
+      </hgroup>
+      <p>
+        You are about to create a new <a href="https://twt.social" target="_blank">Twt.social</a>
+        account on {{ .InstanceName }}
+      </p>
+      <p>
+        <ul>
+          <li>Pick a username</li>
+          <li>Create a unique and secure password</li>
+          <li>Enter your email address in case you forget your password</li>
+        </ul>
+      </p>
+      <p>
+        Pick any username you like (<i>as long as it is available on {{ .InstanceName }}</i>).
+      </p>
+      <p>
+        Please note we <b>DO NOT</b> actually store your email address at all!
+        If you forget your email address or loose access to your email we are
+        really sorry but you will be unable to recover your account if you
+        forget your password.
+      </p>
+    </div>
   </article>
 {{end}}

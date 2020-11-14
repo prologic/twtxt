@@ -3,7 +3,7 @@
     <div>
       <hgroup>
         <h2>Sign in</h2>
-        <h3>Login to your twtxt account on {{ .InstanceName }}</h3>
+        <p>Login to your Twt.social account on {{ .InstanceName }}</p>
       </hgroup>
       <form action="/login" method="POST">
         <input type="text" name="username" placeholder="Username" aria-label="Username" autocomplete="nickname" autofocus required>
@@ -15,20 +15,39 @@
           </label>
         </fieldset>
         <button type="submit" class="contrast">Login</button>
-        <p>
-          Don't have an account?
-          {{ if .RegisterDisabled }}
-            <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">/register</a>
-          {{ else }}
-            <a href="/register">/register</a>
-          {{ end }}
-          instead.
-        </p>
-        <p>
-          <a href="/resetPassword">Forgotten your password?</a>
-        </p>
       </form>
     </div>
-    <div></div>
+    <div>
+      <hgroup>
+        <h2>How to login to your account</h2>
+      </hgroup>
+      <p>
+        Login to your Twt.social account on {{ .InstanceName }} by filling in
+        the Username and Password you used when you created your account.
+      </p>
+      <p>
+        Check the "Remember Me" box if you don't want to have to keep logging in
+        every few hours.
+      </p>
+      <p>
+        Don't have an account?
+        {{ if .RegisterDisabled }}
+          {{ with .RegisterDisabledMessage }}
+            {{ .RegisterDisabledMessage }}
+          {{ else }}
+            Open registrations are disabled on this pod.
+            Please contact the operator using the <a href="/support">/support</a> form.
+          {{ end }}
+        {{ else }}
+          You can create a new account on the <a href="/register">/register</a> form.
+        {{ end }}
+      </p>
+      <p>
+        If you have forgotten your password you can request a
+        <a href="/resetPassword">Password Reset</a> as long as you remember
+        your username and email address you signed up with and retain access to
+        your email (<i>We <b>NEVER</b> store your email address!</i>).
+      </p>
+    </div>
   </article>
 {{end}}

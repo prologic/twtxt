@@ -321,6 +321,86 @@ footer small .footer-menu a:last-child::after{
   content: none;
 }
 
+[data-tooltip]:not(a):not(button):not(input){
+  border-bottom: none;
+}
+
+#cookie-law{
+  background-color: rgb(50, 50, 50) !important;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+#cookie-law p{
+  color: #ffffff;
+  font-size: 13px;
+  text-align: center;
+  background-color: rgb(50, 50, 50)  !important;
+  margin-bottom: 0px;
+}
+#cookie-law p a[role=button]{
+  margin: 10px 0px 0px 10px;
+  padding: 5px 15px;
+  font-size: 13px;
+  color: #dcdcdc !important;
+  border-color: 1px solid var(--primary) !important; 
+  border-radius: 0.25rem !important;
+}
+
+/* Video Summary Content Styling */
+article .p-summary p video,
+article .p-summary p img{
+  width: auto;
+  height: auto;
+}
+
+/* Blockquotes */
+article .p-summary blockquote {
+  border-left: 5px solid var(--primary) !important;
+  margin: 1.5em 10px;
+  padding: 10px 10px 10px 25px;
+  font-style: italic;
+  position: relative;
+}
+
+/* Footer Style */
+footer{
+  border-top: 1px solid var(--primary);
+  background-color: rgba(234, 232, 232, 0.1);
+}
+footer small{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-content: center;
+}
+footer small .footer-menu{
+  display: flex;
+  flex-direction: row;
+}
+footer small .footer-menu a{
+  margin-right: 10px;
+  padding-right: 10px;
+  position: relative;
+}
+footer small .footer-menu a::after{
+  content: '';
+  height: 12px;
+  width: 1px;
+  background-color: #929292;
+  position: absolute;
+  right: 0px;
+  bottom: 4px;
+}
+footer small .footer-menu a:last-child{
+  border: none;
+  padding-right: 0px;
+  margin-right: 0px;
+}
+footer small .footer-menu a:last-child::after{
+  content: none;
+}
+
 /* sidebar refactory style */
 #mainNav{
   box-shadow: var(--card-shadow);
@@ -331,44 +411,65 @@ footer small .footer-menu a:last-child::after{
   width: 100%;
   z-index: 2;
 }
+#mainNav .burger-menu-desk{
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 61px;
+  position: absolute;
+}
+#mainNav .move-right-menu{
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+#mainNav .move-right-menu ul{
+  padding-left: 50px;
+}
 #mainNav ul li{
   padding-top: 0px;
   padding-bottom: 0px;
 }
-aside.sidebar{
-  position: fixed;
-  left: 0px;
-  height: 100vh;
-  width: 250px;
-  background: var(--card-background);
-  z-index: 1;
+.entry-content{
   padding-top: 100px;
-  box-sizing: border-box;
-  box-shadow: var(--card-shadow);
 }
-aside.sidebar nav ul{
+aside.sidenav {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 4;
+  top: 0;
+  left: 0;
+  background-color:#10181e;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+}
+aside.sidenav .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+  color: #ffffff;
+}
+aside.sidenav .closebtn:hover{
+  text-decoration: none;
+}
+aside.sidenav nav ul{
   margin: 0px;
 }
-aside.sidebar nav ul li{
+aside.sidenav nav ul li{
   padding: 10px 20px;
   margin: 0px;
 }
-.main-content{
-  padding-top: 120px;
-  margin-left: 250px;
-  padding-right: 40px;
-  padding-left: 40px;
+aside.sidenav nav ul li a {
+  transition: 0.3s;
+  color: #ffffff;
 }
-.entry-content{
-  padding-top: 120px;
+aside.sidenav nav ul li a:hover {
+  color:#c5c5c5;
 }
-.main-content .entry-content{
-  padding-top: 0px;
-}
-.main-content footer.footer-main{
-  padding: 20px 20px;
-  margin-top: 30px;
-}
+
 /* Toolbar styling */
 @media (max-width: 576px) {
   .toolbar-nav li {
@@ -498,5 +599,36 @@ aside.sidebar nav ul li{
   }
   .main-content footer.footer-main{
     margin-bottom: 40px;
+  }
+  #mainNav .burger-menu{
+    line-height: 50px;
+  }
+  #mainNav nav ul li.logo{
+    margin-left: 0px;
+    position: relative;
+    left: 25px;
+  }
+  .mainNav-mobile{
+    display: flex;
+    justify-content: flex-start;
+  }
+  #mainNav .burger-menu-desk{
+    position: unset;
+    font-size: 18px;
+    line-height: 48px;
+  }
+  #mainNav .move-right-menu{
+    display: block;
+    width: 100%;
+    margin-left: 90px;
+  }
+  #mainNav .move-right-menu ul{
+    display: block;
+    margin: 0 !important;
+    width: 100%;
+    padding-left: 0px;
+  }
+  #mainNav .move-right-menu ul li{
+    text-align: right;
   }
 }

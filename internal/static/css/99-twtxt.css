@@ -411,6 +411,10 @@ footer small .footer-menu a:last-child::after{
   width: 100%;
   z-index: 2;
 }
+.mainNav-mobile{
+  display: block;
+  width: 100%;
+}
 #mainNav .burger-menu-desk{
   font-size: 22px;
   cursor: pointer;
@@ -587,6 +591,9 @@ aside.sidenav nav ul li a:hover {
   }
   nav#mainNav ul li.mobile-menu{
     padding-top: 15px;
+  }
+  nav#mainNav ul li.mobile-menu #burgerMenu{
+    padding-right: 0px;
   }
   aside.sidebar nav ul {
     margin: 0px;

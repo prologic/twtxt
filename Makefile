@@ -39,6 +39,7 @@ else
 generate:
 	@minify -b -o ./internal/static/css/twtxt.min.css ./internal/static/css/[0-9]*-*.css
 	@minify -b -o ./internal/static/js/twtxt.min.js ./internal/static/js/[0-9]*-*.js
+	@rm -f ./internal/rice-box.go
 	@rice -i ./internal embed-go
 endif
 

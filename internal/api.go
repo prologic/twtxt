@@ -48,11 +48,12 @@ type API struct {
 	archive Archiver
 	db      Store
 	pm      passwords.Passwords
+	tasks   *Dispatcher
 }
 
 // NewAPI ...
-func NewAPI(router *Router, config *Config, cache *Cache, archive Archiver, db Store, pm passwords.Passwords) *API {
-	api := &API{router, config, cache, archive, db, pm}
+func NewAPI(router *Router, config *Config, cache *Cache, archive Archiver, db Store, pm passwords.Passwords, tasks *Dispatcher) *API {
+	api := &API{router, config, cache, archive, db, pm, tasks}
 
 	api.initRoutes()
 
@@ -852,8 +853,10 @@ func (a *API) SettingsEndpoint() httprouter.Handle {
 	}
 }
 
-// UploadMediaEndpoint ...
-func (a *API) UploadMediaEndpoint() httprouter.Handle {
+// OldUploadMediaEndpoint ...
+// TODO: Remove when the api_old_upload_media counter nears zero
+// XXX: Used for Goryon < v1.0.3
+func (a *API) OldUploadMediaEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		// Limit request body to to abuse
 		r.Body = http.MaxBytesReader(w, r.Body, a.config.MaxUploadSize)
@@ -890,6 +893,117 @@ func (a *API) UploadMediaEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+
+		return
+	}
+}
+
+// UploadMediaHandler ...
+func (a *API) UploadMediaEndpoint() httprouter.Handle {
+	oldUploadMediaEndpoint := a.OldUploadMediaEndpoint()
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		// Support for older clients pre v1.0.3 (See: OldMediaEndpoint)
+		if r.UserAgent() == "" {
+			oldUploadMediaEndpoint(w, r, p)
+			return
+		}
+
+		// Limit request body to to abuse
+		r.Body = http.MaxBytesReader(w, r.Body, a.config.MaxUploadSize)
+
+		mfile, headers, err := r.FormFile("media_file")
+		if err != nil && err != http.ErrMissingFile {
+			if err.Error() == "http: request body too large" {
+				log.Warnf("request too large for media upload from %s", FormatRequest(r))
+				http.Error(w, "Media Upload Too Large", http.StatusRequestEntityTooLarge)
+				return
+			}
+			log.WithError(err).Error("error parsing form file")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if mfile == nil || headers == nil {
+			log.Warn("no valid media file uploaded")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		ctype := headers.Header.Get("Content-Type")
+
+		var uri URI
+
+		if strings.HasPrefix(ctype, "image/") {
+			fn, err := ReceiveImage(mfile)
+			if err != nil {
+				log.WithError(err).Error("error writing uploaded image")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			uuid, err := a.tasks.Dispatch(NewImageTask(a.config, fn))
+			if err != nil {
+				log.WithError(err).Error("error dispatching image processing task")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			uri.Type = "taskURI"
+			uri.Path = URLForTask(a.config.BaseURL, uuid)
+		}
+
+		if strings.HasPrefix(ctype, "audio/") {
+			fn, err := ReceiveAudio(mfile)
+			if err != nil {
+				log.WithError(err).Error("error writing uploaded audio")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			uuid, err := a.tasks.Dispatch(NewAudioTask(a.config, fn))
+			if err != nil {
+				log.WithError(err).Error("error dispatching audio transcoding task")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			uri.Type = "taskURI"
+			uri.Path = URLForTask(a.config.BaseURL, uuid)
+		}
+
+		if strings.HasPrefix(ctype, "video/") {
+			fn, err := ReceiveVideo(mfile)
+			if err != nil {
+				log.WithError(err).Error("error writing uploaded video")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			uuid, err := a.tasks.Dispatch(NewVideoTask(a.config, fn))
+			if err != nil {
+				log.WithError(err).Error("error dispatching vodeo transcode task")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			uri.Type = "taskURI"
+			uri.Path = URLForTask(a.config.BaseURL, uuid)
+		}
+
+		if uri.IsZero() {
+			log.Warn("no media file provided or unsupported media type")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		data, err := json.Marshal(uri)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if uri.Type == "taskURI" {
+			w.WriteHeader(http.StatusAccepted)
+		}
 		w.Write(data)
 
 		return

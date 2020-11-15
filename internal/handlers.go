@@ -634,6 +634,12 @@ func (s *Server) PostHandler() httprouter.Handle {
 				s.render("error", w, ctx)
 			}
 
+			// Update user's own timeline with their own new post.
+			s.cache.FetchTwts(s.config, s.archive, ctx.User.Source(), nil)
+
+			// Re-populate/Warm cache with local twts for this pod
+			s.cache.GetByPrefix(s.config.BaseURL, true)
+
 			if r.Method != http.MethodDelete {
 				return
 			}

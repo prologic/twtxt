@@ -21,6 +21,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	// Blank import so we can handle image/jpeg
@@ -105,18 +106,17 @@ var (
 	validUsername  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]+$`)
 	userAgentRegex = regexp.MustCompile(`(.*?)\s+?\(\+?(https?://.*?);? @?(.*)\)`)
 
-	ErrInvalidFeedName   = errors.New("error: invalid feed name")
-	ErrBadRequest        = errors.New("error: request failed with non-200 response")
-	ErrFeedNameTooLong   = errors.New("error: feed name is too long")
-	ErrInvalidUsername   = errors.New("error: invalid username")
-	ErrUsernameTooLong   = errors.New("error: username is too long")
-	ErrInvalidUserAgent  = errors.New("error: invalid twtxt user agent")
-	ErrReservedUsername  = errors.New("error: username is reserved")
-	ErrInvalidImage      = errors.New("error: invalid image")
-	ErrInvalidAudio      = errors.New("error: invalid audio")
-	ErrInvalidVideo      = errors.New("error: invalid video")
-	ErrInvalidVideoSize  = errors.New("error: invalid video size")
-	ErrVideoUploadFailed = errors.New("error: video upload failed")
+	ErrInvalidFeedName  = errors.New("error: invalid feed name")
+	ErrBadRequest       = errors.New("error: request failed with non-200 response")
+	ErrFeedNameTooLong  = errors.New("error: feed name is too long")
+	ErrInvalidUsername  = errors.New("error: invalid username")
+	ErrUsernameTooLong  = errors.New("error: username is too long")
+	ErrInvalidUserAgent = errors.New("error: invalid twtxt user agent")
+	ErrReservedUsername = errors.New("error: username is reserved")
+	ErrInvalidImage     = errors.New("error: invalid image")
+	ErrInvalidAudio     = errors.New("error: invalid audio")
+	ErrInvalidVideo     = errors.New("error: invalid video")
+	ErrInvalidVideoSize = errors.New("error: invalid video size")
 
 	thumbnailerOpts = thumbnailer.Options{
 		ThumbDims: thumbnailer.Dims{
@@ -353,7 +353,19 @@ func RunCmd(timeout time.Duration, command string, args ...string) error {
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.WithError(err).WithField("out", string(out)).Error("error running command")
+		if exitError, ok := err.(*exec.ExitError); ok {
+			if ws, ok := exitError.Sys().(syscall.WaitStatus); ok && ws.Signal() == syscall.SIGKILL {
+				err = &ErrCommandKilled{Err: err, Signal: ws.Signal()}
+			} else {
+				err = &ErrCommandFailed{Err: err, Status: exitError.ExitCode()}
+			}
+		}
+
+		log.
+			WithError(err).
+			WithField("out", string(out)).
+			Errorf("error running command")
+
 		return err
 	}
 
@@ -746,24 +758,44 @@ func TranscodeAudio(conf *Config, ifn string, resource, name string, opts *Audio
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	errs := make(chan error)
+	var finalErr error
+
+	nErrors := 0
+	errChan := make(chan error)
 
 	wg.Add(2)
-	go TranscodeOGG(ctx, errs)
-	go TranscodeMP3(ctx, errs)
+
+	go TranscodeOGG(ctx, errChan)
+	go TranscodeMP3(ctx, errChan)
+
+	go func(ctx context.Context) {
+		for {
+			select {
+			case err, ok := <-errChan:
+				if !ok {
+					return
+				}
+				nErrors++
+				log.WithError(err).Errorf("TranscodeVideo() error")
+
+				if errors.Is(err, &ErrCommandKilled{}) {
+					finalErr = &ErrTranscodeTimeout{Err: err}
+				} else {
+					finalErr = &ErrTranscodeFailed{Err: err}
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	}(ctx)
 
 	wg.Wait()
-	close(errs)
+	close(errChan)
 
-	errors := 0
-	for err := range errs {
-		log.WithError(err).Error("TranscodeAudio() error")
-		errors++
-	}
-
-	if errors > 0 {
-		log.Error("TranscodeAudio() too many errors")
-		return "", ErrVideoUploadFailed
+	if nErrors > 0 {
+		err = &ErrAudioUploadFailed{Err: finalErr}
+		log.WithError(err).Error("TranscodeAudio() too many errors")
+		return "", err
 	}
 
 	return fmt.Sprintf(
@@ -980,24 +1012,32 @@ func TranscodeVideo(conf *Config, ifn string, resource, name string, opts *Video
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	errors := 0
-	errs := make(chan error)
+	var finalErr error
+
+	nErrors := 0
+	errChan := make(chan error)
 
 	wg.Add(3)
 
-	go TranscodeWebM(ctx, errs)
-	go TranscodeMP4(ctx, errs)
-	go GeneratePoster(ctx, errs)
+	go TranscodeWebM(ctx, errChan)
+	go TranscodeMP4(ctx, errChan)
+	go GeneratePoster(ctx, errChan)
 
 	go func(ctx context.Context) {
 		for {
 			select {
-			case err, ok := <-errs:
+			case err, ok := <-errChan:
 				if !ok {
 					return
 				}
+				nErrors++
 				log.WithError(err).Errorf("TranscodeVideo() error")
-				errors++
+
+				if errors.Is(err, &ErrCommandKilled{}) {
+					finalErr = &ErrTranscodeTimeout{Err: err}
+				} else {
+					finalErr = &ErrTranscodeFailed{Err: err}
+				}
 			case <-ctx.Done():
 				return
 			}
@@ -1005,11 +1045,12 @@ func TranscodeVideo(conf *Config, ifn string, resource, name string, opts *Video
 	}(ctx)
 
 	wg.Wait()
-	close(errs)
+	close(errChan)
 
-	if errors > 0 {
-		log.Error("TranscodeVideo() too many errors")
-		return "", ErrVideoUploadFailed
+	if nErrors > 0 {
+		err = &ErrVideoUploadFailed{Err: finalErr}
+		log.WithError(err).Error("TranscodeVideo() too many errors")
+		return "", err
 	}
 
 	return fmt.Sprintf(

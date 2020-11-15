@@ -10,6 +10,13 @@ type ErrCommandKilled struct {
 	Signal syscall.Signal
 }
 
+func (e *ErrCommandKilled) Is(target error) bool {
+	if _, ok := target.(*ErrCommandKilled); ok {
+		return true
+	}
+	return false
+}
+
 func (e *ErrCommandKilled) Error() string {
 	return fmt.Sprintf("error: command killed: %s", e.Err)
 }
@@ -21,6 +28,13 @@ func (e *ErrCommandKilled) Unwrap() error {
 type ErrCommandFailed struct {
 	Err    error
 	Status int
+}
+
+func (e *ErrCommandFailed) Is(target error) bool {
+	if _, ok := target.(*ErrCommandFailed); ok {
+		return true
+	}
+	return false
 }
 
 func (e *ErrCommandFailed) Error() string {

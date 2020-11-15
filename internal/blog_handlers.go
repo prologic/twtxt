@@ -326,7 +326,15 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
 
 		postas := strings.ToLower(strings.TrimSpace(r.FormValue("postas")))
+
 		title := strings.TrimSpace(r.FormValue("title"))
+		if title == "" {
+			ctx.Error = true
+			ctx.Message = "No title provided!"
+			s.render("error", w, ctx)
+			return
+		}
+
 		text := r.FormValue("text")
 		if text == "" {
 			ctx.Error = true

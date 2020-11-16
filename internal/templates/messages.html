@@ -1,5 +1,71 @@
-{{ define "content" }}
-  <article class="container-fluid">
-    <p>Message list...</p>
+{{ define "new" }}
+  {{ if $.Authenticated }}
+    <form id="form" action="/msg" method="POST">
+      <div class="grid">
+        <div>
+          <input type="text" name="username" placeholder="Username" aria-label="Username" autocomplete="nickname" autofocus required>
+          <button id="msg" type="submit">
+            <i class="icss-plus"></i>
+              Initiate
+          </button>
+        </div>
+      </div>
+    </form>
+  {{ end }}
+{{ end }}
+
+{{ define "msg" }}
+  <article id="{{ $.Message.User }}" class="h-entry">
+    <div class="u-author h-card">
+      <div>
+        <a href="/user/{{ $.Message.User }}" class="u-url">
+          <img class="avatar u-photo" src="/user/{{ $.Message.User }}/avatar" />
+        </a>
+      </div>
+      <div class="author">
+        <span class="p-name">{{ $.Message.User }}</span>
+        <div class="publish-time">
+          <a class="u-url" href="/msg/{{ $.Message.Hash }}">
+            <time class="dt-published" datetime="{{ $.Message.Updated | date "2006-01-02T15:04:05Z07:00" }}">
+              {{ dateInZone ($.Message.Updated | formatForDateTime) $.Message.Updated $.User.DisplayDatesInTimezone }}
+            </time>
+          </a>
+          <span> &nbsp;({{ $.Message.Updated | time }})</span>   
+        </div>  
+      </div>
+    </div>
+    <div class="p-summary">
+      {{ $.Message.Text | formatTwt }}
+    </div>
+    <hr />
+    <nav>
+      <ul>
+        {{ if $.Authenticated }}
+          <li><a class="delete" href="#" data-hash="{{ $.Message.Hash }}"><i class="icss-x"></i>Archive</a></li>
+          <li>&nbsp;</li>
+          <li><a href="/msg/{{ $.Message.Hash }}"><i class="icss-arrow-left"></i>Open</a></li>
+          <li>&nbsp;</li>
+        {{ end }}
+      </ul>
+    </nav>
   </article>
+{{ end }}
+
+{{ define "messages" }}
+  <div class="grid h-feed">
+    <div>
+      {{ template "pager" $.Pager }}
+      {{ range $idx, $msg := $.Messages }}
+        {{ template "msg" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "Message" $msg) }}
+      {{ else }}
+        <small><i>You have no messages...</i></small>
+      {{ end }}
+      {{ template "pager" $.Pager }}
+    </div>
+  </div>
+{{ end }}
+
+{{ define "content" }}
+  {{ template "new" (dict "Authenticated" $.Authenticated "User" $.User) }}
+  {{ template "messages" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "Pager" $.Pager "Messages" $.Messages) }}
 {{ end }}

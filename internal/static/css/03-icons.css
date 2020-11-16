@@ -958,3 +958,63 @@ i.icss-exchange:before {
     top: -.5em;
     left: -1.8em
 }
+i.icss-mail-box {
+  width: .1em;
+  height: .2em;
+  background-color: currentColor;
+  margin: .8em .4em 0 .5em;
+}
+i.icss-mail-box:before {
+  width: .45em;
+  height: .6em;
+  border-radius: .3em .3em 0 0 / .4em .4em 0 0;
+  border: .05em solid transparent;
+  box-shadow: 
+    inset 0 0 0 .1em, 
+    inset 0 1.32em 0 -1em, 
+    .3em 0 0 .05em,
+    .5em 0 0 -.05em;
+  clip: rect(.05em 1em .55em 0);
+  top: -.55em;
+  left: -.45em;
+}
+i.icss-mail-box:after {
+  border: .15em solid transparent;
+  border-top: .25em solid currentColor;
+  border-bottom: 0;
+  box-shadow: 0 -.05em;
+  transform: rotate(-0deg);
+  transform-origin: -.06em 0;
+  top: -.43em;
+  left: 0;
+}
+i.icss-mail-box-in {
+  width: .1em;
+  height: .2em;
+  background-color: currentColor;
+  margin: .8em .4em 0 .5em;
+}
+i.icss-mail-box-in:before {
+  width: .45em;
+  height: .6em;
+  border-radius: .3em .3em 0 0 / .4em .4em 0 0;
+  border: .05em solid transparent;
+  box-shadow: 
+    inset 0 0 0 .1em, 
+    inset 0 1.32em 0 -1em, 
+    .3em 0 0 .05em,
+    .5em 0 0 -.05em;
+  clip: rect(.05em 1em .55em 0);
+  top: -.55em;
+  left: -.45em;
+}
+i.icss-mail-box-in:after {
+  border: .15em solid transparent;
+  border-top: .25em solid currentColor;
+  border-bottom: 0;
+  box-shadow: 0 -.05em;
+  transform: rotate(-90deg);
+  transform-origin: -.06em 0;
+  top: -.43em;
+  left: 0;
+}

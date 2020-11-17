@@ -148,10 +148,10 @@ Then visit: http://localhost:8000/
 Run twtd:
 
 ```console
-twtd -r
+twtd -R
 ```
 
-__NOTE:__ Registrations are disabled by default so hence the `-r` flag above.
+__NOTE:__ Registrations are disabled by default so hence the `-R` flag above.
 
 Then visit: http://localhost:8000/
 

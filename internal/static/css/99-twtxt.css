@@ -34,6 +34,21 @@ article hgroup footer {
   width: 0px !important;
 }
 
+.mobile-menu a {
+  display: inline-block;
+  margin: -1rem -1rem 0 1rem;
+}
+
+.badge {
+  background-color: #c11010;
+  color: white;
+  border-radius: 100px;
+  padding: 0px 4px;
+  font-size: 9px;
+  margin-left: -3px;
+  position: absolute;
+}
+
 .nav {
     z-index: 1050;
 }

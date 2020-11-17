@@ -42,6 +42,12 @@
   <nav id="mainNav" class="container-fluid">
     <ul>
       <li class="mobile-menu">
+        {{ if .Authenticated }}
+          <a id="messagesMenu" href="/messages">
+            <i class="icss-mail-box"></i>
+            <span class="badge">2</span>
+          </a>
+        {{ end }}
         <a id="burgerMenu" href="javascript:void(0);">
           <i class="icss-bars"></i>
         </a>

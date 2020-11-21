@@ -89,11 +89,14 @@ Linux, macOS:
 ```console
 make deps
 ```
+
 FreeBSD:
 
-- Install ```gmake```
-- Install ```pkgconf``` that brings ```pkg-config```
-- ```console
+Install ```gmake```
+
+Install ```pkgconf``` that brings ```pkg-config```
+
+```console
 gmake deps
 ```
 

@@ -92,9 +92,9 @@ make deps
 
 FreeBSD:
 
-Install ```gmake```
+- Install ```gmake```
 
-Install ```pkgconf``` that brings ```pkg-config```
+- Install ```pkgconf``` that brings ```pkg-config```
 
 ```console
 gmake deps

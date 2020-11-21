@@ -84,15 +84,33 @@ git clone https://github.com/prologic/twtxt.git
 
 2. Install required dependencies (_this is important_)
 
+Linux, macOS:
+
 ```console
 make deps
+```
+FreeBSD:
+
+- Install ```gmake```
+- Install ```pkgconf``` that brings ```pkg-config```
+- ```console
+gmake deps
 ```
 
 3. Build the binaries
 
+Linux, macOS:
+
 ```console
 make
 ```
+
+FreeBSD:
+
+```console
+gmake
+```
+
 
 __NOTE___: It is important you follow these steps and don't just simply attempt
            `go get ...` this project as that will not work ([#30](https://github.com/prologic/twtxt/issues/30)) due to the

@@ -93,7 +93,6 @@ make deps
 FreeBSD:
 
 - Install ```gmake```
-
 - Install ```pkgconf``` that brings ```pkg-config```
 
 ```console

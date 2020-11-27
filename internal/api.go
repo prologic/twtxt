@@ -904,7 +904,8 @@ func (a *API) UploadMediaEndpoint() httprouter.Handle {
 	oldUploadMediaEndpoint := a.OldUploadMediaEndpoint()
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		// Support for older clients pre v1.0.3 (See: OldMediaEndpoint)
-		if r.UserAgent() == "" {
+		//
+		if strings.HasPrefix(r.UserAgent(), "Dart") {
 			oldUploadMediaEndpoint(w, r, p)
 			return
 		}

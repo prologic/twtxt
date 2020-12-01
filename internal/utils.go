@@ -1193,6 +1193,16 @@ func RedirectURL(r *http.Request, conf *Config, defaultURL string) string {
 	return defaultURL
 }
 
+func HostnameFromURL(uri string) string {
+	u, err := url.Parse(uri)
+	if err != nil {
+		log.WithError(err).Warnf("HostnameFromURL(): error parsing url: %s", uri)
+		return uri
+	}
+
+	return u.Hostname()
+}
+
 func PrettyURL(uri string) string {
 	u, err := url.Parse(uri)
 	if err != nil {

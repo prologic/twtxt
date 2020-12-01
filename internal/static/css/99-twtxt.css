@@ -229,6 +229,11 @@ video {
   font-size: 34px;
   color: #1095c1;
 }
+.p-org {
+  left: 0px !important;
+  font-size: 12px;
+  color: var(--muted-text);
+}
 
 .author {
   display: flex;
@@ -392,6 +397,11 @@ footer small .footer-menu a:last-child::after{
     flex: 80%;
   }
   .u-author.h-card .author .p-name{
+    font-size: 20px;
+    line-height: 25px;
+    overflow-wrap: anywhere;
+  }
+  .u-author.h-card .author .p-org{
     font-size: 20px;
     line-height: 25px;
     overflow-wrap: anywhere;

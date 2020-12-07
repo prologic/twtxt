@@ -42,6 +42,20 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 					s.render("error", w, ctx)
 					return
 				}
+			} else if blogPost, ok := s.blogs.Get(hash); ok {
+				twt, ok = s.cache.Lookup(blogPost.Twt)
+				if !ok {
+					// If the twt is not in the cache look for it in the archive
+					if s.archive.Has(blogPost.Twt) {
+						twt, err = s.archive.Get(blogPost.Twt)
+						if err != nil {
+							ctx.Error = true
+							ctx.Message = "Error loading twt from archive, please try again"
+							s.render("error", w, ctx)
+							return
+						}
+					}
+				}
 			}
 		}
 

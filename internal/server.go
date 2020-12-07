@@ -673,7 +673,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		sc,
 	)
 
-	api := NewAPI(router, config, cache, archive, db, pm, tasks)
+	api := NewAPI(router, config, cache, archive, blogs, db, pm, tasks)
 
 	server := &Server{
 		bind:      bind,

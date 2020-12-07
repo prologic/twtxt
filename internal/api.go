@@ -46,14 +46,15 @@ type API struct {
 	config  *Config
 	cache   *Cache
 	archive Archiver
+	blogs   *BlogsCache
 	db      Store
 	pm      passwords.Passwords
 	tasks   *Dispatcher
 }
 
 // NewAPI ...
-func NewAPI(router *Router, config *Config, cache *Cache, archive Archiver, db Store, pm passwords.Passwords, tasks *Dispatcher) *API {
-	api := &API{router, config, cache, archive, db, pm, tasks}
+func NewAPI(router *Router, config *Config, cache *Cache, archive Archiver, blogs *BlogsCache, db Store, pm passwords.Passwords, tasks *Dispatcher) *API {
+	api := &API{router, config, cache, archive, blogs, db, pm, tasks}
 
 	api.initRoutes()
 
@@ -1128,6 +1129,19 @@ func (a *API) ConversationEndpoint() httprouter.Handle {
 					log.WithError(err).Errorf("error fetching twt %s from archive", hash)
 					http.Error(w, "Bad Request", http.StatusBadRequest)
 					return
+				}
+			} else if blogPost, ok := a.blogs.Get(hash); ok {
+				twt, ok = a.cache.Lookup(blogPost.Twt)
+				if !ok {
+					// If the twt is not in the cache look for it in the archive
+					if a.archive.Has(blogPost.Twt) {
+						twt, err = a.archive.Get(blogPost.Twt)
+						if err != nil {
+							log.WithError(err).Errorf("error fetching twt %s from archive", hash)
+							http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+							return
+						}
+					}
 				}
 			}
 		}

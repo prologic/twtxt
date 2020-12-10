@@ -84,3 +84,43 @@ func TestSubject(t *testing.T) {
 		})
 	}
 }
+
+func TestHash(t *testing.T) {
+	assert := assert.New(t)
+
+	CET := time.FixedZone("UTC+1", 1 * 60 * 60)
+	testCases := []struct {
+		name     string
+		created  time.Time
+		expected string
+	}{
+		{
+			name:     "timestamp with milliseconds precision is truncated to seconds precision",
+			created:  time.Date(2020, 12, 9, 16, 38, 42, 123_000_000, CET),
+			expected: "64u2m5a",
+		}, {
+			name:     "timestamp with seconds precision and UTC+1 offset is kept intact",
+			created:  time.Date(2020, 12, 9, 16, 38, 42, 0, CET),
+			expected: "64u2m5a",
+		}, {
+			name:     "timestamp with minutes precision is expanded to seconds precision",
+			created:  time.Date(2020, 12, 9, 16, 38, 0, 0, CET),
+			expected: "a3c3k5q",
+		}, {
+			name:     "timestamp with UTC is rendered as designated Zulu offset rather than numeric offset",
+			created:  time.Date(2020, 12, 9, 15, 38, 42, 0, time.UTC),
+			expected: "74qtyjq",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			twt := Twt{
+					Twter:   Twter{URL: "https://example.com/twtxt.txt"},
+					Text:    "The twt hash now uses the RFC 3339 timestamp format.",
+					Created: testCase.created,
+			}
+			assert.Equal(testCase.expected, twt.Hash())
+		})
+	}
+}

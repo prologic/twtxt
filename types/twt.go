@@ -143,7 +143,7 @@ func (twt Twt) Hash() string {
 		return twt.hash
 	}
 
-	payload := twt.Twter.URL + "\n" + twt.Created.String() + "\n" + twt.Text
+	payload := twt.Twter.URL + "\n" + twt.Created.Format(time.RFC3339) + "\n" + twt.Text
 	sum := blake2b.Sum256([]byte(payload))
 
 	// Base32 is URL-safe, unlike Base64, and shorter than hex.

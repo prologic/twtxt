@@ -99,6 +99,10 @@ func TestHash(t *testing.T) {
 			created:  time.Date(2020, 12, 9, 16, 38, 42, 123_000_000, CET),
 			expected: "64u2m5a",
 		}, {
+			name:     "timestamp with milliseconds precision is truncated to seconds precision without rounding",
+			created:  time.Date(2020, 12, 9, 16, 38, 42, 999_000_000, CET),
+			expected: "64u2m5a",
+		}, {
 			name:     "timestamp with seconds precision and UTC+1 offset is kept intact",
 			created:  time.Date(2020, 12, 9, 16, 38, 42, 0, CET),
 			expected: "64u2m5a",

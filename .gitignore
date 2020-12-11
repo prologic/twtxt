@@ -27,3 +27,5 @@
 /data/external/*
 
 /internal/rice-box.go
+
+/docs/_site/

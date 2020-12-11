@@ -231,8 +231,10 @@ video {
 }
 .p-org {
   left: 0px !important;
-  font-size: 12px;
+  font-size: 26px;
+  font-weight: 100;
   color: var(--muted-text);
+  margin-top: 18px;
 }
 
 .author {

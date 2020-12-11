@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/prologic/twtxt"
+	"github.com/jointwt/twtxt"
 	log "github.com/sirupsen/logrus"
 )
 

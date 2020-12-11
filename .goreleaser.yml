@@ -4,7 +4,7 @@ builds:
     binary: twt
     main: ./cmd/twt
     flags: -tags "static_build"
-    ldflags: -w -X github.com/prologic/twtxt.Version={{.Version}} -X github.com/prologic/twtxt.Commit={{.Commit}}
+    ldflags: -w -X github.com/jointwt/twtxt.Version={{.Version}} -X github.com/jointwt/twtxt.Commit={{.Commit}}
     env:
       - CGO_ENABLED=0
     goos:

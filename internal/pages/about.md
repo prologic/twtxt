@@ -33,7 +33,7 @@ that are provided:
 - Supports [wee-are-twtxt](https://github.com/mdom/we-are-twtxt) feed sources format for discovering external feeds
 - Supports [IndieWeb[(https://indieweb.org/) formats and [WebMention(https://www.w3.org/TR/webmention/)
 
-For a list of upcoming features please follow the [Project Page](https://github.com/prologic/twtxt) on Github.
+For a list of upcoming features please follow the [Project Page](https://github.com/jointwt/twtxt) on Github.
 
 For additional help on how to use twtxt and this instance {{ .InstanceName }}
 please see the [/help](/help) page or contact [/support](/support) for help.

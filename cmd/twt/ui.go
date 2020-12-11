@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
-	"github.com/prologic/twtxt/types"
+	"github.com/jointwt/twtxt/types"
 )
 
 func red(s string) string {

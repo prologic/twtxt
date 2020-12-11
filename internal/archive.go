@@ -12,7 +12,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/prologic/twtxt/types"
+	"github.com/jointwt/twtxt/types"
 )
 
 const (

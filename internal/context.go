@@ -9,9 +9,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vcraescu/go-paginator"
 
-	"github.com/prologic/twtxt"
-	"github.com/prologic/twtxt/internal/session"
-	"github.com/prologic/twtxt/types"
+	"github.com/jointwt/twtxt"
+	"github.com/jointwt/twtxt/internal/session"
+	"github.com/jointwt/twtxt/types"
 	"github.com/theplant-retired/timezones"
 )
 

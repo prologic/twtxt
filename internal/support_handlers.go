@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/jointwt/twtxt/internal/session"
 	"github.com/julienschmidt/httprouter"
-	"github.com/prologic/twtxt/internal/session"
 	log "github.com/sirupsen/logrus"
 	"github.com/steambap/captcha"
 )

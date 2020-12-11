@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/prologic/twtxt/client"
+	"github.com/jointwt/twtxt/client"
 )
 
 // timelineCmd represents the pub command

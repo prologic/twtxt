@@ -7,7 +7,7 @@ import (
 	"github.com/prologic/bitcask"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/prologic/twtxt/internal/session"
+	"github.com/jointwt/twtxt/internal/session"
 )
 
 const (

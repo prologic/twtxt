@@ -19,9 +19,9 @@ import (
 	"github.com/vcraescu/go-paginator"
 	"github.com/vcraescu/go-paginator/adapter"
 
-	"github.com/prologic/twtxt"
-	"github.com/prologic/twtxt/internal/passwords"
-	"github.com/prologic/twtxt/types"
+	"github.com/jointwt/twtxt"
+	"github.com/jointwt/twtxt/internal/passwords"
+	"github.com/jointwt/twtxt/types"
 )
 
 // ContextKey ...

@@ -17,7 +17,7 @@ import (
 	read_file_last_line "github.com/prologic/read-file-last-line"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/prologic/twtxt/types"
+	"github.com/jointwt/twtxt/types"
 )
 
 const (

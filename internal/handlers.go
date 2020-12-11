@@ -33,8 +33,8 @@ import (
 	"github.com/vcraescu/go-paginator/adapter"
 	"gopkg.in/yaml.v2"
 
-	"github.com/prologic/twtxt/internal/session"
-	"github.com/prologic/twtxt/types"
+	"github.com/jointwt/twtxt/internal/session"
+	"github.com/jointwt/twtxt/types"
 )
 
 const (

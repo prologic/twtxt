@@ -10,8 +10,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/prologic/twtxt"
-	"github.com/prologic/twtxt/types"
+	"github.com/jointwt/twtxt"
+	"github.com/jointwt/twtxt/types"
 )
 
 var (

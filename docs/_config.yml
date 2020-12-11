@@ -16,7 +16,7 @@ google_analytics_id: ''
 navigation: 1
 
 # URL to source code, used in _includes/footer.html
-codeurl: 'https://github.com/prologic/twtxt'
+codeurl: 'https://github.com/jointwt/twtxt'
 
 # Default categories (in order) to appear in the navigation
 sections: [

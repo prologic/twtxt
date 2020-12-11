@@ -5,7 +5,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 
-	"github.com/prologic/twtxt/internal/session"
+	"github.com/jointwt/twtxt/internal/session"
 )
 
 // Options ...

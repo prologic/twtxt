@@ -3,7 +3,7 @@ style: Github
 template: CHANGELOG.tpl.md
 info:
   title: CHANGELOG
-  repository_url: https://github.com/prologic/twtxt
+  repository_url: https://github.com/jointwt/twtxt
 options:
   commits:
     filters:

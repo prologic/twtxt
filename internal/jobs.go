@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"github.com/prologic/twtxt/types"
+	"github.com/jointwt/twtxt/types"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
 )

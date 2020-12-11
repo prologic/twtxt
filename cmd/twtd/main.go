@@ -14,8 +14,8 @@ import (
 	flag "github.com/spf13/pflag"
 	profiler "github.com/wblakecaldwell/profiler"
 
-	"github.com/prologic/twtxt"
-	"github.com/prologic/twtxt/internal"
+	"github.com/jointwt/twtxt"
+	internal "github.com/jointwt/twtxt/internal"
 )
 
 var (

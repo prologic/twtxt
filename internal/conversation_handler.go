@@ -13,7 +13,7 @@ import (
 	"github.com/vcraescu/go-paginator"
 	"github.com/vcraescu/go-paginator/adapter"
 
-	"github.com/prologic/twtxt/types"
+	"github.com/jointwt/twtxt/types"
 )
 
 // ConversationHandler ...

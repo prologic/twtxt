@@ -5,15 +5,15 @@
 ![Docker Pulls](https://img.shields.io/docker/pulls/prologic/twtxt)
 ![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/prologic/twtxt)
 
-![](https://github.com/prologic/twtxt/workflows/Coverage/badge.svg)
-![](https://github.com/prologic/twtxt/workflows/Docker/badge.svg)
-![](https://github.com/prologic/twtxt/workflows/Go/badge.svg)
-![](https://github.com/prologic/twtxt/workflows/ReviewDog/badge.svg)
+![](https://github.com/jointwt/twtxt/workflows/Coverage/badge.svg)
+![](https://github.com/jointwt/twtxt/workflows/Docker/badge.svg)
+![](https://github.com/jointwt/twtxt/workflows/Go/badge.svg)
+![](https://github.com/jointwt/twtxt/workflows/ReviewDog/badge.svg)
 
 [![Go Report Card](https://goreportcard.com/badge/prologic/twtxt)](https://goreportcard.com/report/prologic/twtxt)
 [![codebeat badge](https://codebeat.co/badges/15fba8a5-3044-4f40-936f-9e0f5d5d1fd9)](https://codebeat.co/projects/github-com-prologic-twtxt-master)
-[![GoDoc](https://godoc.org/github.com/prologic/twtxt?status.svg)](https://godoc.org/github.com/prologic/twtxt) 
-[![GitHub license](https://img.shields.io/github/license/prologic/twtxt.svg)](https://github.com/prologic/twtxt)
+[![GoDoc](https://godoc.org/github.com/jointwt/twtxt?status.svg)](https://godoc.org/github.com/jointwt/twtxt)
+[![GitHub license](https://img.shields.io/github/license/prologic/twtxt.svg)](https://github.com/jointwt/twtxt)
 
 📕 twtxt is a Self-Hosted, Twitter™-like Decentralised micro-Blogging platform. No ads, no tracking, your content, your data!
 
@@ -41,14 +41,14 @@ This project offers fully-managed, 1-click instances of this platform we call [T
 
 Please visit [Twt.social](https://twt.social) to get your pod today!
 
-> __NOTE:__ As of 15th Aug 2020 ([comment](https://github.com/prologic/twtxt/issues/87#issuecomment-674101304) [announcement](https://twtxt.net/twt/zauzpsrkzra) [blog](https://www.prologic.blog/2020/08/15/ann-twtsocial-is.html)), this is completely _FREE_ and we invite anyone to contact us for an invite code to be one of the first few pod owners!
+> __NOTE:__ As of 15th Aug 2020 ([comment](https://github.com/jointwt/twtxt/issues/87#issuecomment-674101304) [announcement](https://twtxt.net/twt/zauzpsrkzra) [blog](https://www.prologic.blog/2020/08/15/ann-twtsocial-is.html)), this is completely _FREE_ and we invite anyone to contact us for an invite code to be one of the first few pod owners!
 
 ## Installation
 
 ### Pre-built Binaries
 
 As a first point, please try to use one of the pre-built binaries  that are
-available on the [Releases](https://github.com/prologic/twtxt/releases) page.
+available on the [Releases](https://github.com/jointwt/twtxt/releases) page.
 
 ### Using Homebrew
 
@@ -79,7 +79,7 @@ This is an option if you are familiar with [Go](https://golang.org) development.
 1. Clone this repository (_this is important_)
 
 ```console
-git clone https://github.com/prologic/twtxt.git
+git clone https://github.com/jointwt/twtxt.git
 ```
 
 2. Install required dependencies (_this is important_)
@@ -122,7 +122,7 @@ gmake
 
 
 __NOTE___: It is important you follow these steps and don't just simply attempt
-           `go get ...` this project as that will not work ([#30](https://github.com/prologic/twtxt/issues/30)) due to the
+           `go get ...` this project as that will not work ([#30](https://github.com/jointwt/twtxt/issues/30)) due to the
            need to package templates and static assets which we use the
            [go.rice](https://github.com/GeertJohan/go.rice) tool for.
 
@@ -244,14 +244,14 @@ Support the ongoing development of twtxt!
 **Sponsor**
 
 - Become a [Sponsor](https://www.patreon.com/prologic)
-- Contribute! See [Issues](https://github.com/prologic/twtxt/issues)
+- Contribute! See [Issues](https://github.com/jointwt/twtxt/issues)
 
 ## Contributing
 
 Interested in contributing to this project? You are welcome! Here are some ways
 you can contribute:
 
-- [File an Issue](https://github.com/prologic/twtxt/issues/new) -- For a bug,
+- [File an Issue](https://github.com/jointwt/twtxt/issues/new) -- For a bug,
   or interesting idea you have for a new feature or just general questions.
 - Submit a Pull-Request or two! We welcome all PR(s) that improve the project!
 
@@ -267,7 +267,7 @@ Please see the [Contributing Guidelines](/CONTRIBUTING.md) and checkout the
 
 Thank you to all those that have contributed to this project, battle-tested it, used it in their own projects or products, fixed bugs, improved performance and even fix tiny typos in documentation! Thank you and keep contributing!
 
-You can find an [AUTHORS](/AUTHORS) file where we keep a list of contributors to the project. If you contriibute a PR please consider adding your name there. There is also Github's own [Contributors](https://github.com/prologic/twtxt/graphs/contributors) statistics.
+You can find an [AUTHORS](/AUTHORS) file where we keep a list of contributors to the project. If you contriibute a PR please consider adding your name there. There is also Github's own [Contributors](https://github.com/jointwt/twtxt/graphs/contributors) statistics.
 
 [![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/0)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/0)
 [![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/1)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/1)

@@ -23,11 +23,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/unrolled/logger"
 
-	"github.com/prologic/twtxt"
-	"github.com/prologic/twtxt/internal/auth"
-	"github.com/prologic/twtxt/internal/passwords"
-	"github.com/prologic/twtxt/internal/session"
-	"github.com/prologic/twtxt/internal/webmention"
+	"github.com/jointwt/twtxt"
+	"github.com/jointwt/twtxt/internal/auth"
+	"github.com/jointwt/twtxt/internal/passwords"
+	"github.com/jointwt/twtxt/internal/session"
+	"github.com/jointwt/twtxt/internal/webmention"
 )
 
 var (

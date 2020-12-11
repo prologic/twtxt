@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/ssh/terminal"
 
-	"github.com/prologic/twtxt/client"
+	"github.com/jointwt/twtxt/client"
 )
 
 // loginCmd represents the pub command

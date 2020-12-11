@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/creasty/defaults"
-	"github.com/prologic/twtxt/types"
+	"github.com/jointwt/twtxt/types"
 	log "github.com/sirupsen/logrus"
 )
 

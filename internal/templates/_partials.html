@@ -111,7 +111,7 @@
         {{ if $.User.Is $.Twt.Twter.URL }}
           <span class="p-name">me</span>
         {{ else }}
-          <span class="p-name">{{ $.Twt.Twter.Nick }}</span>
+          <span class="p-name">{{ $.Twt.Twter.Nick }}</span><span class="p-org">@{{ $.Twt.Twter.URL | hostnameFromURL}}</span>
         {{ end }}
         <div class="publish-time">
           <a class="u-url" href="/twt/{{ $.Twt.Hash }}">

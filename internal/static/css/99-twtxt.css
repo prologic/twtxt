@@ -230,10 +230,12 @@ video {
   color: #1095c1;
 }
 
+.p-domain {
+  color: var(--muted-text);
+  font-size: 20px;
+}
+
 .author {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
   margin-left: 10px !important;
 }
 

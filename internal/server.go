@@ -454,6 +454,7 @@ func (s *Server) initRoutes() {
 	s.router.GET("/robots.txt", s.RobotsHandler())
 	s.router.HEAD("/robots.txt", s.RobotsHandler())
 
+	s.router.GET("/messages", s.am.MustAuth(s.MessagesHandler()))
 	s.router.GET("/discover", s.am.MustAuth(s.DiscoverHandler()))
 	s.router.GET("/mentions", s.am.MustAuth(s.MentionsHandler()))
 	s.router.GET("/search", s.SearchHandler())

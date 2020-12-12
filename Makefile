@@ -50,9 +50,9 @@ install: build
 ifeq ($(PUBLISH), 1)
 image:
 	@docker build --build-arg VERSION="$(VERSION)" --build-arg COMMIT="$(COMMIT)" -t jointwt/twtxt .
-	# TODO: Migrate to jointwt Docker Hub Org.
-	# @docker push jointwt/twtxt
-	@docker tag -t prologic/twtxt jointwt/twtxt
+	@docker push jointwt/twtxt
+	# TODO: Remove at some point
+	@docker tag jointwt/twtxt prologic/twtxt
 	@docker push prologic/twtxt
 else
 image:

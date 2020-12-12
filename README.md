@@ -1,9 +1,9 @@
 # twtxt
 
 ![GitHub All Releases](https://img.shields.io/github/downloads/jointwt/twtxt/total)
-![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/jointwt/twtxt)
-![Docker Pulls](https://img.shields.io/docker/pulls/jointwt/twtxt)
-![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/jointwt/twtxt)
+![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/prologic/twtxt)
+![Docker Pulls](https://img.shields.io/docker/pulls/prologic/twtxt)
+![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/prologic/twtxt)
 
 ![](https://github.com/jointwt/twtxt/workflows/Coverage/badge.svg)
 ![](https://github.com/jointwt/twtxt/workflows/Docker/badge.svg)

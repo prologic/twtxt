@@ -401,7 +401,7 @@ func (s *Server) DelUserHandler() httprouter.Handle {
 		s.cache.Delete(user.Source())
 
 		// Re-populate/Warm cache with local twts for this pod
-		s.cache.GetByPrefix(s.config.BaseURL().String(), true)
+		s.cache.GetByPrefix(s.config.BaseURLString(), true)
 
 		s.sm.Delete(w, r)
 

@@ -87,7 +87,7 @@ func (c *Config) IsLocalURL(url string) bool {
 	if NormalizeURL(url) == "" {
 		return false
 	}
-	return strings.HasPrefix(NormalizeURL(url), NormalizeURL(c.BaseURL().String()))
+	return strings.HasPrefix(NormalizeURL(url), NormalizeURL(c.BaseURLString()))
 }
 func (c *Config) BaseURL() *url.URL                   { return c.baseURL }
 func (c *Config) BaseURLString() string               { return c.baseURLstring }

@@ -427,7 +427,7 @@ func (a *API) PostEndpoint() httprouter.Handle {
 		a.cache.FetchTwts(a.config, a.archive, user.Source(), nil)
 
 		// Re-populate/Warm cache with local twts for this pod
-		a.cache.GetByPrefix(a.config.BaseURL().String(), true)
+		a.cache.GetByPrefix(a.config.BaseURLString(), true)
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
@@ -499,7 +499,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 			return
 		}
 
-		twts := a.cache.GetByPrefix(a.config.BaseURL().String(), false)
+		twts := a.cache.GetByPrefix(a.config.BaseURLString(), false)
 
 		var pagedTwts types.Twts
 
@@ -613,7 +613,7 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 			return
 		}
 
-		if strings.HasPrefix(url, a.config.BaseURL().String()) {
+		if strings.HasPrefix(url, a.config.BaseURLString()) {
 			url = UserURL(url)
 			nick := NormalizeUsername(filepath.Base(url))
 
@@ -726,7 +726,7 @@ func (a *API) UnfollowEndpoint() httprouter.Handle {
 			return
 		}
 
-		if strings.HasPrefix(url, a.config.BaseURL().String()) {
+		if strings.HasPrefix(url, a.config.BaseURLString()) {
 			url = UserURL(url)
 			nick := NormalizeUsername(filepath.Base(url))
 			followee, err := a.db.GetUser(nick)
@@ -946,7 +946,7 @@ func (a *API) UploadMediaEndpoint() httprouter.Handle {
 				return
 			}
 			uri.Type = "taskURI"
-			uri.Path = URLForTask(a.config.BaseURL().String(), uuid)
+			uri.Path = URLForTask(a.config.BaseURLString(), uuid)
 		}
 
 		if strings.HasPrefix(ctype, "audio/") {
@@ -964,7 +964,7 @@ func (a *API) UploadMediaEndpoint() httprouter.Handle {
 				return
 			}
 			uri.Type = "taskURI"
-			uri.Path = URLForTask(a.config.BaseURL().String(), uuid)
+			uri.Path = URLForTask(a.config.BaseURLString(), uuid)
 		}
 
 		if strings.HasPrefix(ctype, "video/") {
@@ -982,7 +982,7 @@ func (a *API) UploadMediaEndpoint() httprouter.Handle {
 				return
 			}
 			uri.Type = "taskURI"
-			uri.Path = URLForTask(a.config.BaseURL().String(), uuid)
+			uri.Path = URLForTask(a.config.BaseURLString(), uuid)
 		}
 
 		if uri.IsZero() {
@@ -1027,7 +1027,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = user.Profile(a.config.BaseURL().String(), loggedInUser)
+			profile = user.Profile(a.config.BaseURLString(), loggedInUser)
 
 			if loggedInUser == nil {
 				if !user.IsFollowersPubliclyVisible {
@@ -1044,7 +1044,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = feed.Profile(a.config.BaseURL().String(), loggedInUser)
+			profile = feed.Profile(a.config.BaseURLString(), loggedInUser)
 		} else {
 			http.Error(w, "User/Feed not found", http.StatusNotFound)
 			return
@@ -1210,7 +1210,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = user.Profile(a.config.BaseURL().String(), loggedInUser)
+			profile = user.Profile(a.config.BaseURLString(), loggedInUser)
 			twts = a.cache.GetByURL(profile.URL)
 		} else if a.db.HasFeed(nick) {
 			feed, err := a.db.GetFeed(nick)
@@ -1219,7 +1219,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = feed.Profile(a.config.BaseURL().String(), loggedInUser)
+			profile = feed.Profile(a.config.BaseURLString(), loggedInUser)
 
 			twts = a.cache.GetByURL(profile.URL)
 		} else if req.URL != "" {

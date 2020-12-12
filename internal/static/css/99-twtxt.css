@@ -383,6 +383,8 @@ footer small .footer-menu a:last-child::after{
   }
   .u-author.h-card>div{
     flex: 20%;
+    min-width: 60px;
+    min-height: 60px;
   }
   .u-author.h-card>div a{
     display: block;
@@ -403,6 +405,7 @@ footer small .footer-menu a:last-child::after{
   .u-author.h-card .author .p-org{
     font-size: 20px;
     line-height: 25px;
+    white-space: nowrap;
     overflow-wrap: anywhere;
   }
   .u-author.h-card .publish-time{

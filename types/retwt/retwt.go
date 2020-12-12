@@ -77,7 +77,8 @@ func NewReTwt(twter types.Twter, text string, created time.Time) *reTwt {
 }
 
 func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
-	twt = &types.NilTwt{}
+	twt = types.NilTwt
+
 	if line == "" {
 		return
 	}

@@ -2,18 +2,17 @@ package internal
 
 import (
 	"expvar"
-	"fmt"
 	"runtime"
 	"time"
 )
 
-var (
-	stats *expvar.Map
-)
+// var (
+//   stats *expvar.Map
+// )
 
-func init() {
-	stats = NewStats("stats")
-}
+// func init() {
+// 	stats = NewStats("stats")
+// }
 
 // TimeVar ...
 type TimeVar struct{ v time.Time }
@@ -25,7 +24,7 @@ func (o *TimeVar) Set(date time.Time) { o.v = date }
 func (o *TimeVar) Add(duration time.Duration) { o.v = o.v.Add(duration) }
 
 // String ...
-func (o *TimeVar) String() string { return fmt.Sprintf("%s", o.v.Format(time.RFC3339)) }
+func (o *TimeVar) String() string { return o.v.Format(time.RFC3339) }
 
 // NewStats ...
 func NewStats(name string) *expvar.Map {

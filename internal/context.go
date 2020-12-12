@@ -92,6 +92,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		MaxTwtLength:     conf.MaxTwtLength,
 		RegisterDisabled: !conf.OpenRegistrations,
 		OpenProfiles:     conf.OpenProfiles,
+		LastTwt:          types.NilTwt,
 
 		Commit: twtxt.Commit,
 		Theme:  conf.Theme,

@@ -178,6 +178,5 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 		s.render("conversation", w, ctx)
-		return
 	}
 }

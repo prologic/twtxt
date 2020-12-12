@@ -326,7 +326,7 @@ func (job *FixMissingTwtsJob) Run() {
 			_, ok := job.cache.Lookup(twt.Hash())
 			if !ok && !job.archive.Has(twt.Hash()) {
 				log.Infof("inserting missing Twt %s into archive", twt.Hash())
-				job.archive.Archive(twt)
+				_ = job.archive.Archive(twt)
 			}
 		}
 	}

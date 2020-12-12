@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/jointwt/twtxt/internal/session"
+	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 	"github.com/steambap/captcha"
 )
@@ -62,7 +62,7 @@ func (s *Server) SupportHandler() httprouter.Handle {
 		if sess == nil {
 			log.Warn("no session found")
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("no session found, do you have cookies disabled?")
+			ctx.Message = fmt.Sprint("no session found, do you have cookies disabled?")
 			s.render("error", w, ctx)
 			return
 		}
@@ -146,7 +146,7 @@ func (s *Server) ReportHandler() httprouter.Handle {
 
 		// Get captcha text from session
 		captchaText, isCaptchaTextAvailable := sess.(*session.Session).Get("captchaText")
-		if isCaptchaTextAvailable == false {
+		if !isCaptchaTextAvailable {
 			log.Warn("no captcha provided")
 			ctx.Error = true
 			ctx.Message = "no captcha text found"

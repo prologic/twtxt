@@ -121,7 +121,7 @@ func (s *Server) ManageUsersHandler() httprouter.Handle {
 		}
 
 		s.render("manageUsers", w, ctx)
-		return
+
 	}
 }
 

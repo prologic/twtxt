@@ -113,19 +113,21 @@ const (
 	TextFmt
 )
 
-type NilTwt struct{}
+var NilTwt = &nilTwt{}
 
-func (*NilTwt) Twter() Twter         { return Twter{} }
-func (*NilTwt) Text() string         { return "" }
-func (*NilTwt) SetFmtOpts(FmtOpts)   {}
-func (*NilTwt) MarkdownText() string { return "" }
-func (*NilTwt) Created() time.Time   { return time.Now() }
-func (*NilTwt) IsZero() bool         { return false }
-func (*NilTwt) Hash() string         { return "" }
-func (*NilTwt) Subject() string      { return "" }
-func (*NilTwt) Mentions() []Mention  { return nil }
-func (*NilTwt) Tags() []Tag          { return nil }
+type nilTwt struct{}
+
+func (*nilTwt) Twter() Twter         { return Twter{} }
+func (*nilTwt) Text() string         { return "" }
+func (*nilTwt) SetFmtOpts(FmtOpts)   {}
+func (*nilTwt) MarkdownText() string { return "" }
+func (*nilTwt) Created() time.Time   { return time.Now() }
+func (*nilTwt) IsZero() bool         { return false }
+func (*nilTwt) Hash() string         { return "" }
+func (*nilTwt) Subject() string      { return "" }
+func (*nilTwt) Mentions() []Mention  { return nil }
+func (*nilTwt) Tags() []Tag          { return nil }
 
 func init() {
-	gob.Register(&NilTwt{})
+	gob.Register(&nilTwt{})
 }

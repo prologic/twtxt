@@ -42,7 +42,7 @@ func (s *Server) MuteHandler() httprouter.Handle {
 		ctx.Error = false
 		ctx.Message = fmt.Sprintf("Successfully muted %s: %s", nick, url)
 		s.render("error", w, ctx)
-		return
+
 	}
 }
 
@@ -77,6 +77,6 @@ func (s *Server) UnmuteHandler() httprouter.Handle {
 		ctx.Error = false
 		ctx.Message = fmt.Sprintf("Successfully unmuted %s", nick)
 		s.render("error", w, ctx)
-		return
+
 	}
 }

@@ -77,7 +77,7 @@ func LoadBlogsCache(path string) (*BlogsCache, error) {
 	if err != nil {
 		log.WithError(err).Error("error decoding blogs cache (trying OldBlogsCache)")
 
-		f.Seek(0, io.SeekStart)
+		_, _ = f.Seek(0, io.SeekStart)
 		oldcache := make(OldBlogsCache)
 		dec := gob.NewDecoder(f)
 		err = dec.Decode(&oldcache)

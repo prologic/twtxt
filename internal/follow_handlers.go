@@ -132,7 +132,6 @@ func (s *Server) FollowHandler() httprouter.Handle {
 		ctx.Error = false
 		ctx.Message = fmt.Sprintf("Successfully started following %s: %s", nick, url)
 		s.render("error", w, ctx)
-		return
 	}
 }
 
@@ -195,7 +194,7 @@ func (s *Server) ImportHandler() httprouter.Handle {
 		ctx.Error = false
 		ctx.Message = fmt.Sprintf("Successfully imported %d feeds", imported)
 		s.render("error", w, ctx)
-		return
+
 	}
 }
 
@@ -266,6 +265,6 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 		ctx.Error = false
 		ctx.Message = fmt.Sprintf("Successfully stopped following %s: %s", nick, url)
 		s.render("error", w, ctx)
-		return
+
 	}
 }

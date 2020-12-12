@@ -184,7 +184,7 @@ func (s *Server) UserConfigHandler() httprouter.Handle {
 			return
 		}
 
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }
 
@@ -712,7 +712,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 			return
 		}
 
-		var twt types.Twt
+		var twt types.Twt = types.NilTwt
 
 		switch postas {
 		case "", user.Username:
@@ -941,9 +941,11 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			}...)
 		}
 
+		fmt.Println("TWT", twt)
+
 		ctx.Twts = FilterTwts(ctx.User, types.Twts{twt})
 		s.render("permalink", w, ctx)
-		return
+
 	}
 }
 
@@ -1113,7 +1115,7 @@ func (s *Server) FeedHandler() httprouter.Handle {
 		ctx.Error = false
 		ctx.Message = fmt.Sprintf("Successfully created feed: %s", name)
 		s.render("error", w, ctx)
-		return
+
 	}
 }
 
@@ -1215,11 +1217,11 @@ func (s *Server) LoginHandler() httprouter.Handle {
 		}
 
 		// Authorize session
-		sess.(*session.Session).Set("username", username)
+		_ = sess.(*session.Session).Set("username", username)
 
 		// Persist session?
 		if rememberme {
-			sess.(*session.Session).Set("persist", "1")
+			_ = sess.(*session.Session).Set("persist", "1")
 		}
 
 		http.Redirect(w, r, "/", http.StatusFound)
@@ -1361,7 +1363,7 @@ func (s *Server) LookupHandler() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }
 
@@ -1452,7 +1454,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		ctx.Error = false
 		ctx.Message = "Successfully updated settings"
 		s.render("error", w, ctx)
-		return
+
 	}
 }
 
@@ -1474,7 +1476,7 @@ func (s *Server) DeleteTokenHandler() httprouter.Handle {
 		ctx.Message = "Successfully deleted token"
 
 		http.Redirect(w, r, "/settings", http.StatusFound)
-		return
+
 	}
 }
 
@@ -1937,9 +1939,8 @@ func (s *Server) TaskHandler() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 
-		return
 	}
 }
 
@@ -2037,7 +2038,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 			return
 		}
 
-		w.Write([]byte(data))
+		_, _ = w.Write([]byte(data))
 	}
 }
 
@@ -2052,7 +2053,7 @@ func (s *Server) PodConfigHandler() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }
 
@@ -2172,8 +2173,8 @@ func (s *Server) TransferFeedHandler() httprouter.Handle {
 			}
 
 			// Transfer ownerships
-			RemoveFeedOwnership(s.db, fromUser, feed)
-			AddFeedOwnership(s.db, toUser, feed)
+			_ = RemoveFeedOwnership(s.db, fromUser, feed)
+			_ = AddFeedOwnership(s.db, toUser, feed)
 
 			ctx.Error = false
 			ctx.Message = "Feed ownership changed successfully."

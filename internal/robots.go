@@ -44,6 +44,6 @@ func (s *Server) RobotsHandler() httprouter.Handle {
 			return
 		}
 
-		w.Write([]byte(text))
+		_, _ = w.Write([]byte(text))
 	}
 }

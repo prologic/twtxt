@@ -54,7 +54,7 @@ func (cached *Cached) Lookup(hash string) (types.Twt, bool) {
 		}
 	}
 
-	return &types.NilTwt{}, false
+	return types.NilTwt, false
 }
 
 // OldCache ...
@@ -113,7 +113,7 @@ func LoadCache(path string) (*Cache, error) {
 	if err != nil {
 		log.WithError(err).Error("error decoding cache (trying OldCache)")
 
-		f.Seek(0, io.SeekStart)
+		_, _ = f.Seek(0, io.SeekStart)
 		oldcache := make(OldCache)
 		dec := gob.NewDecoder(f)
 		err = dec.Decode(&oldcache)
@@ -313,7 +313,7 @@ func (cache *Cache) Lookup(hash string) (types.Twt, bool) {
 			return twt, true
 		}
 	}
-	return &types.NilTwt{}, false
+	return types.NilTwt, false
 }
 
 func (cache *Cache) Count() int {

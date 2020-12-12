@@ -196,8 +196,7 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 		if uri.Type == "taskURI" {
 			w.WriteHeader(http.StatusAccepted)
 		}
-		w.Write(data)
+		_, _ = w.Write(data)
 
-		return
 	}
 }

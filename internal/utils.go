@@ -1592,7 +1592,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 
 				html := PreprocessMedia(conf, u, string(image.Title))
 
-				io.WriteString(w, html)
+				_, _ = io.WriteString(w, html)
 
 				return ast.SkipChildren, true
 			}
@@ -1627,7 +1627,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 
 				html := PreprocessMedia(conf, u, alt)
 
-				io.WriteString(w, html)
+				_, _ = io.WriteString(w, html)
 
 				return ast.GoToNext, true
 			}

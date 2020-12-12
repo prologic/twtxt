@@ -106,20 +106,20 @@ func AppendSpecial(conf *Config, db Store, specialUsername, text string, args ..
 func AppendTwt(conf *Config, db Store, user *User, text string, args ...interface{}) (types.Twt, error) {
 	text = strings.TrimSpace(text)
 	if text == "" {
-		return &types.NilTwt{}, fmt.Errorf("cowardly refusing to twt empty text, or only spaces")
+		return types.NilTwt, fmt.Errorf("cowardly refusing to twt empty text, or only spaces")
 	}
 
 	p := filepath.Join(conf.Data, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
-		return &types.NilTwt{}, err
+		return types.NilTwt, err
 	}
 
 	fn := filepath.Join(p, user.Username)
 
 	f, err := os.OpenFile(fn, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		return &types.NilTwt{}, err
+		return types.NilTwt, err
 	}
 	defer f.Close()
 
@@ -138,12 +138,12 @@ func AppendTwt(conf *Config, db Store, user *User, text string, args ...interfac
 	)
 
 	if _, err = f.WriteString(line); err != nil {
-		return &types.NilTwt{}, err
+		return types.NilTwt, err
 	}
 
 	twt, err := retwt.ParseLine(strings.TrimSpace(line), user.Twter())
 	if err != nil {
-		return &types.NilTwt{}, err
+		return types.NilTwt, err
 	}
 
 	return twt, nil
@@ -161,7 +161,7 @@ func FeedExists(conf *Config, username string) bool {
 }
 
 func GetLastTwt(conf *Config, user *User) (twt types.Twt, offset int, err error) {
-	twt = &types.NilTwt{}
+	twt = types.NilTwt
 
 	p := filepath.Join(conf.Data, feedsDir)
 	if err = os.MkdirAll(p, 0755); err != nil {

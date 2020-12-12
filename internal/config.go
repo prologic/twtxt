@@ -78,7 +78,7 @@ type Config struct {
 	whitelistedDomains []*regexp.Regexp
 	WhitelistedDomains []string
 
-	path string
+	// path string
 }
 
 var _ types.FmtOpts = (*Config)(nil)

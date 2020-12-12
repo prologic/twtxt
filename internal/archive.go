@@ -47,7 +47,7 @@ func NewNullArchiver() (Archiver, error) {
 
 func (a *NullArchiver) Del(hash string) error              { return nil }
 func (a *NullArchiver) Has(hash string) bool               { return false }
-func (a *NullArchiver) Get(hash string) (types.Twt, error) { return &types.NilTwt{}, nil }
+func (a *NullArchiver) Get(hash string) (types.Twt, error) { return types.NilTwt, nil }
 func (a *NullArchiver) Archive(twt types.Twt) error        { return nil }
 func (a *NullArchiver) Count() (int, error)                { return 0, nil }
 
@@ -121,18 +121,18 @@ func (a *DiskArchiver) Get(hash string) (types.Twt, error) {
 	fn, err := a.makePath(hash)
 	if err != nil {
 		log.WithError(err).Errorf("error computing archive file for twt %s", hash)
-		return &types.NilTwt{}, err
+		return types.NilTwt, err
 	}
 
 	if !a.fileExists(fn) {
 		log.Warnf("twt %s not found in archive", hash)
-		return &types.NilTwt{}, ErrTwtNotArchived
+		return types.NilTwt, ErrTwtNotArchived
 	}
 
 	data, err := ioutil.ReadFile(fn)
 	if err != nil {
 		log.WithError(err).Errorf("error reading archived twt %s", hash)
-		return &types.NilTwt{}, err
+		return types.NilTwt, err
 	}
 
 	var jsonTwt = struct {
@@ -143,7 +143,7 @@ func (a *DiskArchiver) Get(hash string) (types.Twt, error) {
 
 	if err := json.Unmarshal(data, &jsonTwt); err != nil {
 		log.WithError(err).Errorf("error decoding archived twt %s", hash)
-		return &types.NilTwt{}, err
+		return types.NilTwt, err
 	}
 
 	return retwt.NewReTwt(jsonTwt.Twter, jsonTwt.Text, jsonTwt.Created), nil

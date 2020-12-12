@@ -227,7 +227,7 @@ func (a *API) isAuthorized(endpoint httprouter.Handle) httprouter.Handle {
 func (a *API) PingEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
+		_, _ = w.Write([]byte(`{}`))
 	}
 }
 
@@ -379,7 +379,7 @@ func (a *API) AuthEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(body)
+		_, _ = w.Write(body)
 	}
 }
 
@@ -431,7 +431,7 @@ func (a *API) PostEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
+		_, _ = w.Write([]byte(`{}`))
 	}
 }
 
@@ -483,7 +483,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(body)
+		_, _ = w.Write(body)
 	}
 }
 
@@ -529,7 +529,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(body)
+		_, _ = w.Write(body)
 	}
 }
 
@@ -576,7 +576,7 @@ func (a *API) MentionsEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(body)
+		_, _ = w.Write(body)
 	}
 }
 
@@ -682,7 +682,7 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
+		_, _ = w.Write([]byte(`{}`))
 	}
 }
 
@@ -756,7 +756,7 @@ func (a *API) UnfollowEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
+		_, _ = w.Write([]byte(`{}`))
 	}
 }
 
@@ -777,7 +777,7 @@ func (a *API) SettingsEndpoint() httprouter.Handle {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			w.Write(data)
+			_, _ = w.Write(data)
 			return
 		}
 
@@ -846,8 +846,7 @@ func (a *API) SettingsEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
-		return
+		_, _ = w.Write([]byte(`{}`))
 	}
 }
 
@@ -892,9 +891,7 @@ func (a *API) OldUploadMediaEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
-
-		return
+		_, _ = w.Write(data)
 	}
 }
 
@@ -1004,9 +1001,7 @@ func (a *API) UploadMediaEndpoint() httprouter.Handle {
 		if uri.Type == "taskURI" {
 			w.WriteHeader(http.StatusAccepted)
 		}
-		w.Write(data)
-
-		return
+		_, _ = w.Write(data)
 	}
 }
 
@@ -1095,7 +1090,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }
 
@@ -1183,7 +1178,7 @@ func (a *API) ConversationEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }
 
@@ -1267,7 +1262,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }
 
@@ -1320,7 +1315,7 @@ func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }
 
@@ -1354,8 +1349,8 @@ func (a *API) MuteEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
-		return
+		_, _ = w.Write([]byte(`{}`))
+
 	}
 }
 
@@ -1388,8 +1383,7 @@ func (a *API) UnmuteEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
-		return
+		_, _ = w.Write([]byte(`{}`))
 	}
 }
 
@@ -1419,8 +1413,8 @@ func (a *API) SupportEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
-		return
+		_, _ = w.Write([]byte(`{}`))
+
 	}
 }
 
@@ -1455,8 +1449,8 @@ func (a *API) ReportEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
-		return
+		_, _ = w.Write([]byte(`{}`))
+
 	}
 }
 
@@ -1471,6 +1465,6 @@ func (a *API) PodConfigEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }

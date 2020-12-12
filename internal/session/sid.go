@@ -31,7 +31,7 @@ func NewSessionID(signingKey string) (ID, error) {
 	}
 
 	mac := hmac.New(sha256.New, []byte(signingKey))
-	mac.Write(buf[:idLength])
+	_, _ = mac.Write(buf[:idLength])
 	sig := mac.Sum(nil)
 	copy(buf[idLength:], sig)
 
@@ -51,7 +51,7 @@ func ValidateSessionID(id string, signingKey string) (ID, error) {
 	}
 
 	mac := hmac.New(sha256.New, []byte(signingKey))
-	mac.Write(buf[:idLength])
+	_, _ = mac.Write(buf[:idLength])
 	messageMAC := mac.Sum(nil)
 	if !hmac.Equal(messageMAC, buf[idLength:]) {
 		return InvalidSessionID, ErrInvalidID

@@ -21,21 +21,21 @@ func TestDispatcher_Dispatch(t *testing.T) {
 	d := NewDispatcher(10, 3)
 	d.Start()
 
-	d.DispatchFunc(func() error {
+	_, _ = d.DispatchFunc(func() error {
 		aMu.Lock()
 		a = 1
 		aMu.Unlock()
 		return nil
 	})
 
-	d.DispatchFunc(func() error {
+	_, _ = d.DispatchFunc(func() error {
 		bMu.Lock()
 		b = 2
 		bMu.Unlock()
 		return nil
 	})
 
-	d.DispatchFunc(func() error {
+	_, _ = d.DispatchFunc(func() error {
 		cMu.Lock()
 		c = 3
 		cMu.Unlock()
@@ -67,7 +67,7 @@ func TestDispatcher_Dispatch_Mutex(t *testing.T) {
 	var v []int
 
 	for i := 0; i < n; i++ {
-		d.DispatchFunc(func() error {
+		_, _ = d.DispatchFunc(func() error {
 			mu.Lock()
 			v = append(v, 0)
 			mu.Unlock()
@@ -89,7 +89,7 @@ func TestDispatcher_Stop(t *testing.T) {
 	d := NewDispatcher(1, 3)
 	d.Start()
 
-	d.DispatchFunc(func() error {
+	_, _ = d.DispatchFunc(func() error {
 		mu.Lock()
 		c++
 		mu.Unlock()

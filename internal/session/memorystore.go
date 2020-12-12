@@ -27,7 +27,7 @@ func NewMemoryStore(sessionDuration time.Duration) *MemoryStore {
 func (s *MemoryStore) GetSession(sid string) (*Session, error) {
 	val, found := s.entries.Get(sid)
 	if !found {
-
+		return nil, ErrSessionNotFound
 	}
 	sess := val.(*Session)
 	return sess, nil

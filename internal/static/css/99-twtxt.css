@@ -235,6 +235,7 @@ video {
   font-weight: 100;
   color: var(--muted-text);
   margin-top: 18px;
+  white-space: nowrap;
 }
 
 .author {
@@ -375,10 +376,7 @@ footer small .footer-menu a:last-child::after{
 
   /* Name off timeline author */
   .u-author.h-card{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
+    display: inline;
     margin-bottom: 10px;
   }
   .u-author.h-card>div{

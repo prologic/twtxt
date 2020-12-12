@@ -235,6 +235,7 @@ video {
   font-weight: 100;
   color: var(--muted-text);
   margin-top: 18px;
+  white-space: nowrap;
 }
 
 .author {
@@ -375,14 +376,13 @@ footer small .footer-menu a:last-child::after{
 
   /* Name off timeline author */
   .u-author.h-card{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
+    display: inline;
     margin-bottom: 10px;
   }
   .u-author.h-card>div{
     flex: 20%;
+    min-width: 60px;
+    min-height: 60px;
   }
   .u-author.h-card>div a{
     display: block;
@@ -403,6 +403,7 @@ footer small .footer-menu a:last-child::after{
   .u-author.h-card .author .p-org{
     font-size: 20px;
     line-height: 25px;
+    white-space: nowrap;
     overflow-wrap: anywhere;
   }
   .u-author.h-card .publish-time{

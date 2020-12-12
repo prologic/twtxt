@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/jointwt/twtxt"
-	client "github.com/prologic/twtxt/client"
+	"github.com/jointwt/twtxt/client"
 )
 
 var configFile string

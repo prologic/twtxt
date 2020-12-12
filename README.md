@@ -1,6 +1,6 @@
 # twtxt
 
-![GitHub All Releases](https://img.shields.io/github/downloads/prologic/twtxt/total)
+![GitHub All Releases](https://img.shields.io/github/downloads/jointwt/twtxt/total)
 ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/prologic/twtxt)
 ![Docker Pulls](https://img.shields.io/docker/pulls/prologic/twtxt)
 ![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/prologic/twtxt)
@@ -10,10 +10,10 @@
 ![](https://github.com/jointwt/twtxt/workflows/Go/badge.svg)
 ![](https://github.com/jointwt/twtxt/workflows/ReviewDog/badge.svg)
 
-[![Go Report Card](https://goreportcard.com/badge/prologic/twtxt)](https://goreportcard.com/report/prologic/twtxt)
+[![Go Report Card](https://goreportcard.com/badge/jointwt/twtxt)](https://goreportcard.com/report/jointwt/twtxt)
 [![codebeat badge](https://codebeat.co/badges/15fba8a5-3044-4f40-936f-9e0f5d5d1fd9)](https://codebeat.co/projects/github-com-prologic-twtxt-master)
 [![GoDoc](https://godoc.org/github.com/jointwt/twtxt?status.svg)](https://godoc.org/github.com/jointwt/twtxt)
-[![GitHub license](https://img.shields.io/github/license/prologic/twtxt.svg)](https://github.com/jointwt/twtxt)
+[![GitHub license](https://img.shields.io/github/license/jointwt/twtxt.svg)](https://github.com/jointwt/twtxt)
 
 📕 twtxt is a Self-Hosted, Twitter™-like Decentralised micro-Blogging platform. No ads, no tracking, your content, your data!
 
@@ -56,7 +56,7 @@ We provide [Homebrew](https://brew.sh) formulae for macOS users for both the
 command-line client (`twt`) as well as the server (`twtd`).
 
 ```console
-brew tap prologic/twtxt
+brew tap jointwt/twtxt
 brew install twtxt
 ```
 
@@ -269,14 +269,14 @@ Thank you to all those that have contributed to this project, battle-tested it, 
 
 You can find an [AUTHORS](/AUTHORS) file where we keep a list of contributors to the project. If you contriibute a PR please consider adding your name there. There is also Github's own [Contributors](https://github.com/jointwt/twtxt/graphs/contributors) statistics.
 
-[![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/0)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/0)
-[![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/1)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/1)
-[![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/2)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/2)
-[![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/3)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/3)
-[![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/4)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/4)
-[![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/5)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/5)
-[![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/6)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/6)
-[![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/7)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/7)
+[![](https://sourcerer.io/fame/prologic/jointwt/twtxt/images/0)](https://sourcerer.io/fame/prologic/jointwt/twtxt/links/0)
+[![](https://sourcerer.io/fame/prologic/jointwt/twtxt/images/1)](https://sourcerer.io/fame/prologic/jointwt/twtxt/links/1)
+[![](https://sourcerer.io/fame/prologic/jointwt/twtxt/images/2)](https://sourcerer.io/fame/prologic/jointwt/twtxt/links/2)
+[![](https://sourcerer.io/fame/prologic/jointwt/twtxt/images/3)](https://sourcerer.io/fame/prologic/jointwt/twtxt/links/3)
+[![](https://sourcerer.io/fame/prologic/jointwt/twtxt/images/4)](https://sourcerer.io/fame/prologic/jointwt/twtxt/links/4)
+[![](https://sourcerer.io/fame/prologic/jointwt/twtxt/images/5)](https://sourcerer.io/fame/prologic/jointwt/twtxt/links/5)
+[![](https://sourcerer.io/fame/prologic/jointwt/twtxt/images/6)](https://sourcerer.io/fame/prologic/jointwt/twtxt/links/6)
+[![](https://sourcerer.io/fame/prologic/jointwt/twtxt/images/7)](https://sourcerer.io/fame/prologic/jointwt/twtxt/links/7)
 
 ## Stargazers over time
 

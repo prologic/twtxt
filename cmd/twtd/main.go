@@ -15,7 +15,7 @@ import (
 	profiler "github.com/wblakecaldwell/profiler"
 
 	"github.com/jointwt/twtxt"
-	internal "github.com/jointwt/twtxt/internal"
+	"github.com/jointwt/twtxt/internal"
 )
 
 var (

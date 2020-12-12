@@ -3,7 +3,7 @@ version: "3.8"
 
 services:
   twtxt:
-    image: prologic/twtxt:latest
+    image: jointwt/twtxt:latest
     command: -d /data -r -s bitcask:///data/twtxt.db -u https://twtxt.net
     environment:
       - COOKIE_SECRET=PLEASE_CHANGE_ME_TO_A_64_BYTE_RANDOM_STRING

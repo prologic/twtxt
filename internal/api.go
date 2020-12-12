@@ -66,6 +66,7 @@ func (a *API) initRoutes() {
 	router.GET("/ping", a.PingEndpoint())
 	router.POST("/auth", a.AuthEndpoint())
 	router.POST("/register", a.RegisterEndpoint())
+	router.POST("/config", a.PodConfigEndpoint())
 
 	router.POST("/post", a.isAuthorized(a.PostEndpoint()))
 	router.POST("/upload", a.isAuthorized(a.UploadMediaEndpoint()))
@@ -1457,5 +1458,20 @@ func (a *API) ReportEndpoint() httprouter.Handle {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{}`))
 		return
+	}
+}
+
+// PodConfigEndpoint ...
+func (a *API) PodConfigEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		data, err := json.Marshal(a.config.Settings())
+		if err != nil {
+			log.WithError(err).Error("error serializing pod config response")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
 	}
 }

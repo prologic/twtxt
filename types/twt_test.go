@@ -1,10 +1,12 @@
-package types
+package types_test
 
 import (
 	"fmt"
 	"testing"
 	"time"
 
+	"github.com/jointwt/twtxt/types"
+	"github.com/jointwt/twtxt/types/retwt"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -75,7 +77,7 @@ func TestSubject(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.String(), func(t *testing.T) {
-			twt := Twt{Twter: Twter{}, Text: testCase.Input, Created: time.Now()}
+			twt := retwt.NewReTwt(types.Twter{}, testCase.Input, time.Now())
 			if testCase.Expected == "" {
 				assert.Equal(fmt.Sprintf("(#%s)", twt.Hash()), twt.Subject())
 			} else {
@@ -88,7 +90,7 @@ func TestSubject(t *testing.T) {
 func TestHash(t *testing.T) {
 	assert := assert.New(t)
 
-	CET := time.FixedZone("UTC+1", 1 * 60 * 60)
+	CET := time.FixedZone("UTC+1", 1*60*60)
 	testCases := []struct {
 		name     string
 		created  time.Time
@@ -119,11 +121,11 @@ func TestHash(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			twt := Twt{
-					Twter:   Twter{URL: "https://example.com/twtxt.txt"},
-					Text:    "The twt hash now uses the RFC 3339 timestamp format.",
-					Created: testCase.created,
-			}
+			twt := retwt.NewReTwt(
+				types.Twter{URL: "https://example.com/twtxt.txt"},
+				"The twt hash now uses the RFC 3339 timestamp format.",
+				testCase.created,
+			)
 			assert.Equal(testCase.expected, twt.Hash())
 		})
 	}

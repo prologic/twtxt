@@ -477,7 +477,7 @@ func (u *User) Filter(twts []types.Twt) (filtered []types.Twt) {
 	}
 
 	for _, twt := range twts {
-		if u.HasMuted(twt.Twter.URL) {
+		if u.HasMuted(twt.Twter().URL) {
 			continue
 		}
 		filtered = append(filtered, twt)
@@ -487,13 +487,14 @@ func (u *User) Filter(twts []types.Twt) (filtered []types.Twt) {
 
 func (u *User) Reply(twt types.Twt) string {
 	mentionsSet := make(map[string]bool)
-	for _, twter := range twt.Mentions() {
+	for _, m := range twt.Mentions() {
+		twter := m.Twter()
 		if _, ok := mentionsSet[twter.Nick]; !ok && twter.Nick != u.Username {
 			mentionsSet[twter.Nick] = true
 		}
 	}
 
-	mentions := []string{fmt.Sprintf("@%s", twt.Twter.Nick)}
+	mentions := []string{fmt.Sprintf("@%s", twt.Twter().Nick)}
 	for nick := range mentionsSet {
 		mentions = append(mentions, fmt.Sprintf("@%s", nick))
 	}

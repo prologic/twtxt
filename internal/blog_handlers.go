@@ -11,8 +11,8 @@ import (
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
-	"github.com/julienschmidt/httprouter"
 	"github.com/jointwt/twtxt/types"
+	"github.com/julienschmidt/httprouter"
 	"github.com/securisec/go-keywords"
 	log "github.com/sirupsen/logrus"
 	"github.com/vcraescu/go-paginator"
@@ -38,7 +38,8 @@ func (s *Server) BlogHandler() httprouter.Handle {
 			seen := make(map[string]bool)
 			// TODO: Improve this by making this an O(1) lookup on the tag
 			for _, twt := range s.cache.GetAll() {
-				if HasString(UniqStrings(twt.Tags()), tag) && !seen[twt.Hash()] {
+				var tags types.TagList = twt.Tags()
+				if HasString(UniqStrings(tags.Tags()), tag) && !seen[twt.Hash()] {
 					result = append(result, twt)
 					seen[twt.Hash()] = true
 				}
@@ -96,28 +97,29 @@ func (s *Server) BlogHandler() httprouter.Handle {
 		html := markdown.ToHTML(blogPost.Bytes(), mdParser, renderer)
 
 		twt := twts[0]
-		who := fmt.Sprintf("%s %s", twt.Twter.Nick, twt.Twter.URL)
-		when := twt.Created.Format(time.RFC3339)
-		what := twt.Text
+		who := fmt.Sprintf("%s %s", twt.Twter().Nick, twt.Twter().URL)
+		when := twt.Created().Format(time.RFC3339)
+		what := twt.Text()
 
 		var ks []string
 		if ks, err = keywords.Extract(what); err != nil {
 			log.WithError(err).Warn("error extracting keywords")
 		}
 
-		for _, twter := range twt.Mentions() {
-			ks = append(ks, twter.Nick)
+		for _, m := range twt.Mentions() {
+			ks = append(ks, m.Twter().Nick)
 		}
-		ks = append(ks, twt.Tags()...)
+		var tags types.TagList = twt.Tags()
+		ks = append(ks, tags.Tags()...)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("Last-Modified", blogPost.Modified().Format(http.TimeFormat))
-		if strings.HasPrefix(twt.Twter.URL, s.config.BaseURL) {
+		if strings.HasPrefix(twt.Twter().URL, s.config.BaseURL().String()) {
 			w.Header().Set(
 				"Link",
 				fmt.Sprintf(
 					`<%s/user/%s/webmention>; rel="webmention"`,
-					s.config.BaseURL, twt.Twter.Nick,
+					s.config.BaseURL().String(), twt.Twter().Nick,
 				),
 			)
 		}
@@ -138,21 +140,21 @@ func (s *Server) BlogHandler() httprouter.Handle {
 			Description: what,
 			Keywords:    strings.Join(ks, ", "),
 		}
-		if strings.HasPrefix(twt.Twter.URL, s.config.BaseURL) {
+		if strings.HasPrefix(twt.Twter().URL, s.config.BaseURL().String()) {
 			ctx.Links = append(ctx.Links, types.Link{
-				Href: fmt.Sprintf("%s/webmention", UserURL(twt.Twter.URL)),
+				Href: fmt.Sprintf("%s/webmention", UserURL(twt.Twter().URL)),
 				Rel:  "webmention",
 			})
 			ctx.Alternatives = append(ctx.Alternatives, types.Alternatives{
 				types.Alternative{
 					Type:  "text/plain",
-					Title: fmt.Sprintf("%s's Twtxt Feed", twt.Twter.Nick),
-					URL:   twt.Twter.URL,
+					Title: fmt.Sprintf("%s's Twtxt Feed", twt.Twter().Nick),
+					URL:   twt.Twter().URL,
 				},
 				types.Alternative{
 					Type:  "application/atom+xml",
-					Title: fmt.Sprintf("%s's Atom Feed", twt.Twter.Nick),
-					URL:   fmt.Sprintf("%s/atom.xml", UserURL(twt.Twter.URL)),
+					Title: fmt.Sprintf("%s's Atom Feed", twt.Twter().Nick),
+					URL:   fmt.Sprintf("%s/atom.xml", UserURL(twt.Twter().URL)),
 				},
 			}...)
 		}
@@ -247,7 +249,7 @@ func (s *Server) BlogsHandler() httprouter.Handle {
 				s.render("error", w, ctx)
 				return
 			}
-			profile = user.Profile(s.config.BaseURL, ctx.User)
+			profile = user.Profile(s.config.BaseURL().String(), ctx.User)
 		} else if s.db.HasFeed(author) {
 			feed, err := s.db.GetFeed(author)
 			if err != nil {
@@ -257,7 +259,7 @@ func (s *Server) BlogsHandler() httprouter.Handle {
 				s.render("error", w, ctx)
 				return
 			}
-			profile = feed.Profile(s.config.BaseURL, ctx.User)
+			profile = feed.Profile(s.config.BaseURL().String(), ctx.User)
 		} else {
 			ctx.Error = true
 			ctx.Message = "No author found by that name"
@@ -369,7 +371,7 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 				s.render("error", w, ctx)
 				return
 			}
-			http.Redirect(w, r, blogPost.URL(s.config.BaseURL), http.StatusFound)
+			http.Redirect(w, r, blogPost.URL(s.config.BaseURL().String()), http.StatusFound)
 			return
 		}
 
@@ -412,7 +414,7 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 
 		summary := fmt.Sprintf(
 			"(#%s) New Blog Post [%s](%s) by @%s 📝",
-			blogPost.Hash(), blogPost.Title, blogPost.URL(s.config.BaseURL), blogPost.Author,
+			blogPost.Hash(), blogPost.Title, blogPost.URL(s.config.BaseURL().String()), blogPost.Author,
 		)
 
 		var twt types.Twt
@@ -447,7 +449,7 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 		s.cache.FetchTwts(s.config, s.archive, user.Source(), nil)
 
 		// Re-populate/Warm cache with local twts for this pod
-		s.cache.GetByPrefix(s.config.BaseURL, true)
+		s.cache.GetByPrefix(s.config.BaseURL().String(), true)
 
 		http.Redirect(w, r, RedirectURL(r, s.config, "/"), http.StatusFound)
 	}

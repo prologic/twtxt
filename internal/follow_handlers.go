@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/jointwt/twtxt"
+	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -54,7 +54,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 			return
 		}
 
-		if strings.HasPrefix(url, s.config.BaseURL) {
+		if strings.HasPrefix(url, s.config.BaseURL().String()) {
 			url = UserURL(url)
 			nick := NormalizeUsername(filepath.Base(url))
 
@@ -235,7 +235,7 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 			return
 		}
 
-		if strings.HasPrefix(url, s.config.BaseURL) {
+		if strings.HasPrefix(url, s.config.BaseURL().String()) {
 			url = UserURL(url)
 			nick := NormalizeUsername(filepath.Base(url))
 			followee, err := s.db.GetUser(nick)

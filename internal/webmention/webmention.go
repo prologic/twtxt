@@ -29,12 +29,12 @@ func New() *WebMention {
 	wm.inboxTimer = time.NewTimer(5 * time.Second)
 	wm.outboxTimer = time.NewTimer(5 * time.Second)
 	go func() {
-		for _ = range wm.inboxTimer.C {
+		for range wm.inboxTimer.C {
 			wm.processInbox()
 		}
 	}()
 	go func() {
-		for _ = range wm.outboxTimer.C {
+		for range wm.outboxTimer.C {
 			wm.processOutbox()
 		}
 	}()
@@ -167,7 +167,6 @@ func (wm *WebMention) processOutbox() {
 		"successfully sent webmention to %s (source=%s target=%s)",
 		endpoint.String(), mention.source.String(), mention.target.String(),
 	)
-	return
 }
 
 func searchLinks(node *html.Node, link *url.URL) bool {

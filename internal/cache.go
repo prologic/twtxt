@@ -18,6 +18,7 @@ import (
 
 	"github.com/jointwt/twtxt"
 	"github.com/jointwt/twtxt/types"
+	"github.com/jointwt/twtxt/types/retwt"
 )
 
 const (
@@ -33,7 +34,7 @@ type Cached struct {
 }
 
 // Lookup ...
-func (cached Cached) Lookup(hash string) (types.Twt, bool) {
+func (cached *Cached) Lookup(hash string) (types.Twt, bool) {
 	cached.mu.RLock()
 	twt, ok := cached.cache[hash]
 	cached.mu.RUnlock()
@@ -53,16 +54,16 @@ func (cached Cached) Lookup(hash string) (types.Twt, bool) {
 		}
 	}
 
-	return types.Twt{}, false
+	return &types.NilTwt{}, false
 }
 
 // OldCache ...
-type OldCache map[string]Cached
+type OldCache map[string]*Cached
 
 // Cache ...
 type Cache struct {
 	mu   sync.RWMutex
-	Twts map[string]Cached
+	Twts map[string]*Cached
 }
 
 // Store ...
@@ -94,7 +95,7 @@ func (cache *Cache) Store(path string) error {
 // LoadCache ...
 func LoadCache(path string) (*Cache, error) {
 	cache := &Cache{
-		Twts: make(map[string]Cached),
+		Twts: make(map[string]*Cached),
 	}
 
 	f, err := os.Open(filepath.Join(path, feedCacheFile))
@@ -184,7 +185,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 						followersString = fmt.Sprintf(
 							"%s and %d more... %s",
 							strings.Join(feedFollowers[:5], " "),
-							(len(feedFollowers) - 5), URLForWhoFollows(conf.BaseURL, feed),
+							(len(feedFollowers) - 5), URLForWhoFollows(conf.BaseURLString(), feed),
 						)
 					} else {
 						followersString = strings.Join(feedFollowers, " ")
@@ -195,7 +196,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 						fmt.Sprintf(
 							"twtxt/%s (Pod: %s Followers: %s Support: %s)",
 							twtxt.FullVersion(), conf.Name,
-							followersString, URLForPage(conf.BaseURL, "support"),
+							followersString, URLForPage(conf.BaseURLString(), "support"),
 						),
 					)
 				}
@@ -236,7 +237,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 				limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
 				scanner := bufio.NewScanner(limitedReader)
 				twter := types.Twter{Nick: feed.Nick}
-				if strings.HasPrefix(feed.URL, conf.BaseURL) {
+				if strings.HasPrefix(feed.URL, conf.BaseURLString()) {
 					twter.URL = URLForUser(conf, feed.Nick)
 					twter.Avatar = URLForAvatar(conf, feed.Nick)
 				} else {
@@ -246,7 +247,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 						twter.Avatar = URLForExternalAvatar(conf, feed.URL)
 					}
 				}
-				twts, old, err := ParseFile(scanner, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
+				twts, old, err := retwt.ParseFile(scanner, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
 				if err != nil {
 					log.WithError(err).Errorf("error parsing feed %s", feed)
 					twtsch <- nil
@@ -267,7 +268,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 
 				lastmodified := res.Header.Get("Last-Modified")
 				cache.mu.Lock()
-				cache.Twts[feed.URL] = Cached{
+				cache.Twts[feed.URL] = &Cached{
 					cache:        make(map[string]types.Twt),
 					Twts:         twts,
 					Lastmodified: lastmodified,
@@ -312,7 +313,7 @@ func (cache *Cache) Lookup(hash string) (types.Twt, bool) {
 			return twt, true
 		}
 	}
-	return types.Twt{}, false
+	return &types.NilTwt{}, false
 }
 
 func (cache *Cache) Count() int {
@@ -342,8 +343,8 @@ func (cache *Cache) GetMentions(u *User) (twts types.Twts) {
 
 	// Search for @mentions in the cache against all Twts (local, followed and even external if any)
 	for _, twt := range cache.GetAll() {
-		for _, twter := range twt.Mentions() {
-			if u.Is(twter.URL) && !seen[twt.Hash()] {
+		for _, mention := range twt.Mentions() {
+			if u.Is(mention.Twter().URL) && !seen[twt.Hash()] {
 				twts = append(twts, twt)
 				seen[twt.Hash()] = true
 			}
@@ -376,7 +377,7 @@ func (cache *Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 	sort.Sort(twts)
 
 	cache.mu.Lock()
-	cache.Twts[key] = Cached{
+	cache.Twts[key] = &Cached{
 		cache:        make(map[string]types.Twt),
 		Twts:         twts,
 		Lastmodified: time.Now().Format(time.RFC3339),

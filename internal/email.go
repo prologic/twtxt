@@ -34,7 +34,7 @@ Kind regards,
 {{ .Name }} <{{ .Email }} from {{ .Pod }} has sent the following support request:
 
 > Subject: {{ .Subject }}
-> 
+>
 {{ .Message }}
 
 Kind regards,
@@ -47,7 +47,7 @@ Kind regards,
 {{ .Name }} <{{ .Email }} from {{ .Pod }} has sent the following abuse report:
 
 > Category: {{ .Category }}
-> 
+>
 {{ .Message }}
 
 The offending user/feed in question is:
@@ -135,7 +135,7 @@ func SendPasswordResetEmail(conf *Config, user *User, email, token string) error
 	)
 	ctx := PasswordResetEmailContext{
 		Pod:     conf.Name,
-		BaseURL: conf.BaseURL,
+		BaseURL: conf.BaseURLString(),
 
 		Token:    token,
 		Username: user.Username,

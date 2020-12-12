@@ -22,7 +22,7 @@ type FeedSource struct {
 type FeedSourceMap map[string][]FeedSource
 
 type FeedSources struct {
-	Sources FeedSourceMap `"json:sources"`
+	Sources FeedSourceMap `json:"sources"`
 }
 
 func SaveFeedSources(feedsources *FeedSources, path string) error {

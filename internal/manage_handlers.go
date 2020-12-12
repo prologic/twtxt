@@ -269,7 +269,7 @@ func (s *Server) DelUserHandler() httprouter.Handle {
 								return
 							}
 
-							mediaPaths := GetMediaNamesFromText(twt.Text)
+							mediaPaths := GetMediaNamesFromText(twt.Text())
 
 							// Remove all uploaded media in a twt
 							for _, mediaPath := range mediaPaths {
@@ -342,7 +342,7 @@ func (s *Server) DelUserHandler() httprouter.Handle {
 				return
 			}
 
-			mediaPaths := GetMediaNamesFromText(twt.Text)
+			mediaPaths := GetMediaNamesFromText(twt.Text())
 
 			// Remove all uploaded media in a twt
 			for _, mediaPath := range mediaPaths {
@@ -401,7 +401,7 @@ func (s *Server) DelUserHandler() httprouter.Handle {
 		s.cache.Delete(user.Source())
 
 		// Re-populate/Warm cache with local twts for this pod
-		s.cache.GetByPrefix(s.config.BaseURL, true)
+		s.cache.GetByPrefix(s.config.BaseURL().String(), true)
 
 		s.sm.Delete(w, r)
 

@@ -8,7 +8,7 @@ import (
 )
 
 func TestFormatMentionsAndTags(t *testing.T) {
-	conf := &Config{BaseURL: "http://0.0.0.0:8000"}
+	conf := &Config{baseURLstring: "http://0.0.0.0:8000"}
 
 	testCases := []struct {
 		text     string

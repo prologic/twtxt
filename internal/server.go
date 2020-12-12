@@ -668,7 +668,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		session.NewOptions(
 			config.Name,
 			config.CookieSecret,
-			strings.HasPrefix(config.BaseURL, "https"),
+			config.BaseURL().Scheme == "https",
 			config.SessionExpiry,
 		),
 		sc,
@@ -740,11 +740,11 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("started webmentions processor")
 
 	server.setupMetrics()
-	log.Infof("serving metrics endpoint at %s/metrics", server.config.BaseURL)
+	log.Infof("serving metrics endpoint at %s/metrics", server.config.BaseURLString())
 
 	// Log interesting configuration options
 	log.Infof("Instance Name: %s", server.config.Name)
-	log.Infof("Base URL: %s", server.config.BaseURL)
+	log.Infof("Base URL: %s", server.config.BaseURLString())
 	log.Infof("Admin User: %s", server.config.AdminUser)
 	log.Infof("Admin Name: %s", server.config.AdminName)
 	log.Infof("Admin Email: %s", server.config.AdminEmail)

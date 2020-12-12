@@ -9,10 +9,12 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/jointwt/twtxt/types"
+	"github.com/jointwt/twtxt/types/retwt"
 )
 
 const (
@@ -45,7 +47,7 @@ func NewNullArchiver() (Archiver, error) {
 
 func (a *NullArchiver) Del(hash string) error              { return nil }
 func (a *NullArchiver) Has(hash string) bool               { return false }
-func (a *NullArchiver) Get(hash string) (types.Twt, error) { return types.Twt{}, nil }
+func (a *NullArchiver) Get(hash string) (types.Twt, error) { return &types.NilTwt{}, nil }
 func (a *NullArchiver) Archive(twt types.Twt) error        { return nil }
 func (a *NullArchiver) Count() (int, error)                { return 0, nil }
 
@@ -119,28 +121,32 @@ func (a *DiskArchiver) Get(hash string) (types.Twt, error) {
 	fn, err := a.makePath(hash)
 	if err != nil {
 		log.WithError(err).Errorf("error computing archive file for twt %s", hash)
-		return types.Twt{}, err
+		return &types.NilTwt{}, err
 	}
 
 	if !a.fileExists(fn) {
 		log.Warnf("twt %s not found in archive", hash)
-		return types.Twt{}, ErrTwtNotArchived
+		return &types.NilTwt{}, ErrTwtNotArchived
 	}
 
 	data, err := ioutil.ReadFile(fn)
 	if err != nil {
 		log.WithError(err).Errorf("error reading archived twt %s", hash)
-		return types.Twt{}, err
+		return &types.NilTwt{}, err
 	}
 
-	var twt types.Twt
+	var jsonTwt = struct {
+		Twter   types.Twter `json:"twter"`
+		Text    string      `json:"text"`
+		Created time.Time   `json:"created"`
+	}{}
 
-	if err := json.Unmarshal(data, &twt); err != nil {
+	if err := json.Unmarshal(data, &jsonTwt); err != nil {
 		log.WithError(err).Errorf("error decoding archived twt %s", hash)
-		return types.Twt{}, err
+		return &types.NilTwt{}, err
 	}
 
-	return twt, nil
+	return retwt.NewReTwt(jsonTwt.Twter, jsonTwt.Text, jsonTwt.Created), nil
 }
 
 func (a *DiskArchiver) Archive(twt types.Twt) error {

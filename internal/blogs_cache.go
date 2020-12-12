@@ -32,7 +32,7 @@ func NewBlogsCache() *BlogsCache {
 }
 
 // Store ...
-func (cache BlogsCache) Store(path string) error {
+func (cache *BlogsCache) Store(path string) error {
 	b := new(bytes.Buffer)
 	enc := gob.NewEncoder(b)
 	err := enc.Encode(cache)
@@ -93,7 +93,7 @@ func LoadBlogsCache(path string) (*BlogsCache, error) {
 }
 
 // UpdateBlogs ...
-func (cache BlogsCache) UpdateBlogs(conf *Config) {
+func (cache *BlogsCache) UpdateBlogs(conf *Config) {
 	blogPosts, err := GetAllBlogPosts(conf)
 	if err != nil {
 		log.WithError(err).Error("error getting all blog posts")
@@ -110,14 +110,14 @@ func (cache BlogsCache) UpdateBlogs(conf *Config) {
 }
 
 // Add ...
-func (cache BlogsCache) Add(blogPost *BlogPost) {
+func (cache *BlogsCache) Add(blogPost *BlogPost) {
 	cache.mu.Lock()
 	cache.Blogs[blogPost.Hash()] = blogPost
 	cache.mu.Unlock()
 }
 
 // Get ...
-func (cache BlogsCache) Get(hash string) (*BlogPost, bool) {
+func (cache *BlogsCache) Get(hash string) (*BlogPost, bool) {
 	cache.mu.RLock()
 	blogPost, ok := cache.Blogs[hash]
 	cache.mu.RUnlock()
@@ -125,12 +125,12 @@ func (cache BlogsCache) Get(hash string) (*BlogPost, bool) {
 }
 
 // Count ...
-func (cache BlogsCache) Count() int {
+func (cache *BlogsCache) Count() int {
 	return len(cache.Blogs)
 }
 
 // GetAll ...
-func (cache BlogsCache) GetAll() BlogPosts {
+func (cache *BlogsCache) GetAll() BlogPosts {
 	var blogPosts BlogPosts
 	cache.mu.RLock()
 	for _, blogPost := range cache.Blogs {

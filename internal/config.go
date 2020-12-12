@@ -12,6 +12,7 @@ import (
 
 	"github.com/gabstv/merger"
 	"github.com/goccy/go-yaml"
+	"github.com/jointwt/twtxt/types"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -34,12 +35,12 @@ type Settings struct {
 type Config struct {
 	Debug bool
 
-	Data              string
-	Name              string
-	Description       string
-	Store             string
-	Theme             string
-	BaseURL           string
+	Data        string
+	Name        string
+	Description string
+	Store       string
+	Theme       string
+	// BaseURL        string
 	AdminUser         string
 	AdminName         string
 	AdminEmail        string
@@ -71,13 +72,27 @@ type Config struct {
 	APISessionTime time.Duration
 	APISigningKey  string
 
-	baseURL *url.URL
+	baseURL       *url.URL
+	baseURLstring string
 
 	whitelistedDomains []*regexp.Regexp
 	WhitelistedDomains []string
 
 	path string
 }
+
+var _ types.FmtOpts = (*Config)(nil)
+
+func (c *Config) IsLocalURL(url string) bool {
+	if NormalizeURL(url) == "" {
+		return false
+	}
+	return strings.HasPrefix(NormalizeURL(url), NormalizeURL(c.BaseURL().String()))
+}
+func (c *Config) BaseURL() *url.URL                   { return c.baseURL }
+func (c *Config) BaseURLString() string               { return c.baseURLstring }
+func (c *Config) ExternalURL(nick, uri string) string { return URLForExternalProfile(c, nick, uri) }
+func (c *Config) UserURL(url string) string           { return UserURL(url) }
 
 // Settings returns a `Settings` struct containing pod settings that can
 // then be persisted to disk to override some configuration options.

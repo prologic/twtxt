@@ -141,7 +141,7 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 				return
 			}
 			uri.Type = "taskURI"
-			uri.Path = URLForTask(s.config.BaseURL, uuid)
+			uri.Path = URLForTask(s.config.BaseURLString(), uuid)
 		}
 
 		if strings.HasPrefix(ctype, "audio/") {
@@ -159,7 +159,7 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 				return
 			}
 			uri.Type = "taskURI"
-			uri.Path = URLForTask(s.config.BaseURL, uuid)
+			uri.Path = URLForTask(s.config.BaseURLString(), uuid)
 		}
 
 		if strings.HasPrefix(ctype, "video/") {
@@ -177,7 +177,7 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 				return
 			}
 			uri.Type = "taskURI"
-			uri.Path = URLForTask(s.config.BaseURL, uuid)
+			uri.Path = URLForTask(s.config.BaseURLString(), uuid)
 		}
 
 		if uri.IsZero() {

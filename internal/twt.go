@@ -4,13 +4,11 @@ package internal
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 
@@ -18,16 +16,17 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/jointwt/twtxt/types"
+	"github.com/jointwt/twtxt/types/retwt"
 )
 
 const (
 	feedsDir = "feeds"
 )
 
-var (
-	ErrInvalidTwtLine = errors.New("error: invalid twt line parsed")
-	ErrInvalidFeed    = errors.New("error: erroneous feed detected")
-)
+// var (
+// 	ErrInvalidTwtLine = errors.New("error: invalid twt line parsed")
+// 	ErrInvalidFeed    = errors.New("error: erroneous feed detected")
+// )
 
 // ExpandMentions turns "@nick" into "@<nick URL>" if we're following the user or feed
 // or if they exist on the local pod. Also turns @user@domain into
@@ -71,7 +70,7 @@ func ExpandTag(conf *Config, db Store, user *User, text string) string {
 		parts := re.FindStringSubmatch(match)
 		tag := parts[1]
 
-		return fmt.Sprintf("#<%s %s>", tag, URLForTag(conf.BaseURL, tag))
+		return fmt.Sprintf("#<%s %s>", tag, URLForTag(conf.BaseURLString(), tag))
 	})
 }
 
@@ -107,20 +106,20 @@ func AppendSpecial(conf *Config, db Store, specialUsername, text string, args ..
 func AppendTwt(conf *Config, db Store, user *User, text string, args ...interface{}) (types.Twt, error) {
 	text = strings.TrimSpace(text)
 	if text == "" {
-		return types.Twt{}, fmt.Errorf("cowardly refusing to twt empty text, or only spaces")
+		return &types.NilTwt{}, fmt.Errorf("cowardly refusing to twt empty text, or only spaces")
 	}
 
 	p := filepath.Join(conf.Data, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
-		return types.Twt{}, err
+		return &types.NilTwt{}, err
 	}
 
 	fn := filepath.Join(p, user.Username)
 
 	f, err := os.OpenFile(fn, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		return types.Twt{}, err
+		return &types.NilTwt{}, err
 	}
 	defer f.Close()
 
@@ -139,12 +138,12 @@ func AppendTwt(conf *Config, db Store, user *User, text string, args ...interfac
 	)
 
 	if _, err = f.WriteString(line); err != nil {
-		return types.Twt{}, err
+		return &types.NilTwt{}, err
 	}
 
-	twt, err := ParseLine(strings.TrimSpace(line), user.Twter())
+	twt, err := retwt.ParseLine(strings.TrimSpace(line), user.Twter())
 	if err != nil {
-		return types.Twt{}, err
+		return &types.NilTwt{}, err
 	}
 
 	return twt, nil
@@ -162,6 +161,8 @@ func FeedExists(conf *Config, username string) bool {
 }
 
 func GetLastTwt(conf *Config, user *User) (twt types.Twt, offset int, err error) {
+	twt = &types.NilTwt{}
+
 	p := filepath.Join(conf.Data, feedsDir)
 	if err = os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
@@ -176,7 +177,7 @@ func GetLastTwt(conf *Config, user *User) (twt types.Twt, offset int, err error)
 		return
 	}
 
-	twt, err = ParseLine(string(data), user.Twter())
+	twt, err = retwt.ParseLine(string(data), user.Twter())
 
 	return
 }
@@ -240,7 +241,7 @@ func GetAllTwts(conf *Config, name string) (types.Twts, error) {
 		return nil, err
 	}
 	s := bufio.NewScanner(f)
-	t, _, err := ParseFile(s, twter, 0, 0)
+	t, _, err := retwt.ParseFile(s, twter, 0, 0)
 	if err != nil {
 		log.WithError(err).Errorf("error processing feed %s", fn)
 		return nil, err
@@ -251,106 +252,106 @@ func GetAllTwts(conf *Config, name string) (types.Twts, error) {
 	return twts, nil
 }
 
-func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
-	if line == "" {
-		return
-	}
-	if strings.HasPrefix(line, "#") {
-		return
-	}
+// func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
+// 	if line == "" {
+// 		return
+// 	}
+// 	if strings.HasPrefix(line, "#") {
+// 		return
+// 	}
 
-	re := regexp.MustCompile(`^(.+?)(\s+)(.+)$`) // .+? is ungreedy
-	parts := re.FindStringSubmatch(line)
-	// "Submatch 0 is the match of the entire expression, submatch 1 the
-	// match of the first parenthesized subexpression, and so on."
-	if len(parts) != 4 {
-		err = ErrInvalidTwtLine
-		return
-	}
+// 	re := regexp.MustCompile(`^(.+?)(\s+)(.+)$`) // .+? is ungreedy
+// 	parts := re.FindStringSubmatch(line)
+// 	// "Submatch 0 is the match of the entire expression, submatch 1 the
+// 	// match of the first parenthesized subexpression, and so on."
+// 	if len(parts) != 4 {
+// 		err = ErrInvalidTwtLine
+// 		return
+// 	}
 
-	created, err := ParseTime(parts[1])
-	if err != nil {
-		err = ErrInvalidTwtLine
-		return
-	}
+// 	created, err := ParseTime(parts[1])
+// 	if err != nil {
+// 		err = ErrInvalidTwtLine
+// 		return
+// 	}
 
-	text := parts[3]
+// 	text := parts[3]
 
-	twt = types.Twt{Twter: twter, Created: created, Text: text}
+// 	twt = types.Twt{Twter: twter, Created: created, Text: text}
 
-	return
-}
+// 	return
+// }
 
-func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N int) (types.Twts, types.Twts, error) {
-	var (
-		twts types.Twts
-		old  types.Twts
-	)
+// func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N int) (types.Twts, types.Twts, error) {
+// 	var (
+// 		twts types.Twts
+// 		old  types.Twts
+// 	)
 
-	oldTime := time.Now().Add(-ttl)
+// 	oldTime := time.Now().Add(-ttl)
 
-	nLines, nErrors := 0, 0
+// 	nLines, nErrors := 0, 0
 
-	for scanner.Scan() {
-		line := scanner.Text()
-		nLines++
+// 	for scanner.Scan() {
+// 		line := scanner.Text()
+// 		nLines++
 
-		twt, err := ParseLine(line, twter)
-		if err != nil {
-			nErrors++
-			continue
-		}
-		if twt.IsZero() {
-			continue
-		}
+// 		twt, err := ParseLine(line, twter)
+// 		if err != nil {
+// 			nErrors++
+// 			continue
+// 		}
+// 		if twt.IsZero() {
+// 			continue
+// 		}
 
-		if ttl > 0 && twt.Created.Before(oldTime) {
-			old = append(old, twt)
-		} else {
-			twts = append(twts, twt)
-		}
-	}
-	if err := scanner.Err(); err != nil {
-		return nil, nil, err
-	}
+// 		if ttl > 0 && twt.Created.Before(oldTime) {
+// 			old = append(old, twt)
+// 		} else {
+// 			twts = append(twts, twt)
+// 		}
+// 	}
+// 	if err := scanner.Err(); err != nil {
+// 		return nil, nil, err
+// 	}
 
-	if (nLines+nErrors > 0) && nLines == nErrors {
-		log.Warnf("erroneous feed dtected (nLines + nErrors > 0 && nLines == nErrors): %d/%d", nLines, nErrors)
-		return nil, nil, ErrInvalidFeed
-	}
+// 	if (nLines+nErrors > 0) && nLines == nErrors {
+// 		log.Warnf("erroneous feed dtected (nLines + nErrors > 0 && nLines == nErrors): %d/%d", nLines, nErrors)
+// 		return nil, nil, ErrInvalidFeed
+// 	}
 
-	// Sort by CreatedAt timestamp
-	sort.Sort(twts)
-	sort.Sort(old)
+// 	// Sort by CreatedAt timestamp
+// 	sort.Sort(twts)
+// 	sort.Sort(old)
 
-	// Further limit by Max Cache Items
-	if N > 0 && len(twts) > N {
-		if N > len(twts) {
-			N = len(twts)
-		}
-		twts = twts[:N]
-		old = append(old, twts[N:]...)
-	}
+// 	// Further limit by Max Cache Items
+// 	if N > 0 && len(twts) > N {
+// 		if N > len(twts) {
+// 			N = len(twts)
+// 		}
+// 		twts = twts[:N]
+// 		old = append(old, twts[N:]...)
+// 	}
 
-	return twts, old, nil
-}
+// 	return twts, old, nil
+// }
 
-func ParseTime(timestr string) (tm time.Time, err error) {
-	// Twtxt clients generally uses basically time.RFC3339Nano, but sometimes
-	// there's a colon in the timezone, or no timezone at all.
-	for _, layout := range []string{
-		"2006-01-02T15:04:05.999999999Z07:00",
-		"2006-01-02T15:04:05.999999999Z0700",
-		"2006-01-02T15:04:05.999999999",
-		"2006-01-02T15:04.999999999Z07:00",
-		"2006-01-02T15:04.999999999Z0700",
-		"2006-01-02T15:04.999999999",
-	} {
-		tm, err = time.Parse(layout, strings.ToUpper(timestr))
-		if err != nil {
-			continue
-		}
-		return
-	}
-	return
-}
+// func ParseTime(timestr string) (tm time.Time, err error) {
+// 	// Twtxt clients generally uses basically time.RFC3339Nano, but sometimes
+// 	// there's a colon in the timezone, or no timezone at all.
+// 	for _, layout := range []string{
+// 		"2006-01-02T15:04:05.999999999Z07:00",
+// 		"2006-01-02T15:04:05.999999999Z0700",
+// 		"2006-01-02T15:04:05.999999999",
+// 		"2006-01-02T15:04.999999999Z07:00",
+// 		"2006-01-02T15:04.999999999Z0700",
+// 		"2006-01-02T15:04.999999999",
+// 	} {
+// 		tm, err = time.Parse(layout, strings.ToUpper(timestr))
+// 		if err != nil {
+// 			continue
+// 		}
+// 		return
+// 	}
+// 	return
+// }

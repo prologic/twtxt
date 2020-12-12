@@ -40,11 +40,12 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/goware/urlx"
 	"github.com/h2non/filetype"
+	"github.com/jointwt/twtxt"
+	"github.com/jointwt/twtxt/types"
+	"github.com/jointwt/twtxt/types/retwt"
 	shortuuid "github.com/lithammer/shortuuid/v3"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/nullrocks/identicon"
-	"github.com/jointwt/twtxt"
-	"github.com/jointwt/twtxt/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/writeas/slug"
 	"golang.org/x/crypto/blake2b"
@@ -270,7 +271,7 @@ func Request(conf *Config, method, url string, headers http.Header) (*http.Respo
 			"User-Agent",
 			fmt.Sprintf(
 				"twtxt/%s (Pod: %s Support: %s)",
-				twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURL, "support"),
+				twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURLString(), "support"),
 			),
 		)
 	}
@@ -385,7 +386,7 @@ func RenderString(tpl string, ctx *Context) (string, error) {
 }
 
 func IsExternalFeedFactory(conf *Config) func(url string) bool {
-	baseURL := NormalizeURL(conf.BaseURL)
+	baseURL := NormalizeURL(conf.BaseURLString())
 	externalBaseURL := fmt.Sprintf("%s/external", strings.TrimSuffix(baseURL, "/"))
 
 	return func(url string) bool {
@@ -401,13 +402,13 @@ func IsLocalURLFactory(conf *Config) func(url string) bool {
 		if NormalizeURL(url) == "" {
 			return false
 		}
-		return strings.HasPrefix(NormalizeURL(url), NormalizeURL(conf.BaseURL))
+		return strings.HasPrefix(NormalizeURL(url), NormalizeURL(conf.BaseURLString()))
 	}
 }
 
 func GetUserFromURL(conf *Config, db Store, url string) (*User, error) {
-	if !strings.HasPrefix(url, conf.BaseURL) {
-		return nil, fmt.Errorf("error: %s does not match our base url of %s", url, conf.BaseURL)
+	if !strings.HasPrefix(url, conf.BaseURLString()) {
+		return nil, fmt.Errorf("error: %s does not match our base url of %s", url, conf.BaseURLString())
 	}
 
 	userURL := UserURL(url)
@@ -800,7 +801,7 @@ func TranscodeAudio(conf *Config, ifn string, resource, name string, opts *Audio
 
 	return fmt.Sprintf(
 		"%s/%s/%s",
-		strings.TrimSuffix(conf.BaseURL, "/"),
+		strings.TrimSuffix(conf.BaseURLString(), "/"),
 		resource, filepath.Base(ofn),
 	), nil
 }
@@ -877,7 +878,7 @@ func ProcessImage(conf *Config, ifn string, resource, name string, opts *ImageOp
 
 	return fmt.Sprintf(
 		"%s/%s/%s",
-		strings.TrimSuffix(conf.BaseURL, "/"),
+		strings.TrimSuffix(conf.BaseURLString(), "/"),
 		resource, strings.TrimSuffix(filepath.Base(ofn), filepath.Ext(ofn)),
 	), nil
 }
@@ -1059,7 +1060,7 @@ func TranscodeVideo(conf *Config, ifn string, resource, name string, opts *Video
 
 	return fmt.Sprintf(
 		"%s/%s/%s",
-		strings.TrimSuffix(conf.BaseURL, "/"),
+		strings.TrimSuffix(conf.BaseURLString(), "/"),
 		resource, filepath.Base(ofn),
 	), nil
 }
@@ -1096,7 +1097,7 @@ func ValidateFeed(conf *Config, nick, url string) error {
 	limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
 	scanner := bufio.NewScanner(limitedReader)
 	twter := types.Twter{Nick: nick, URL: url}
-	_, _, err = ParseFile(scanner, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
+	_, _, err = retwt.ParseFile(scanner, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
 	if err != nil {
 		return err
 	}
@@ -1186,7 +1187,7 @@ func NormalizeURL(url string) string {
 
 func RedirectURL(r *http.Request, conf *Config, defaultURL string) string {
 	referer := NormalizeURL(r.Header.Get("Referer"))
-	if referer != "" && strings.HasPrefix(referer, conf.BaseURL) {
+	if referer != "" && strings.HasPrefix(referer, conf.BaseURLString()) {
 		return referer
 	}
 
@@ -1255,7 +1256,7 @@ func URLForTwt(baseURL, hash string) string {
 func URLForUser(conf *Config, username string) string {
 	return fmt.Sprintf(
 		"%s/user/%s/twtxt.txt",
-		strings.TrimSuffix(conf.BaseURL, "/"),
+		strings.TrimSuffix(conf.BaseURLString(), "/"),
 		username,
 	)
 }
@@ -1263,7 +1264,7 @@ func URLForUser(conf *Config, username string) string {
 func URLForAvatar(conf *Config, username string) string {
 	return fmt.Sprintf(
 		"%s/user/%s/avatar",
-		strings.TrimSuffix(conf.BaseURL, "/"),
+		strings.TrimSuffix(conf.BaseURLString(), "/"),
 		username,
 	)
 }
@@ -1271,7 +1272,7 @@ func URLForAvatar(conf *Config, username string) string {
 func URLForExternalProfile(conf *Config, nick, uri string) string {
 	return fmt.Sprintf(
 		"%s/external?uri=%s&nick=%s",
-		strings.TrimSuffix(conf.BaseURL, "/"),
+		strings.TrimSuffix(conf.BaseURLString(), "/"),
 		uri, nick,
 	)
 }
@@ -1279,7 +1280,7 @@ func URLForExternalProfile(conf *Config, nick, uri string) string {
 func URLForExternalAvatar(conf *Config, uri string) string {
 	return fmt.Sprintf(
 		"%s/externalAvatar?uri=%s",
-		strings.TrimSuffix(conf.BaseURL, "/"),
+		strings.TrimSuffix(conf.BaseURLString(), "/"),
 		uri,
 	)
 }
@@ -1310,7 +1311,7 @@ func URLForBlogFactory(conf *Config, blogs *BlogsCache) func(twt types.Twt) stri
 			return ""
 		}
 
-		return blogPost.URL(conf.BaseURL)
+		return blogPost.URL(conf.BaseURLString())
 	}
 }
 
@@ -1341,7 +1342,7 @@ func URLForConvFactory(conf *Config, cache *Cache) func(twt types.Twt) string {
 
 		return fmt.Sprintf(
 			"%s/conv/%s",
-			strings.TrimSuffix(conf.BaseURL, "/"),
+			strings.TrimSuffix(conf.BaseURLString(), "/"),
 			hash,
 		)
 	}

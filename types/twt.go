@@ -1,26 +1,10 @@
 package types
 
 import (
-	"encoding/base32"
+	"encoding/gob"
 	"encoding/json"
-	"fmt"
-	"regexp"
-	"strings"
+	"net/url"
 	"time"
-
-	"golang.org/x/crypto/blake2b"
-)
-
-const (
-	TwtHashLength = 7
-)
-
-var (
-	tagsRe    = regexp.MustCompile(`#([-\w]+)`)
-	subjectRe = regexp.MustCompile(`^(@<.*>[, ]*)*(\(.*?\))(.*)`)
-
-	uriTagsRe     = regexp.MustCompile(`#<(.*?) .*?>`)
-	uriMentionsRe = regexp.MustCompile(`@<(.*?) (.*?)>`)
 )
 
 // Twter ...
@@ -50,112 +34,37 @@ func (twter Twter) MarshalJSON() ([]byte, error) {
 }
 
 // Twt ...
-type Twt struct {
-	Twter        Twter
-	Text         string
-	MarkdownText string
-	Created      time.Time
-
-	hash string
+type Twt interface {
+	Twter() Twter
+	Text() string
+	SetFmtOpts(FmtOpts)
+	MarkdownText() string
+	Created() time.Time
+	IsZero() bool
+	Hash() string
+	Subject() string
+	Mentions() []Mention
+	Tags() []Tag
 }
 
-func (twt Twt) MarshalJSON() ([]byte, error) {
-	return json.Marshal(struct {
-		Twter        Twter     `json:"twter"`
-		Text         string    `json:"text"`
-		Created      time.Time `json:"created"`
-		MarkdownText string    `json:"markdownText"`
-
-		// Dynamic Fields
-		Hash    string   `json:"hash"`
-		Tags    []string `json:"tags"`
-		Subject string   `json:"subject"`
-	}{
-		Twter:        twt.Twter,
-		Text:         twt.Text,
-		Created:      twt.Created,
-		MarkdownText: twt.MarkdownText,
-
-		// Dynamic Fields
-		Hash:    twt.Hash(),
-		Tags:    twt.Tags(),
-		Subject: twt.Subject(),
-	})
+type Mention interface {
+	Twter() Twter
+}
+type Tag interface {
+	Tag() string
 }
 
-// Mentions ...
-func (twt Twt) Mentions() []Twter {
-	var mentions []Twter
+type TagList []Tag
 
-	seen := make(map[Twter]bool)
-	matches := uriMentionsRe.FindAllStringSubmatch(twt.Text, -1)
-	for _, match := range matches {
-		mention := Twter{Nick: match[1], URL: match[2]}
-		if !seen[mention] {
-			mentions = append(mentions, mention)
-			seen[mention] = true
-		}
+func (tags *TagList) Tags() []string {
+	if tags == nil {
+		return nil
 	}
-
-	return mentions
-}
-
-// Tags ...
-func (twt Twt) Tags() []string {
-	var tags []string
-
-	seen := make(map[string]bool)
-
-	matches := tagsRe.FindAllStringSubmatch(twt.Text, -1)
-	matches = append(matches, uriTagsRe.FindAllStringSubmatch(twt.Text, -1)...)
-
-	for _, match := range matches {
-		tag := match[1]
-		if !seen[tag] {
-			tags = append(tags, tag)
-			seen[tag] = true
-		}
+	lis := make([]string, len(*tags))
+	for i, t := range *tags {
+		lis[i] = t.Tag()
 	}
-
-	return tags
-}
-
-// Subject ...
-func (twt Twt) Subject() string {
-	match := subjectRe.FindStringSubmatch(twt.Text)
-	if match != nil {
-		matchingSubject := match[2]
-		matchedURITags := uriTagsRe.FindAllStringSubmatch(matchingSubject, -1)
-		if matchedURITags != nil {
-			// Re-add the (#xxx) back as the output
-			return fmt.Sprintf("(#%s)", matchedURITags[0][1])
-		}
-		return matchingSubject
-	}
-
-	// By default the subject is the Twt's Hash being replied to.
-	return fmt.Sprintf("(#%s)", twt.Hash())
-}
-
-// Hash ...
-func (twt Twt) Hash() string {
-	if twt.hash != "" {
-		return twt.hash
-	}
-
-	payload := twt.Twter.URL + "\n" + twt.Created.Format(time.RFC3339) + "\n" + twt.Text
-	sum := blake2b.Sum256([]byte(payload))
-
-	// Base32 is URL-safe, unlike Base64, and shorter than hex.
-	encoding := base32.StdEncoding.WithPadding(base32.NoPadding)
-	hash := strings.ToLower(encoding.EncodeToString(sum[:]))
-	twt.hash = hash[len(hash)-TwtHashLength:]
-
-	return twt.hash
-}
-
-func (twt Twt) IsZero() bool {
-	return twt.Twter.IsZero() && twt.Created.IsZero() && twt.Text == ""
+	return lis
 }
 
 // TwtMap ...
@@ -168,19 +77,55 @@ func (twts Twts) Len() int {
 	return len(twts)
 }
 func (twts Twts) Less(i, j int) bool {
-	return twts[i].Created.After(twts[j].Created)
+	return twts[i].Created().After(twts[j].Created())
 }
 func (twts Twts) Swap(i, j int) {
 	twts[i], twts[j] = twts[j], twts[i]
 }
 
 // Tags ...
-func (twts Twts) Tags() map[string]int {
+func (twts Twts) TagCount() map[string]int {
 	tags := make(map[string]int)
 	for _, twt := range twts {
-		for _, tag := range tagsRe.FindAllString(twt.Text, -1) {
-			tags[strings.TrimLeft(tag, "#")]++
+		for _, tag := range twt.Tags() {
+			tags[tag.Tag()]++
 		}
 	}
 	return tags
+}
+
+type FmtOpts interface {
+	IsLocalURL(string) bool
+	UserURL(string) string
+	ExternalURL(nick, uri string) string
+	BaseURL() *url.URL
+}
+
+// TwtTextFormat represents the format of which the twt text gets formatted to
+type TwtTextFormat int
+
+const (
+	// MarkdownFmt to use markdown format
+	MarkdownFmt TwtTextFormat = iota
+	// HTMLFmt to use HTML format
+	HTMLFmt
+	// TextFmt to use for og:description
+	TextFmt
+)
+
+type NilTwt struct{}
+
+func (*NilTwt) Twter() Twter         { return Twter{} }
+func (*NilTwt) Text() string         { return "" }
+func (*NilTwt) SetFmtOpts(FmtOpts)   {}
+func (*NilTwt) MarkdownText() string { return "" }
+func (*NilTwt) Created() time.Time   { return time.Now() }
+func (*NilTwt) IsZero() bool         { return false }
+func (*NilTwt) Hash() string         { return "" }
+func (*NilTwt) Subject() string      { return "" }
+func (*NilTwt) Mentions() []Mention  { return nil }
+func (*NilTwt) Tags() []Tag          { return nil }
+
+func init() {
+	gob.Register(&NilTwt{})
 }

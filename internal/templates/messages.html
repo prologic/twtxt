@@ -1,27 +1,67 @@
 {{define "content"}}
-  <div class="grid">
+  <article class="grid">
     <div>
       <hgroup>
-        <h2>Private Message</h2>
+        <h2>Private Messages</h2>
         <h3>Your private messages</h3>
       </hgroup>
-      <table>
-        <thead>
-          <tr>
-            <th scope="col"><input id="delete_all" type="checkbox" name="delete_all" data-tooltip="Delete all messages"></th>
-            <th scope="col">From</th>
-            <th scope="col">Received</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row"><input type="checkbox" name="delete_fa47b31"></th>
-            <td><a href="/user/kate">kate</a></td>
-            <td><a href="/msg/fa47b31">2 days ago</a></td>
-          </tr>
-        </tbody>
-      </table>
+      <form id="delete" action="/messages/delete" method="POST">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col"><input id="delete_all" type="checkbox" name="delete_all" data-tooltip="Delete all messages"></th>
+              <th scope="col">From</th>
+              <th scope="col">Received</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row"><input type="checkbox" name="delete_fa47b31"></th>
+              <td><a href="/user/kate">kate</a></td>
+              <td><a href="/msg/fa47b31">2 days ago</a></td>
+            </tr>
+          </tbody>
+        </table>
+        <input type="submit" name="delete" value="Delete Selected">
+      </form>
+      <hgroup>
+        <h2>Compose Message</h2>
+      </hgroup>
+      <form id="compose" action="/messages/send" method="POST">
+        <input id="recipient" name="recipient" placeholder="Username" required>
+        <div class="textarea-container">
+          <textarea id="message" name="message" placeholder="Your message" rows=3 maxlength={{ $.MaxTwtLength }} required></textarea>
+        </div>
+        <div class="grid">
+          <div>
+            <button id="send" type="submit">
+              <i class="icss-paper-plane"></i>
+              Send
+            </button>
+          </div>
+        </div>
+      </form>
     </div>
-    <div></div>
-  </div>
+    <div>
+      <hgroup>
+        <h2>Private Messaging</h2>
+      </hgroup>
+      <p>
+        Private messaging on {{ .InstanceName }} is very simple and follows
+        a similar form to Twt(s) themselves. In other words you can send
+        private messages to users on the same pod as you.
+      </p>
+      <p>
+        Find the username of the person you want to message, and type in a
+        short message (<i>limited to {{ .MaxTwtLength }} characters</i>) and
+        hit the "Send" button.
+      </p>
+      <p>
+        <b>NOTE:</b>&nbsp;Messages are not encrypted or signed at this time so it is
+        currently possible for the Pod Operator of {{ .InstanceName }}
+        to view your private messages. This will change in time as we continue
+        to develop this feature out and add e2e encryption. THank you.
+      </p>
+    </div>
+  </article>
 {{end}}

@@ -454,7 +454,6 @@ func (s *Server) initRoutes() {
 	s.router.GET("/robots.txt", s.RobotsHandler())
 	s.router.HEAD("/robots.txt", s.RobotsHandler())
 
-	s.router.GET("/messages", s.am.MustAuth(s.MessagesHandler()))
 	s.router.GET("/discover", s.am.MustAuth(s.DiscoverHandler()))
 	s.router.GET("/mentions", s.am.MustAuth(s.MentionsHandler()))
 	s.router.GET("/search", s.SearchHandler())
@@ -473,7 +472,10 @@ func (s *Server) initRoutes() {
 	s.router.DELETE("/post", s.am.MustAuth(s.PostHandler()))
 
 	// Private Messages
+	s.router.GET("/messages", s.am.MustAuth(s.ListMessagesHandler()))
+	s.router.POST("/messages/delete", s.am.MustAuth(s.DeleteMessagesHandler()))
 	s.router.GET("/msg/:hash", s.am.MustAuth(s.MessageHandler()))
+	s.router.POST("/msg", s.am.MustAuth(s.MessageHandler()))
 
 	s.router.POST("/blog", s.am.MustAuth(s.PublishBlogHandler()))
 	s.router.GET("/blogs/:author", s.BlogsHandler())

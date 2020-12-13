@@ -22,7 +22,8 @@ import (
 )
 
 const (
-	feedCacheFile = "cache"
+	feedCacheFile    = "cache"
+	feedCacheVersion = 1 // increase this if breaking changes occur to cache file.
 )
 
 // Cached ...
@@ -62,8 +63,9 @@ type OldCache map[string]*Cached
 
 // Cache ...
 type Cache struct {
-	mu   sync.RWMutex
-	Twts map[string]*Cached
+	mu      sync.RWMutex
+	Version int
+	Twts    map[string]*Cached
 }
 
 // Store ...
@@ -101,9 +103,10 @@ func LoadCache(path string) (*Cache, error) {
 	f, err := os.Open(filepath.Join(path, feedCacheFile))
 	if err != nil {
 		if !os.IsNotExist(err) {
-			log.WithError(err).Error("error loading cache, cache not found")
+			log.WithError(err).Error("error loading cache, cache file found but unreadable")
 			return nil, err
 		}
+		cache.Version = feedCacheVersion
 		return cache, nil
 	}
 	defer f.Close()
@@ -118,15 +121,28 @@ func LoadCache(path string) (*Cache, error) {
 		dec := gob.NewDecoder(f)
 		err = dec.Decode(&oldcache)
 		if err != nil {
-			log.WithError(err).Error("error decoding cache")
+			log.WithError(err).Error("error decoding cache. removing corrupt file.")
+			// Remove invalid cache file.
+			os.Remove(filepath.Join(path, feedCacheFile))
+
 			return nil, err
 		}
+		cache.Version = feedCacheVersion
 		for url, cached := range oldcache {
 			cache.mu.Lock()
 			cache.Twts[url] = cached
 			cache.mu.Unlock()
 		}
 	}
+
+	log.Infof("Cache version %d", cache.Version)
+	if cache.Version != feedCacheVersion {
+		log.Errorf("Cache version mismatch. Expect = %d, Got = %d. Removing old cache.", feedCacheVersion, cache.Version)
+		os.Remove(filepath.Join(path, feedCacheFile))
+		cache.Version = feedCacheVersion
+		cache.Twts = make(map[string]*Cached)
+	}
+
 	return cache, nil
 }
 

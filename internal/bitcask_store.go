@@ -102,10 +102,12 @@ func (bs *BitcaskStore) SetFeed(name string, feed *Feed) error {
 func (bs *BitcaskStore) LenFeeds() int64 {
 	var count int64
 
-	_ = bs.db.Scan([]byte(feedsKeyPrefix), func(_ []byte) error {
+	if err := bs.db.Scan([]byte(feedsKeyPrefix), func(_ []byte) error {
 		count++
 		return nil
-	})
+	}); err != nil {
+		log.WithError(err).Error("error scanning")
+	}
 
 	return count
 }
@@ -113,12 +115,14 @@ func (bs *BitcaskStore) LenFeeds() int64 {
 func (bs *BitcaskStore) SearchFeeds(prefix string) []string {
 	var keys []string
 
-	_ = bs.db.Scan([]byte(feedsKeyPrefix), func(key []byte) error {
+	if err := bs.db.Scan([]byte(feedsKeyPrefix), func(key []byte) error {
 		if strings.HasPrefix(strings.ToLower(string(key)), prefix) {
 			keys = append(keys, strings.TrimPrefix(string(key), "/feeds/"))
 		}
 		return nil
-	})
+	}); err != nil {
+		log.WithError(err).Error("error scanning")
+	}
 
 	return keys
 }
@@ -181,10 +185,12 @@ func (bs *BitcaskStore) SetUser(username string, user *User) error {
 func (bs *BitcaskStore) LenUsers() int64 {
 	var count int64
 
-	_ = bs.db.Scan([]byte(usersKeyPrefix), func(_ []byte) error {
+	if err := bs.db.Scan([]byte(usersKeyPrefix), func(_ []byte) error {
 		count++
 		return nil
-	})
+	}); err != nil {
+		log.WithError(err).Error("error scanning")
+	}
 
 	return count
 }
@@ -192,12 +198,14 @@ func (bs *BitcaskStore) LenUsers() int64 {
 func (bs *BitcaskStore) SearchUsers(prefix string) []string {
 	var keys []string
 
-	_ = bs.db.Scan([]byte(usersKeyPrefix), func(key []byte) error {
+	if err := bs.db.Scan([]byte(usersKeyPrefix), func(key []byte) error {
 		if strings.HasPrefix(strings.ToLower(string(key)), prefix) {
 			keys = append(keys, strings.TrimPrefix(string(key), "/users/"))
 		}
 		return nil
-	})
+	}); err != nil {
+		log.WithError(err).Error("error scanning")
+	}
 
 	return keys
 }
@@ -275,10 +283,12 @@ func (bs *BitcaskStore) SyncSession(sess *session.Session) error {
 func (bs *BitcaskStore) LenSessions() int64 {
 	var count int64
 
-	_ = bs.db.Scan([]byte(sessionsKeyPrefix), func(_ []byte) error {
+	if err := bs.db.Scan([]byte(sessionsKeyPrefix), func(_ []byte) error {
 		count++
 		return nil
-	})
+	}); err != nil {
+		log.WithError(err).Error("error scanning")
+	}
 
 	return count
 }
@@ -355,10 +365,12 @@ func (bs *BitcaskStore) DelToken(signature string) error {
 func (bs *BitcaskStore) LenTokens() int64 {
 	var count int64
 
-	_ = bs.db.Scan([]byte(tokensKeyPrefix), func(_ []byte) error {
+	if err := bs.db.Scan([]byte(tokensKeyPrefix), func(_ []byte) error {
 		count++
 		return nil
-	})
+	}); err != nil {
+		log.WithError(err).Error("error scanning")
+	}
 
 	return count
 }

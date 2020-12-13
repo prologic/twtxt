@@ -129,7 +129,7 @@ func NewConfig() *Config {
 		Description:       DefaultMetaDescription,
 		Store:             DefaultStore,
 		Theme:             DefaultTheme,
-		baseURLstring:     DefaultBaseURL,
+		BaseURL:           DefaultBaseURL,
 		AdminUser:         DefaultAdminUser,
 		FeedSources:       DefaultFeedSources,
 		RegisterMessage:   DefaultRegisterMessage,
@@ -182,7 +182,7 @@ func WithBaseURL(baseURL string) Option {
 		if err != nil {
 			return err
 		}
-		cfg.baseURLstring = baseURL
+		cfg.BaseURL = baseURL
 		cfg.baseURL = u
 		return nil
 	}

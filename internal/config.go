@@ -72,8 +72,7 @@ type Config struct {
 	APISessionTime time.Duration
 	APISigningKey  string
 
-	baseURL       *url.URL
-	baseURLstring string
+	baseURL *url.URL
 
 	whitelistedDomains []*regexp.Regexp
 	WhitelistedDomains []string

@@ -472,6 +472,9 @@ func (s *Server) initRoutes() {
 	s.router.PATCH("/post", s.am.MustAuth(s.PostHandler()))
 	s.router.DELETE("/post", s.am.MustAuth(s.PostHandler()))
 
+	// Private Messages
+	s.router.GET("/msg/:hash", s.am.MustAuth(s.MessageHandler()))
+
 	s.router.POST("/blog", s.am.MustAuth(s.PublishBlogHandler()))
 	s.router.GET("/blogs/:author", s.BlogsHandler())
 	s.router.GET("/blog/:author/:year/:month/:date/:slug", s.BlogHandler())

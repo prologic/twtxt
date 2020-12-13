@@ -64,6 +64,8 @@ type Context struct {
 	Links        types.Links
 	Alternatives types.Alternatives
 
+	Messages Messages
+
 	Twter       types.Twter
 	Twts        types.Twts
 	BlogPost    *BlogPost

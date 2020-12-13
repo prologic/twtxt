@@ -1,0 +1,35 @@
+{{define "content"}}
+  {{ $Msg := $.Messages | first }}
+  <article id="{{ $Msg.Hash }}" class="h-entry">
+    <div class="u-author h-card">
+      <div>
+        <a href="/usr/{{ $Msg.From }}" class="u-url">
+          <img class="avatar u-photo" src="/user/{{ $Msg.From }}/avatar" />
+        </a>
+      </div>
+      <div class="author">
+        <span class="p-name">{{ $Msg.From }}</span>
+        <div class="publish-time">
+          <a class="u-url" href="/msg/{{ $Msg.Hash }}">
+            <time class="dt-published" datetime="{{ $Msg.Sent | date "2006-01-02T15:04:05Z07:00" }}">
+              {{ dateInZone ($Msg.Sent | formatForDateTime) $Msg.Sent $.User.DisplayDatesInTimezone }}
+            </time>
+          </a>
+          <span> &nbsp;({{ $Msg.Sent | time }})</span>   
+        </div>  
+      </div>
+    </div>
+    <div class="p-summary">
+      {{ $Msg.Text | formatTwt }}
+    </div>
+    <hr />
+    <nav>
+      <ul>
+        {{ if $.Authenticated }}
+          <li><a class="delete" href="#" data-hash="{{ $Msg.Hash }}"><i class="icss-x"></i>Delete</a></li>
+          <li><a class="reply" href="#" data-reply="{{ $Msg.Hash }}"><i class="icss-arrow-left"></i>Reply</a></li>
+        {{ end }}
+      </ul>
+    </nav>
+  </article>
+{{ end }}

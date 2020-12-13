@@ -30,13 +30,25 @@ func (m *Message) Text() string {
 
 type Messages []*Message
 
-// MessagesHandler ...
-func (s *Server) MessagesHandler() httprouter.Handle {
+// ListMessagesHandler ...
+func (s *Server) ListMessagesHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
 		ctx.Title = "Private Messages"
 		s.render("messages", w, ctx)
+		return
+	}
+}
+
+// DeleteMessagesHandler ...
+func (s *Server) DeleteMessagesHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		ctx.Error = false
+		ctx.Message = "Messages successfully deleted"
+		s.render("error", w, ctx)
 		return
 	}
 }

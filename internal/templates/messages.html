@@ -1,20 +1,27 @@
 {{define "content"}}
-<table>
-  <thead>
-    <tr>
-      <th scope="col"><input id="delete_all" type="checkbox" name="delete_all" data-tooltip="Delete all messages"></th>
-      <th scope="col">From</th>
-      <th scope="col">Received</th>
-      <th scope="col">Subject</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row"><input type="checkbox" name="delete_fa47b31"></th>
-      <td><a href="/user/kate">kate</a></td>
-      <td>2 days ago</td>
-      <td><a href="/msg/fa47b31">Hello there</a></td>
-    </tr>
-  </tbody>
-</table>
+  <div class="grid">
+    <div>
+      <hgroup>
+        <h2>Private Message</h2>
+        <h3>Your private messages</h3>
+      </hgroup>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col"><input id="delete_all" type="checkbox" name="delete_all" data-tooltip="Delete all messages"></th>
+            <th scope="col">From</th>
+            <th scope="col">Received</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><input type="checkbox" name="delete_fa47b31"></th>
+            <td><a href="/user/kate">kate</a></td>
+            <td><a href="/msg/fa47b31">2 days ago</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div></div>
+  </div>
 {{end}}

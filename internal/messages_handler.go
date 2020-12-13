@@ -8,9 +8,8 @@ import (
 )
 
 type Message struct {
-	From    string
-	Subject string
-	Sent    time.Time
+	From string
+	Sent time.Time
 
 	hash string
 }
@@ -56,9 +55,8 @@ func (s *Server) MessageHandler() httprouter.Handle {
 
 		ctx.Messages = Messages{
 			&Message{
-				From:    "kate",
-				Subject: "Hello There!",
-				Sent:    time.Now(),
+				From: "kate",
+				Sent: time.Now(),
 			},
 		}
 

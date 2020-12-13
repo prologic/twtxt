@@ -36,6 +36,18 @@ func (s *Server) ListMessagesHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		ctx.Title = "Private Messages"
+
+		ctx.Messages = Messages{
+			&Message{
+				From: "kate",
+				Sent: time.Now(),
+			},
+			&Message{
+				From: "admin",
+				Sent: time.Now(),
+			},
+		}
+
 		s.render("messages", w, ctx)
 		return
 	}

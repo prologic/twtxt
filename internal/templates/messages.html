@@ -15,11 +15,20 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <th scope="row"><input type="checkbox" name="delete_fa47b31"></th>
-              <td><a href="/user/kate">kate</a></td>
-              <td><a href="/msg/fa47b31">2 days ago</a></td>
-            </tr>
+            {{ range .Messages }}
+              <tr>
+                <th scope="row"><input type="checkbox" name="hash" value="{{ .Hash }}"></th>
+                <td><a href="/user/{{ .From }}">{{ .From }}</a></td>
+                <td>
+                  <a class="u-url" href="/msg/{{ .Hash }}">
+                    <time class="dt-published" datetime="{{ .Sent | date "2006-01-02T15:04:05Z07:00" }}">
+                      {{ dateInZone (.Sent | formatForDateTime) .Sent $.User.DisplayDatesInTimezone }}
+                    </time>
+                  </a>
+                  <span>&nbsp;({{ .Sent | time }})</span>   
+                </td>
+              </tr>
+            {{ end }}
           </tbody>
         </table>
         <input type="submit" name="delete" value="Delete Selected">

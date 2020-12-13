@@ -130,7 +130,7 @@ func (*nilTwt) Text() string          { return "" }
 func (*nilTwt) SetFmtOpts(FmtOpts)    {}
 func (*nilTwt) MarkdownText() string  { return "" }
 func (*nilTwt) Created() time.Time    { return time.Now() }
-func (*nilTwt) IsZero() bool          { return false }
+func (*nilTwt) IsZero() bool          { return true }
 func (*nilTwt) Hash() string          { return "" }
 func (*nilTwt) Subject() string       { return "" }
 func (*nilTwt) Mentions() MentionList { return nil }

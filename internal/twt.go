@@ -3,7 +3,6 @@
 package internal
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -16,7 +15,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/jointwt/twtxt/types"
-	"github.com/jointwt/twtxt/types/retwt"
 )
 
 const (
@@ -136,7 +134,7 @@ func AppendTwt(conf *Config, db Store, user *User, text string, args ...interfac
 		return types.NilTwt, err
 	}
 
-	twt, err := retwt.ParseLine(strings.TrimSpace(line), user.Twter())
+	twt, err := types.ParseLine(strings.TrimSpace(line), user.Twter())
 	if err != nil {
 		return types.NilTwt, err
 	}
@@ -172,7 +170,7 @@ func GetLastTwt(conf *Config, user *User) (twt types.Twt, offset int, err error)
 		return
 	}
 
-	twt, err = retwt.ParseLine(string(data), user.Twter())
+	twt, err = types.ParseLine(string(data), user.Twter())
 
 	return
 }
@@ -235,8 +233,7 @@ func GetAllTwts(conf *Config, name string) (types.Twts, error) {
 		log.WithError(err).Warnf("error opening feed: %s", fn)
 		return nil, err
 	}
-	s := bufio.NewScanner(f)
-	t, _, err := retwt.ParseFile(s, twter, 0, 0)
+	t, _, err := types.ParseFile(f, twter, 0, 0)
 	if err != nil {
 		log.WithError(err).Errorf("error processing feed %s", fn)
 		return nil, err

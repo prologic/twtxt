@@ -9,12 +9,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/jointwt/twtxt/types"
-	"github.com/jointwt/twtxt/types/retwt"
 )
 
 const (
@@ -135,18 +133,13 @@ func (a *DiskArchiver) Get(hash string) (types.Twt, error) {
 		return types.NilTwt, err
 	}
 
-	var jsonTwt = struct {
-		Twter   types.Twter `json:"twter"`
-		Text    string      `json:"text"`
-		Created time.Time   `json:"created"`
-	}{}
-
-	if err := json.Unmarshal(data, &jsonTwt); err != nil {
+	var twt types.Twt
+	if twt, err = types.DecodeJSON(data); err != nil {
 		log.WithError(err).Errorf("error decoding archived twt %s", hash)
-		return types.NilTwt, err
+		return twt, err
 	}
 
-	return retwt.NewReTwt(jsonTwt.Twter, jsonTwt.Text, jsonTwt.Created), nil
+	return twt, nil
 }
 
 func (a *DiskArchiver) Archive(twt types.Twt) error {

@@ -16,6 +16,7 @@ import (
 
 	"github.com/jointwt/twtxt"
 	"github.com/jointwt/twtxt/internal"
+	"github.com/jointwt/twtxt/types/retwt"
 )
 
 var (
@@ -222,6 +223,8 @@ func main() {
 	} else {
 		log.SetLevel(log.InfoLevel)
 	}
+
+	retwt.DefaultTwtManager()
 
 	svr, err := internal.NewServer(bind,
 		// Debug mode

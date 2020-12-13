@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/base32"
@@ -42,7 +41,6 @@ import (
 	"github.com/h2non/filetype"
 	"github.com/jointwt/twtxt"
 	"github.com/jointwt/twtxt/types"
-	"github.com/jointwt/twtxt/types/retwt"
 	shortuuid "github.com/lithammer/shortuuid/v3"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/nullrocks/identicon"
@@ -1095,9 +1093,8 @@ func ValidateFeed(conf *Config, nick, url string) error {
 	}
 
 	limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
-	scanner := bufio.NewScanner(limitedReader)
 	twter := types.Twter{Nick: nick, URL: url}
-	_, _, err = retwt.ParseFile(scanner, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
+	_, _, err = types.ParseFile(limitedReader, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
 	if err != nil {
 		return err
 	}

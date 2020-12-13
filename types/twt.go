@@ -3,6 +3,9 @@ package types
 import (
 	"encoding/gob"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
 	"net/url"
 	"time"
 )
@@ -43,13 +46,18 @@ type Twt interface {
 	IsZero() bool
 	Hash() string
 	Subject() string
-	Mentions() []Mention
-	Tags() []Tag
+	Mentions() MentionList
+	Tags() TagList
+
+	fmt.Stringer
 }
 
 type Mention interface {
 	Twter() Twter
 }
+
+type MentionList []Mention
+
 type Tag interface {
 	Tag() string
 }
@@ -117,17 +125,50 @@ var NilTwt = &nilTwt{}
 
 type nilTwt struct{}
 
-func (*nilTwt) Twter() Twter         { return Twter{} }
-func (*nilTwt) Text() string         { return "" }
-func (*nilTwt) SetFmtOpts(FmtOpts)   {}
-func (*nilTwt) MarkdownText() string { return "" }
-func (*nilTwt) Created() time.Time   { return time.Now() }
-func (*nilTwt) IsZero() bool         { return false }
-func (*nilTwt) Hash() string         { return "" }
-func (*nilTwt) Subject() string      { return "" }
-func (*nilTwt) Mentions() []Mention  { return nil }
-func (*nilTwt) Tags() []Tag          { return nil }
+func (*nilTwt) Twter() Twter          { return Twter{} }
+func (*nilTwt) Text() string          { return "" }
+func (*nilTwt) SetFmtOpts(FmtOpts)    {}
+func (*nilTwt) MarkdownText() string  { return "" }
+func (*nilTwt) Created() time.Time    { return time.Now() }
+func (*nilTwt) IsZero() bool          { return false }
+func (*nilTwt) Hash() string          { return "" }
+func (*nilTwt) Subject() string       { return "" }
+func (*nilTwt) Mentions() MentionList { return nil }
+func (*nilTwt) Tags() TagList         { return nil }
+func (*nilTwt) String() string        { return "" }
 
 func init() {
 	gob.Register(&nilTwt{})
+}
+
+type TwtManager interface {
+	DecodeJSON([]byte) (Twt, error)
+	ParseLine(line string, twter Twter) (twt Twt, err error)
+	ParseFile(r io.Reader, twter Twter, ttl time.Duration, N int) (Twts, Twts, error)
+}
+
+type nilManager struct{}
+
+func (*nilManager) DecodeJSON([]byte) (Twt, error) { panic("twt managernot configured") }
+func (*nilManager) ParseLine(line string, twter Twter) (twt Twt, err error) {
+	panic("twt managernot configured")
+}
+func (*nilManager) ParseFile(r io.Reader, twter Twter, ttl time.Duration, N int) (Twts, Twts, error) {
+	panic("twt managernot configured")
+}
+
+var ErrNotImplemented = errors.New("not implemented")
+
+var twtManager TwtManager = &nilManager{}
+
+func DecodeJSON(b []byte) (Twt, error) { return twtManager.DecodeJSON(b) }
+func ParseLine(line string, twter Twter) (twt Twt, err error) {
+	return twtManager.ParseLine(line, twter)
+}
+func ParseFile(r io.Reader, twter Twter, ttl time.Duration, N int) (Twts, Twts, error) {
+	return twtManager.ParseFile(r, twter, ttl, N)
+}
+
+func SetTwtManager(m TwtManager) {
+	twtManager = m
 }

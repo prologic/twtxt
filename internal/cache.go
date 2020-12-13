@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/gob"
 	"fmt"
@@ -18,7 +17,6 @@ import (
 
 	"github.com/jointwt/twtxt"
 	"github.com/jointwt/twtxt/types"
-	"github.com/jointwt/twtxt/types/retwt"
 )
 
 const (
@@ -114,6 +112,16 @@ func LoadCache(path string) (*Cache, error) {
 	dec := gob.NewDecoder(f)
 	err = dec.Decode(&cache)
 	if err != nil {
+		if strings.Contains(err.Error(), "wrong type") {
+			log.WithError(err).Error("error decoding cache. removing corrupt file.")
+			// Remove invalid cache file.
+			os.Remove(filepath.Join(path, feedCacheFile))
+			cache.Version = feedCacheVersion
+			cache.Twts = make(map[string]*Cached)
+
+			return cache, nil
+		}
+
 		log.WithError(err).Error("error decoding cache (trying OldCache)")
 
 		_, _ = f.Seek(0, io.SeekStart)
@@ -124,12 +132,13 @@ func LoadCache(path string) (*Cache, error) {
 			log.WithError(err).Error("error decoding cache. removing corrupt file.")
 			// Remove invalid cache file.
 			os.Remove(filepath.Join(path, feedCacheFile))
+			cache.Version = feedCacheVersion
+			cache.Twts = make(map[string]*Cached)
 
-			return nil, err
+			return cache, nil
 		}
 		cache.Version = feedCacheVersion
 		for url, cached := range oldcache {
-			cache.mu.Lock()
 			cache.Twts[url] = cached
 			cache.mu.Unlock()
 		}
@@ -251,7 +260,6 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 			switch res.StatusCode {
 			case http.StatusOK: // 200
 				limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
-				scanner := bufio.NewScanner(limitedReader)
 				twter := types.Twter{Nick: feed.Nick}
 				if strings.HasPrefix(feed.URL, conf.BaseURL) {
 					twter.URL = URLForUser(conf, feed.Nick)
@@ -263,7 +271,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 						twter.Avatar = URLForExternalAvatar(conf, feed.URL)
 					}
 				}
-				twts, old, err := retwt.ParseFile(scanner, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
+				twts, old, err := types.ParseFile(limitedReader, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
 				if err != nil {
 					log.WithError(err).Errorf("error parsing feed %s", feed)
 					twtsch <- nil

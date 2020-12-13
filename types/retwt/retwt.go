@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"regexp"
 	"sort"
 	"strings"
@@ -51,29 +52,44 @@ var _ gob.GobDecoder = (*reTwt)(nil)
 
 func (twt *reTwt) GobEncode() ([]byte, error) {
 	enc := struct {
-		Twter   types.Twter
-		Text    string
-		Created time.Time
-	}{twt.twter, twt.text, twt.created}
+		Twter   types.Twter `json:"twter"`
+		Text    string      `json:"text"`
+		Created time.Time   `json:"created"`
+		Hash    string      `json:"hash"`
+	}{twt.twter, twt.text, twt.created, twt.hash}
 	return json.Marshal(enc)
 }
 func (twt *reTwt) GobDecode(data []byte) error {
 	enc := struct {
-		Twter   types.Twter
-		Text    string
-		Created time.Time
+		Twter   types.Twter `json:"twter"`
+		Text    string      `json:"text"`
+		Created time.Time   `json:"created"`
+		Hash    string      `json:"hash"`
 	}{}
 	err := json.Unmarshal(data, &enc)
 
 	twt.twter = enc.Twter
 	twt.text = enc.Text
 	twt.created = enc.Created
+	twt.hash = enc.Hash
 
 	return err
 }
 
+func (twt *reTwt) String() string {
+	return fmt.Sprintf("%v\t%v", twt.created.Format(time.RFC3339), twt.text)
+}
+
 func NewReTwt(twter types.Twter, text string, created time.Time) *reTwt {
 	return &reTwt{twter: twter, text: text, created: created}
+}
+
+func DecodeJSON(data []byte) (types.Twt, error) {
+	twt := &reTwt{}
+	if err := twt.GobDecode(data); err != nil {
+		return types.NilTwt, err
+	}
+	return twt, nil
 }
 
 func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
@@ -108,7 +124,9 @@ func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
 	return
 }
 
-func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N int) (types.Twts, types.Twts, error) {
+func ParseFile(r io.Reader, twter types.Twter, ttl time.Duration, N int) (types.Twts, types.Twts, error) {
+	scanner := bufio.NewScanner(r)
+
 	var (
 		twts types.Twts
 		old  types.Twts
@@ -195,7 +213,7 @@ func (twt *reTwt) MarshalJSON() ([]byte, error) {
 }
 
 // Mentions ...
-func (twt *reTwt) Mentions() []types.Mention {
+func (twt *reTwt) Mentions() types.MentionList {
 	if twt == nil {
 		return nil
 	}
@@ -217,7 +235,7 @@ func (twt *reTwt) Mentions() []types.Mention {
 }
 
 // Tags ...
-func (twt *reTwt) Tags() []types.Tag {
+func (twt *reTwt) Tags() types.TagList {
 	if twt == nil {
 		return nil
 	}
@@ -369,3 +387,17 @@ var (
 	ErrInvalidTwtLine = errors.New("error: invalid twt line parsed")
 	ErrInvalidFeed    = errors.New("error: erroneous feed detected")
 )
+
+type retwtManager struct{}
+
+func (*retwtManager) DecodeJSON(b []byte) (types.Twt, error) { return DecodeJSON(b) }
+func (*retwtManager) ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
+	return ParseLine(line, twter)
+}
+func (*retwtManager) ParseFile(r io.Reader, twter types.Twter, ttl time.Duration, N int) (types.Twts, types.Twts, error) {
+	return ParseFile(r, twter, ttl, N)
+}
+
+func DefaultTwtManager() {
+	types.SetTwtManager(&retwtManager{})
+}

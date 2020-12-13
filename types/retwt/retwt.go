@@ -313,7 +313,7 @@ func formatMentionsAndTags(opts types.FmtOpts, text string, format types.TwtText
 			switch prefix {
 			case "@":
 				if opts.IsLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
-					return fmt.Sprintf("%s@%s", nick, opts.BaseURL().Hostname())
+					return fmt.Sprintf("%s@%s", nick, opts.LocalURL().Hostname())
 				}
 				return fmt.Sprintf("@%s", nick)
 			default:

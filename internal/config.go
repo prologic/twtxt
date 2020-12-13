@@ -35,12 +35,12 @@ type Settings struct {
 type Config struct {
 	Debug bool
 
-	Data        string
-	Name        string
-	Description string
-	Store       string
-	Theme       string
-	// BaseURL        string
+	Data              string
+	Name              string
+	Description       string
+	Store             string
+	Theme             string
+	BaseURL           string
 	AdminUser         string
 	AdminName         string
 	AdminEmail        string
@@ -87,10 +87,9 @@ func (c *Config) IsLocalURL(url string) bool {
 	if NormalizeURL(url) == "" {
 		return false
 	}
-	return strings.HasPrefix(NormalizeURL(url), NormalizeURL(c.BaseURLString()))
+	return strings.HasPrefix(NormalizeURL(url), NormalizeURL(c.BaseURL))
 }
-func (c *Config) BaseURL() *url.URL                   { return c.baseURL }
-func (c *Config) BaseURLString() string               { return c.baseURLstring }
+func (c *Config) LocalURL() *url.URL                  { return c.baseURL }
 func (c *Config) ExternalURL(nick, uri string) string { return URLForExternalProfile(c, nick, uri) }
 func (c *Config) UserURL(url string) string           { return UserURL(url) }
 

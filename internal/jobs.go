@@ -203,8 +203,8 @@ func (job *UpdateFeedsJob) Run() {
 	log.Infof("updating %d sources", len(sources))
 	job.cache.FetchTwts(job.conf, job.archive, sources, followers)
 
-	log.Infof("warming cache with local twts for %s", job.conf.BaseURLString())
-	job.cache.GetByPrefix(job.conf.BaseURLString(), true)
+	log.Infof("warming cache with local twts for %s", job.conf.BaseURL)
+	job.cache.GetByPrefix(job.conf.BaseURL, true)
 
 	log.Info("updated feed cache")
 

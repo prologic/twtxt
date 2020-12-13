@@ -140,7 +140,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 			"cache",
 			"last_processed_seconds",
 		).Set(
-			float64(time.Now().Sub(stime) / 1e9),
+			float64(time.Since(stime) / 1e9),
 		)
 	}()
 
@@ -185,7 +185,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 						followersString = fmt.Sprintf(
 							"%s and %d more... %s",
 							strings.Join(feedFollowers[:5], " "),
-							(len(feedFollowers) - 5), URLForWhoFollows(conf.BaseURLString(), feed),
+							(len(feedFollowers) - 5), URLForWhoFollows(conf.BaseURL, feed),
 						)
 					} else {
 						followersString = strings.Join(feedFollowers, " ")
@@ -196,7 +196,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 						fmt.Sprintf(
 							"twtxt/%s (Pod: %s Followers: %s Support: %s)",
 							twtxt.FullVersion(), conf.Name,
-							followersString, URLForPage(conf.BaseURLString(), "support"),
+							followersString, URLForPage(conf.BaseURL, "support"),
 						),
 					)
 				}
@@ -237,7 +237,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 				limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
 				scanner := bufio.NewScanner(limitedReader)
 				twter := types.Twter{Nick: feed.Nick}
-				if strings.HasPrefix(feed.URL, conf.BaseURLString()) {
+				if strings.HasPrefix(feed.URL, conf.BaseURL) {
 					twter.URL = URLForUser(conf, feed.Nick)
 					twter.Avatar = URLForAvatar(conf, feed.Nick)
 				} else {

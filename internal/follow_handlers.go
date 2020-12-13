@@ -54,7 +54,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 			return
 		}
 
-		if strings.HasPrefix(url, s.config.BaseURLString()) {
+		if strings.HasPrefix(url, s.config.BaseURL) {
 			url = UserURL(url)
 			nick := NormalizeUsername(filepath.Base(url))
 
@@ -234,7 +234,7 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 			return
 		}
 
-		if strings.HasPrefix(url, s.config.BaseURLString()) {
+		if strings.HasPrefix(url, s.config.BaseURL) {
 			url = UserURL(url)
 			nick := NormalizeUsername(filepath.Base(url))
 			followee, err := s.db.GetUser(nick)

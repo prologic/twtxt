@@ -271,7 +271,7 @@ func Request(conf *Config, method, url string, headers http.Header) (*http.Respo
 			"User-Agent",
 			fmt.Sprintf(
 				"twtxt/%s (Pod: %s Support: %s)",
-				twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURLString(), "support"),
+				twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURL, "support"),
 			),
 		)
 	}
@@ -386,7 +386,7 @@ func RenderString(tpl string, ctx *Context) (string, error) {
 }
 
 func IsExternalFeedFactory(conf *Config) func(url string) bool {
-	baseURL := NormalizeURL(conf.BaseURLString())
+	baseURL := NormalizeURL(conf.BaseURL)
 	externalBaseURL := fmt.Sprintf("%s/external", strings.TrimSuffix(baseURL, "/"))
 
 	return func(url string) bool {
@@ -402,13 +402,13 @@ func IsLocalURLFactory(conf *Config) func(url string) bool {
 		if NormalizeURL(url) == "" {
 			return false
 		}
-		return strings.HasPrefix(NormalizeURL(url), NormalizeURL(conf.BaseURLString()))
+		return strings.HasPrefix(NormalizeURL(url), NormalizeURL(conf.BaseURL))
 	}
 }
 
 func GetUserFromURL(conf *Config, db Store, url string) (*User, error) {
-	if !strings.HasPrefix(url, conf.BaseURLString()) {
-		return nil, fmt.Errorf("error: %s does not match our base url of %s", url, conf.BaseURLString())
+	if !strings.HasPrefix(url, conf.BaseURL) {
+		return nil, fmt.Errorf("error: %s does not match our base url of %s", url, conf.BaseURL)
 	}
 
 	userURL := UserURL(url)
@@ -801,7 +801,7 @@ func TranscodeAudio(conf *Config, ifn string, resource, name string, opts *Audio
 
 	return fmt.Sprintf(
 		"%s/%s/%s",
-		strings.TrimSuffix(conf.BaseURLString(), "/"),
+		strings.TrimSuffix(conf.BaseURL, "/"),
 		resource, filepath.Base(ofn),
 	), nil
 }
@@ -878,7 +878,7 @@ func ProcessImage(conf *Config, ifn string, resource, name string, opts *ImageOp
 
 	return fmt.Sprintf(
 		"%s/%s/%s",
-		strings.TrimSuffix(conf.BaseURLString(), "/"),
+		strings.TrimSuffix(conf.BaseURL, "/"),
 		resource, strings.TrimSuffix(filepath.Base(ofn), filepath.Ext(ofn)),
 	), nil
 }
@@ -1060,7 +1060,7 @@ func TranscodeVideo(conf *Config, ifn string, resource, name string, opts *Video
 
 	return fmt.Sprintf(
 		"%s/%s/%s",
-		strings.TrimSuffix(conf.BaseURLString(), "/"),
+		strings.TrimSuffix(conf.BaseURL, "/"),
 		resource, filepath.Base(ofn),
 	), nil
 }
@@ -1187,7 +1187,7 @@ func NormalizeURL(url string) string {
 
 func RedirectURL(r *http.Request, conf *Config, defaultURL string) string {
 	referer := NormalizeURL(r.Header.Get("Referer"))
-	if referer != "" && strings.HasPrefix(referer, conf.BaseURLString()) {
+	if referer != "" && strings.HasPrefix(referer, conf.BaseURL) {
 		return referer
 	}
 
@@ -1256,7 +1256,7 @@ func URLForTwt(baseURL, hash string) string {
 func URLForUser(conf *Config, username string) string {
 	return fmt.Sprintf(
 		"%s/user/%s/twtxt.txt",
-		strings.TrimSuffix(conf.BaseURLString(), "/"),
+		strings.TrimSuffix(conf.BaseURL, "/"),
 		username,
 	)
 }
@@ -1264,7 +1264,7 @@ func URLForUser(conf *Config, username string) string {
 func URLForAvatar(conf *Config, username string) string {
 	return fmt.Sprintf(
 		"%s/user/%s/avatar",
-		strings.TrimSuffix(conf.BaseURLString(), "/"),
+		strings.TrimSuffix(conf.BaseURL, "/"),
 		username,
 	)
 }
@@ -1272,7 +1272,7 @@ func URLForAvatar(conf *Config, username string) string {
 func URLForExternalProfile(conf *Config, nick, uri string) string {
 	return fmt.Sprintf(
 		"%s/external?uri=%s&nick=%s",
-		strings.TrimSuffix(conf.BaseURLString(), "/"),
+		strings.TrimSuffix(conf.BaseURL, "/"),
 		uri, nick,
 	)
 }
@@ -1280,7 +1280,7 @@ func URLForExternalProfile(conf *Config, nick, uri string) string {
 func URLForExternalAvatar(conf *Config, uri string) string {
 	return fmt.Sprintf(
 		"%s/externalAvatar?uri=%s",
-		strings.TrimSuffix(conf.BaseURLString(), "/"),
+		strings.TrimSuffix(conf.BaseURL, "/"),
 		uri,
 	)
 }
@@ -1311,7 +1311,7 @@ func URLForBlogFactory(conf *Config, blogs *BlogsCache) func(twt types.Twt) stri
 			return ""
 		}
 
-		return blogPost.URL(conf.BaseURLString())
+		return blogPost.URL(conf.BaseURL)
 	}
 }
 
@@ -1342,7 +1342,7 @@ func URLForConvFactory(conf *Config, cache *Cache) func(twt types.Twt) string {
 
 		return fmt.Sprintf(
 			"%s/conv/%s",
-			strings.TrimSuffix(conf.BaseURLString(), "/"),
+			strings.TrimSuffix(conf.BaseURL, "/"),
 			hash,
 		)
 	}

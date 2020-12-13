@@ -95,10 +95,10 @@ func (twts Twts) TagCount() map[string]int {
 }
 
 type FmtOpts interface {
+	LocalURL() *url.URL
 	IsLocalURL(string) bool
 	UserURL(string) string
 	ExternalURL(nick, uri string) string
-	BaseURL() *url.URL
 }
 
 // TwtTextFormat represents the format of which the twt text gets formatted to

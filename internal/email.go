@@ -135,7 +135,7 @@ func SendPasswordResetEmail(conf *Config, user *User, email, token string) error
 	)
 	ctx := PasswordResetEmailContext{
 		Pod:     conf.Name,
-		BaseURL: conf.BaseURLString(),
+		BaseURL: conf.BaseURL,
 
 		Token:    token,
 		Username: user.Username,

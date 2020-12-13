@@ -214,7 +214,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 				s.render("error", w, ctx)
 				return
 			}
-			profile = user.Profile(s.config.BaseURLString(), ctx.User)
+			profile = user.Profile(s.config.BaseURL, ctx.User)
 		} else if s.db.HasFeed(nick) {
 			feed, err := s.db.GetFeed(nick)
 			if err != nil {
@@ -224,7 +224,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 				s.render("error", w, ctx)
 				return
 			}
-			profile = feed.Profile(s.config.BaseURLString(), ctx.User)
+			profile = feed.Profile(s.config.BaseURL, ctx.User)
 		} else {
 			ctx.Error = true
 			ctx.Message = "User or Feed Not Found"
@@ -311,7 +311,7 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 
 		switch r.Method {
 		case http.MethodGet:
-			ctx.Profile = feed.Profile(s.config.BaseURLString(), ctx.User)
+			ctx.Profile = feed.Profile(s.config.BaseURL, ctx.User)
 			ctx.Title = fmt.Sprintf("Manage feed %s", feed.Name)
 			s.render("manageFeed", w, ctx)
 			return
@@ -426,7 +426,7 @@ func (s *Server) OldTwtxtHandler() httprouter.Handle {
 
 		newURI := fmt.Sprintf(
 			"%s/user/%s/twtxt.txt",
-			strings.TrimSuffix(s.config.BaseURLString(), "/"),
+			strings.TrimSuffix(s.config.BaseURL, "/"),
 			nick,
 		)
 
@@ -447,7 +447,7 @@ func (s *Server) OldAvatarHandler() httprouter.Handle {
 
 		newURI := fmt.Sprintf(
 			"%s/user/%s/avatar",
-			strings.TrimSuffix(s.config.BaseURLString(), "/"),
+			strings.TrimSuffix(s.config.BaseURL, "/"),
 			nick,
 		)
 
@@ -590,7 +590,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.Header().Set("Link", fmt.Sprintf(`<%s/user/%s/webmention>; rel="webmention"`, s.config.BaseURLString(), nick))
+		w.Header().Set("Link", fmt.Sprintf(`<%s/user/%s/webmention>; rel="webmention"`, s.config.BaseURL, nick))
 		w.Header().Set("Last-Modified", fileInfo.ModTime().UTC().Format(http.TimeFormat))
 
 		followerClient, err := DetectFollowerFromUserAgent(r.UserAgent())
@@ -659,7 +659,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 			s.cache.FetchTwts(s.config, s.archive, ctx.User.Source(), nil)
 
 			// Re-populate/Warm cache with local twts for this pod
-			s.cache.GetByPrefix(s.config.BaseURLString(), true)
+			s.cache.GetByPrefix(s.config.BaseURL, true)
 
 			if r.Method != http.MethodDelete {
 				return
@@ -745,13 +745,13 @@ func (s *Server) PostHandler() httprouter.Handle {
 		s.cache.FetchTwts(s.config, s.archive, user.Source(), nil)
 
 		// Re-populate/Warm cache with local twts for this pod
-		s.cache.GetByPrefix(s.config.BaseURLString(), true)
+		s.cache.GetByPrefix(s.config.BaseURL, true)
 
 		// WebMentions ...
 		for _, m := range twt.Mentions() {
 			twter := m.Twter()
 			if !isLocalURL(twter.URL) || isExternalFeed(twter.URL) {
-				if err := WebMention(twter.URL, URLForTwt(s.config.BaseURLString(), twt.Hash())); err != nil {
+				if err := WebMention(twter.URL, URLForTwt(s.config.BaseURL, twt.Hash())); err != nil {
 					log.WithError(err).Warnf("error sending webmention to %s", twter.URL)
 				}
 			}
@@ -775,7 +775,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		var twts types.Twts
 
 		if !ctx.Authenticated {
-			twts = s.cache.GetByPrefix(s.config.BaseURLString(), false)
+			twts = s.cache.GetByPrefix(s.config.BaseURL, false)
 			ctx.Title = "Local timeline"
 		} else {
 			ctx.Title = "Timeline"
@@ -895,12 +895,12 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("Last-Modified", twt.Created().Format(http.TimeFormat))
-		if strings.HasPrefix(twt.Twter().URL, s.config.BaseURLString()) {
+		if strings.HasPrefix(twt.Twter().URL, s.config.BaseURL) {
 			w.Header().Set(
 				"Link",
 				fmt.Sprintf(
 					`<%s/user/%s/webmention>; rel="webmention"`,
-					s.config.BaseURLString(), twt.Twter().Nick,
+					s.config.BaseURL, twt.Twter().Nick,
 				),
 			)
 		}
@@ -919,10 +919,10 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			UpdatedAt:   when,
 			Author:      who,
 			Image:       image,
-			URL:         URLForTwt(s.config.BaseURLString(), hash),
+			URL:         URLForTwt(s.config.BaseURL, hash),
 			Keywords:    strings.Join(ks, ", "),
 		}
-		if strings.HasPrefix(twt.Twter().URL, s.config.BaseURLString()) {
+		if strings.HasPrefix(twt.Twter().URL, s.config.BaseURL) {
 			ctx.Links = append(ctx.Links, types.Link{
 				Href: fmt.Sprintf("%s/webmention", UserURL(twt.Twter().URL)),
 				Rel:  "webmention",
@@ -954,7 +954,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		localTwts := s.cache.GetByPrefix(s.config.BaseURLString(), false)
+		localTwts := s.cache.GetByPrefix(s.config.BaseURL, false)
 
 		var pagedTwts types.Twts
 
@@ -1501,7 +1501,7 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 				s.render("401", w, ctx)
 				return
 			}
-			ctx.Profile = user.Profile(s.config.BaseURLString(), ctx.User)
+			ctx.Profile = user.Profile(s.config.BaseURL, ctx.User)
 		} else if s.db.HasFeed(nick) {
 			feed, err := s.db.GetFeed(nick)
 			if err != nil {
@@ -1511,7 +1511,7 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 				s.render("error", w, ctx)
 				return
 			}
-			ctx.Profile = feed.Profile(s.config.BaseURLString(), ctx.User)
+			ctx.Profile = feed.Profile(s.config.BaseURL, ctx.User)
 		} else {
 			ctx.Error = true
 			ctx.Message = "User or Feed Not Found"
@@ -1557,7 +1557,7 @@ func (s *Server) FollowingHandler() httprouter.Handle {
 				s.render("401", w, ctx)
 				return
 			}
-			ctx.Profile = user.Profile(s.config.BaseURLString(), ctx.User)
+			ctx.Profile = user.Profile(s.config.BaseURL, ctx.User)
 		} else {
 			ctx.Error = true
 			ctx.Message = "User Not Found"
@@ -1959,7 +1959,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 		if nick != "" {
 			if s.db.HasUser(nick) {
 				if user, err := s.db.GetUser(nick); err == nil {
-					profile = user.Profile(s.config.BaseURLString(), nil)
+					profile = user.Profile(s.config.BaseURL, nil)
 					twts = s.cache.GetByURL(profile.URL)
 				} else {
 					log.WithError(err).Error("error loading user object")
@@ -1968,7 +1968,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 				}
 			} else if s.db.HasFeed(nick) {
 				if feed, err := s.db.GetFeed(nick); err == nil {
-					profile = feed.Profile(s.config.BaseURLString(), nil)
+					profile = feed.Profile(s.config.BaseURL, nil)
 					twts = s.cache.GetByURL(profile.URL)
 				} else {
 					log.WithError(err).Error("error loading user object")
@@ -1980,13 +1980,13 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 				return
 			}
 		} else {
-			twts = s.cache.GetByPrefix(s.config.BaseURLString(), false)
+			twts = s.cache.GetByPrefix(s.config.BaseURL, false)
 
 			profile = types.Profile{
 				Type:     "Local",
 				Username: s.config.Name,
 				Tagline:  "", // TODO: Maybe Twtxt Pods should have a configurable description?
-				URL:      s.config.BaseURLString(),
+				URL:      s.config.BaseURL,
 			}
 		}
 
@@ -2021,7 +2021,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 			items = append(items, &feeds.Item{
 				Id:          twt.Hash(),
 				Title:       string(formatTwt(twt.Text())),
-				Link:        &feeds.Link{Href: URLForTwt(s.config.BaseURLString(), twt.Hash())},
+				Link:        &feeds.Link{Href: URLForTwt(s.config.BaseURL, twt.Hash())},
 				Author:      &feeds.Author{Name: twt.Twter().Nick},
 				Description: string(formatTwt(twt.Text())),
 				Created:     twt.Created(),
@@ -2134,7 +2134,7 @@ func (s *Server) TransferFeedHandler() httprouter.Handle {
 					return
 				}
 
-				ctx.Profile = feed.Profile(s.config.BaseURLString(), ctx.User)
+				ctx.Profile = feed.Profile(s.config.BaseURL, ctx.User)
 				s.render("transferFeed", w, ctx)
 				return
 			}
@@ -2355,7 +2355,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 		s.cache.Delete(ctx.User.Source())
 
 		// Re-populate/Warm cache with local twts for this pod
-		s.cache.GetByPrefix(s.config.BaseURLString(), true)
+		s.cache.GetByPrefix(s.config.BaseURL, true)
 
 		s.sm.Delete(w, r)
 		ctx.Authenticated = false

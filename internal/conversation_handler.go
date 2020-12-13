@@ -59,7 +59,7 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 
 		twter := twt.Twter()
 		if isLocal(twter.URL) {
-			who = fmt.Sprintf("%s@%s", twter.Nick, s.config.BaseURL().Hostname())
+			who = fmt.Sprintf("%s@%s", twter.Nick, s.config.LocalURL().Hostname())
 			image = URLForAvatar(s.config, twter.Nick)
 		} else {
 			who = fmt.Sprintf("@<%s %s>", twter.Nick, twter.URL)
@@ -82,12 +82,12 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("Last-Modified", twt.Created().Format(http.TimeFormat))
-		if strings.HasPrefix(twt.Twter().URL, s.config.BaseURLString()) {
+		if strings.HasPrefix(twt.Twter().URL, s.config.BaseURL) {
 			w.Header().Set(
 				"Link",
 				fmt.Sprintf(
 					`<%s/user/%s/webmention>; rel="webmention"`,
-					s.config.BaseURLString(), twt.Twter().Nick,
+					s.config.BaseURL, twt.Twter().Nick,
 				),
 			)
 		}
@@ -139,11 +139,11 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 			UpdatedAt:   when,
 			Author:      who,
 			Image:       image,
-			URL:         URLForTwt(s.config.BaseURLString(), hash),
+			URL:         URLForTwt(s.config.BaseURL, hash),
 			Keywords:    strings.Join(ks, ", "),
 		}
 
-		if strings.HasPrefix(twt.Twter().URL, s.config.BaseURLString()) {
+		if strings.HasPrefix(twt.Twter().URL, s.config.BaseURL) {
 			ctx.Links = append(ctx.Links, types.Link{
 				Href: fmt.Sprintf("%s/webmention", UserURL(twt.Twter().URL)),
 				Rel:  "webmention",

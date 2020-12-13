@@ -84,7 +84,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	ctx := &Context{
 		Debug: conf.Debug,
 
-		BaseURL:          conf.BaseURLString(),
+		BaseURL:          conf.BaseURL,
 		InstanceName:     conf.Name,
 		SoftwareVersion:  twtxt.FullVersion(),
 		TwtsPerPage:      conf.TwtsPerPage,
@@ -111,7 +111,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 			types.Alternative{
 				Type:  "application/atom+xml",
 				Title: fmt.Sprintf("%s local feed", conf.Name),
-				URL:   fmt.Sprintf("%s/atom.xml", conf.BaseURLString()),
+				URL:   fmt.Sprintf("%s/atom.xml", conf.BaseURL),
 			},
 		},
 	}

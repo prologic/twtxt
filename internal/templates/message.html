@@ -31,8 +31,9 @@
     </hgroup>
     <form id="compose" action="/messages/send" method="POST">
       <input type="hidden" name="recipient" value="{{ $Msg.From }}">
+      <input type="hidden" name="subject" value="{{ $Msg.Subject }}">
       <div class="textarea-container">
-        <textarea id="message" name="message" placeholder="Your reply" rows=3 maxlength={{ $.MaxTwtLength }} required></textarea>
+        <textarea id="body" name="body" placeholder="Your reply" rows=3 maxlength={{ $.MaxTwtLength }} required></textarea>
       </div>
       <div class="grid">
         <div>

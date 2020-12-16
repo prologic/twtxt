@@ -23,6 +23,8 @@ require (
 	github.com/disintegration/imageorient v0.0.0-20180920195336-8147d86e83ec
 	github.com/dustin/go-humanize v1.0.0
 	github.com/elithrar/simple-scrypt v1.3.0
+	github.com/emersion/go-mbox v1.0.2
+	github.com/emersion/go-message v0.14.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gabstv/merger v1.0.1
 	github.com/goccy/go-yaml v1.8.2
@@ -76,7 +78,6 @@ require (
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
 	golang.org/x/sys v0.0.0-20201116194326-cc9327a14d48 // indirect
-	golang.org/x/text v0.3.4 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/ini.v1 v1.62.0 // indirect

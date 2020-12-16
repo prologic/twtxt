@@ -3,6 +3,7 @@ package internal
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"encoding/base32"
 	"errors"
 	"fmt"
@@ -124,6 +125,12 @@ var (
 		},
 	}
 )
+
+func GenerateRandomToken() string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
+}
 
 func FastHash(s string) string {
 	sum := blake2b.Sum256([]byte(s))

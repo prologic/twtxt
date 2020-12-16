@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/mail"
 	"strings"
+	"time"
 
 	"github.com/emersion/go-message"
 	"github.com/jointwt/twtxt/internal/passwords"
@@ -81,70 +82,25 @@ func NewSMTPService(config *Config, db Store, pm passwords.Passwords, tasks *Dis
 }
 
 func (s *SMTPService) authHandler() smtpd.AuthHandler {
+	failures := NewTTLCache(5 * time.Minute)
 	return func(remoteAddr net.Addr, mechanism string, username []byte, password []byte, shared []byte) (bool, error) {
-		/*
-			// #239: Throttle failed login attempts and lock user  account.
-			failures := NewTTLCache(5 * time.Minute)
-
-			return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-				ctx := NewContext(s.config, s.db, r)
-
-				if r.Method == "GET" {
-					s.render("login", w, ctx)
-					return
-				}
-
-				username := NormalizeUsername(r.FormValue("username"))
-				password := r.FormValue("password")
-				rememberme := r.FormValue("rememberme") == "on"
-
-				// Error: no username or password provided
-				if username == "" || password == "" {
-					log.Warn("no username or password provided")
-					http.Redirect(w, r, "/login", http.StatusFound)
-					return
-				}
-
-				// Lookup user
-				user, err := s.db.GetUser(username)
-				if err != nil {
-					ctx.Error = true
-					ctx.Message = "Invalid username! Hint: Register an account?"
-					s.render("error", w, ctx)
-					return
-				}
-
-				// #239: Throttle failed login attempts and lock user  account.
-				if failures.Get(user.Username) > MaxFailedLogins {
-					ctx.Error = true
-					ctx.Message = "Too many failed login attempts. Account temporarily locked! Please try again later."
-					s.render("error", w, ctx)
-					return
-				}
-
-				// Validate cleartext password against KDF hash
-				err = s.pm.CheckPassword(user.Password, password)
-				if err != nil {
-					// #239: Throttle failed login attempts and lock user  account.
-					failed := failures.Inc(user.Username)
-					time.Sleep(time.Duration(IntPow(2, failed)) * time.Second)
-
-					ctx.Error = true
-					ctx.Message = "Invalid password! Hint: Reset your password?"
-					s.render("error", w, ctx)
-					return
-				}
-
-				// #239: Throttle failed login attempts and lock user  account.
-				failures.Reset(user.Username)
-
-				// Login successful
-				log.Infof("login successful: %s", username)
-		*/
-
-		if string(username) != "admin" {
-			return false, fmt.Errorf("error invalid credentials")
+		// Error: no username or password provided
+		if username == nil || password == nil {
+			log.Warn("no username or password provided")
+			return false, nil
 		}
+
+		// Lookup user
+		user, err := s.db.GetUser(string(username))
+		if err != nil {
+			return false, err
+		}
+
+		if failures.Get(user.Username) > MaxFailedLogins {
+			return false, err
+		}
+
+		failures.Reset(user.Username)
 
 		if mechanism == "CRAM-MD5" {
 			messageMac := make([]byte, hex.DecodedLen(len(password)))
@@ -152,14 +108,24 @@ func (s *SMTPService) authHandler() smtpd.AuthHandler {
 			if err != nil {
 				return false, err
 			}
-			return validMAC(md5.New, shared, messageMac[:n], []byte("admin")), nil
+			if !validMAC(md5.New, shared, messageMac[:n], []byte(user.SMTPToken)) {
+				return false, nil
+			}
+			log.Infof("SMTP login successful: %s", username)
+			return true, nil
 		}
-		hash, err := bcrypt.GenerateFromPassword([]byte("admin"), 10)
+
+		hash, err := bcrypt.GenerateFromPassword([]byte(user.SMTPToken), 10)
 		if err != nil {
 			return false, err
 		}
-		err = bcrypt.CompareHashAndPassword(hash, password)
-		return err == nil, err
+		if err := bcrypt.CompareHashAndPassword(hash, password); err != nil {
+			return false, err
+		}
+
+		log.Infof("SMTP login successful: %s", username)
+
+		return true, nil
 	}
 }
 

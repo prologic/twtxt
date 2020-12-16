@@ -55,6 +55,7 @@ require (
 	github.com/prologic/bitcask v0.3.9
 	github.com/prologic/observe v0.0.0-20181231082615-747b185a0928
 	github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987
+	github.com/prologic/smtpd v0.0.0-20201215080427-fd3f94c87eb7
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0
 	github.com/renstrom/shortuuid v3.0.0+incompatible

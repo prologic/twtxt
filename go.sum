@@ -339,6 +339,8 @@ github.com/prologic/observe v0.0.0-20181231082615-747b185a0928 h1:B63MGEQCv0W1lt
 github.com/prologic/observe v0.0.0-20181231082615-747b185a0928/go.mod h1:tEdBKdkpsOZCgueJIZwZREodFg5oRhLkTWWNiQ5y84E=
 github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987 h1:xPlhozlqV4y0twz46loB/G98pATrMLDz7BMlb0LGUpU=
 github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987/go.mod h1:t5ZL5tajhqRldLeY8GpGENXPEl41oaDnpf4LMB5iUM0=
+github.com/prologic/smtpd v0.0.0-20201215080427-fd3f94c87eb7 h1:5hhZWF2uhwnvvY/oAKHSJzVzB+ZxuIqIiHPRYF3cnP0=
+github.com/prologic/smtpd v0.0.0-20201215080427-fd3f94c87eb7/go.mod h1:GkLsdH1RZj6RDKeI9A05NGZYmEZQ/PbQcZPnZoSZuYI=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=
 github.com/prometheus/client_golang v0.9.2/go.mod h1:OsXs2jCmiKlQ1lTBmv21f2mNfw4xf/QclQDMrYNZzcM=
 github.com/prometheus/client_golang v0.9.3 h1:9iH4JKXLzFbOAdtqv/a+j8aewx2Y8lAjAydhbaScPF8=

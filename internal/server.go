@@ -75,6 +75,9 @@ type Server struct {
 	// API
 	api *API
 
+	// SMTP Service
+	smtpService *SMTPService
+
 	// Passwords
 	pm passwords.Passwords
 }
@@ -106,6 +109,7 @@ func (s *Server) AddShutdownHook(f func()) {
 func (s *Server) Shutdown(ctx context.Context) error {
 	s.cron.Stop()
 	s.tasks.Stop()
+	s.smtpService.Stop()
 
 	if err := s.server.Shutdown(ctx); err != nil {
 		log.WithError(err).Error("error shutting down server")
@@ -682,6 +686,8 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	api := NewAPI(router, config, cache, archive, db, pm, tasks)
 
+	smtpService := NewSMTPService(config, db, pm, tasks)
+
 	server := &Server{
 		bind:      bind,
 		config:    config,
@@ -702,6 +708,9 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 		// API
 		api: api,
+
+		// SMTP Servicee
+		smtpService: smtpService,
 
 		// Blogs Cache
 		blogs: blogs,
@@ -741,6 +750,9 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	server.tasks.Start()
 	log.Info("started task dispatcher")
+
+	server.smtpService.Start()
+	log.Info("started SMTP service")
 
 	server.setupWebMentions()
 	log.Infof("started webmentions processor")

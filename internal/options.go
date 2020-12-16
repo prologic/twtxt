@@ -76,6 +76,10 @@ const (
 	// DefaultMagicLinkSecret is the jwt magic link secret
 	DefaultMagicLinkSecret = "PLEASE_CHANGE_ME!!!"
 
+	// Default Messaging settings
+	DefaultSMTPBind = "0.0.0.0:8025"
+	DefaultPOP3Bind = "0.0.0.0:8110"
+
 	// Default SMTP configuration
 	DefaultSMTPHost = "smtp.gmail.com"
 	DefaultSMTPPort = 587
@@ -336,6 +340,22 @@ func WithTranscoderTimeout(timeout time.Duration) Option {
 func WithMagicLinkSecret(secret string) Option {
 	return func(cfg *Config) error {
 		cfg.MagicLinkSecret = secret
+		return nil
+	}
+}
+
+// WithSMTPBind sets the interface and port to bind to for SMTP
+func WithSMTPBind(smtpBind string) Option {
+	return func(cfg *Config) error {
+		cfg.SMTPBind = smtpBind
+		return nil
+	}
+}
+
+// WithPOP3Bind sets the interface and port to use for POP3
+func WithPOP3Bind(pop3Bind string) Option {
+	return func(cfg *Config) error {
+		cfg.POP3Bind = pop3Bind
 		return nil
 	}
 }

@@ -18,20 +18,30 @@ jobs:
               sudo apt-get update &&
               sudo apt-get install -y libavcodec-dev
               libavutil-dev libavformat-dev libswscale-dev
+            releaser: .goreleaser-linux.yml
+
           - platform: macos-latest
-            pre: brew install ffmpeg
+            pre: brew install ffmpeg goreleaser
+            releaser: .goreleaser-darwin.yml
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install dependencies
         run: /bin/sh -c "${{ matrix.pre }}"
+
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v1
         with:
           go-version: ${{ matrix.go-version }}
         id: go
+
       - name: Checkout
         uses: actions/checkout@v1
+
       - name: Build
         run: go build -v ./cmd/twtd/...
+
       - name: Test
         run: go test -v -race ./...
+
+      - name: Go Releaser
+        run:  curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh && ./bin/goreleaser build --skip-validate --config ${{ matrix.releaser }}

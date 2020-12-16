@@ -1,0 +1,35 @@
+---
+builds:
+  - id: twt
+    binary: twt
+    main: ./cmd/twt
+    flags: -tags "static_build"
+    ldflags: >-
+      -w
+      -X github.com/jointwt/twtxt.Version={{.Version}}
+      -X github.com/jointwt/twtxt.Commit={{.Commit}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+    goarm:
+      - 6
+      - 7
+signs:
+  - artifacts: checksum
+brews:
+  -
+    github:
+      owner: prologic
+      name: homebrew-twtxt
+    homepage: "https://github.io/jointwt/twtxt"
+    description: |
+      📕 twtxt is a Self-Hosted, Twitter™-like Decentralised microBlogging
+      platform. No ads, no tracking, your content, your data!
+release:
+  github:
+    owner: prologic
+    name: twtxt
+  draft: true

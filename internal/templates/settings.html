@@ -130,6 +130,24 @@
       </details>  
 
       <details>
+        <summary>Messaging Tokens</summary>
+        <div class="grid">
+          <div>
+            <label for="smtpToken">
+              SMTP Token:
+              <input value="{{ .User.SMTPToken }}" readonly />
+            </label>
+          </div>
+          <div>
+            <label for="pop3Token">
+              POP3 Token:
+              <input value="{{ .User.POP3Token }}" readonly />
+            </label>
+          </div>
+        </div>
+      </details>
+
+      <details>
         <summary>Delete account</summary>
         <p>
           <b>WARNING:</b>&nbsp;This is permanent and cannot be undone!

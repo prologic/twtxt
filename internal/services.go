@@ -130,9 +130,16 @@ func (s *SMTPService) authHandler() smtpd.AuthHandler {
 }
 
 func (s *SMTPService) rcptHandler() smtpd.HandlerRcpt {
+	localDomain := HostnameFromURL(s.config.BaseURL)
+
 	return func(remoteAddr net.Addr, from string, to string) bool {
-		_, domain := splitEmailAddress(to)
-		return domain == "twtxt.net"
+		username, domain := splitEmailAddress(to)
+
+		if domain == localDomain {
+			return s.db.HasUser(username)
+		}
+		log.Warn("cross-pod messaging not implemented (yet)")
+		return false
 	}
 }
 

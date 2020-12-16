@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/jointwt/twtxt/types"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/blake2b"
 )
 

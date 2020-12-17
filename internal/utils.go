@@ -1094,7 +1094,7 @@ func ValidateFeed(conf *Config, nick, url string) error {
 
 	limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
 	twter := types.Twter{Nick: nick, URL: url}
-	_, _, err = types.ParseFile(limitedReader, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
+	_, err = types.ParseFile(limitedReader, twter)
 	if err != nil {
 		return err
 	}

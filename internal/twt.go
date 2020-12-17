@@ -233,12 +233,12 @@ func GetAllTwts(conf *Config, name string) (types.Twts, error) {
 		log.WithError(err).Warnf("error opening feed: %s", fn)
 		return nil, err
 	}
-	t, _, err := types.ParseFile(f, twter, 0, 0)
+	t, err := types.ParseFile(f, twter)
 	if err != nil {
 		log.WithError(err).Errorf("error processing feed %s", fn)
 		return nil, err
 	}
-	twts = append(twts, t...)
+	twts = append(twts, t.Twts()...)
 	f.Close()
 
 	return twts, nil

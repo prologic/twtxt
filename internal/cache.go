@@ -271,12 +271,13 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 						twter.Avatar = URLForExternalAvatar(conf, feed.URL)
 					}
 				}
-				twts, old, err := types.ParseFile(limitedReader, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
+				twtFile, err := types.ParseFile(limitedReader, twter)
 				if err != nil {
 					log.WithError(err).Errorf("error parsing feed %s", feed)
 					twtsch <- nil
 					return
 				}
+				twts, old := types.SplitTwts(twtFile.Twts(), conf.MaxCacheTTL, conf.MaxCacheItems)
 
 				// Archive old twts
 				for _, twt := range old {

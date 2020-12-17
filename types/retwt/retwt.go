@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 
@@ -21,10 +20,6 @@ import (
 func init() {
 	gob.Register(&reTwt{})
 }
-
-const (
-	TwtHashLength = 7
-)
 
 var (
 	tagsRe    = regexp.MustCompile(`#([-\w]+)`)
@@ -124,17 +119,12 @@ func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
 	return
 }
 
-func ParseFile(r io.Reader, twter types.Twter, ttl time.Duration, N int) (types.Twts, types.Twts, error) {
+func ParseFile(r io.Reader, twter types.Twter) (*retwtFile, error) {
 	scanner := bufio.NewScanner(r)
 
-	var (
-		twts types.Twts
-		old  types.Twts
-	)
-
-	oldTime := time.Now().Add(-ttl)
-
 	nLines, nErrors := 0, 0
+
+	f := &retwtFile{twter: &twter}
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -149,41 +139,30 @@ func ParseFile(r io.Reader, twter types.Twter, ttl time.Duration, N int) (types.
 			continue
 		}
 
-		if ttl > 0 && twt.Created().Before(oldTime) {
-			old = append(old, twt)
-		} else {
-			twts = append(twts, twt)
-		}
+		f.twts = append(f.twts, twt)
 	}
 	if err := scanner.Err(); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if (nLines+nErrors > 0) && nLines == nErrors {
 		log.Warnf("erroneous feed dtected (nLines + nErrors > 0 && nLines == nErrors): %d/%d", nLines, nErrors)
-		return nil, nil, ErrInvalidFeed
+		return nil, ErrInvalidFeed
 	}
 
-	// Sort by CreatedAt timestamp
-	sort.Sort(twts)
-	sort.Sort(old)
-
-	// Further limit by Max Cache Items
-	if N > 0 && len(twts) > N {
-		if N > len(twts) {
-			N = len(twts)
-		}
-		twts = twts[:N]
-		old = append(old, twts[N:]...)
-	}
-
-	return twts, old, nil
+	return f, nil
 }
 
 func (twt *reTwt) Twter() types.Twter { return twt.twter }
 func (twt *reTwt) Text() string       { return twt.text }
 func (twt *reTwt) MarkdownText() string {
 	return formatMentionsAndTags(twt.fmtOpts, twt.text, types.MarkdownFmt)
+}
+func (twt *reTwt) FormatText(textFmt types.TwtTextFormat, fmtOpts types.FmtOpts) string {
+	if fmtOpts == nil {
+		fmtOpts = twt.fmtOpts
+	}
+	return formatMentionsAndTags(fmtOpts, twt.text, textFmt)
 }
 func (twt *reTwt) SetFmtOpts(opts types.FmtOpts) { twt.fmtOpts = opts }
 func (twt *reTwt) Created() time.Time            { return twt.created }
@@ -221,13 +200,13 @@ func (twt *reTwt) Mentions() types.MentionList {
 		return twt.mentions
 	}
 
-	seen := make(map[types.Twter]struct{})
+	seen := make(map[string]struct{})
 	matches := uriMentionsRe.FindAllStringSubmatch(twt.text, -1)
 	for _, match := range matches {
 		twter := types.Twter{Nick: match[1], URL: match[2]}
-		if _, ok := seen[twter]; !ok {
+		if _, ok := seen[twter.URL]; !ok {
 			twt.mentions = append(twt.mentions, &reMention{twter})
-			seen[twter] = struct{}{}
+			seen[twter.URL] = struct{}{}
 		}
 	}
 
@@ -288,7 +267,7 @@ func (twt *reTwt) Hash() string {
 	// Base32 is URL-safe, unlike Base64, and shorter than hex.
 	encoding := base32.StdEncoding.WithPadding(base32.NoPadding)
 	hash := strings.ToLower(encoding.EncodeToString(sum[:]))
-	twt.hash = hash[len(hash)-TwtHashLength:]
+	twt.hash = hash[len(hash)-types.TwtHashLength:]
 
 	return twt.hash
 }
@@ -322,6 +301,9 @@ func (t *reTag) Tag() string {
 // and `#<tag URL>` into `<a href="URL">#tag</a>` and a `!<hash URL>`
 // into a `<a href="URL">!hash</a>`.
 func formatMentionsAndTags(opts types.FmtOpts, text string, format types.TwtTextFormat) string {
+	if opts == nil {
+		log.Warn("format options is <nil>")
+	}
 	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
@@ -394,10 +376,22 @@ func (*retwtManager) DecodeJSON(b []byte) (types.Twt, error) { return DecodeJSON
 func (*retwtManager) ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
 	return ParseLine(line, twter)
 }
-func (*retwtManager) ParseFile(r io.Reader, twter types.Twter, ttl time.Duration, N int) (types.Twts, types.Twts, error) {
-	return ParseFile(r, twter, ttl, N)
+func (*retwtManager) ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
+	return ParseFile(r, twter)
 }
 
 func DefaultTwtManager() {
 	types.SetTwtManager(&retwtManager{})
 }
+
+type retwtFile struct {
+	twter *types.Twter
+	twts  types.Twts
+}
+
+var _ types.TwtFile = (*retwtFile)(nil)
+
+func (r *retwtFile) Twter() *types.Twter { return r.twter }
+func (r *retwtFile) Comment() string     { return "" }
+func (r *retwtFile) Meta() *types.Meta   { return nil }
+func (r *retwtFile) Twts() types.Twts    { return r.twts }

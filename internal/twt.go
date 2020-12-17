@@ -58,12 +58,15 @@ func ExpandMentions(conf *Config, db Store, user *User, text string) string {
 
 // Turns #tag into "#<tag URL>"
 func ExpandTag(conf *Config, text string) string {
-	re := regexp.MustCompile(`#([-\w]+)`)
+	// Sadly, Go's regular expressions don't support negative lookbehind, so we
+	// need to bake it differently into the regex with several choices.
+	re := regexp.MustCompile(`(^|\s|\()#([-\w]+)`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
-		tag := parts[1]
+		prefix := parts[1];
+		tag := parts[2]
 
-		return fmt.Sprintf("#<%s %s>", tag, URLForTag(conf.BaseURL, tag))
+		return fmt.Sprintf("%s#<%s %s>", prefix, tag, URLForTag(conf.BaseURL, tag))
 	})
 }
 

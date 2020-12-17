@@ -43,6 +43,22 @@ func TestExpandTag(t *testing.T) {
 			name:     "does nothing with an already expanded tag pointing somewhere else",
 			input:    "#<foo https://example.com/foo>",
 			expected: "#<foo https://example.com/foo>",
+		}, {
+			name:     "does nothing with a plain URL containing an anchor",
+			input:    "https://example.com/foo#bar",
+			expected: "https://example.com/foo#bar",
+		}, {
+			name:     "does nothing with a markdown link URL containing an anchor",
+			input:    "[foo](https://example.com/foo#bar)",
+			expected: "[foo](https://example.com/foo#bar)",
+		}, {
+			name:     "does nothing with a markdown link title containing an anchor",
+			input:    "[#bar](https://example.com/foo)",
+			expected: "[#bar](https://example.com/foo)",
+		}, {
+			name:     "does nothing with a markdown link title/URL containing an anchor",
+			input:    "[#bar](https://example.com/foo#bar)",
+			expected: "[#bar](https://example.com/foo#bar)",
 		},
 	}
 

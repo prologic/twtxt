@@ -220,6 +220,7 @@ func SplitTwts(twts Twts, ttl time.Duration, N int) (Twts, Twts) {
 	pos := 0
 	for ; pos < len(twts) && pos < N; pos++ {
 		if twts[pos].Created().Before(oldTime) {
+			pos-- // current pos is before oldTime. step back one.
 			break
 		}
 	}

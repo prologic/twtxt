@@ -66,15 +66,8 @@ import (
 
 // ParseFile and return time & count limited twts + comments
 func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
-	// 	var (
-	// 		twts     types.Twts
-	// //		old      types.Twts
-	// 		comments []*Comment
-	// 	)
 
 	f := &lextwtFile{}
-
-	//	oldTime := time.Now().Add(-ttl)
 
 	nLines, nErrors := 0, 0
 
@@ -90,11 +83,6 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 		case *Comment:
 			f.comments = append(f.comments, e)
 		case *Twt:
-			// if ttl > 0 && e.Created().Before(oldTime) {
-			// 	 old = append(old, e)
-			// } else {
-			// 	 twts = append(twts, e)
-			// }
 			f.twts = append(f.twts, e)
 		}
 
@@ -107,21 +95,6 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 	}
 
 	return f, nil
-
-	// // Sort by CreatedAt timestamp
-	// sort.Sort(twts)
-	// sort.Sort(old)
-
-	// // Further limit by Max Cache Items
-	// if N > 0 && len(twts) > N {
-	// 	if N > len(twts) {
-	// 		N = len(twts)
-	// 	}
-	// 	old = append(old, twts[N:]...)
-	// 	twts = twts[:N]
-	// }
-
-	// return twts, old, comments, nil
 }
 func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
 	r := strings.NewReader(line)

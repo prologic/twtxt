@@ -265,6 +265,8 @@ github.com/magiconair/properties v1.8.1 h1:ZC2Vc7/ZFkGmsVC9KvOjumD+G5lXy2RtTKyzR
 github.com/magiconair/properties v1.8.1/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/magiconair/properties v1.8.4 h1:8KGKTcQQGm0Kv7vEbKFErAoAOFyyacLStRtQSeYtvkY=
 github.com/magiconair/properties v1.8.4/go.mod h1:y3VJvCyxH9uVvJTWEGAELF3aiYNyPKd5NZ3oSwXrF60=
+github.com/marcinwyszynski/popart v0.0.0-20160216095024-f601a19c2970 h1:ESBsxVV/MipfxVWDbqKauuBuDdF6/Ed1UDY7lzKmq4I=
+github.com/marcinwyszynski/popart v0.0.0-20160216095024-f601a19c2970/go.mod h1:eIKog88Q6dMlbN4UOKyxGsVLlPH4L6HgnH6sXPFPdhI=
 github.com/marksalpeter/sugar v0.0.0-20160713164314-a69afe358ea8 h1:1gRDEC07kIwBHulf+5qTzbe44xMMJRck54KK3xl6wYc=
 github.com/marksalpeter/sugar v0.0.0-20160713164314-a69afe358ea8/go.mod h1:Pbl6laGVgJOzt66fx/Zxwth5NhgKzyTysQDDqNJxZ3c=
 github.com/marksalpeter/token/v2 v2.0.0 h1:kFg3wSxVzozCH3tUFgcAV3Lao8ngz7sdqE+tUUywbPw=

@@ -75,6 +75,9 @@ type Server struct {
 	// API
 	api *API
 
+	// POP3 Service
+	pop3Service *POP3Service
+
 	// SMTP Service
 	smtpService *SMTPService
 
@@ -686,6 +689,8 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	api := NewAPI(router, config, cache, archive, db, pm, tasks)
 
+	pop3Service := NewPOP3Service(config, db, pm, tasks)
+
 	smtpService := NewSMTPService(config, db, pm, tasks)
 
 	server := &Server{
@@ -708,6 +713,9 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 		// API
 		api: api,
+
+		// POP3 Servicee
+		pop3Service: pop3Service,
 
 		// SMTP Servicee
 		smtpService: smtpService,
@@ -750,6 +758,9 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	server.tasks.Start()
 	log.Info("started task dispatcher")
+
+	server.pop3Service.Start()
+	log.Info("started POP3 service")
 
 	server.smtpService.Start()
 	log.Info("started SMTP service")

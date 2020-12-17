@@ -7,13 +7,17 @@ import (
 	"encoding/hex"
 	"fmt"
 	"hash"
+	"io"
+	"io/ioutil"
 	"net"
 	"net/mail"
+	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/emersion/go-message"
 	"github.com/jointwt/twtxt/internal/passwords"
+	"github.com/marcinwyszynski/popart"
 	"github.com/prologic/smtpd"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
@@ -65,6 +69,140 @@ func validMAC(fn func() hash.Hash, message, messageMAC, key []byte) bool {
 	mac.Write(message)
 	expectedMAC := mac.Sum(nil)
 	return hmac.Equal(messageMAC, expectedMAC)
+}
+
+type mboxHandler struct {
+	config *Config
+	db     Store
+	pm     passwords.Passwords
+	tasks  *Dispatcher
+
+	mboxFile string
+	username string
+}
+
+func NewMboxHandler(config *Config, db Store, pm passwords.Passwords, tasks *Dispatcher) popart.Handler {
+	return &mboxHandler{config, db, pm, tasks, "", ""}
+}
+
+func (m *mboxHandler) AuthenticatePASS(username, password string) error {
+	if !m.db.HasUser(username) {
+		return fmt.Errorf("error: invalid credentials")
+	}
+
+	user, err := m.db.GetUser(username)
+	if err != nil {
+		log.WithError(err).Error("error loading user object")
+		return fmt.Errorf("error loading user  object: %w", err)
+	}
+
+	if password != user.POP3Token {
+		return fmt.Errorf("error: invalid credentials")
+	}
+
+	log.Debugf("Logged in with username %q and password %q", username, password)
+	m.username = username
+	m.mboxFile = filepath.Join(msgsDir, username)
+	return nil
+}
+
+func (m *mboxHandler) AuthenticateAPOP(username, hexdigest string) error {
+	return nil
+}
+
+func (m *mboxHandler) DeleteMessages(numbers []uint64) error {
+	strNums := make([]string, len(numbers), len(numbers))
+	for i, number := range numbers {
+		strNums[i] = fmt.Sprintf("%d", number)
+	}
+	log.Debugf(
+		"Following messages would be deleted: %q",
+		strings.Join(strNums, ", "),
+	)
+	return nil
+}
+
+func (m *mboxHandler) GetMessageReader(number uint64) (io.ReadCloser, error) {
+	return ioutil.NopCloser(strings.NewReader("Hello World!")), nil
+}
+
+func (m *mboxHandler) GetMessageCount() (uint64, error) {
+	return uint64(4), nil
+}
+
+func (m *mboxHandler) GetMessageID(number uint64) (string, error) {
+	return "foo", nil
+}
+
+func (m *mboxHandler) GetMessageSize(number uint64) (uint64, error) {
+	return uint64(12), nil
+}
+
+func (m *mboxHandler) HandleSessionError(err error) {
+	log.WithError(err).Error("error occurred handling session")
+}
+
+func (m *mboxHandler) LockMaildrop() error {
+	log.Debugf("Mailbox for user %q would be locked", m.username)
+	return nil
+}
+
+func (m *mboxHandler) SetBanner(banner string) error {
+	log.Debugf("Banner would be set to %q", banner)
+	return nil
+}
+
+func (m *mboxHandler) UnlockMaildrop() error {
+	log.Debugf("Mailbox for user %q would be unlocked", m.username)
+	return nil
+}
+
+type POP3Service struct {
+	config *Config
+	db     Store
+	pm     passwords.Passwords
+	tasks  *Dispatcher
+}
+
+// NewPOP3Service ...
+func NewPOP3Service(config *Config, db Store, pm passwords.Passwords, tasks *Dispatcher) *POP3Service {
+	svc := &POP3Service{config, db, pm, tasks}
+
+	return svc
+}
+
+func (s *POP3Service) getHandler() func(peer net.Addr) popart.Handler {
+	return func(peer net.Addr) popart.Handler {
+		log.Infof("Incoming connection from %q", peer)
+		return NewMboxHandler(s.config, s.db, s.pm, s.tasks)
+	}
+}
+
+func (s *POP3Service) Start() {
+	go func() {
+		if err := s.ListenAndServe(); err != nil {
+			log.WithError(err).Error("error running POP3 service")
+		}
+	}()
+}
+
+func (s *POP3Service) Stop() {}
+
+func (s *POP3Service) ListenAndServe() error {
+	listener, err := net.Listen("tcp", s.config.POP3Bind)
+	if err != nil {
+		log.WithError(err).Error("error creating listener")
+		return fmt.Errorf("error creating listener: %w", err)
+	}
+
+	svr := &popart.Server{
+		Hostname:        HostnameFromURL(s.config.BaseURL),
+		OnNewConnection: s.getHandler(),
+		Timeout:         10 * time.Minute,
+		APOP:            false,
+	}
+
+	return svr.Serve(listener)
 }
 
 type SMTPService struct {

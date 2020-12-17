@@ -42,6 +42,7 @@ require (
 	github.com/lib/pq v1.7.0 // indirect
 	github.com/lithammer/shortuuid/v3 v3.0.4
 	github.com/magiconair/properties v1.8.4 // indirect
+	github.com/marcinwyszynski/popart v0.0.0-20160216095024-f601a19c2970
 	github.com/marksalpeter/sugar v0.0.0-20160713164314-a69afe358ea8 // indirect
 	github.com/marksalpeter/token/v2 v2.0.0
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect

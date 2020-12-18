@@ -1,8 +1,8 @@
 {{define "content"}}
   {{ $Msg := $.Messages | first }}
-  <article id="{{ $Msg.Hash }}" class="h-entry">
+  <article id="{{ $Msg.Id }}" class="h-entry">
     <form id="delete" action="/messages/delete" method="POST">
-      <input type="hidden" name="hash" value="{{ $Msg.Hash }}">
+      <input type="hidden" name="hash" value="{{ $Msg.Id }}">
       <div class="u-author h-card">
         <div>
           <a href="/usr/{{ $Msg.From }}" class="u-url">
@@ -12,7 +12,7 @@
         <div class="author">
           <span class="p-name">{{ $Msg.From }}</span>
           <div class="publish-time">
-            <a class="u-url" href="/msg/{{ $Msg.Hash }}">
+            <a class="u-url" href="/msg/{{ $Msg.Id }}">
               <time class="dt-published" datetime="{{ $Msg.Sent | date "2006-01-02T15:04:05Z07:00" }}">
                 {{ dateInZone ($Msg.Sent | formatForDateTime) $Msg.Sent $.User.DisplayDatesInTimezone }}
               </time>

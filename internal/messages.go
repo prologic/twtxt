@@ -23,32 +23,33 @@ const (
 )
 
 type Message struct {
+	Id      int
 	From    string
 	Sent    time.Time
 	Subject string
 	Status  string
 
-	hash string
-}
-
-func (m *Message) Hash() string {
-	if m.hash != "" {
-		return m.hash
-	}
-
-	m.hash = "fa47b31"
-
-	return m.hash
+	body string
 }
 
 func (m *Message) Text() string {
-	return "Hello there!"
+	return m.body
 }
 
 type Messages []*Message
 
-func getMessages(conf *Config, username string) ([]message.Entity, error) {
-	var msgs []message.Entity
+func (msgs Messages) Len() int {
+	return len(msgs)
+}
+func (msgs Messages) Less(i, j int) bool {
+	return msgs[i].Sent.After(msgs[j].Sent)
+}
+func (msgs Messages) Swap(i, j int) {
+	msgs[i], msgs[j] = msgs[j], msgs[i]
+}
+
+func getMessages(conf *Config, username string) (Messages, error) {
+	var msgs Messages
 
 	path := filepath.Join(conf.Data, msgsDir)
 	if err := os.MkdirAll(path, 0755); err != nil {
@@ -64,22 +65,41 @@ func getMessages(conf *Config, username string) ([]message.Entity, error) {
 	}
 	defer f.Close()
 
-	m := mbox.NewReader(f)
+	mr := mbox.NewReader(f)
+
+	id := 1
 
 	for {
-		r, err := m.NextMessage()
+		r, err := mr.NextMessage()
 		if err == io.EOF {
 			break
 		} else if err != nil {
 			log.WithError(err).Error("error getting next message reader")
 			return nil, err
 		}
-		msg, err := message.Read(r)
+		e, err := message.Read(r)
 		if err != nil {
 			log.WithError(err).Error("error reading next message")
 			return nil, err
 		}
-		msgs = append(msgs, *msg)
+
+		d, err := time.Parse(rfc2822, e.Header.Get(headerKeyDate))
+		if err != nil {
+			log.WithError(err).Error("error parsing message date")
+			return nil, fmt.Errorf("error parsing message date: %w", err)
+		}
+
+		id++
+
+		msg := &Message{
+			Id:      id,
+			From:    e.Header.Get(headerKeyFrom),
+			Sent:    d,
+			Subject: e.Header.Get(headerKeySubject),
+			Status:  e.Header.Get(headerKeyStatus),
+		}
+
+		msgs = append(msgs, msg)
 	}
 
 	return msgs, nil

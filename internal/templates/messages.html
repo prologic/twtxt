@@ -24,12 +24,12 @@
             {{ else }}
               <tr>
             {{ end }}
-                <th scope="row"><input type="checkbox" name="hash" value="{{ .Hash }}"></th>
+                <th scope="row"><input type="checkbox" name="hash" value="{{ .Id }}"></th>
                 <td><a href="/user/{{ .From }}">{{ .From }}</a></td>
                 <td>
-                  <a class="u-url" href="/msg/{{ .Hash }}">{{ .Subject }}</a>
+                  <a class="u-url" href="/msg/{{ .Id }}">{{ .Subject }}</a>
                 <td>
-                  <a class="u-url" href="/msg/{{ .Hash }}">
+                  <a class="u-url" href="/msg/{{ .Id }}">
                     <time class="dt-published" datetime="{{ .Sent | date "2006-01-02T15:04:05Z07:00" }}">
                       {{ dateInZone (.Sent | formatForDateTime) .Sent $.User.DisplayDatesInTimezone }}
                     </time>

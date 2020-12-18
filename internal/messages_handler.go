@@ -2,10 +2,12 @@ package internal
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/vcraescu/go-paginator"
@@ -17,32 +19,14 @@ func (s *Server) ListMessagesHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		var msgs Messages
-
-		m, err := getMessages(s.config, ctx.User.Username)
+		msgs, err := getMessages(s.config, ctx.User.Username)
 		if err != nil {
 			ctx.Error = true
 			ctx.Message = "Error getting messages"
 			s.render("error", w, ctx)
 			return
 		}
-
-		for i := 0; i < len(m); i++ {
-			d, err := time.Parse(rfc2822, m[i].Header.Get(headerKeyDate))
-			if err != nil {
-				ctx.Error = true
-				ctx.Message = "Error parsing message date"
-				s.render("error", w, ctx)
-				return
-			}
-			msg := &Message{
-				From:    m[i].Header.Get(headerKeyFrom),
-				Sent:    d,
-				Subject: m[i].Header.Get(headerKeySubject),
-				Status:  m[i].Header.Get(headerKeyStatus),
-			}
-			msgs = append(msgs, msg)
-		}
+		sort.Sort(msgs)
 
 		var pagedMsgs Messages
 

@@ -61,26 +61,5 @@
         </div>
       </form>
     </div>
-    <div>
-      <hgroup>
-        <h2>Private Messaging</h2>
-      </hgroup>
-      <p>
-        Private messaging on {{ .InstanceName }} is very simple and follows
-        a similar form to Twt(s) themselves. In other words you can send
-        private messages to users on the same pod as you.
-      </p>
-      <p>
-        Find the username of the person you want to message, and type in a
-        short message (<i>limited to {{ .MaxTwtLength }} characters</i>) and
-        hit the "Send" button.
-      </p>
-      <p>
-        <b>NOTE:</b>&nbsp;Messages are not encrypted or signed at this time so it is
-        currently possible for the Pod Operator of {{ .InstanceName }}
-        to view your private messages. This will change in time as we continue
-        to develop this feature out and add e2e encryption. THank you.
-      </p>
-    </div>
   </article>
 {{end}}

@@ -1,0 +1,28 @@
+***************
+*** 19,29 ****
+         headerKeyDate    = "Date"
+         headerKeyFrom    = "From"
+         headerKeySubject = "Subject"
+  )
+  
+  type Message struct {
+-        From string
+-        Sent time.Time
+  
+         hash string
+  }
+--- 19,32 ----
+         headerKeyDate    = "Date"
+         headerKeyFrom    = "From"
+         headerKeySubject = "Subject"
++        headerKeyStatus  = "Status"
+  )
+  
+  type Message struct {
++        From    string
++        Sent    time.Time
++        Subject string
++        Status  string
+  
+         hash string
+  }

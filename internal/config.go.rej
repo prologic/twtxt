@@ -1,0 +1,16 @@
+***************
+*** 53,58 ****
+         MaxTwtLength      int
+         MaxCacheTTL       time.Duration
+         MaxCacheItems     int
+         OpenProfiles      bool
+         OpenRegistrations bool
+         SessionExpiry     time.Duration
+--- 53,59 ----
+         MaxTwtLength      int
+         MaxCacheTTL       time.Duration
+         MaxCacheItems     int
++        MsgsPerPage       int
+         OpenProfiles      bool
+         OpenRegistrations bool
+         SessionExpiry     time.Duration

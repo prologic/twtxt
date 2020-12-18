@@ -53,6 +53,7 @@ type Config struct {
 	MaxTwtLength      int
 	MaxCacheTTL       time.Duration
 	MaxCacheItems     int
+	MsgsPerPage       int
 	OpenProfiles      bool
 	OpenRegistrations bool
 	SessionExpiry     time.Duration

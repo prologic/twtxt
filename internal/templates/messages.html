@@ -11,14 +11,23 @@
             <tr>
               <th scope="col"><input id="delete_all" type="checkbox" name="delete_all" data-tooltip="Delete all messages"></th>
               <th scope="col">From</th>
+              <th scope="col">Subject</th>
               <th scope="col">Received</th>
             </tr>
+            <tr>
+            {{ template "pager" $.Pager }}
           </thead>
           <tbody>
             {{ range .Messages }}
+            {{ if ne .Status "RO" }}
+              <tr class="new">
+            {{ else }}
               <tr>
+            {{ end }}
                 <th scope="row"><input type="checkbox" name="hash" value="{{ .Hash }}"></th>
                 <td><a href="/user/{{ .From }}">{{ .From }}</a></td>
+                <td>
+                  <a class="u-url" href="/msg/{{ .Hash }}">{{ .Subject }}</a>
                 <td>
                   <a class="u-url" href="/msg/{{ .Hash }}">
                     <time class="dt-published" datetime="{{ .Sent | date "2006-01-02T15:04:05Z07:00" }}">

@@ -19,11 +19,14 @@ const (
 	headerKeyDate    = "Date"
 	headerKeyFrom    = "From"
 	headerKeySubject = "Subject"
+	headerKeyStatus  = "Status"
 )
 
 type Message struct {
-	From string
-	Sent time.Time
+	From    string
+	Sent    time.Time
+	Subject string
+	Status  string
 
 	hash string
 }
@@ -43,6 +46,44 @@ func (m *Message) Text() string {
 }
 
 type Messages []*Message
+
+func getMessages(conf *Config, username string) ([]message.Entity, error) {
+	var msgs []message.Entity
+
+	path := filepath.Join(conf.Data, msgsDir)
+	if err := os.MkdirAll(path, 0755); err != nil {
+		log.WithError(err).Error("error creating msgs directory")
+		return nil, err
+	}
+
+	fn := filepath.Join(path, username)
+
+	f, err := os.OpenFile(fn, os.O_CREATE|os.O_RDONLY, 0666)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	m := mbox.NewReader(f)
+
+	for {
+		r, err := m.NextMessage()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			log.WithError(err).Error("error getting next message reader")
+			return nil, err
+		}
+		msg, err := message.Read(r)
+		if err != nil {
+			log.WithError(err).Error("error reading next message")
+			return nil, err
+		}
+		msgs = append(msgs, *msg)
+	}
+
+	return msgs, nil
+}
 
 func createMessage(from, to, subject string, body io.Reader) (*message.Entity, error) {
 	var headers message.Header

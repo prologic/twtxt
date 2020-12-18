@@ -2,11 +2,14 @@ package internal
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/vcraescu/go-paginator"
+	"github.com/vcraescu/go-paginator/adapter"
 )
 
 // ListMessagesHandler ...
@@ -14,18 +17,51 @@ func (s *Server) ListMessagesHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
+		var msgs Messages
+
+		m, err := getMessages(s.config, ctx.User.Username)
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "Error getting messages"
+			s.render("error", w, ctx)
+			return
+		}
+
+		for i := 0; i < len(m); i++ {
+			d, err := time.Parse(rfc2822, m[i].Header.Get(headerKeyDate))
+			if err != nil {
+				ctx.Error = true
+				ctx.Message = "Error parsing message date"
+				s.render("error", w, ctx)
+				return
+			}
+			msg := &Message{
+				From:    m[i].Header.Get(headerKeyFrom),
+				Sent:    d,
+				Subject: m[i].Header.Get(headerKeySubject),
+				Status:  m[i].Header.Get(headerKeyStatus),
+			}
+			msgs = append(msgs, msg)
+		}
+
+		var pagedMsgs Messages
+
+		page := SafeParseInt(r.FormValue("p"), 1)
+		pager := paginator.New(adapter.NewSliceAdapter(msgs), s.config.MsgsPerPage)
+		pager.SetPage(page)
+
+		if err := pager.Results(&pagedMsgs); err != nil {
+			log.WithError(err).Error("error sorting and paging messages")
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading messages"
+			s.render("error", w, ctx)
+			return
+		}
+
 		ctx.Title = "Private Messages"
 
-		ctx.Messages = Messages{
-			&Message{
-				From: "kate",
-				Sent: time.Now(),
-			},
-			&Message{
-				From: "admin",
-				Sent: time.Now(),
-			},
-		}
+		ctx.Messages = pagedMsgs
+		ctx.Pager = &pager
 
 		s.render("messages", w, ctx)
 		return

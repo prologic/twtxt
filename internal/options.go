@@ -58,6 +58,9 @@ const (
 	// of twts in memory
 	DefaultMaxCacheItems = DefaultTwtsPerPage * 3 // We get bored after paging thorughh > 3 pages :D
 
+	// DefaultMsgPerPage is the server's default msgs per page to display
+	DefaultMsgsPerPage = 20
+
 	// DefaultOpenProfiles is the default for whether or not to have open user profiles
 	DefaultOpenProfiles = false
 
@@ -141,6 +144,7 @@ func NewConfig() *Config {
 		TwtPrompts:        DefaultTwtPrompts,
 		TwtsPerPage:       DefaultTwtsPerPage,
 		MaxTwtLength:      DefaultMaxTwtLength,
+		MsgsPerPage:       DefaultMsgsPerPage,
 		OpenProfiles:      DefaultOpenProfiles,
 		OpenRegistrations: DefaultOpenRegistrations,
 		SessionExpiry:     DefaultSessionExpiry,

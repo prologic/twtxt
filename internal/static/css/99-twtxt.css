@@ -410,6 +410,7 @@ footer small .footer-menu a:last-child::after{
   }
   .u-author.h-card .publish-time{
     font-size: 14px;
+    flex-flow: wrap;
   }
   nav.pagination-nav{
     justify-content: space-between;

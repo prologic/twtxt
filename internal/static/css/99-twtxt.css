@@ -376,7 +376,6 @@ footer small .footer-menu a:last-child::after{
 
   /* Name off timeline author */
   .u-author.h-card{
-    display: inline;
     margin-bottom: 10px;
   }
   .u-author.h-card>div{

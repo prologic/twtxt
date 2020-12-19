@@ -5,12 +5,12 @@
       <input type="hidden" name="hash" value="{{ $Msg.Id }}">
       <div class="u-author h-card">
         <div>
-          <a href="/usr/{{ $Msg.From }}" class="u-url">
-            <img class="avatar u-photo" src="/user/{{ $Msg.From }}/avatar" />
+          <a href="/usr/{{ $Msg.User }}" class="u-url">
+            <img class="avatar u-photo" src="/user/{{ $Msg.User }}/avatar" />
           </a>
         </div>
         <div class="author">
-          <span class="p-name">{{ $Msg.From }}</span>
+          <span class="p-name">{{ $Msg.User }}</span>
           <div class="publish-time">
             <a class="u-url" href="/msg/{{ $Msg.Id }}">
               <time class="dt-published" datetime="{{ $Msg.Sent | date "2006-01-02T15:04:05Z07:00" }}">
@@ -30,7 +30,7 @@
       <h2>Compose Reply</h2>
     </hgroup>
     <form id="compose" action="/messages/send" method="POST">
-      <input type="hidden" name="recipient" value="{{ $Msg.From }}">
+      <input type="hidden" name="recipient" value="{{ $Msg.User }}">
       <input type="hidden" name="subject" value="{{ $Msg.Subject }}">
       <div class="textarea-container">
         <textarea id="body" name="body" placeholder="Your reply" rows=3 maxlength={{ $.MaxTwtLength }} required></textarea>

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -112,20 +112,24 @@ func (s *Server) ViewMessageHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		if r.Method == http.MethodPost {
-			// TODO: Implement this :D
+		msgId, err := strconv.Atoi(p.ByName("msgid"))
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "Error invalid message id"
+			s.render("error", w, ctx)
 			return
 		}
 
-		ctx.Title = "Private Message from Kate: Hello"
-
-		ctx.Messages = Messages{
-			&Message{
-				From: "kate",
-				Sent: time.Now(),
-			},
+		msg, err := getMessage(s.config, ctx.Username, msgId)
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "Error opening message, please try again later!"
+			s.render("error", w, ctx)
+			return
 		}
 
+		ctx.Title = fmt.Sprintf("Private Message from %s: %s", msg.From, msg.Subject)
+		ctx.Messages = Messages{msg}
 		s.render("message", w, ctx)
 		return
 	}

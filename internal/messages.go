@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -32,11 +33,16 @@ type Message struct {
 	body string
 }
 
-func (m *Message) Text() string {
+func (m Message) User() string {
+	username, _ := splitEmailAddress(m.From)
+	return username
+}
+
+func (m Message) Text() string {
 	return m.body
 }
 
-type Messages []*Message
+type Messages []Message
 
 func (msgs Messages) Len() int {
 	return len(msgs)
@@ -48,20 +54,19 @@ func (msgs Messages) Swap(i, j int) {
 	msgs[i], msgs[j] = msgs[j], msgs[i]
 }
 
-func getMessages(conf *Config, username string) (Messages, error) {
-	var msgs Messages
-
+func getMessage(conf *Config, username string, msgId int) (msg Message, err error) {
 	path := filepath.Join(conf.Data, msgsDir)
 	if err := os.MkdirAll(path, 0755); err != nil {
 		log.WithError(err).Error("error creating msgs directory")
-		return nil, err
+		return msg, fmt.Errorf("error creating msgs directory: %w", err)
 	}
 
 	fn := filepath.Join(path, username)
 
 	f, err := os.OpenFile(fn, os.O_CREATE|os.O_RDONLY, 0666)
 	if err != nil {
-		return nil, err
+		log.WithError(err).Error("error opening msgs file")
+		return msg, fmt.Errorf("error opening msgs file: %w", err)
 	}
 	defer f.Close()
 
@@ -75,12 +80,78 @@ func getMessages(conf *Config, username string) (Messages, error) {
 			break
 		} else if err != nil {
 			log.WithError(err).Error("error getting next message reader")
-			return nil, err
+			return msg, fmt.Errorf("error getting next message reader: %w", err)
+		}
+
+		e, err := message.Read(r)
+		if err != nil {
+			log.WithError(err).Error("error reading next message")
+			return msg, fmt.Errorf("error reading next message: %w", err)
+		}
+
+		if id == msgId {
+			d, err := time.Parse(rfc2822, e.Header.Get(headerKeyDate))
+			if err != nil {
+				log.WithError(err).Error("error parsing message date")
+				return msg, fmt.Errorf("error parsing message date: %w", err)
+			}
+
+			body, err := ioutil.ReadAll(e.Body)
+			if err != nil {
+				log.WithError(err).Error("error reading message body")
+				return msg, fmt.Errorf("error reading message body: %w", err)
+			}
+
+			return Message{
+				Id:      id,
+				From:    e.Header.Get(headerKeyFrom),
+				Sent:    d,
+				Subject: e.Header.Get(headerKeySubject),
+				Status:  e.Header.Get(headerKeyStatus),
+				body:    string(body),
+			}, nil
+		}
+
+		id++
+	}
+
+	return msg, fmt.Errorf("error message not found")
+}
+
+func getMessages(conf *Config, username string) (Messages, error) {
+	var msgs Messages
+
+	path := filepath.Join(conf.Data, msgsDir)
+	if err := os.MkdirAll(path, 0755); err != nil {
+		log.WithError(err).Error("error creating msgs directory")
+		return nil, fmt.Errorf("error creating msgs directory: %w", err)
+	}
+
+	fn := filepath.Join(path, username)
+
+	f, err := os.OpenFile(fn, os.O_CREATE|os.O_RDONLY, 0666)
+	if err != nil {
+		log.WithError(err).Error("error opening msgs file")
+		return nil, fmt.Errorf("error opening msgs file: %w", err)
+	}
+	defer f.Close()
+
+	mr := mbox.NewReader(f)
+
+	id := 1
+
+	for {
+		r, err := mr.NextMessage()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			log.WithError(err).Error("error getting next message reader")
+			return nil, fmt.Errorf("error getting next message reader: %w", err)
 		}
 		e, err := message.Read(r)
 		if err != nil {
 			log.WithError(err).Error("error reading next message")
-			return nil, err
+			return nil, fmt.Errorf("error reading next message: %w", err)
 		}
 
 		d, err := time.Parse(rfc2822, e.Header.Get(headerKeyDate))
@@ -89,15 +160,15 @@ func getMessages(conf *Config, username string) (Messages, error) {
 			return nil, fmt.Errorf("error parsing message date: %w", err)
 		}
 
-		id++
-
-		msg := &Message{
+		msg := Message{
 			Id:      id,
 			From:    e.Header.Get(headerKeyFrom),
 			Sent:    d,
 			Subject: e.Header.Get(headerKeySubject),
 			Status:  e.Header.Get(headerKeyStatus),
 		}
+
+		id++
 
 		msgs = append(msgs, msg)
 	}

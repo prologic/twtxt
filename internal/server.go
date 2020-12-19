@@ -480,7 +480,7 @@ func (s *Server) initRoutes() {
 
 	// Private Messages
 	s.router.GET("/messages", s.am.MustAuth(s.ListMessagesHandler()))
-	s.router.GET("/messages/:hash", s.am.MustAuth(s.ViewMessageHandler()))
+	s.router.GET("/messages/:msgid", s.am.MustAuth(s.ViewMessageHandler()))
 	s.router.POST("/messages/send", s.am.MustAuth(s.SendMessageHandler()))
 	s.router.POST("/messages/delete", s.am.MustAuth(s.DeleteMessagesHandler()))
 

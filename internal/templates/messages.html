@@ -25,15 +25,13 @@
               <tr>
             {{ end }}
                 <th scope="row"><input type="checkbox" name="hash" value="{{ .Id }}"></th>
-                <td><a href="/user/{{ .From }}">{{ .From }}</a></td>
+                <td><a href="/user/{{ .User }}">{{ .User }}</a></td>
                 <td>
-                  <a class="u-url" href="/msg/{{ .Id }}">{{ .Subject }}</a>
+                  <a class="u-url" href="/messages/{{ .Id }}">{{ .Subject }}</a>
                 <td>
-                  <a class="u-url" href="/msg/{{ .Id }}">
-                    <time class="dt-published" datetime="{{ .Sent | date "2006-01-02T15:04:05Z07:00" }}">
-                      {{ dateInZone (.Sent | formatForDateTime) .Sent $.User.DisplayDatesInTimezone }}
-                    </time>
-                  </a>
+                  <time class="dt-published" datetime="{{ .Sent | date "2006-01-02T15:04:05Z07:00" }}">
+                    {{ dateInZone (.Sent | formatForDateTime) .Sent $.User.DisplayDatesInTimezone }}
+                  </time>
                   <span>&nbsp;({{ .Sent | time }})</span>   
                 </td>
               </tr>

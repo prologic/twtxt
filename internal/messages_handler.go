@@ -100,8 +100,24 @@ func (s *Server) DeleteMessagesHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
+		if r.FormValue("delete_all") != "" {
+			if err := deleteAllMessages(s.config, ctx.Username); err != nil {
+				ctx.Error = true
+				ctx.Message = "Error deleting all messages! Please try again later"
+				s.render("error", w, ctx)
+				return
+			}
+			ctx.Error = false
+			ctx.Message = "All messages successfully deleted!"
+			s.render("error", w, ctx)
+			return
+		}
+
+		msgId := r.Form["msgid"]
+		log.Debugf("msgid: %v", msgId)
+
 		ctx.Error = false
-		ctx.Message = "Messages successfully deleted"
+		ctx.Message = "Selected messages successfully deleted!"
 		s.render("error", w, ctx)
 		return
 	}

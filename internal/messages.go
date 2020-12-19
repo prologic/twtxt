@@ -54,6 +54,23 @@ func (msgs Messages) Swap(i, j int) {
 	msgs[i], msgs[j] = msgs[j], msgs[i]
 }
 
+func deleteAllMessages(conf *Config, username string) error {
+	path := filepath.Join(conf.Data, msgsDir)
+	if err := os.MkdirAll(path, 0755); err != nil {
+		log.WithError(err).Error("error creating msgs directory")
+		return fmt.Errorf("error creating msgs directory: %w", err)
+	}
+
+	fn := filepath.Join(path, username)
+
+	if err := os.Truncate(fn, 0); err != nil {
+		log.WithError(err).Error("error deleting all messages")
+		return fmt.Errorf("error deleting all messages: %w", err)
+	}
+
+	return nil
+}
+
 func getMessage(conf *Config, username string, msgId int) (msg Message, err error) {
 	path := filepath.Join(conf.Data, msgsDir)
 	if err := os.MkdirAll(path, 0755); err != nil {

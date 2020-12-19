@@ -24,7 +24,7 @@
             {{ else }}
               <tr>
             {{ end }}
-                <th scope="row"><input type="checkbox" name="hash" value="{{ .Id }}"></th>
+                <th scope="row"><input type="checkbox" name="msgid" value="{{ .Id }}"></th>
                 <td><a href="/user/{{ .User }}">{{ .User }}</a></td>
                 <td>
                   <a class="u-url" href="/messages/{{ .Id }}">{{ .Subject }}</a>

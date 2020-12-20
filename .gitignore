@@ -17,6 +17,7 @@
 /data/msgs
 /data/cache
 /data/blogscache
+/data/msgscache
 /data/feedsources
 /data/settings.yaml
 

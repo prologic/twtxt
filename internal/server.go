@@ -50,6 +50,9 @@ type Server struct {
 	// Blogs Cache
 	blogs *BlogsCache
 
+	// Messages Cache
+	msgs *MessagesCache
+
 	// Feed Cache
 	cache *Cache
 
@@ -637,6 +640,14 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		log.Info("empty blogs cache, updating...")
 		blogs.UpdateBlogs(config)
 	}
+
+	msgs, err := LoadMessagesCache(config.Data)
+	if err != nil {
+		log.WithError(err).Error("error loading messages cache (re-creating)")
+		msgs = NewMessagesCache()
+	}
+	log.Info("updating messages cache")
+	msgs.Refresh(config)
 
 	cache, err := LoadCache(config.Data)
 	if err != nil {

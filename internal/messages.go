@@ -328,6 +328,48 @@ func getMessage(conf *Config, username string, msgId int) (msg Message, err erro
 	return msg, fmt.Errorf("error message not found")
 }
 
+func countMessages(conf *Config, username string) (int, error) {
+	var count int
+
+	path := filepath.Join(conf.Data, msgsDir)
+	if err := os.MkdirAll(path, 0755); err != nil {
+		log.WithError(err).Error("error creating msgs directory")
+		return count, fmt.Errorf("error creating msgs directory: %w", err)
+	}
+
+	fn := filepath.Join(path, username)
+
+	f, err := os.OpenFile(fn, os.O_CREATE|os.O_RDONLY, 0666)
+	if err != nil {
+		log.WithError(err).Error("error opening msgs file")
+		return count, fmt.Errorf("error opening msgs file: %w", err)
+	}
+	defer f.Close()
+
+	mr := mbox.NewReader(f)
+
+	for {
+		r, err := mr.NextMessage()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			log.WithError(err).Error("error getting next message reader")
+			return count, fmt.Errorf("error getting next message reader: %w", err)
+		}
+		e, err := message.Read(r)
+		if err != nil {
+			log.WithError(err).Error("error reading next message")
+			return count, fmt.Errorf("error reading next message: %w", err)
+		}
+
+		if e.Header.Get(headerKeyStatus) == "" {
+			count++
+		}
+	}
+
+	return count, nil
+}
+
 func getMessages(conf *Config, username string) (Messages, error) {
 	var msgs Messages
 

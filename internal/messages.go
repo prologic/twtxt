@@ -71,6 +71,101 @@ func deleteAllMessages(conf *Config, username string) error {
 	return nil
 }
 
+func markMessageAsRead(conf *Config, username string, msgId int) error {
+	path := filepath.Join(conf.Data, msgsDir)
+	if err := os.MkdirAll(path, 0755); err != nil {
+		log.WithError(err).Error("error creating msgs directory")
+		return fmt.Errorf("error creating msgs directory: %w", err)
+	}
+
+	fn := filepath.Join(path, username)
+
+	f, err := os.Open(fn)
+	if err != nil {
+		log.WithError(err).Error("error opening msgs file")
+		return fmt.Errorf("error opening msgs file: %w", err)
+	}
+	defer f.Close()
+
+	of, err := os.OpenFile(fn+".new", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer of.Close()
+
+	mr := mbox.NewReader(f)
+
+	w := mbox.NewWriter(of)
+	defer w.Close()
+
+	id := 1
+
+	for {
+		r, err := mr.NextMessage()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			log.WithError(err).Error("error getting next message reader")
+			return fmt.Errorf("error getting next message reader: %w", err)
+		}
+
+		e, err := message.Read(r)
+		if err != nil {
+			log.WithError(err).Error("error reading next message")
+			return fmt.Errorf("error reading next message: %w", err)
+		}
+
+		if id == msgId {
+			e.Header.SetText(headerKeyStatus, "RO")
+		}
+
+		from := e.Header.Get(headerKeyFrom)
+		if from == "" {
+			return fmt.Errorf("error no `From` header found in message")
+		}
+
+		d, err := time.Parse(rfc2822, e.Header.Get(headerKeyDate))
+		if err != nil {
+			log.WithError(err).Error("error parsing message date")
+			return fmt.Errorf("error parsing message date: %w", err)
+		}
+
+		mw, err := w.CreateMessage(from, d)
+		if err != nil {
+			log.WithError(err).Error("error creating message writer")
+			return fmt.Errorf("error creating message writer: %w", err)
+		}
+
+		if err := e.WriteTo(mw); err != nil {
+			log.WithError(err).Error("error writing message")
+			return fmt.Errorf("error writing message: %w", err)
+		}
+
+		id++
+	}
+
+	if err := w.Close(); err != nil {
+		log.WithError(err).Error("error closing message writer")
+		return fmt.Errorf("error closing message writer: %w", err)
+	}
+	if err := of.Close(); err != nil {
+		log.WithError(err).Error("error closing output file")
+		return fmt.Errorf("error closing output file: %w", err)
+	}
+
+	if err := f.Close(); err != nil {
+		log.WithError(err).Error("error closing input file")
+		return fmt.Errorf("error closing input file: %w", err)
+	}
+
+	if err := os.Rename(of.Name(), fn); err != nil {
+		log.WithError(err).Error("error renaming message file")
+		return fmt.Errorf("error renaming message file: %w", err)
+	}
+
+	return nil
+}
+
 func getMessage(conf *Config, username string, msgId int) (msg Message, err error) {
 	path := filepath.Join(conf.Data, msgsDir)
 	if err := os.MkdirAll(path, 0755); err != nil {

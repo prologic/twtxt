@@ -13,17 +13,14 @@
               <th scope="col">From</th>
               <th scope="col">Subject</th>
               <th scope="col">Received</th>
+              <th scope="col">Status</th>
             </tr>
             <tr>
             {{ template "pager" $.Pager }}
           </thead>
           <tbody>
             {{ range .Messages }}
-            {{ if ne .Status "RO" }}
-              <tr class="new">
-            {{ else }}
               <tr>
-            {{ end }}
                 <th scope="row"><input type="checkbox" name="msgid" value="{{ .Id }}"></th>
                 <td><a href="/user/{{ .User }}">{{ .User }}</a></td>
                 <td>
@@ -34,6 +31,7 @@
                   </time>
                   <span>&nbsp;({{ .Sent | time }})</span>   
                 </td>
+                <td>{{ if eq .Status "RO" }}Read{{ else }}<strong>NEW</strong>{{ end }}</td>
               </tr>
             {{ end }}
           </tbody>

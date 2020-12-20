@@ -143,6 +143,9 @@ func (s *Server) ViewMessageHandler() httprouter.Handle {
 			s.render("error", w, ctx)
 			return
 		}
+		if err := markMessageAsRead(s.config, ctx.Username, msgId); err != nil {
+			log.WithError(err).Warn("error marking message %d for %s as read", msgId, ctx.Username)
+		}
 
 		ctx.Title = fmt.Sprintf("Private Message from %s: %s", msg.From, msg.Subject)
 		ctx.Messages = Messages{msg}

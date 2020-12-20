@@ -89,6 +89,10 @@ type Server struct {
 }
 
 func (s *Server) render(name string, w http.ResponseWriter, ctx *Context) {
+	if ctx.Authenticated && ctx.Username != "" {
+		ctx.NewMessages = s.msgs.Get(ctx.User.Username)
+	}
+
 	buf, err := s.templates.Exec(name, ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -733,6 +737,9 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 		// Blogs Cache
 		blogs: blogs,
+
+		// Messages Cache
+		msgs: msgs,
 
 		// Feed Cache
 		cache: cache,

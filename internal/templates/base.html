@@ -45,7 +45,9 @@
         {{ if .Authenticated }}
           <a id="messagesMenu" href="/messages">
             <i class="icss-mail-box"></i>
-            <span class="badge">2</span>
+            {{ if gt $.NewMessages  0 }}
+              <span class="badge">{{ $.NewMessages }}</span>
+            {{ end }}
           </a>
         {{ end }}
         <a id="burgerMenu" href="javascript:void(0);">
@@ -99,7 +101,11 @@
       {{ if .Authenticated }}
         <li>
           <a href="/messages">
-            <i class="icss-mail-box"></i>
+            {{ if gt $.NewMessages 0 }}
+              <i class="icss-mail-box-in"></i>
+            {{ else }}
+              <i class="icss-mail-box"></i>
+            {{ end }}
             Messages
           </a>
         </li>

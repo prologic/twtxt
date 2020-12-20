@@ -113,9 +113,25 @@ func (s *Server) DeleteMessagesHandler() httprouter.Handle {
 			return
 		}
 
-		msgId := r.Form["msgid"]
-		log.Debugf("msgid: %v", msgId)
+		var msgIds []int
 
+		for _, rawId := range r.Form["msgid"] {
+			id, err := strconv.Atoi(rawId)
+			if err != nil {
+				ctx.Error = true
+				ctx.Message = "Error invalid message id"
+				s.render("error", w, ctx)
+				return
+			}
+			msgIds = append(msgIds, id)
+		}
+
+		if err := deleteMessages(s.config, ctx.Username, msgIds); err != nil {
+			ctx.Error = true
+			ctx.Message = "Error deleting selected messages! Please try again later"
+			s.render("error", w, ctx)
+			return
+		}
 		ctx.Error = false
 		ctx.Message = "Selected messages successfully deleted!"
 		s.render("error", w, ctx)

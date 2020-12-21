@@ -50,7 +50,7 @@ func storeMessage(conf *Config, msg *message.Entity, to []string) error {
 	for _, address := range addresses {
 		username, _ := splitEmailAddress(address.Address)
 		if err := writeMessage(conf, msg, username); err != nil {
-			log.WithError(err).Error("error writing message for %s", username)
+			log.WithError(err).Errorf("error writing message for %s", username)
 			return fmt.Errorf("error writing message for %s: %w", username, err)
 		}
 	}

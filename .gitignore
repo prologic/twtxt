@@ -5,6 +5,8 @@
 *.idea
 .vscode
 *.sw?
+*.rej
+*.orig
 
 /dist
 

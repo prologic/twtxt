@@ -15,7 +15,8 @@ Specification](https://twtxt.readthedocs.io/en/latest/user/twtxtfile.html#format
 Users might want to tag their twts with labels to make their contents
 detectable by other users who are searching for a certain topic. Those labels
 are called hash tags. They can be used to group several twts on a specific
-topic. Hash tags enable crossreferencing of twts.
+topic. Hash tags enable crossreferencing of twts, e.g. by their most prominent
+use in the [Twt Subject](twtsubjectextension.html).
 
 ## Format
 

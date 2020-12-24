@@ -32,10 +32,10 @@ thus group twts into entire conversations.
 ## Format
 
 The twt subject is the very first contents in parentheses right after any
-optional mentions in the twt text. The opening and closing parentheses are part
-of the subject. Apart from mentions and whitespace, there must not be any other
-text preceding the subject or else the parenthesized text must be treated as
-regular text.
+optional mentions in the twt text. The opening and closing parentheses are not
+part of the subject contents, but rather enclose it. Apart from mentions and
+whitespace, there must not be any other text preceding the subject or else the
+parenthesized text must be treated as regular text.
 
 To further improve traditional subjects with only references in natural
 language, the [Twt Hash](twthashextension.html) of the first twt starting the

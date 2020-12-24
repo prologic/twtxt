@@ -37,18 +37,58 @@ part of the subject contents, but rather enclose it. Apart from mentions and
 whitespace, there must not be any other text preceding the subject or else the
 parenthesized text must be treated as regular text.
 
+### Traditional Human-Readable Topics
+
+Subjects containing only topic references in natural language, such as the
+example in the *Purpose* section above, do not have any restrictions. They
+should be concise, so that users can make sense of them and find the related
+twts manually themselves. The syntax is:
+
+```
+(topic) text
+^^^^^^^
+human-readable twt subject
+```
+
+Or:
+
+```
+@<nick url> (topic) text
+            ^^^^^^^
+            human-readable twt subject
+```
+
+Examples of replies referencing the topic "re: extension spec" (keep in mind
+these twts are on one physical line, but may be rendered in several ones
+depending on your font size and screen width):
+
+```
+@<joe https://example.com/twtxt.txt> @<kate https://example.org/twtxt.txt> (re: extension spec) Yes, I agree.
+```
+
+```
+(re: extension spec) But what about…?
+```
+
+Clients may only preserve those kind of subjects as separate entities if they
+can make use of it, e.g. coloring them differently or showing them in a
+dedicated subject column when employing a tabular view.
+
+### Machine-Parsable Conversation Grouping
+
 To further improve traditional subjects with only references in natural
 language, the [Twt Hash](twthashextension.html) of the first twt starting the
-conversation must be used in form of a [Hash Tag](hashtagextension.html) in the
-twt subject. This allows clients to easily group several twts to conversations.
+conversation should be used in form of a [Hash Tag](hashtagextension.html) in
+the twt subject. This machine-parsable version of subjects allows clients to
+easily group several twts to conversations automatically.
 
 The hash tag may be surrounded with other text, although this is discouraged.
-There must be exactly one hash tag in the subject. The synatx is:
+There must be exactly one hash tag in the subject. The syntax is:
 
 ```
 (#<hash url>) text
 ^^^^^^^^^^^^^
-twt subject
+machine-parsable twt subject
 ```
 
 Or:
@@ -56,7 +96,7 @@ Or:
 ```
 @<nick url> (#<hash url>) text
             ^^^^^^^^^^^^^
-            twt subject
+            machine-parsable twt subject
 ```
 
 Clients must only use the tag (the twt hash) part of the hash tag rather than

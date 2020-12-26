@@ -500,13 +500,8 @@ func (u *User) Reply(twt types.Twt) string {
 	}
 
 	mentions = UniqStrings(mentions)
+	mentions = append(mentions, twt.Subject().FormatText())
 
-	subject := twt.Subject()
-
-	if subject != "" {
-		subject = FormatMentionsAndTagsForSubject(subject)
-		return fmt.Sprintf("%s %s ", strings.Join(mentions, " "), subject)
-	}
 	return fmt.Sprintf("%s ", strings.Join(mentions, " "))
 }
 

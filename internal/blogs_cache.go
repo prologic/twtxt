@@ -37,7 +37,7 @@ func (cache *BlogsCache) Store(path string) error {
 	enc := gob.NewEncoder(b)
 	err := enc.Encode(cache)
 	if err != nil {
-		log.WithError(err).Error("error encoding cache")
+		log.WithError(err).Error("error encoding blog cache")
 		return err
 	}
 

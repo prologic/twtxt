@@ -41,18 +41,17 @@ func (twter Twter) MarshalJSON() ([]byte, error) {
 		Tagline: twter.Tagline,
 	})
 }
+func (twter Twter) String() string { return fmt.Sprintf("%v\t%v", twter.Nick, twter.URL) }
 
 // Twt ...
 type Twt interface {
 	Twter() Twter
 	Text() string
-	SetFmtOpts(FmtOpts)
 	FormatText(TwtTextFormat, FmtOpts) string
-	// MarkdownText() string
 	Created() time.Time
 	IsZero() bool
 	Hash() string
-	Subject() string
+	Subject() Subject
 	Mentions() MentionList
 	Tags() TagList
 
@@ -66,7 +65,8 @@ type Mention interface {
 type MentionList []Mention
 
 type Tag interface {
-	Tag() string
+	Text() string
+	Target() string
 }
 
 type TagList []Tag
@@ -77,9 +77,15 @@ func (tags *TagList) Tags() []string {
 	}
 	lis := make([]string, len(*tags))
 	for i, t := range *tags {
-		lis[i] = t.Tag()
+		lis[i] = t.Text()
 	}
 	return lis
+}
+
+type Subject interface {
+	Text() string
+	FormatText() string
+	Tag() Tag
 }
 
 // TwtMap ...
@@ -103,7 +109,7 @@ func (twts Twts) TagCount() map[string]int {
 	tags := make(map[string]int)
 	for _, twt := range twts {
 		for _, tag := range twt.Tags() {
-			tags[tag.Tag()]++
+			tags[tag.Text()]++
 		}
 	}
 	return tags
@@ -128,22 +134,26 @@ const (
 	TextFmt
 )
 
-var NilTwt = &nilTwt{}
+var NilTwt = nilTwt{}
 
 type nilTwt struct{}
 
-func (*nilTwt) Twter() Twter                             { return Twter{} }
-func (*nilTwt) Text() string                             { return "" }
-func (*nilTwt) SetFmtOpts(FmtOpts)                       {}
-func (*nilTwt) FormatText(TwtTextFormat, FmtOpts) string { return "" }
-func (*nilTwt) MarkdownText() string                     { return "" }
-func (*nilTwt) Created() time.Time                       { return time.Now() }
-func (*nilTwt) IsZero() bool                             { return true }
-func (*nilTwt) Hash() string                             { return "" }
-func (*nilTwt) Subject() string                          { return "" }
-func (*nilTwt) Mentions() MentionList                    { return nil }
-func (*nilTwt) Tags() TagList                            { return nil }
-func (*nilTwt) String() string                           { return "" }
+var _ Twt = NilTwt
+var _ gob.GobEncoder = NilTwt
+var _ gob.GobDecoder = NilTwt
+
+func (nilTwt) Twter() Twter                             { return Twter{} }
+func (nilTwt) Text() string                             { return "" }
+func (nilTwt) FormatText(TwtTextFormat, FmtOpts) string { return "" }
+func (nilTwt) Created() time.Time                       { return time.Now() }
+func (nilTwt) IsZero() bool                             { return true }
+func (nilTwt) Hash() string                             { return "" }
+func (nilTwt) Subject() Subject                         { return nil }
+func (nilTwt) Mentions() MentionList                    { return nil }
+func (nilTwt) Tags() TagList                            { return nil }
+func (nilTwt) String() string                           { return "" }
+func (nilTwt) GobDecode([]byte) error                   { return ErrNotImplemented }
+func (nilTwt) GobEncode() ([]byte, error)               { return nil, ErrNotImplemented }
 
 func init() {
 	gob.Register(&nilTwt{})
@@ -157,11 +167,13 @@ type TwtManager interface {
 
 type nilManager struct{}
 
-func (*nilManager) DecodeJSON([]byte) (Twt, error) { panic("twt managernot configured") }
-func (*nilManager) ParseLine(line string, twter Twter) (twt Twt, err error) {
+var _ TwtManager = nilManager{}
+
+func (nilManager) DecodeJSON([]byte) (Twt, error) { panic("twt managernot configured") }
+func (nilManager) ParseLine(line string, twter Twter) (twt Twt, err error) {
 	panic("twt managernot configured")
 }
-func (*nilManager) ParseFile(r io.Reader, twter Twter) (TwtFile, error) {
+func (nilManager) ParseFile(r io.Reader, twter Twter) (TwtFile, error) {
 	panic("twt managernot configured")
 }
 
@@ -182,19 +194,26 @@ func SetTwtManager(m TwtManager) {
 }
 
 type TwtFile interface {
-	Twter() *Twter
-	Comment() string
-	Meta() *Meta
+	Twter() Twter
+	Info() KV
 	Twts() Twts
 }
 
-type KeyPair [2]string
+type KV interface {
+	GetN(string, int) (string, bool)
+	GetAll(string) []string
+}
+
+type MetaValue struct {
+	key   string
+	value string
+}
 type Meta map[string][]string
 
-func NewMeta(lis ...KeyPair) *Meta {
+func NewMeta(lis ...MetaValue) *Meta {
 	kv := make(Meta, len(lis))
 	for _, pair := range lis {
-		kv[pair[0]] = append(kv[pair[0]], pair[1])
+		kv[pair.key] = append(kv[pair.key], pair.value)
 	}
 	return &kv
 }
@@ -223,6 +242,10 @@ func SplitTwts(twts Twts, ttl time.Duration, N int) (Twts, Twts) {
 			pos-- // current pos is before oldTime. step back one.
 			break
 		}
+	}
+
+	if pos < 1 {
+		return nil, twts
 	}
 
 	return twts[:pos], twts[pos:]

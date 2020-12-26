@@ -67,7 +67,7 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 		}
 
 		when := twt.Created().Format(time.RFC3339)
-		what := FormatMentionsAndTags(s.config, twt.Text(), TextFmt)
+		what := twt.FormatText(types.TextFmt, s.config)
 
 		var ks []string
 		if ks, err = keywords.Extract(what); err != nil {

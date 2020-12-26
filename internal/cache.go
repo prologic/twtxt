@@ -68,6 +68,9 @@ type Cache struct {
 
 // Store ...
 func (cache *Cache) Store(path string) error {
+	cache.mu.RLock()
+	defer cache.mu.RUnlock()
+
 	b := new(bytes.Buffer)
 	enc := gob.NewEncoder(b)
 	err := enc.Encode(cache)
@@ -97,6 +100,8 @@ func LoadCache(path string) (*Cache, error) {
 	cache := &Cache{
 		Twts: make(map[string]*Cached),
 	}
+	cache.mu.Lock()
+	defer cache.mu.Unlock()
 
 	f, err := os.Open(filepath.Join(path, feedCacheFile))
 	if err != nil {
@@ -140,7 +145,6 @@ func LoadCache(path string) (*Cache, error) {
 		cache.Version = feedCacheVersion
 		for url, cached := range oldcache {
 			cache.Twts[url] = cached
-			cache.mu.Unlock()
 		}
 	}
 
@@ -332,6 +336,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 func (cache *Cache) Lookup(hash string) (types.Twt, bool) {
 	cache.mu.RLock()
 	defer cache.mu.RUnlock()
+
 	for _, cached := range cache.Twts {
 		twt, ok := cached.Lookup(hash)
 		if ok {
@@ -344,10 +349,12 @@ func (cache *Cache) Lookup(hash string) (types.Twt, bool) {
 func (cache *Cache) Count() int {
 	var count int
 	cache.mu.RLock()
+	defer cache.mu.RUnlock()
+
 	for _, cached := range cache.Twts {
 		count += len(cached.Twts)
 	}
-	cache.mu.RUnlock()
+
 	return count
 }
 
@@ -355,15 +362,20 @@ func (cache *Cache) Count() int {
 func (cache *Cache) GetAll() types.Twts {
 	var alltwts types.Twts
 	cache.mu.RLock()
+	defer cache.mu.RUnlock()
+
 	for _, cached := range cache.Twts {
 		alltwts = append(alltwts, cached.Twts...)
 	}
-	cache.mu.RUnlock()
+
 	return alltwts
 }
 
 // GetMentions ...
 func (cache *Cache) GetMentions(u *User) (twts types.Twts) {
+	cache.mu.RLock()
+	defer cache.mu.RUnlock()
+
 	seen := make(map[string]bool)
 
 	// Search for @mentions in the cache against all Twts (local, followed and even external if any)
@@ -382,32 +394,28 @@ func (cache *Cache) GetMentions(u *User) (twts types.Twts) {
 // GetByPrefix ...
 func (cache *Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 	key := fmt.Sprintf("prefix:%s", prefix)
-	cache.mu.RLock()
+	cache.mu.Lock()
+	defer cache.mu.Unlock()
+
 	cached, ok := cache.Twts[key]
-	cache.mu.RUnlock()
 	if ok && !refresh {
 		return cached.Twts
 	}
 
 	var twts types.Twts
 
-	cache.mu.RLock()
 	for url, cached := range cache.Twts {
 		if strings.HasPrefix(url, prefix) {
 			twts = append(twts, cached.Twts...)
 		}
 	}
-	cache.mu.RUnlock()
 
 	sort.Sort(twts)
-
-	cache.mu.Lock()
 	cache.Twts[key] = &Cached{
 		cache:        make(map[string]types.Twt),
 		Twts:         twts,
 		Lastmodified: time.Now().Format(time.RFC3339),
 	}
-	cache.mu.Unlock()
 
 	return twts
 }
@@ -415,8 +423,9 @@ func (cache *Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 // IsCached ...
 func (cache *Cache) IsCached(url string) bool {
 	cache.mu.RLock()
+	defer cache.mu.RUnlock()
+
 	_, ok := cache.Twts[url]
-	cache.mu.RUnlock()
 	return ok
 }
 
@@ -424,6 +433,7 @@ func (cache *Cache) IsCached(url string) bool {
 func (cache *Cache) GetByURL(url string) types.Twts {
 	cache.mu.RLock()
 	defer cache.mu.RUnlock()
+
 	if cached, ok := cache.Twts[url]; ok {
 		return cached.Twts
 	}
@@ -432,9 +442,10 @@ func (cache *Cache) GetByURL(url string) types.Twts {
 
 // Delete ...
 func (cache *Cache) Delete(feeds types.Feeds) {
+	cache.mu.Lock()
+	defer cache.mu.Unlock()
+
 	for feed := range feeds {
-		cache.mu.Lock()
 		delete(cache.Twts, feed.URL)
-		cache.mu.Unlock()
 	}
 }

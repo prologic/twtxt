@@ -1284,7 +1284,7 @@ func URLForExternalAvatar(conf *Config, uri string) string {
 
 func URLForBlogFactory(conf *Config, blogs *BlogsCache) func(twt types.Twt) string {
 	return func(twt types.Twt) string {
-		subject := twt.Subject()
+		subject := twt.Subject().Text()
 		if subject == "" {
 			return ""
 		}
@@ -1314,7 +1314,7 @@ func URLForBlogFactory(conf *Config, blogs *BlogsCache) func(twt types.Twt) stri
 
 func URLForConvFactory(conf *Config, cache *Cache) func(twt types.Twt) string {
 	return func(twt types.Twt) string {
-		subject := twt.Subject()
+		subject := twt.Subject().Text()
 		if subject == "" {
 			return ""
 		}
@@ -1575,8 +1575,9 @@ func FormatForDateTime(t time.Time) string {
 }
 
 // FormatTwtFactory formats a twt into a valid HTML snippet
-func FormatTwtFactory(conf *Config) func(text string) template.HTML {
-	return func(text string) template.HTML {
+func FormatTwtFactory(conf *Config) func(twt types.Twt) template.HTML {
+	return func(twt types.Twt) template.HTML {
+		text := twt.Text()
 		renderHookProcessURLs := func(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
 			// Ensure only whitelisted ![](url) images
 			image, ok := node.(*ast.Image)
@@ -1711,15 +1712,15 @@ func FormatMentionsAndTags(conf *Config, text string, format TwtTextFormat) stri
 	})
 }
 
-// FormatMentionsAndTagsForSubject turns `@<nick URL>` into `@nick`
-func FormatMentionsAndTagsForSubject(text string) string {
-	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
-	return re.ReplaceAllStringFunc(text, func(match string) string {
-		parts := re.FindStringSubmatch(match)
-		prefix, nick := parts[1], parts[2]
-		return fmt.Sprintf(`%s%s`, prefix, nick)
-	})
-}
+// // FormatMentionsAndTagsForSubject turns `@<nick URL>` into `@nick`
+// func FormatMentionsAndTagsForSubject(text string) string {
+// 	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
+// 	return re.ReplaceAllStringFunc(text, func(match string) string {
+// 		parts := re.FindStringSubmatch(match)
+// 		prefix, nick := parts[1], parts[2]
+// 		return fmt.Sprintf(`%s%s`, prefix, nick)
+// 	})
+// }
 
 // FormatRequest generates ascii representation of a request
 func FormatRequest(r *http.Request) string {

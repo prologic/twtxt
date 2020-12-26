@@ -43,7 +43,17 @@ package lextwt
 // MENTION = amp, lt, [ String, Space ], String , gt ;
 // TAG     = hash, lt, String, [ Space, String ], gt ;
 //
-// TWT     = DATE, tab, { MENTION | TAG | TEXT }, term;
+// lp      = "(" ;
+// rp      = ")" ;
+// SUBJECT = lp, TAG | TEXT, rp ;
+//
+// bang    = "!" ;
+// lb      = "[" ;
+// rb      = "]" ;
+// LINK    = lb, TEXT, rb, lp, TEXT, rp ;
+// MEDIA   = bang, lb, [ TEXT ], rb, lp, TEXT, rp ;
+//
+// TWT     = DATE, tab, [ { MENTION }, [ SUBJECT ] ], { MENTION | TAG | TEXT | LINK | MEDIA }, term;
 // ```
 
 import (
@@ -176,9 +186,15 @@ const (
 	TokHASH  TokType = "#"
 	TokEQUAL TokType = "="
 
-	TokAMP TokType = "@"
-	TokLT  TokType = "<"
-	TokGT  TokType = ">"
+	TokAMP    TokType = "@"
+	TokLT     TokType = "<"
+	TokGT     TokType = ">"
+	TokLPAREN TokType = "("
+	TokRPAREN TokType = ")"
+	TokLBRACK TokType = "["
+	TokRBRACK TokType = "]"
+	TokBANG   TokType = "!"
+	TokTICK   TokType = "`"
 )
 
 // // Tested using int8 for TokenType -1 debug +0 memory/performance
@@ -276,9 +292,26 @@ func (l *lexer) NextTok() bool {
 		case '>':
 			l.loadRune(TokGT)
 			return true
-
+		case '(':
+			l.loadRune(TokLPAREN)
+			return true
+		case ')':
+			l.loadRune(TokRPAREN)
+			return true
+		case '[':
+			l.loadRune(TokLBRACK)
+			return true
+		case ']':
+			l.loadRune(TokRBRACK)
+			return true
+		case '!':
+			l.loadRune(TokBANG)
+			return true
+		case '`':
+			l.loadRune(TokTICK)
+			return true
 		default:
-			l.loadString(" @#<>\u2028\n")
+			l.loadString(" @#!`<>()[]\u2028\n")
 			return true
 		}
 
@@ -452,6 +485,10 @@ type Token struct {
 	Literal []rune
 }
 
+func (t Token) String() string {
+	return fmt.Sprintf("%s[%s]", t.Type, string(t.Literal))
+}
+
 func NewParser(l *lexer) *parser {
 	p := &parser{
 		l: l,
@@ -504,6 +541,12 @@ func (p *parser) ParseElem() Elem {
 	var e Elem
 
 	switch p.curTok.Type {
+	case TokLBRACK, TokBANG:
+		e = p.ParseLink()
+	case TokTICK:
+		e = p.ParseCode()
+	case TokLPAREN:
+		e = p.ParseSubject()
 	case TokHASH:
 		e = p.ParseTag()
 	case TokAMP:
@@ -555,40 +598,45 @@ func (p *parser) ParseComment() *Comment {
 		}
 	}
 
-	return &Comment{string(p.lit), label, strings.TrimSpace(string(value))}
+	return NewCommentValue(string(p.lit), label, strings.TrimSpace(string(value)))
 }
 
 // ParseTwt from tokens
 // Forms parsed:
 //   [Date]\t... -> ParseElem (will consume all elems till end of line/file.)
 func (p *parser) ParseTwt() *Twt {
+	twt := &Twt{}
+
 	if !p.expect(TokNUMBER) {
 		return nil
 	}
-	dt := p.ParseDateTime()
+	twt.dt = p.ParseDateTime()
 
 	if !p.expect(TokTAB) {
 		return nil
 	}
 	p.next()
-	var lis []Elem
-	var mentions []*Mention
-	var tags []*Tag
 	elem := p.ParseElem()
 	for elem != nil {
-		lis = append(lis, elem)
-		elem = p.ParseElem()
+		twt.msg = append(twt.msg, elem)
 
-		// I could inline ParseElem here to avoid typecheck. But there doesn't appear to be a performance difference.
+		// I could inline ParseElem here to avoid typechecks. But there doesn't appear to be a performance difference.
+		if subject, ok := elem.(*Subject); ok && twt.subject != nil {
+			twt.subject = subject
+		}
+
 		if tag, ok := elem.(*Tag); ok {
-			tags = append(tags, tag)
+			twt.tags = append(twt.tags, tag)
 		}
+
 		if mention, ok := elem.(*Mention); ok {
-			mentions = append(mentions, mention)
+			twt.mentions = append(twt.mentions, mention)
 		}
+
+		elem = p.ParseElem()
 	}
 
-	return &Twt{dt: dt, msg: lis, mentions: mentions, tags: tags, twter: p.twter}
+	return twt
 }
 
 // ParseDateTime from tokens
@@ -865,6 +913,51 @@ func (p *parser) ParseTag() *Tag {
 	return &Tag{lit: string(p.lit), tag: name, target: target}
 }
 
+// ParseSubject from tokens
+// Forms parsed:
+//   (#tag)
+//   (#<target>)
+//   (#<tag target>)
+//   (re: something)
+func (p *parser) ParseSubject() *Subject {
+	p.lit = p.lit[:0]
+	subject := &Subject{}
+
+	p.lit = append(p.lit, p.curTok.Literal...)
+	if p.curTokenIs(TokLPAREN) && p.nextTokenIs(TokHASH) {
+		p.lit = append(p.lit, p.curTok.Literal...)
+		lit := p.lit
+		p.lit = p.lit[1:]
+
+		subject.tag = p.ParseTag()
+
+		p.lit = lit
+
+		if !p.expect(TokRPAREN) {
+			return nil
+		}
+		p.next()
+
+		return subject
+	} else if p.curTokenIs(TokLPAREN) && p.nextTokenIs(TokSTRING, TokSPACE) {
+		lit := p.lit
+		p.lit = p.lit[1:]
+
+		subject.subject = p.ParseText(true).String()
+
+		p.lit = lit
+
+		if !p.expect(TokRPAREN) {
+			return nil
+		}
+		p.next()
+
+		return subject
+	} else {
+		return nil
+	}
+}
+
 // ParseText from tokens.
 // Forms parsed:
 //   combination of string and space tokens.
@@ -883,6 +976,80 @@ func (p *parser) ParseText(keepbuf bool) *Text {
 	return &Text{string(p.lit)}
 }
 
+// ParseLink from tokens.
+// Forms parsed:
+//   [a link](http://example.com)
+//   ![a image](http://example.com/img.png)
+func (p *parser) ParseLink() *Link {
+	p.lit = p.lit[:0]
+	link := &Link{}
+
+	// Media Link
+	p.lit = append(p.lit, p.curTok.Literal...) // ! or [
+	if p.curTokenIs(TokBANG) && p.nextTokenIs(TokLBRACK) {
+		link.isMedia = true
+		p.lit = append(p.lit, p.curTok.Literal...) // [
+	}
+
+	if !p.expect(TokLBRACK) {
+		return nil
+	}
+
+	// Parse Alt
+	if p.curTokenIs(TokLBRACK) && !p.nextTokenIs(TokRBRACK) {
+		p.next()
+		pos := len(p.lit)
+		p.lit = append(p.lit, p.curTok.Literal...) // alt text
+		for !p.nextTokenIs(TokRBRACK) {
+			p.next()
+			p.lit = append(p.lit, p.curTok.Literal...) // alt text
+		}
+		link.alt = string(p.lit[pos:])
+	}
+
+	p.lit = append(p.lit, p.curTok.Literal...) // ]
+	if !p.expectNext(TokLPAREN) {
+		return nil
+	}
+	p.lit = append(p.lit, p.curTok.Literal...) // (
+
+	// Parse Target
+	if p.curTokenIs(TokLPAREN) && !p.nextTokenIs(TokRPAREN) {
+		p.next()
+		pos := len(p.lit)
+		p.lit = append(p.lit, p.curTok.Literal...) // link text
+		for !p.nextTokenIs(TokRPAREN) {
+			p.next()
+			p.lit = append(p.lit, p.curTok.Literal...) // link text
+		}
+		link.target = string(p.lit[pos:])
+	}
+	p.lit = append(p.lit, p.curTok.Literal...) // )
+	if !p.expect(TokRPAREN) {
+		return nil
+	}
+	p.next()
+
+	return link
+}
+
+// ParseCode from tokens
+// Forms parsed:
+//   `inline code`
+//   ```
+//   block code
+//   ```
+func (p *parser) ParseCode() *Code {
+	code := &Code{}
+
+	// code block
+	if p.curTokenIs(TokTICK) && p.nextTokenIs(TokTICK) && p.nextTokenIs(TokTICK) {
+		code.isBlock = true
+	}
+
+	return code
+}
+
 func (p *parser) Errs() ListError {
 	return p.errs
 }
@@ -899,6 +1066,10 @@ func (e ListError) Error() string {
 }
 
 // Parser evaluation functions.
+
+func (p *parser) IsEOF() bool {
+	return p.curTokenIs(TokEOF)
+}
 
 // next promotes the next token and loads a new one.
 // the parser keeps two buffers to store tokens and alternates them here.
@@ -1002,18 +1173,21 @@ type Comment struct {
 
 var _ Elem = (*Comment)(nil)
 
-func (n *Comment) IsNil() bool { return n == nil }
-func (n *Comment) Literal() string {
-	return n.comment + "\n"
+func NewComment(comment string) *Comment {
+	return &Comment{comment: comment}
 }
-func (n *Comment) String() string {
-	return n.Literal()
+func NewCommentValue(comment, key, value string) *Comment {
+	return &Comment{comment, key, value}
 }
-func (n *Comment) KeyValue() (string, string) {
-	return n.key, n.value
-}
+func (n Comment) IsNil() bool     { return n.comment == "" }
+func (n Comment) Literal() string { return n.comment + "\n" }
+func (n Comment) String() string  { return n.Literal() }
+func (n Comment) Key() string     { return n.key }
+func (n Comment) Value() string   { return n.value }
 
 type Comments []*Comment
+
+var _ types.KV = Comments{}
 
 func (lis Comments) String() string {
 	var b strings.Builder
@@ -1023,15 +1197,40 @@ func (lis Comments) String() string {
 	return b.String()
 }
 
-func (lis Comments) Meta() *types.Meta {
-	kv := make([]types.KeyPair, 0, len(lis))
-	for _, c := range lis {
-		if c.key != "" {
-			kv = append(kv, types.KeyPair{c.key, c.value})
+func (lis Comments) GetN(key string, n int) (string, bool) {
+	idx := make([]int, 0, len(lis))
+
+	for i := range lis {
+		if n == 0 && key == lis[i].key {
+			return lis[i].value, true
+		}
+
+		if key == lis[i].key {
+			idx = append(idx, i)
+		}
+
+		if n == len(idx) {
+			return lis[i].value, true
 		}
 	}
 
-	return types.NewMeta(kv...)
+	if n < 0 && -n < len(idx) {
+		return lis[idx[len(idx)+n]].value, true
+	}
+
+	return "", false
+}
+
+func (lis Comments) GetAll(prefix string) []string {
+	nlis := make([]string, 0, len(lis))
+
+	for i := range lis {
+		if strings.HasPrefix(lis[i].key, prefix) {
+			nlis = append(nlis, lis[i].value)
+		}
+	}
+
+	return nlis
 }
 
 type DateTime struct {
@@ -1042,6 +1241,12 @@ type DateTime struct {
 
 var _ Elem = (*DateTime)(nil)
 
+func NewDateTime(s string) *DateTime {
+	dt := &DateTime{lit: s}
+	dt.dt, _ = time.Parse(time.RFC3339, s)
+
+	return dt
+}
 func (n *DateTime) IsNil() bool     { return n == nil }
 func (n *DateTime) Literal() string { return n.lit }
 func (n *DateTime) String() string  { return n.Literal() }
@@ -1065,6 +1270,33 @@ type Mention struct {
 var _ Elem = (*Mention)(nil)
 var _ types.Mention = (*Mention)(nil)
 
+func NewMention(name, target string) *Mention {
+	m := &Mention{name: name, target: target}
+
+	switch {
+	case name != "" && target == "":
+		m.lit = fmt.Sprintf("@%s", name)
+
+	case name != "" && target != "":
+		m.lit = fmt.Sprintf("@<%s %s>", name, target)
+
+	case name == "" && target != "":
+		m.lit = fmt.Sprintf("@<%s>", target)
+	}
+
+	if sp := strings.SplitN(name, "@", 2); len(sp) == 2 {
+		m.name = sp[0]
+		m.domain = sp[1]
+	}
+
+	if m.domain == "" && m.target != "" {
+		if url := m.URL(); url != nil {
+			m.domain = url.Hostname()
+		}
+	}
+
+	return m
+}
 func (n *Mention) IsNil() bool        { return n == nil }
 func (n *Mention) Twter() types.Twter { return types.Twter{Nick: n.name, URL: n.target} }
 func (n *Mention) Literal() string    { return n.lit }
@@ -1088,6 +1320,9 @@ func (n *Mention) Err() error {
 	n.URL()
 	return n.err
 }
+func (n *Mention) FormatText() string {
+	return fmt.Sprintf("@%s", n.name)
+}
 
 type Tag struct {
 	lit string
@@ -1101,18 +1336,73 @@ type Tag struct {
 var _ Elem = (*Tag)(nil)
 var _ types.Tag = (*Tag)(nil)
 
-func (n *Tag) IsNil() bool             { return n == nil }
-func (n *Tag) Literal() string         { return n.lit }
-func (n *Tag) String() string          { return n.Literal() }
-func (n *Tag) Tag() string             { return n.tag }
-func (n *Tag) Target() string          { return n.target }
-func (n *Tag) SetTarget(target string) { n.target, n.url, n.err = target, nil, nil }
-func (n *Tag) Err() error              { return n.err }
+func NewTag(tag, target string) *Tag {
+	m := &Tag{tag: tag, target: target}
+
+	switch {
+	case tag != "" && target == "":
+		m.lit = fmt.Sprintf("#%s", tag)
+
+	case tag != "" && target != "":
+		m.lit = fmt.Sprintf("#<%s %s>", tag, target)
+
+	case tag == "" && target != "":
+		m.lit = fmt.Sprintf("#<%s>", target)
+	}
+
+	return m
+}
+func (n *Tag) IsNil() bool     { return n == nil }
+func (n *Tag) Literal() string { return n.lit }
+func (n *Tag) String() string  { return n.Literal() }
+func (n *Tag) Text() string    { return n.tag }
+func (n *Tag) Target() string  { return n.target }
+func (n *Tag) SetTarget(target string) {
+	if !n.IsNil() {
+		n.target, n.url, n.err = target, nil, nil
+	}
+}
+func (n *Tag) Err() error { return n.err }
 func (n *Tag) URL() *url.URL {
 	if n.url == nil && n.err == nil {
 		n.url, n.err = url.Parse(n.target)
 	}
 	return n.url
+}
+func (n *Tag) FormatText() string {
+	return fmt.Sprintf("#%s", n.tag)
+}
+
+type Subject struct {
+	subject string
+	tag     *Tag
+}
+
+var _ Elem = (*Subject)(nil)
+
+func NewSubject(text string) *Subject  { return &Subject{subject: text} }
+func NewSubjectHash(tag *Tag) *Subject { return &Subject{tag: tag} }
+func (n *Subject) IsNil() bool         { return n == nil }
+func (n *Subject) Literal() string {
+	if n.tag != nil {
+		return "(" + n.tag.Literal() + ")"
+	}
+
+	return "(" + n.subject + ")"
+}
+func (n *Subject) String() string { return n.Literal() }
+func (n *Subject) Text() string {
+	if n.tag == nil {
+		return n.subject
+	}
+	return n.tag.Literal()
+}
+func (n *Subject) Tag() types.Tag { return n.tag }
+func (n *Subject) FormatText() string {
+	if n.tag == nil {
+		return fmt.Sprintf("(%s)", n.subject)
+	}
+	return fmt.Sprintf("(%s)", n.tag.FormatText())
 }
 
 type Text struct {
@@ -1121,12 +1411,60 @@ type Text struct {
 
 var _ Elem = (*Text)(nil)
 
-func (n *Text) IsNil() bool { return n == nil }
+func NewText(txt string) *Text { return &Text{txt} }
+func (n *Text) IsNil() bool    { return n == nil }
 func (n *Text) Literal() string {
 	return n.lit
 }
+
+// String replaces line separator with newlines
 func (n *Text) String() string {
+	return strings.ReplaceAll(n.Literal(), string(TokLS), "\n")
+}
+
+type Link struct {
+	isMedia bool
+	alt     string
+	target  string
+}
+
+var _ Elem = (*Link)(nil)
+
+func NewLink(alt, target string, isMedia bool) *Link { return &Link{isMedia, alt, target} }
+func (n *Link) IsNil() bool                          { return n == nil }
+func (n *Link) Literal() string {
+	if n.isMedia {
+		return fmt.Sprintf("![%s](%s)", n.alt, n.target)
+	}
+	return fmt.Sprintf("[%s](%s)", n.alt, n.target)
+}
+
+func (n *Link) String() string {
 	return n.Literal()
+}
+func (n *Link) IsMedia() bool  { return n.isMedia }
+func (n *Link) Alt() string    { return n.alt }
+func (n *Link) Target() string { return n.target }
+
+type Code struct {
+	isBlock bool
+	lit     string
+}
+
+var _ Elem = (*Code)(nil)
+
+func NewCode(text string, isBlock bool) *Code { return &Code{isBlock, text} }
+func (n *Code) IsNil() bool                   { return n == nil }
+func (n *Code) Literal() string {
+	if n.isBlock {
+		return fmt.Sprintf("```%s```", n.lit)
+	}
+	return fmt.Sprintf("`%s`", n.lit)
+}
+
+// String replaces line separator with newlines
+func (n *Code) String() string {
+	return strings.ReplaceAll(n.Literal(), string(TokLS), "\n")
 }
 
 type Twt struct {
@@ -1135,12 +1473,32 @@ type Twt struct {
 	mentions []*Mention
 	tags     []*Tag
 	hash     string
+	subject  *Subject
 	twter    types.Twter
 }
 
 var _ Elem = (*Twt)(nil)
 var _ types.Twt = (*Twt)(nil)
 
+func NewTwt(dt *DateTime, elems ...Elem) *Twt {
+	twt := &Twt{dt: dt, msg: elems}
+
+	for _, elem := range elems {
+		if subject, ok := elem.(*Subject); ok && twt.subject != nil {
+			twt.subject = subject
+		}
+
+		if tag, ok := elem.(*Tag); ok {
+			twt.tags = append(twt.tags, tag)
+		}
+
+		if mention, ok := elem.(*Mention); ok {
+			twt.mentions = append(twt.mentions, mention)
+		}
+	}
+
+	return twt
+}
 func (twt *Twt) IsNil() bool  { return twt == nil }
 func (twt *Twt) IsZero() bool { return twt.IsNil() || twt.Literal() == "" || twt.Created().IsZero() }
 func (twt *Twt) Literal() string {
@@ -1156,7 +1514,6 @@ func (twt *Twt) Literal() string {
 	b.WriteRune('\n')
 	return b.String()
 }
-func (*Twt) Subject() string { return "" }
 func (twt *Twt) Text() string {
 	var b strings.Builder
 	for _, s := range twt.msg {
@@ -1226,27 +1583,25 @@ func DecodeJSON(data []byte) (types.Twt, error) {
 
 	return types.NilTwt, err
 }
-func (twt *Twt) MarkdownText() string                                 { return twt.Literal() }
-func (*Twt) SetFmtOpts(types.FmtOpts)                                 {}
-func (twt *Twt) FormatText(types.TwtTextFormat, types.FmtOpts) string { return twt.Literal() }
-func (twt *Twt) String() string                                       { return twt.Literal() }
-func (twt *Twt) Created() time.Time                                   { return twt.dt.DateTime() }
-func (twt *Twt) Mentions() types.MentionList {
+func (twt Twt) FormatText(types.TwtTextFormat, types.FmtOpts) string { return twt.Literal() }
+func (twt Twt) String() string                                       { return twt.Literal() }
+func (twt Twt) Created() time.Time                                   { return twt.dt.DateTime() }
+func (twt Twt) Mentions() types.MentionList {
 	lis := make([]types.Mention, len(twt.mentions))
 	for i := range twt.mentions {
 		lis[i] = twt.mentions[i]
 	}
 	return lis
 }
-func (twt *Twt) Tags() types.TagList {
+func (twt Twt) Tags() types.TagList {
 	lis := make([]types.Tag, len(twt.tags))
 	for i := range twt.tags {
 		lis[i] = twt.tags[i]
 	}
 	return lis
 }
-func (twt *Twt) Twter() types.Twter { return twt.twter }
-func (twt *Twt) Hash() string {
+func (twt Twt) Twter() types.Twter { return twt.twter }
+func (twt Twt) Hash() string {
 	payload := twt.Twter().URL + "\n" + twt.Created().Format(time.RFC3339) + "\n" + twt.Literal()
 	sum := blake2b.Sum256([]byte(payload))
 
@@ -1256,6 +1611,12 @@ func (twt *Twt) Hash() string {
 	twt.hash = hash[len(hash)-types.TwtHashLength:]
 
 	return twt.hash
+}
+func (twt Twt) Subject() types.Subject {
+	if twt.subject == nil {
+		twt.subject = &Subject{tag: &Tag{tag: twt.Hash()}}
+	}
+	return twt.subject
 }
 
 // Twts typedef to be able to attach sort methods
@@ -1290,14 +1651,17 @@ func DefaultTwtManager() {
 }
 
 type lextwtFile struct {
-	twter    *types.Twter
+	twter    types.Twter
 	twts     types.Twts
 	comments Comments
 }
 
 var _ types.TwtFile = (*lextwtFile)(nil)
 
-func (r *lextwtFile) Twter() *types.Twter { return r.twter }
-func (r *lextwtFile) Comment() string     { return r.comments.String() }
-func (r *lextwtFile) Meta() *types.Meta   { return r.comments.Meta() }
-func (r *lextwtFile) Twts() types.Twts    { return r.twts }
+func NewTwtFile(twter types.Twter, twts types.Twts, comments Comments) *lextwtFile {
+	return &lextwtFile{twter, twts, comments}
+}
+func (r *lextwtFile) Twter() types.Twter { return r.twter }
+func (r *lextwtFile) Comment() string    { return r.comments.String() }
+func (r *lextwtFile) Info() types.KV     { return r.comments }
+func (r *lextwtFile) Twts() types.Twts   { return r.twts }

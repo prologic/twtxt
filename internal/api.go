@@ -124,13 +124,6 @@ func (a *API) CreateToken(user *User, r *http.Request) (*Token, error) {
 	return tkn, nil
 }
 
-func (a *API) formatTwtText(twts types.Twts) types.Twts {
-	for _, twt := range twts {
-		twt.SetFmtOpts(a.config)
-	}
-
-	return twts
-}
 
 func (a *API) jwtKeyFunc(token *jwt.Token) (interface{}, error) {
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -459,7 +452,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: a.formatTwtText(FilterTwts(user, pagedTwts)),
+			Twts: FilterTwts(user, pagedTwts),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
@@ -505,7 +498,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: a.formatTwtText(FilterTwts(loggedInUser, pagedTwts)),
+			Twts: FilterTwts(loggedInUser, pagedTwts),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
@@ -552,7 +545,7 @@ func (a *API) MentionsEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: a.formatTwtText(FilterTwts(user, pagedTwts)),
+			Twts: FilterTwts(user, pagedTwts),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
@@ -1155,7 +1148,7 @@ func (a *API) ConversationEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: a.formatTwtText(FilterTwts(loggedInUser, pagedTwts)),
+			Twts: FilterTwts(loggedInUser, pagedTwts),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
@@ -1239,7 +1232,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: a.formatTwtText(FilterTwts(loggedInUser, pagedTwts)),
+			Twts: FilterTwts(loggedInUser, pagedTwts),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),

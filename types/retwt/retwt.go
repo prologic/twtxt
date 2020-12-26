@@ -37,21 +37,23 @@ type reTwt struct {
 	hash     string
 	mentions []types.Mention
 	tags     []types.Tag
-
-	fmtOpts types.FmtOpts
 }
 
 var _ types.Twt = (*reTwt)(nil)
 var _ gob.GobEncoder = (*reTwt)(nil)
 var _ gob.GobDecoder = (*reTwt)(nil)
 
-func (twt *reTwt) GobEncode() ([]byte, error) {
+func (twt reTwt) GobEncode() ([]byte, error) {
 	enc := struct {
 		Twter   types.Twter `json:"twter"`
 		Text    string      `json:"text"`
 		Created time.Time   `json:"created"`
 		Hash    string      `json:"hash"`
 	}{twt.twter, twt.text, twt.created, twt.hash}
+
+	if twt.text == "" {
+		return nil, fmt.Errorf("empty twt: %v", twt)
+	}
 	return json.Marshal(enc)
 }
 func (twt *reTwt) GobDecode(data []byte) error {
@@ -71,7 +73,7 @@ func (twt *reTwt) GobDecode(data []byte) error {
 	return err
 }
 
-func (twt *reTwt) String() string {
+func (twt reTwt) String() string {
 	return fmt.Sprintf("%v\t%v", twt.created.Format(time.RFC3339), twt.text)
 }
 
@@ -80,7 +82,7 @@ func NewReTwt(twter types.Twter, text string, created time.Time) *reTwt {
 }
 
 func DecodeJSON(data []byte) (types.Twt, error) {
-	twt := &reTwt{}
+	twt := reTwt{}
 	if err := twt.GobDecode(data); err != nil {
 		return types.NilTwt, err
 	}
@@ -124,7 +126,7 @@ func ParseFile(r io.Reader, twter types.Twter) (*retwtFile, error) {
 
 	nLines, nErrors := 0, 0
 
-	f := &retwtFile{twter: &twter}
+	f := &retwtFile{twter: twter}
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -135,6 +137,7 @@ func ParseFile(r io.Reader, twter types.Twter) (*retwtFile, error) {
 			nErrors++
 			continue
 		}
+
 		if twt.IsZero() {
 			continue
 		}
@@ -153,20 +156,19 @@ func ParseFile(r io.Reader, twter types.Twter) (*retwtFile, error) {
 	return f, nil
 }
 
-func (twt *reTwt) Twter() types.Twter { return twt.twter }
-func (twt *reTwt) Text() string       { return twt.text }
-func (twt *reTwt) MarkdownText() string {
-	return formatMentionsAndTags(twt.fmtOpts, twt.text, types.MarkdownFmt)
+func (twt reTwt) Twter() types.Twter { return twt.twter }
+func (twt reTwt) Text() string       { return twt.text }
+func (twt reTwt) MarkdownText() string {
+	// we assume FmtOpts is always null for markdown.
+	return formatMentionsAndTags(nil, twt.text, types.MarkdownFmt)
 }
-func (twt *reTwt) FormatText(textFmt types.TwtTextFormat, fmtOpts types.FmtOpts) string {
-	if fmtOpts == nil {
-		fmtOpts = twt.fmtOpts
-	}
+func (twt reTwt) FormatText(textFmt types.TwtTextFormat, fmtOpts types.FmtOpts) string {
 	return formatMentionsAndTags(fmtOpts, twt.text, textFmt)
 }
-func (twt *reTwt) SetFmtOpts(opts types.FmtOpts) { twt.fmtOpts = opts }
-func (twt *reTwt) Created() time.Time            { return twt.created }
-func (twt *reTwt) MarshalJSON() ([]byte, error) {
+
+// func (twt *reTwt) SetFmtOpts(opts types.FmtOpts) { twt.fmtOpts = opts }
+func (twt reTwt) Created() time.Time { return twt.created }
+func (twt reTwt) MarshalJSON() ([]byte, error) {
 	var tags types.TagList = twt.Tags()
 	return json.Marshal(struct {
 		Twter        types.Twter `json:"twter"`
@@ -187,15 +189,12 @@ func (twt *reTwt) MarshalJSON() ([]byte, error) {
 		// Dynamic Fields
 		Hash:    twt.Hash(),
 		Tags:    tags.Tags(),
-		Subject: twt.Subject(),
+		Subject: twt.Subject().Text(),
 	})
 }
 
 // Mentions ...
-func (twt *reTwt) Mentions() types.MentionList {
-	if twt == nil {
-		return nil
-	}
+func (twt reTwt) Mentions() types.MentionList {
 	if twt.mentions != nil {
 		return twt.mentions
 	}
@@ -214,10 +213,7 @@ func (twt *reTwt) Mentions() types.MentionList {
 }
 
 // Tags ...
-func (twt *reTwt) Tags() types.TagList {
-	if twt == nil {
-		return nil
-	}
+func (twt reTwt) Tags() types.TagList {
 	if twt.tags != nil {
 		return twt.tags
 	}
@@ -239,24 +235,24 @@ func (twt *reTwt) Tags() types.TagList {
 }
 
 // Subject ...
-func (twt *reTwt) Subject() string {
+func (twt reTwt) Subject() types.Subject {
 	match := subjectRe.FindStringSubmatch(twt.text)
 	if match != nil {
 		matchingSubject := match[2]
 		matchedURITags := uriTagsRe.FindAllStringSubmatch(matchingSubject, -1)
 		if matchedURITags != nil {
 			// Re-add the (#xxx) back as the output
-			return fmt.Sprintf("(#%s)", matchedURITags[0][1])
+			return reSubject(fmt.Sprintf("(#%s)", matchedURITags[0][1]))
 		}
-		return matchingSubject
+		return reSubject(matchingSubject)
 	}
 
 	// By default the subject is the Twt's Hash being replied to.
-	return fmt.Sprintf("(#%s)", twt.Hash())
+	return reSubject(fmt.Sprintf("(#%s)", twt.Hash()))
 }
 
 // Hash ...
-func (twt *reTwt) Hash() string {
+func (twt reTwt) Hash() string {
 	if twt.hash != "" {
 		return twt.hash
 	}
@@ -272,7 +268,7 @@ func (twt *reTwt) Hash() string {
 	return twt.hash
 }
 
-func (twt *reTwt) IsZero() bool {
+func (twt reTwt) IsZero() bool {
 	return twt.Twter().IsZero() && twt.Created().IsZero() && twt.Text() == ""
 }
 
@@ -297,13 +293,23 @@ func (t *reTag) Tag() string {
 	return t.tag
 }
 
+func (t *reTag) Text() string {
+	sp := strings.Fields(t.tag)
+
+	return sp[0]
+}
+func (t *reTag) Target() string {
+	sp := strings.Fields(t.tag)
+	if len(sp) > 1 {
+		return sp[1]
+	}
+	return ""
+}
+
 // FormatMentionsAndTags turns `@<nick URL>` into `<a href="URL">@nick</a>`
 // and `#<tag URL>` into `<a href="URL">#tag</a>` and a `!<hash URL>`
 // into a `<a href="URL">!hash</a>`.
 func formatMentionsAndTags(opts types.FmtOpts, text string, format types.TwtTextFormat) string {
-	if opts == nil {
-		log.Warn("format options is <nil>")
-	}
 	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
@@ -345,6 +351,16 @@ func formatMentionsAndTags(opts types.FmtOpts, text string, format types.TwtText
 	})
 }
 
+// FormatMentionsAndTagsForSubject turns `@<nick URL>` into `@nick`
+func FormatMentionsAndTagsForSubject(text string) string {
+	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
+	return re.ReplaceAllStringFunc(text, func(match string) string {
+		parts := re.FindStringSubmatch(match)
+		prefix, nick := parts[1], parts[2]
+		return fmt.Sprintf(`%s%s`, prefix, nick)
+	})
+}
+
 func ParseTime(timestr string) (tm time.Time, err error) {
 	// Twtxt clients generally uses basically time.RFC3339Nano, but sometimes
 	// there's a colon in the timezone, or no timezone at all.
@@ -372,11 +388,11 @@ var (
 
 type retwtManager struct{}
 
-func (*retwtManager) DecodeJSON(b []byte) (types.Twt, error) { return DecodeJSON(b) }
-func (*retwtManager) ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
+func (retwtManager) DecodeJSON(b []byte) (types.Twt, error) { return DecodeJSON(b) }
+func (retwtManager) ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
 	return ParseLine(line, twter)
 }
-func (*retwtManager) ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
+func (retwtManager) ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 	return ParseFile(r, twter)
 }
 
@@ -385,13 +401,31 @@ func DefaultTwtManager() {
 }
 
 type retwtFile struct {
-	twter *types.Twter
+	twter types.Twter
 	twts  types.Twts
 }
 
-var _ types.TwtFile = (*retwtFile)(nil)
+var _ types.TwtFile = retwtFile{}
 
-func (r *retwtFile) Twter() *types.Twter { return r.twter }
-func (r *retwtFile) Comment() string     { return "" }
-func (r *retwtFile) Meta() *types.Meta   { return nil }
-func (r *retwtFile) Twts() types.Twts    { return r.twts }
+func (r retwtFile) Twter() types.Twter { return r.twter }
+func (r retwtFile) Comment() string    { return "" }
+func (r retwtFile) Info() types.KV     { return nil }
+func (r retwtFile) Twts() types.Twts   { return r.twts }
+
+type reSubject string
+
+func (r reSubject) Tag() types.Tag {
+	s := string(r)
+	return &reTag{s[1 : len(s)-1]}
+
+}
+func (r reSubject) Text() string {
+	sp := strings.Fields(string(r))
+	if len(sp) > 1 {
+		return sp[1]
+	}
+	return ""
+}
+func (r reSubject) FormatText() string {
+	return FormatMentionsAndTagsForSubject(string(r))
+}

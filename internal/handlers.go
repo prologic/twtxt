@@ -880,7 +880,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 		}
 
 		when := twt.Created().Format(time.RFC3339)
-		what := FormatMentionsAndTags(s.config, twt.Text(), TextFmt)
+		what := twt.FormatText(types.TextFmt, s.config)
 
 		var ks []string
 		if ks, err = keywords.Extract(what); err != nil {
@@ -2020,10 +2020,10 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 		for _, twt := range twts {
 			items = append(items, &feeds.Item{
 				Id:          twt.Hash(),
-				Title:       string(formatTwt(twt.Text())),
+				Title:       string(formatTwt(twt)),
 				Link:        &feeds.Link{Href: URLForTwt(s.config.BaseURL, twt.Hash())},
 				Author:      &feeds.Author{Name: twt.Twter().Nick},
-				Description: string(formatTwt(twt.Text())),
+				Description: string(formatTwt(twt)),
 				Created:     twt.Created(),
 			},
 			)

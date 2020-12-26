@@ -119,12 +119,12 @@
               {{ dateInZone ($.Twt.Created | formatForDateTime) $.Twt.Created $.User.DisplayDatesInTimezone }}
             </time>
           </a>
-          <span> &nbsp;({{ $.Twt.Created | time }})</span>   
-        </div>  
+          <span> &nbsp;({{ $.Twt.Created | time }})</span>
+        </div>
       </div>
     </div>
     <div class="p-summary">
-      {{ $.Twt.Text | formatTwt }}
+      {{ $.Twt | formatTwt }}
     </div>
     <hr />
     <nav>

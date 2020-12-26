@@ -28,9 +28,21 @@ func TestExpandTag(t *testing.T) {
 			input:    "#foo",
 			expected: "#<foo http://0.0.0.0:8000/search?tag=foo>",
 		}, {
+			name:     "expands a folded tag preceded by a space",
+			input:    " #bar",
+			expected: " #<bar http://0.0.0.0:8000/search?tag=bar>",
+		}, {
 			name:     "expands a folded tag surrounded with spaces",
 			input:    "foo #bar baz",
 			expected: "foo #<bar http://0.0.0.0:8000/search?tag=bar> baz",
+		}, {
+			name:     "expands a folded tag preceded by a parenthesis",
+			input:    "(#bar) baz",
+			expected: "(#<bar http://0.0.0.0:8000/search?tag=bar>) baz",
+		}, {
+			name:     "expands a folded tag preceded by a space with parenthesis",
+			input:    " (#bar) baz",
+			expected: " (#<bar http://0.0.0.0:8000/search?tag=bar>) baz",
 		}, {
 			name:     "expands a folded tag in enclosed in parentheses",
 			input:    "foo (#bar) baz",
@@ -59,6 +71,13 @@ func TestExpandTag(t *testing.T) {
 			name:     "does nothing with a markdown link title/URL containing an anchor",
 			input:    "[#bar](https://example.com/foo#bar)",
 			expected: "[#bar](https://example.com/foo#bar)",
+		}, {
+			// URLs starting with anchors are probably very rarely or even
+			// never used, since they're relative URLs and there's no spec on
+			// how to make them absolute in context of twts.
+			name:     "does nothing with a markdown URL starting with an anchor",
+			input:    "[bar](#foo)",
+			expected: "[bar](#foo)",
 		},
 	}
 

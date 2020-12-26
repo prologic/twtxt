@@ -101,12 +101,12 @@
             <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
               <img class="avatar u-photo" src="/user/{{ $.Twt.Twter.Nick }}/avatar" />
           {{ else }}
-            <a href="/external?uri={{ $.Twt.Twter.URL }}&nick={{ $.Twt.Twter.Nick  }}" class="u-url">
+            <a href="/external?uri={{ $.Twt.Twter.URL }}&nick={{ $.Twt.Twter.Nick }}" class="u-url">
               {{ if $.Twt.Twter.Avatar }}
                 <img class="avatar u-photo" src="{{ $.Twt.Twter.Avatar }}" />
               {{ else }}
                 <i class="icss-rss" style="font-size:3em"></i>
-              {{ end  }}
+              {{ end }}
           {{ end }}
           </a>
         {{ end }}
@@ -237,13 +237,13 @@
   <ul>
     {{ if $.ShowConfig }}
       <li><a target="_blank" href="/user/{{ $.Profile.Username }}/config.yaml">Config&nbsp;<i class="icss-gear"></i></a></li>
-    {{ end  }}
+    {{ end }}
     <li><a href="{{ $.Profile.BlogsURL }}">Blogs&nbsp;<i class="icss-quill-pen"></i></a></li>
     <li><a target="_blank" href="{{ $.Profile.URL }}">Twtxt&nbsp;<i class="icss-link"></i></a></li>
     <li><a target="_blank" href="{{ $.Profile.URL | trimSuffix "/twtxt.txt" }}/atom.xml">Atom&nbsp;<i class="icss-rss"></i></a></li>
     <li><a href="/user/{{ $.Profile.Username }}/followers">Followers: {{ $.Profile.Followers | len }}</a></li>
     {{ if eq $.Profile.Type "User" }}
       <li><a href="/user/{{ $.Profile.Username }}/following">Following: {{ $.Profile.Following | len }}</a></li>
-    {{ end  }}
+    {{ end }}
   </ul>
 {{ end }}

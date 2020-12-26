@@ -545,13 +545,13 @@ func (s *Server) initRoutes() {
 	s.router.POST("/feed/:name/manage", s.am.MustAuth(s.ManageFeedHandler()))
 	s.router.POST("/feed/:name/archive", s.am.MustAuth(s.ArchiveFeedHandler()))
 
-	s.router.GET("/login", s.LoginHandler())
+	s.router.GET("/login", s.am.HasAuth(s.LoginHandler()))
 	s.router.POST("/login", s.LoginHandler())
 
 	s.router.GET("/logout", s.LogoutHandler())
 	s.router.POST("/logout", s.LogoutHandler())
 
-	s.router.GET("/register", s.RegisterHandler())
+	s.router.GET("/register", s.am.HasAuth(s.RegisterHandler()))
 	s.router.POST("/register", s.RegisterHandler())
 
 	// Reset Password

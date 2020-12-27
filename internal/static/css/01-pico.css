@@ -374,7 +374,8 @@
      font-weight: normal; }
  
  p {
-   margin-bottom: 0.75rem; }
+   margin-bottom: 0.75rem;
+   word-break: break-all; }
  
  small {
    font-size: 85%; }

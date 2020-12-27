@@ -353,12 +353,18 @@ func TestParseSubject(t *testing.T) {
 
 		is.True(parser.IsEOF())
 		if len(tt.errs) == 0 {
-			is.Equal(elem.Literal(), tt.lit)
-			is.Equal(tt.elem.Text(), elem.Text())
-			if tag, ok := tt.elem.Tag().(*lextwt.Tag); ok && tag != nil {
-				testParseTag(t, tag, elem.Tag().(*lextwt.Tag))
-			}
+			testParseSubject(t, tt.elem, elem)
 		}
+	}
+}
+
+func testParseSubject(t *testing.T, expect, elem *lextwt.Subject) {
+	is := is.New(t)
+
+	is.Equal(elem.Literal(), expect.Literal())
+	is.Equal(expect.Text(), elem.Text())
+	if tag, ok := expect.Tag().(*lextwt.Tag); ok && tag != nil {
+		testParseTag(t, tag, elem.Tag().(*lextwt.Tag))
 	}
 }
 
@@ -465,16 +471,35 @@ func TestParseTwt(t *testing.T) {
 
 		is.True(elem != nil)
 		if elem != nil {
-			is.Equal(elem.String(), tt.twt.String())
-			is.Equal(len(elem.Mentions()), len(tt.twt.Mentions()))
+			is.Equal(tt.twt.String(), elem.String())
 
-			m := elem.Mentions()
-			n := tt.twt.Mentions()
-
-			for i := range m {
-				testParseMention(t, m[i].(*lextwt.Mention), n[i].(*lextwt.Mention))
+			{
+				m := elem.Subject()
+				n := tt.twt.Subject()
+				testParseSubject(t, n.(*lextwt.Subject), m.(*lextwt.Subject))
 			}
-			is.Equal(elem.Mentions(), tt.twt.Mentions())
+
+			{
+				m := elem.Mentions()
+				n := tt.twt.Mentions()
+				is.Equal(len(n), len(m))
+				for i := range m {
+					testParseMention(t, m[i].(*lextwt.Mention), n[i].(*lextwt.Mention))
+				}
+				is.Equal(n, m)
+			}
+
+			{
+				m := elem.Tags()
+				n := tt.twt.Tags()
+
+				is.Equal(len(n), len(m))
+				for i := range m {
+					testParseTag(t, m[i].(*lextwt.Tag), n[i].(*lextwt.Tag))
+				}
+				is.Equal(n, m)
+			}
+
 		}
 
 	}

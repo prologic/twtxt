@@ -45,7 +45,7 @@ func testLexerRunes(t *testing.T, lexer Lexer, values []rune) {
 }
 
 func TestLexerTokens(t *testing.T) {
-	r := strings.NewReader("# comment\n2016-02-03T23:05:00Z	@<example http://example.org/twtxt.txt>\u2028welcome to twtxt!\n2020-11-13T16:13:22+01:00	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<pdrsg2q https://twtxt.net/search?tag=pdrsg2q>) Thanks! [link](index.html) ![](img.png)")
+	r := strings.NewReader("# comment\n2016-02-03T23:05:00Z	@<example http://example.org/twtxt.txt>\u2028welcome to twtxt!\n2020-11-13T16:13:22+01:00	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<pdrsg2q https://twtxt.net/search?tag=pdrsg2q>) Thanks! [link](index.html) ![](img.png)`` ```hi```")
 	values := []lextwt.Token{
 		{lextwt.TokHASH, []rune("#")},
 		{lextwt.TokSPACE, []rune(" ")},
@@ -126,6 +126,9 @@ func TestLexerTokens(t *testing.T) {
 		{lextwt.TokLPAREN, []rune("(")},
 		{lextwt.TokSTRING, []rune("img.png")},
 		{lextwt.TokRPAREN, []rune(")")},
+		{lextwt.TokCODE, []rune("``")},
+		{lextwt.TokSPACE, []rune(" ")},
+		{lextwt.TokCODE, []rune("```hi```")},
 	}
 	lexer := lextwt.NewLexer(r)
 	testLexerTokens(t, lexer, values)
@@ -319,17 +322,17 @@ func TestParseSubject(t *testing.T) {
 	tests := []subjectTestCase{
 		{
 			lit:  "(#<asdfasdf https://sour.is/search?tag=asdfasdf>)",
-			elem: lextwt.NewSubjectHash(lextwt.NewTag("asdfasdf", "https://sour.is/search?tag=asdfasdf")),
+			elem: lextwt.NewSubjectTag("asdfasdf", "https://sour.is/search?tag=asdfasdf"),
 		},
 
 		{
 			lit:  "(#<https://sour.is/search?tag=asdfasdf>)",
-			elem: lextwt.NewSubjectHash(lextwt.NewTag("", "https://sour.is/search?tag=asdfasdf")),
+			elem: lextwt.NewSubjectTag("", "https://sour.is/search?tag=asdfasdf"),
 		},
 
 		{
 			lit:  "(#asdfasdf)",
-			elem: lextwt.NewSubjectHash(lextwt.NewTag("asdfasdf", "")),
+			elem: lextwt.NewSubjectTag("asdfasdf", ""),
 		},
 		{
 			lit:  "(re: something)",
@@ -429,11 +432,27 @@ func TestParseTwt(t *testing.T) {
 				lextwt.NewDateTime("2020-12-25T16:55:57Z"),
 				lextwt.NewText("I'm busy, but here's an 1+ "),
 				lextwt.NewLink("Christmas Tree", "https://codegolf.stackexchange.com/questions/4244/code-golf-christmas-edition-how-to-print-out-a-christmas-tree-of-height-n", false),
+				lextwt.NewText(" "),
+				lextwt.NewText(" "),
+				lextwt.NewCode(" . 11+1< (Any unused function name|\"\\\"/1+^<#     \"     (row|\"(Fluff|\"\\\"/^<#               11+\"\"*\"**;               1+           \"\\\"/^<#\"<*)           1           (Mess|/\"\\^/\"\\\"+1+1+^<#               11+\"\"*+\"\"*+;               1+           /\"\\^/\"\\\"+1+1+^<#\"<*)           11+\"\"\"**+;     )     1+ \"\\\"/1+^<#) 11+1<(row) ", true),
 			),
 		},
-		// {
-		// 	lit: "2020-12-25T16:57:57Z	@<hirad https://twtxt.net/user/hirad/twtxt.txt> (#<hrqg53a https://twtxt.net/search?tag=hrqg53a>) @<prologic https://twtxt.net/user/prologic/twtxt.txt> make this a blog post plz  And I forgot, [Try It Online Again!](https://tio.run/##<jVVbb5tIFH7nV5zgB8DGYJxU7br2Q1IpVausFWXbhxUhCMO4RgszdGbIRZv97d4zYAy2Y7fIRnP5znfuh https://twtxt.net/search?tag=jVVbb5tIFH7nV5zgB8DGYJxU7br2Q1IpVausFWXbhxUhCMO4RgszdGbIRZv97d4zYAy2Y7fIRnP5znfuh>@JFrhgdr9c9WElZiInrFhGPsxcZPZPMkWW@yLgTs9wtmJDuh/ejD@/eexfn3h9uSiXhBSf4Hi4ZH3rDlA6Lik/TemduKbi7SKlL6CNsjnvgDaAjh2u4ba5uK73wTSkGF74STnK1pTaMR94FIm7SmNCYQCrg0ye4@nv41yVcOCMEX1/egOec4@rz/Dt8vr15PNfSvGBcgngR2pKzHGKWZSSWKaMCNncJ@VkSTRM2iARm9da0bPj3P01LyBIYJUVWClMgdgZz3FoTDfBJl0AZcnNZ7zdnGaEm6nMi/uPRgrMZjNtr9RQcnQf9u4h@kAnoMIAG7Y8C3OngL9OMgGSwIECeSVxKkgT6DokSIc@pND2r1U0LNJAVHf2@F9hgcKMF8)"
-		// }
+		{
+			lit: "2020-12-25T16:57:57Z	@<hirad https://twtxt.net/user/hirad/twtxt.txt> (#<hrqg53a https://twtxt.net/search?tag=hrqg53a>) @<prologic https://twtxt.net/user/prologic/twtxt.txt> make this a blog post plz  And I forgot, [Try It Online Again!](https://tio.run/#jVVbb5tIFH7nV5zgB8DGYJxU7br2Q1IpVausFWXbhxUhCMO4RgszdGbIRZv97d4zYAy2Y7fIRnP5znfuh@JFrhgdr9c9WElZiInrFhGPsxcZPZPMkWW@yLgTs9wtmJDuh/ejD@/eexfn3h9uSiXhBSf4Hi4ZH3rDlA6Lik/TemduKbi7SKlL6CNsjnvgDaAjh2u4ba5uK73wTSkGF74STnK1pTaMR94FIm7SmNCYQCrg0ye4@nv41yVcOCMEX1/egOec4@rz/Dt8vr15PNfSvGBcgngR2pKzHGKWZSSWKaMCNncJ@VkSTRM2iARm9da0bPj3P01LyBIYJUVWClMgdgZz3FoTDfBJl0AZcnNZ7zdnGaEm6nMi/uPRgrMZjNtr9RQcnQf9u4h@kAnoMIAG7Y8C3OngL9OMgGSwIECeSVxKkgT6DokSIc@pND2r1U0LNJAVHf2@F9hgcKMF8)",
+			twt: lextwt.NewTwt(
+				lextwt.NewDateTime("2020-12-25T16:57:57Z"),
+				lextwt.NewMention("hirad", "https://twtxt.net/user/hirad/twtxt.txt"),
+				lextwt.NewText(" "),
+				lextwt.NewSubjectTag("hrqg53a", "https://twtxt.net/search?tag=hrqg53a"),
+				lextwt.NewText(" "),
+				lextwt.NewMention("prologic", "https://twtxt.net/user/prologic/twtxt.txt"),
+				lextwt.NewText(" make this a blog post plz"),
+				lextwt.NewText(" "),
+				lextwt.NewText(" "),
+				lextwt.NewText("And I forgot, "),
+				lextwt.NewLink("Try It Online Again!", "https://tio.run/#jVVbb5tIFH7nV5zgB8DGYJxU7br2Q1IpVausFWXbhxUhCMO4RgszdGbIRZv97d4zYAy2Y7fIRnP5znfuh@JFrhgdr9c9WElZiInrFhGPsxcZPZPMkWW@yLgTs9wtmJDuh/ejD@/eexfn3h9uSiXhBSf4Hi4ZH3rDlA6Lik/TemduKbi7SKlL6CNsjnvgDaAjh2u4ba5uK73wTSkGF74STnK1pTaMR94FIm7SmNCYQCrg0ye4@nv41yVcOCMEX1/egOec4@rz/Dt8vr15PNfSvGBcgngR2pKzHGKWZSSWKaMCNncJ@VkSTRM2iARm9da0bPj3P01LyBIYJUVWClMgdgZz3FoTDfBJl0AZcnNZ7zdnGaEm6nMi/uPRgrMZjNtr9RQcnQf9u4h@kAnoMIAG7Y8C3OngL9OMgGSwIECeSVxKkgT6DokSIc@pND2r1U0LNJAVHf2@F9hgcKMF8", false),
+			),
+		},
 	}
 
 	for i, tt := range tests {

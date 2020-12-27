@@ -173,6 +173,7 @@ const (
 	TokLS     TokType = "LS"     // Unicode Line Separator
 	TokNL     TokType = "NL"     // New Line
 	TokSTRING TokType = "STRING" // String
+	TokCODE   TokType = "CODE"   // Code Block
 	TokSPACE  TokType = "SPACE"  // White Space
 	TokTAB    TokType = "TAB"    // Tab
 
@@ -194,7 +195,6 @@ const (
 	TokLBRACK TokType = "["
 	TokRBRACK TokType = "]"
 	TokBANG   TokType = "!"
-	TokTICK   TokType = "`"
 )
 
 // // Tested using int8 for TokenType -1 debug +0 memory/performance
@@ -308,7 +308,7 @@ func (l *lexer) NextTok() bool {
 			l.loadRune(TokBANG)
 			return true
 		case '`':
-			l.loadRune(TokTICK)
+			l.loadCode()
 			return true
 		default:
 			l.loadString(" @#!`<>()[]\u2028\n")
@@ -459,6 +459,43 @@ func (l *lexer) loadString(notaccept string) {
 	}
 }
 
+func (l *lexer) loadCode() {
+	l.Token = TokCODE
+	l.Literal = append(l.Literal, l.rune)
+	l.readRune()
+	block := false
+	if l.rune == '`' {
+		l.Literal = append(l.Literal, l.rune)
+		l.readRune()
+		if l.rune != '`' {
+			return // only two ends the token.
+		}
+
+		block = true
+		l.Literal = append(l.Literal, l.rune)
+		l.readRune()
+	}
+
+	for !(l.rune == '`' || l.rune == 0 || l.rune == EOF) {
+		l.Literal = append(l.Literal, l.rune)
+		l.readRune()
+
+		if block && l.rune == '`' {
+			l.Literal = append(l.Literal, l.rune)
+			l.readRune()
+			if l.rune == '`' {
+				l.Literal = append(l.Literal, l.rune)
+				l.readRune()
+				if l.rune == '`' {
+					l.Literal = append(l.Literal, l.rune)
+					l.readRune()
+					return
+				}
+			}
+		}
+	}
+}
+
 func (l *lexer) loadSpace() {
 	l.Token = TokSPACE
 	for !(strings.ContainsRune("\t\n\u2028", l.rune) || l.rune == 0 || l.rune == EOF) && unicode.IsSpace(l.rune) {
@@ -543,7 +580,7 @@ func (p *parser) ParseElem() Elem {
 	switch p.curTok.Type {
 	case TokLBRACK, TokBANG:
 		e = p.ParseLink()
-	case TokTICK:
+	case TokCODE:
 		e = p.ParseCode()
 	case TokLPAREN:
 		e = p.ParseSubject()
@@ -940,6 +977,8 @@ func (p *parser) ParseSubject() *Subject {
 
 		return subject
 	} else if p.curTokenIs(TokLPAREN) && p.nextTokenIs(TokSTRING, TokSPACE) {
+		p.lit = append(p.lit, p.curTok.Literal...)
+
 		lit := p.lit
 		p.lit = p.lit[1:]
 
@@ -964,16 +1003,18 @@ func (p *parser) ParseSubject() *Subject {
 func (p *parser) ParseText(keepbuf bool) *Text {
 	if !keepbuf {
 		p.lit = p.lit[:0]
+		p.lit = append(p.lit, p.curTok.Literal...)
 	}
 
-	p.lit = append(p.lit, p.curTok.Literal...)
 	p.next()
 	for p.curTokenIs(TokSTRING, TokSPACE) {
 		p.lit = append(p.lit, p.curTok.Literal...)
 		p.next()
 	}
+	txt := &Text{string(p.lit)}
+	p.lit = p.lit[:0]
 
-	return &Text{string(p.lit)}
+	return txt
 }
 
 // ParseLink from tokens.
@@ -1000,7 +1041,7 @@ func (p *parser) ParseLink() *Link {
 		p.next()
 		pos := len(p.lit)
 		p.lit = append(p.lit, p.curTok.Literal...) // alt text
-		for !p.nextTokenIs(TokRBRACK) {
+		for !p.nextTokenIs(TokRBRACK, TokEOF) {
 			p.next()
 			p.lit = append(p.lit, p.curTok.Literal...) // alt text
 		}
@@ -1018,7 +1059,7 @@ func (p *parser) ParseLink() *Link {
 		p.next()
 		pos := len(p.lit)
 		p.lit = append(p.lit, p.curTok.Literal...) // link text
-		for !p.nextTokenIs(TokRPAREN) {
+		for !p.nextTokenIs(TokRPAREN, TokEOF) {
 			p.next()
 			p.lit = append(p.lit, p.curTok.Literal...) // link text
 		}
@@ -1041,11 +1082,19 @@ func (p *parser) ParseLink() *Link {
 //   ```
 func (p *parser) ParseCode() *Code {
 	code := &Code{}
+	p.lit = append(p.lit, p.curTok.Literal...) // )
 
-	// code block
-	if p.curTokenIs(TokTICK) && p.nextTokenIs(TokTICK) && p.nextTokenIs(TokTICK) {
+	if len(p.lit) >= 6 && string(p.lit[:3]) == "```" && string(p.lit[len(p.lit)-3:]) == "```" {
+		code.lit = string(p.lit[3 : len(p.lit)-3])
 		code.isBlock = true
+
+		p.next()
+
+		return code
 	}
+
+	code.lit = string(p.lit[1 : len(p.lit)-1])
+	p.next()
 
 	return code
 }
@@ -1381,7 +1430,7 @@ type Subject struct {
 var _ Elem = (*Subject)(nil)
 
 func NewSubject(text string) *Subject  { return &Subject{subject: text} }
-func NewSubjectHash(tag *Tag) *Subject { return &Subject{tag: tag} }
+func NewSubjectTag(tag, target string) *Subject { return &Subject{tag: NewTag(tag, target)} }
 func (n *Subject) IsNil() bool         { return n == nil }
 func (n *Subject) Literal() string {
 	if n.tag != nil {

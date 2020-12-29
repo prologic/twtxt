@@ -94,16 +94,16 @@
       <div>
         {{ if $.User.Is $.Twt.Twter.URL }}
           <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
-            <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" />
+            <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" alt="" />
           </a>
         {{ else }}
           {{ if isLocalURL $.Twt.Twter.URL }}
             <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
-              <img class="avatar u-photo" src="/user/{{ $.Twt.Twter.Nick }}/avatar" />
+              <img class="avatar u-photo" src="/user/{{ $.Twt.Twter.Nick }}/avatar" alt="" />
           {{ else }}
             <a href="/external?uri={{ $.Twt.Twter.URL }}&nick={{ $.Twt.Twter.Nick }}" class="u-url">
               {{ if $.Twt.Twter.Avatar }}
-                <img class="avatar u-photo" src="{{ $.Twt.Twter.Avatar }}" />
+                <img class="avatar u-photo" src="{{ $.Twt.Twter.Avatar }}" alt="" />
               {{ else }}
                 <i class="icss-rss" style="font-size:3em"></i>
               {{ end }}

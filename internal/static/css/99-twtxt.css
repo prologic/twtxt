@@ -307,23 +307,44 @@ article .p-summary blockquote {
 footer{
   border-top: 1px solid var(--primary);
   background-color: rgba(234, 232, 232, 0.1);
+  font-size: 85%;
 }
-footer small{
+@media (min-width: 576px) {
+  footer {
+    font-size: 83%;
+  }
+}
+@media (min-width: 768px) {
+  footer {
+    font-size: 81%;
+  }
+}
+@media (min-width: 992px) {
+  footer {
+    font-size: 79%;
+  }
+}
+@media (min-width: 1200px) {
+  footer {
+    font-size: 77%;
+  }
+}
+body > footer{
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-content: center;
 }
-footer small .footer-menu{
+footer .footer-menu{
   display: flex;
   flex-direction: row;
 }
-footer small .footer-menu a{
+footer .footer-menu a{
   margin-right: 10px;
   padding-right: 10px;
   position: relative;
 }
-footer small .footer-menu a::after{
+footer .footer-menu a::after{
   content: '';
   height: 12px;
   width: 1px;
@@ -332,12 +353,12 @@ footer small .footer-menu a::after{
   right: 0px;
   bottom: 4px;
 }
-footer small .footer-menu a:last-child{
+footer .footer-menu a:last-child{
   border: none;
   padding-right: 0px;
   margin-right: 0px;
 }
-footer small .footer-menu a:last-child::after{
+footer .footer-menu a:last-child::after{
   content: none;
 }
 
@@ -435,10 +456,10 @@ footer small .footer-menu a:last-child::after{
     text-align: center;
     flex-direction: column-reverse;
   }
-  footer small .footer-copyright{
+  footer .footer-copyright{
     margin-top: 10px;
   }
-  footer small .footer-menu{
+  footer .footer-menu{
     justify-content: center;
   }
 }

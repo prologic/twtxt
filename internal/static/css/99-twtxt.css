@@ -283,7 +283,7 @@ video {
   padding: 5px 15px;
   font-size: 13px;
   color: #dcdcdc !important;
-  border-color: 1px solid var(--primary) !important; 
+  border-color: 1px solid var(--primary) !important;
   border-radius: 0.25rem !important;
 }
 

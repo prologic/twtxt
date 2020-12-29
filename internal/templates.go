@@ -73,17 +73,20 @@ func (m *TemplateManager) LoadTemplates() error {
 			return fmt.Errorf("error walking templates: %w", err)
 		}
 
-		if !info.IsDir() && info.Name() != baseTemplate {
-			// Skip _partials.html
-			if info.Name() == partialsTemplate {
+		fname := info.Name()
+		if !info.IsDir() && fname != baseTemplate {
+			// Skip _partials.html and also editor swap files, to improve the development
+			// cycle. Editors often add suffixes to their swap files, e.g "~" or ".swp"
+			// (Vim) and those files are not parsable as templates, causing panics.
+			if fname == partialsTemplate || !strings.HasSuffix(fname, ".html") {
 				return nil
 			}
 
-			name := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
+			name := strings.TrimSuffix(fname, filepath.Ext(fname))
 			t := template.New(name).Option("missingkey=zero")
 			t.Funcs(m.funcMap)
 
-			template.Must(t.Parse(box.MustString(info.Name())))
+			template.Must(t.Parse(box.MustString(fname)))
 			template.Must(t.Parse(box.MustString(partialsTemplate)))
 			template.Must(t.Parse(box.MustString(baseTemplate)))
 

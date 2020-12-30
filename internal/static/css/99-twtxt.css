@@ -451,8 +451,10 @@ footer .footer-menu a:last-child::after{
   nav.pagination-nav{
     justify-content: space-between;
   }
+}
+@media (max-width: 1200px) {
   /* Footer Style */
-  footer small{
+  body > footer{
     text-align: center;
     flex-direction: column-reverse;
   }

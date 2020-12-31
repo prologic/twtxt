@@ -35,14 +35,15 @@ type reTwt struct {
 	created time.Time
 
 	hash     string
-	mentions []types.Mention
-	tags     []types.Tag
+	mentions []types.TwtMention
+	tags     []types.TwtTag
 }
 
 var _ types.Twt = (*reTwt)(nil)
 var _ gob.GobEncoder = (*reTwt)(nil)
 var _ gob.GobDecoder = (*reTwt)(nil)
 
+func (twt reTwt) Links() types.LinkList { return nil }
 func (twt reTwt) GobEncode() ([]byte, error) {
 	enc := struct {
 		Twter   types.Twter `json:"twter"`
@@ -276,7 +277,7 @@ type reMention struct {
 	twter types.Twter
 }
 
-var _ types.Mention = (*reMention)(nil)
+var _ types.TwtMention = (*reMention)(nil)
 
 func (m *reMention) Twter() types.Twter { return m.twter }
 
@@ -284,7 +285,7 @@ type reTag struct {
 	tag string
 }
 
-var _ types.Tag = (*reTag)(nil)
+var _ types.TwtTag = (*reTag)(nil)
 
 func (t *reTag) Tag() string {
 	if t == nil {
@@ -409,12 +410,12 @@ var _ types.TwtFile = retwtFile{}
 
 func (r retwtFile) Twter() types.Twter { return r.twter }
 func (r retwtFile) Comment() string    { return "" }
-func (r retwtFile) Info() types.KV     { return nil }
+func (r retwtFile) Info() types.Info   { return nil }
 func (r retwtFile) Twts() types.Twts   { return r.twts }
 
 type reSubject string
 
-func (r reSubject) Tag() types.Tag {
+func (r reSubject) Tag() types.TwtTag {
 	s := string(r)
 	return &reTag{s[1 : len(s)-1]}
 

@@ -42,6 +42,7 @@ package lextwt
 // lt      = "<" ;
 // MENTION = amp, lt, [ String, Space ], String , gt ;
 // TAG     = hash, lt, String, [ Space, String ], gt ;
+// PLINK  = lt, String, [ Hash, String ], gt ;
 //
 // lp      = "(" ;
 // rp      = ")" ;
@@ -53,7 +54,7 @@ package lextwt
 // LINK    = lb, TEXT, rb, lp, TEXT, rp ;
 // MEDIA   = bang, lb, [ TEXT ], rb, lp, TEXT, rp ;
 //
-// TWT     = DATE, tab, [ { MENTION }, [ SUBJECT ] ], { MENTION | TAG | TEXT | LINK | MEDIA }, term;
+// TWT     = DATE, tab, [ { MENTION }, [ SUBJECT ] ], { ( Space, MENTION ) | ( Space,  TAG ) | TEXT | LINK | MEDIA | PLINK }, term;
 // ```
 
 import (
@@ -77,16 +78,17 @@ import (
 // ParseFile and return time & count limited twts + comments
 func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 
-	f := &lextwtFile{}
+	f := &lextwtFile{twter: twter}
 
 	nLines, nErrors := 0, 0
 
 	lexer := NewLexer(r)
 	parser := NewParser(lexer)
 	parser.SetTwter(twter)
-	elem := parser.ParseLine()
 
-	for elem != nil {
+	for !parser.IsEOF() {
+		elem := parser.ParseLine()
+
 		nLines++
 
 		switch e := elem.(type) {
@@ -95,13 +97,23 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 		case *Twt:
 			f.twts = append(f.twts, e)
 		}
-
-		elem = parser.ParseLine()
 	}
 
 	if (nLines+nErrors > 0) && nLines == nErrors {
 		log.Warnf("erroneous feed dtected (nLines + nErrors > 0 && nLines == nErrors): %d/%d", nLines, nErrors)
 		return nil, ErrParseElm
+	}
+
+	if v, ok := f.Info().GetN("nick", 0); ok {
+		f.twter.Nick = v.Value()
+	}
+
+	if v, ok := f.Info().GetN("url", 0); ok {
+		f.twter.URL = v.Value()
+	}
+
+	if v, ok := f.Info().GetN("twturl", 0); ok {
+		f.twter.URL = v.Value()
 	}
 
 	return f, nil
@@ -176,6 +188,7 @@ const (
 	TokCODE   TokType = "CODE"   // Code Block
 	TokSPACE  TokType = "SPACE"  // White Space
 	TokTAB    TokType = "TAB"    // Tab
+	TokSCHEME TokType = "://"    // URL Scheme
 
 	TokCOLON  TokType = ":"
 	TokHYPHEN TokType = "-"
@@ -195,6 +208,7 @@ const (
 	TokLBRACK TokType = "["
 	TokRBRACK TokType = "]"
 	TokBANG   TokType = "!"
+	TokSLASH  TokType = `\`
 )
 
 // // Tested using int8 for TokenType -1 debug +0 memory/performance
@@ -307,11 +321,17 @@ func (l *lexer) NextTok() bool {
 		case '!':
 			l.loadRune(TokBANG)
 			return true
+		case '\\':
+			l.loadRune(TokSLASH)
+			return true
 		case '`':
 			l.loadCode()
 			return true
+		case ':':
+			l.loadScheme()
+			return true
 		default:
-			l.loadString(" @#!`<>()[]\u2028\n")
+			l.loadString(" @#!:`<>()[]\u2028\n")
 			return true
 		}
 
@@ -374,7 +394,7 @@ func (l *lexer) GetTok() Token {
 
 func (l *lexer) readBuf() {
 	size, err := l.r.Read(l.buf[l.pos:])
-	if err != nil || size == 0 {
+	if err != nil && size == 0 {
 		l.size = 0
 		return
 	}
@@ -458,7 +478,20 @@ func (l *lexer) loadString(notaccept string) {
 		l.readRune()
 	}
 }
-
+func (l *lexer) loadScheme() {
+	l.Token = TokSTRING
+	l.Literal = append(l.Literal, l.rune)
+	l.readRune()
+	if l.rune == '/' {
+		l.Literal = append(l.Literal, l.rune)
+		l.readRune()
+		if l.rune == '/' {
+			l.Token = TokSCHEME
+			l.Literal = append(l.Literal, l.rune)
+			l.readRune()
+		}
+	}
+}
 func (l *lexer) loadCode() {
 	l.Token = TokCODE
 	l.Literal = append(l.Literal, l.rune)
@@ -494,6 +527,9 @@ func (l *lexer) loadCode() {
 			}
 		}
 	}
+
+	l.Literal = append(l.Literal, l.rune)
+	l.readRune()
 }
 
 func (l *lexer) loadSpace() {
@@ -513,8 +549,32 @@ type parser struct {
 
 	twter types.Twter
 
-	lit  []rune
+	lit   []rune
+	frame []int
+
 	errs []error
+}
+
+func (p *parser) Literal() string    { return string(p.lit[p.pos():]) }
+func (p *parser) append(lis ...rune) { p.lit = append(p.lit, lis...) }
+func (p *parser) pos() int {
+	if len(p.frame) == 0 {
+		return 0
+	}
+	return p.frame[len(p.frame)-1]
+}
+func (p *parser) push() {
+	p.frame = append(p.frame, len(p.lit))
+}
+func (p *parser) pop() {
+	if len(p.frame) == 0 {
+		return
+	}
+	p.frame = p.frame[:len(p.frame)-1]
+}
+func (p *parser) clear() {
+	p.frame = p.frame[:0]
+	p.lit = p.lit[:0]
 }
 
 type Token struct {
@@ -533,7 +593,7 @@ func NewParser(l *lexer) *parser {
 		// as tokens are read they are appended here and stored in the resulting Elem.
 		// the buffer is here so text can be recovered in the event a menton/tag fails to fully parse.
 		// and to limit memory allocs.
-		lit: make([]rune, 0, 512),
+		lit: make([]rune, 0, 1024),
 	}
 
 	// Prime the parser queue
@@ -564,6 +624,7 @@ func (p *parser) ParseLine() Elem {
 		return nil
 	}
 	p.next()
+	p.clear()
 
 	return e
 }
@@ -578,10 +639,12 @@ func (p *parser) ParseElem() Elem {
 	var e Elem
 
 	switch p.curTok.Type {
-	case TokLBRACK, TokBANG:
+	case TokLBRACK, TokBANG, TokLT:
 		e = p.ParseLink()
 	case TokCODE:
 		e = p.ParseCode()
+	case TokLS:
+		e = p.ParseLineSeparator()
 	case TokLPAREN:
 		e = p.ParseSubject()
 	case TokHASH:
@@ -591,12 +654,12 @@ func (p *parser) ParseElem() Elem {
 	case TokNL, TokEOF:
 		return nil
 	default:
-		e = p.ParseText(false)
+		e = p.ParseText()
 	}
 
 	// If parsing above failed convert to Text
 	if e == nil || e.IsNil() {
-		e = p.ParseText(true)
+		e = p.ParseText()
 	}
 
 	return e
@@ -607,19 +670,18 @@ func (p *parser) ParseElem() Elem {
 //   # comment
 //   # key = value
 func (p *parser) ParseComment() *Comment {
-	p.lit = p.lit[:0]
 	if !p.expect(TokHASH) {
 		return nil
 	}
 
-	p.lit = append(p.lit, p.curTok.Literal...)
+	p.append(p.curTok.Literal...)
 
 	isKeyVal := false
 	var label string
 	var value []rune
 	for !p.nextTokenIs(TokNL, TokEOF) {
 		p.next()
-		p.lit = append(p.lit, p.curTok.Literal...)
+		p.append(p.curTok.Literal...)
 
 		if isKeyVal && p.curTokenIs(TokSTRING) {
 			value = append(value, p.curTok.Literal...)
@@ -634,8 +696,7 @@ func (p *parser) ParseComment() *Comment {
 			p.lit = append(p.lit, p.curTok.Literal...)
 		}
 	}
-
-	return NewCommentValue(string(p.lit), label, strings.TrimSpace(string(value)))
+	return NewCommentValue(p.Literal(), label, strings.TrimSpace(string(value)))
 }
 
 // ParseTwt from tokens
@@ -648,18 +709,30 @@ func (p *parser) ParseTwt() *Twt {
 		return nil
 	}
 	twt.dt = p.ParseDateTime()
+	if twt.dt == nil {
+		return nil
+	}
+	p.push()
 
 	if !p.expect(TokTAB) {
 		return nil
 	}
+	p.append(p.curTok.Literal...)
+	p.push()
+
 	p.next()
-	elem := p.ParseElem()
-	for elem != nil {
+
+	for elem := p.ParseElem(); elem != nil; elem = p.ParseElem() {
+		p.push()
 		twt.msg = append(twt.msg, elem)
 
 		// I could inline ParseElem here to avoid typechecks. But there doesn't appear to be a performance difference.
-		if subject, ok := elem.(*Subject); ok && twt.subject != nil {
+		if subject, ok := elem.(*Subject); ok && twt.subject == nil {
 			twt.subject = subject
+
+			if subject.tag != nil {
+				twt.tags = append(twt.tags, subject.tag)
+			}
 		}
 
 		if tag, ok := elem.(*Tag); ok {
@@ -670,7 +743,9 @@ func (p *parser) ParseTwt() *Twt {
 			twt.mentions = append(twt.mentions, mention)
 		}
 
-		elem = p.ParseElem()
+		if link, ok := elem.(*Link); ok {
+			twt.links = append(twt.links, link)
+		}
 	}
 
 	return twt
@@ -681,75 +756,73 @@ func (p *parser) ParseTwt() *Twt {
 //   YYYY-MM-DD'T'HH:mm[:ss[.nnnnnnnn]]('Z'|('+'|'-')th[:tm])
 //   YYYY = year, MM = month, DD = day, HH = 24hour, mm = minute, ss = sec, nnnnnnnn = nsec, th = timezone hour, tm = timezone minute
 func (p *parser) ParseDateTime() *DateTime {
-	p.lit = p.lit[:0]
-
 	var ok bool
 	var year, month, day, hour, min, sec, nsec, sign, tzhour, tzmin int
 	loc := time.UTC
 
 	// Year
-	p.lit = append(p.lit, p.curTok.Literal...)
+	p.append(p.curTok.Literal...)
 	if year, ok = p.parseDigit(); !ok {
 		return nil
 	}
 
 	// Hyphen
-	p.lit = append(p.lit, p.curTok.Literal...)
+	p.append(p.curTok.Literal...)
 	if !(p.expect(TokHYPHEN) && p.expectNext(TokNUMBER)) {
 		return nil
 	}
 
 	// Month
-	p.lit = append(p.lit, p.curTok.Literal...)
+	p.append(p.curTok.Literal...)
 	if month, ok = p.parseDigit(); !ok {
 		return nil
 	}
 
 	// Hyphen
-	p.lit = append(p.lit, p.curTok.Literal...)
+	p.append(p.curTok.Literal...)
 	if !(p.expect(TokHYPHEN) && p.expectNext(TokNUMBER)) {
 		return nil
 	}
 
 	// Day
-	p.lit = append(p.lit, p.curTok.Literal...)
+	p.append(p.curTok.Literal...)
 	if day, ok = p.parseDigit(); !ok {
 		return nil
 	}
 
 	// T
-	p.lit = append(p.lit, p.curTok.Literal...)
+	p.append(p.curTok.Literal...)
 	if !(p.expect(TokT) && p.expectNext(TokNUMBER)) {
 		return nil
 	}
 
 	// Hour
-	p.lit = append(p.lit, p.curTok.Literal...)
+	p.append(p.curTok.Literal...)
 	if hour, ok = p.parseDigit(); !ok {
 		return nil
 	}
 
 	// Colon
-	p.lit = append(p.lit, p.curTok.Literal...)
+	p.append(p.curTok.Literal...)
 	if !(p.expect(TokCOLON) && p.expectNext(TokNUMBER)) {
 		return nil
 	}
 
 	// Minute
-	p.lit = append(p.lit, p.curTok.Literal...)
+	p.append(p.curTok.Literal...)
 	if min, ok = p.parseDigit(); !ok {
 		return nil
 	}
 
 	// Optional Second
 	if p.curTokenIs(TokCOLON) {
-		p.lit = append(p.lit, p.curTok.Literal...)
+		p.append(p.curTok.Literal...)
 		if !p.expectNext(TokNUMBER) {
 			return nil
 		}
 
 		// Second
-		p.lit = append(p.lit, p.curTok.Literal...)
+		p.append(p.curTok.Literal...)
 		if sec, ok = p.parseDigit(); !ok {
 			return nil
 		}
@@ -757,13 +830,13 @@ func (p *parser) ParseDateTime() *DateTime {
 
 	// Optional NSec
 	if p.curTokenIs(TokDOT) {
-		p.lit = append(p.lit, p.curTok.Literal...)
+		p.append(p.curTok.Literal...)
 		if !p.expectNext(TokNUMBER) {
 			return nil
 		}
 
 		// NSecond
-		p.lit = append(p.lit, p.curTok.Literal...)
+		p.append(p.curTok.Literal...)
 		if nsec, ok = p.parseDigit(); !ok {
 			return nil
 		}
@@ -771,14 +844,14 @@ func (p *parser) ParseDateTime() *DateTime {
 
 	// UTC Timezone
 	if p.curTokenIs(TokZ) {
-		p.lit = append(p.lit, p.curTok.Literal...)
+		p.append(p.curTok.Literal...)
 		p.next()
 
 	} else if p.curTokenIs(TokPLUS) || p.curTokenIs(TokHYPHEN) {
 		sign = 1
 		tzfmt := "UTC+%02d%02d"
 
-		p.lit = append(p.lit, p.curTok.Literal...)
+		p.append(p.curTok.Literal...)
 		if p.curTokenIs(TokHYPHEN) {
 			tzfmt = "UTC-%02d%02d"
 			sign = -1
@@ -787,7 +860,7 @@ func (p *parser) ParseDateTime() *DateTime {
 		if !p.expectNext(TokNUMBER) {
 			return nil
 		}
-		p.lit = append(p.lit, p.curTok.Literal...)
+		p.append(p.curTok.Literal...)
 		if tzhour, ok = p.parseDigit(); !ok {
 			return nil
 		}
@@ -799,13 +872,13 @@ func (p *parser) ParseDateTime() *DateTime {
 
 		// Optional tzmin with colon
 		if p.curTokenIs(TokCOLON) {
-			p.lit = append(p.lit, p.curTok.Literal...)
+			p.append(p.curTok.Literal...)
 			if !p.expectNext(TokNUMBER) {
 				return nil
 			}
 
 			// TZMin
-			p.lit = append(p.lit, p.curTok.Literal...)
+			p.append(p.curTok.Literal...)
 			if tzmin, ok = p.parseDigit(); !ok {
 				return nil
 			}
@@ -814,7 +887,7 @@ func (p *parser) ParseDateTime() *DateTime {
 		loc = time.FixedZone(fmt.Sprintf(tzfmt, tzhour, tzmin), sign*tzhour*3600+tzmin*60)
 	}
 
-	return &DateTime{dt: time.Date(year, time.Month(month), day, hour, min, sec, nsec, loc), lit: string(p.lit)}
+	return &DateTime{dt: time.Date(year, time.Month(month), day, hour, min, sec, nsec, loc), lit: p.Literal()}
 }
 
 // ParseMention from tokens
@@ -826,73 +899,100 @@ func (p *parser) ParseDateTime() *DateTime {
 //   @<name@domain>
 //   @<name@domain target>
 func (p *parser) ParseMention() *Mention {
-	p.lit = p.lit[:0]
-	var name, domain, target string
+	m := &Mention{}
 
-	p.lit = append(p.lit, p.curTok.Literal...)
-	if p.curTokenIs(TokAMP) && p.nextTokenIs(TokSTRING) {
-		p.lit = append(p.lit, p.curTok.Literal...)
-
-		name = string(p.curTok.Literal)
-
+	// form: @nick
+	if p.curTokenIs(TokAMP) && p.peekTokenIs(TokSTRING) {
+		p.append(p.curTok.Literal...) // @
 		p.next()
-		p.lit = append(p.lit, p.curTok.Literal...)
 
-		if p.curTokenIs(TokAMP) && p.nextTokenIs(TokSTRING) {
-			p.lit = append(p.lit, p.curTok.Literal...)
+		m.name = string(p.curTok.Literal)
 
-			domain = string(p.curTok.Literal)
-
-			p.next()
-			p.lit = append(p.lit, p.curTok.Literal...)
-		}
-	} else if p.curTokenIs(TokAMP) && p.nextTokenIs(TokLT) {
-		p.lit = append(p.lit, p.curTok.Literal...)
-
-		if !p.expectNext(TokSTRING) {
-			return nil
-		}
-		p.lit = append(p.lit, p.curTok.Literal...)
-
-		target = string(p.curTok.Literal)
-
+		p.append(p.curTok.Literal...)
 		p.next()
-		p.lit = append(p.lit, p.curTok.Literal...)
 
-		if p.curTokenIs(TokAMP) && p.nextTokenIs(TokSTRING) {
-			p.lit = append(p.lit, p.curTok.Literal...)
-
-			name = target
-			domain = string(p.curTok.Literal)
-
+		if p.curTokenIs(TokAMP) && p.peekTokenIs(TokSTRING) {
+			p.append(p.curTok.Literal...)
 			p.next()
-			p.lit = append(p.lit, p.curTok.Literal...)
+
+			m.domain = string(p.curTok.Literal)
+
+			p.append(p.curTok.Literal...)
+			p.next()
 		}
 
-		if p.curTokenIs(TokSPACE) && p.nextTokenIs(TokSTRING) {
-			p.lit = append(p.lit, p.curTok.Literal...)
+		m.lit = p.Literal()
+		return m
+	}
 
-			name = target
-			target = string(p.curTok.Literal)
+	// forms: @<...>
+	if p.curTokenIs(TokAMP) && p.peekTokenIs(TokLT) {
+		p.append(p.curTok.Literal...) // @
+		p.next()
 
+		p.append(p.curTok.Literal...) // <
+		p.next()
+
+		// form: @<nick scheme://example.com>
+		if p.curTokenIs(TokSTRING) && p.peekTokenIs(TokSPACE) {
+			m.name = string(p.curTok.Literal)
+
+			p.append(p.curTok.Literal...) // string
 			p.next()
-			p.lit = append(p.lit, p.curTok.Literal...)
+			if !p.expect(TokSPACE) {
+				return nil
+			}
 		}
 
-		if name == target {
-			target = ""
+		// form: @<nick@domain scheme://example.com>
+		if p.curTokenIs(TokSTRING) && p.peekTokenIs(TokAMP) {
+			m.name = string(p.curTok.Literal)
+
+			p.append(p.curTok.Literal...) // string
+			p.next()
+
+			p.append(p.curTok.Literal...) // @
+			p.next()
+
+			m.domain = string(p.curTok.Literal)
+
+			p.append(p.curTok.Literal...)
+			p.next()
+			if !p.expect(TokSPACE) {
+				return nil
+			}
+		}
+
+		if p.curTokenIs(TokSPACE) {
+			p.append(p.curTok.Literal...)
+			p.next()
+		}
+
+		// form: #<[...]scheme://example.com>
+		if p.curTokenIs(TokSTRING) && p.peekTokenIs(TokSCHEME) {
+			p.push()
+			l := p.ParseLink()
+			p.pop()
+
+			if l == nil {
+				return nil // bad url
+			}
+
+			m.target = l.target
 		}
 
 		if !p.expect(TokGT) {
 			return nil
 		}
+		p.append(p.curTok.Literal...) // >
 		p.next()
 
-	} else {
-		return nil
+		m.lit = p.Literal()
+
+		return m
 	}
 
-	return &Mention{lit: string(p.lit), name: name, domain: domain, target: target}
+	return nil
 }
 
 // ParseTag from tokens
@@ -901,53 +1001,66 @@ func (p *parser) ParseMention() *Mention {
 //   #<target>
 //   #<tag target>
 func (p *parser) ParseTag() *Tag {
-	p.lit = p.lit[:0]
-	var name, target string
+	tag := &Tag{}
 
-	p.lit = append(p.lit, p.curTok.Literal...)
-	if p.curTokenIs(TokHASH) && p.nextTokenIs(TokSTRING) {
-		p.lit = append(p.lit, p.curTok.Literal...)
+	// form: #tag
+	if p.curTokenIs(TokHASH) && p.peekTokenIs(TokSTRING) {
+		p.append(p.curTok.Literal...) // #
+		p.next()
 
-		name = string(p.curTok.Literal)
+		p.append(p.curTok.Literal...) // string
+		tag.lit = p.Literal()
+		tag.tag = string(p.curTok.Literal)
 
 		p.next()
-	} else if p.curTokenIs(TokHASH) && p.nextTokenIs(TokLT) {
-		p.lit = append(p.lit, p.curTok.Literal...)
 
-		if !p.expectNext(TokSTRING) {
-			return nil
-		}
-		p.lit = append(p.lit, p.curTok.Literal...)
+		return tag
+	}
 
-		target = string(p.curTok.Literal)
-
+	// form: #<...>
+	if p.curTokenIs(TokHASH) && p.peekTokenIs(TokLT) {
+		p.append(p.curTok.Literal...) // #
 		p.next()
-		p.lit = append(p.lit, p.curTok.Literal...)
 
-		if p.curTokenIs(TokSPACE) && p.nextTokenIs(TokSTRING) {
-			p.lit = append(p.lit, p.curTok.Literal...)
+		p.append(p.curTok.Literal...) // <
+		p.next()
 
-			name = target
-			target = string(p.curTok.Literal)
-
+		// form: #<tag scheme://example.com>
+		if p.curTokenIs(TokSTRING) && p.peekTokenIs(TokSPACE) {
+			p.append(p.curTok.Literal...) // string
+			tag.tag = string(p.curTok.Literal)
 			p.next()
-			p.lit = append(p.lit, p.curTok.Literal...)
+
+			p.append(p.curTok.Literal...) // space
+			p.next()
 		}
 
-		if name == target {
-			target = ""
+		// form: #<scheme://example.com>
+		if p.curTokenIs(TokSTRING) && p.peekTokenIs(TokSCHEME) {
+			p.push()
+			l := p.ParseLink()
+			p.pop()
+
+			if l == nil {
+				return nil // bad url
+			}
+
+			tag.target = l.target
 		}
 
 		if !p.expect(TokGT) {
 			return nil
 		}
+
+		p.append(p.curTok.Literal...) // >
 		p.next()
 
-	} else {
-		return nil
+		tag.lit = p.Literal()
+
+		return tag
 	}
 
-	return &Tag{lit: string(p.lit), tag: name, target: target}
+	return nil
 }
 
 // ParseSubject from tokens
@@ -957,121 +1070,192 @@ func (p *parser) ParseTag() *Tag {
 //   (#<tag target>)
 //   (re: something)
 func (p *parser) ParseSubject() *Subject {
-	p.lit = p.lit[:0]
 	subject := &Subject{}
 
-	p.lit = append(p.lit, p.curTok.Literal...)
-	if p.curTokenIs(TokLPAREN) && p.nextTokenIs(TokHASH) {
-		p.lit = append(p.lit, p.curTok.Literal...)
-		lit := p.lit
-		p.lit = p.lit[1:]
+	p.append(p.curTok.Literal...) // (
+	p.next()
 
+	// form: (#tag)
+	if p.curTokenIs(TokHASH) {
+		p.push()
 		subject.tag = p.ParseTag()
-
-		p.lit = lit
-
-		if !p.expect(TokRPAREN) {
-			return nil
-		}
-		p.next()
-
-		return subject
-	} else if p.curTokenIs(TokLPAREN) && p.nextTokenIs(TokSTRING, TokSPACE) {
-		p.lit = append(p.lit, p.curTok.Literal...)
-
-		lit := p.lit
-		p.lit = p.lit[1:]
-
-		subject.subject = p.ParseText(true).String()
-
-		p.lit = lit
+		p.pop()
 
 		if !p.expect(TokRPAREN) {
 			return nil
 		}
+		p.append(p.curTok.Literal...) // )
 		p.next()
 
 		return subject
-	} else {
-		return nil
 	}
+
+	// form: (text)
+	if !p.curTokenIs(TokRPAREN) {
+		p.push()
+		subject.subject = p.ParseText().String()
+		p.pop()
+
+		if !p.expect(TokRPAREN) {
+			return nil
+		}
+
+		p.append(p.curTok.Literal...) // )
+		p.next()
+
+		return subject
+	}
+
+	return nil
 }
 
 // ParseText from tokens.
 // Forms parsed:
 //   combination of string and space tokens.
-func (p *parser) ParseText(keepbuf bool) *Text {
-	if !keepbuf {
-		p.lit = p.lit[:0]
-		p.lit = append(p.lit, p.curTok.Literal...)
-	}
-
+func (p *parser) ParseText() *Text {
+	p.append(p.curTok.Literal...)
 	p.next()
-	for p.curTokenIs(TokSTRING, TokSPACE) {
-		p.lit = append(p.lit, p.curTok.Literal...)
+
+	for p.curTokenIs(TokSTRING, TokSPACE) || // We don't want to parse an email address or link accidentally as a mention or tag. So check if it is preceded with a space.
+		(p.curTokenIs(TokHASH, TokAMP, TokLT, TokLPAREN) && (len(p.lit) == 0 || !unicode.IsSpace(p.lit[len(p.lit)-1]))) {
+		p.append(p.curTok.Literal...)
 		p.next()
 	}
-	txt := &Text{string(p.lit)}
-	p.lit = p.lit[:0]
+
+	txt := &Text{p.Literal()}
 
 	return txt
 }
 
+func (p *parser) ParseLineSeparator() Elem {
+	p.append(p.curTok.Literal...)
+	p.next()
+	return LineSeparator
+}
+
 // ParseLink from tokens.
 // Forms parsed:
-//   [a link](http://example.com)
-//   ![a image](http://example.com/img.png)
+//   scheme://example.com
+//	 <scheme://example.com>
+//   [a link](scheme://example.com)
+//   ![a image](scheme://example.com/img.png)
+//
 func (p *parser) ParseLink() *Link {
-	p.lit = p.lit[:0]
-	link := &Link{}
+	link := &Link{linkType: LinkStandard}
+
+	if p.curTokenIs(TokSTRING) && p.peekTokenIs(TokSCHEME) {
+		link.linkType = LinkNaked
+
+		p.append(p.curTok.Literal...) // scheme
+		p.next()
+
+		p.append(p.curTok.Literal...) // link text
+		for !p.nextTokenIs(TokGT, TokRPAREN, TokSPACE, TokEOF) {
+			p.next()
+			p.append(p.curTok.Literal...) // link text
+
+			// Allow excaped chars to not close.
+			if p.curTokenIs(TokSLASH) {
+				p.next()
+				p.append(p.curTok.Literal...) // text
+			}
+		}
+
+		link.target = p.Literal()
+
+		return link
+	}
+
+	// Plain Link
+	if p.curTokenIs(TokLT) && p.peekTokenIs(TokSTRING) {
+		link.linkType = LinkPlain
+		p.append(p.curTok.Literal...) // <
+		p.next()
+
+		p.push()
+		l := p.ParseLink()
+		p.pop()
+
+		if l == nil {
+			return nil
+		}
+		if !p.expect(TokGT) {
+			return nil
+		}
+
+		p.append(p.curTok.Literal...) // >
+		p.next()
+		link.target = l.target
+
+		return link
+	}
 
 	// Media Link
-	p.lit = append(p.lit, p.curTok.Literal...) // ! or [
-	if p.curTokenIs(TokBANG) && p.nextTokenIs(TokLBRACK) {
-		link.isMedia = true
-		p.lit = append(p.lit, p.curTok.Literal...) // [
+	if p.curTokenIs(TokBANG) && p.peekTokenIs(TokLBRACK) {
+		link.linkType = LinkMedia
+		p.append(p.curTok.Literal...) // !
+		p.next()
 	}
 
 	if !p.expect(TokLBRACK) {
 		return nil
 	}
 
-	// Parse Alt
-	if p.curTokenIs(TokLBRACK) && !p.nextTokenIs(TokRBRACK) {
-		p.next()
-		pos := len(p.lit)
-		p.lit = append(p.lit, p.curTok.Literal...) // alt text
-		for !p.nextTokenIs(TokRBRACK, TokEOF) {
-			p.next()
-			p.lit = append(p.lit, p.curTok.Literal...) // alt text
-		}
-		link.alt = string(p.lit[pos:])
-	}
-
-	p.lit = append(p.lit, p.curTok.Literal...) // ]
-	if !p.expectNext(TokLPAREN) {
-		return nil
-	}
-	p.lit = append(p.lit, p.curTok.Literal...) // (
-
-	// Parse Target
-	if p.curTokenIs(TokLPAREN) && !p.nextTokenIs(TokRPAREN) {
-		p.next()
-		pos := len(p.lit)
-		p.lit = append(p.lit, p.curTok.Literal...) // link text
-		for !p.nextTokenIs(TokRPAREN, TokEOF) {
-			p.next()
-			p.lit = append(p.lit, p.curTok.Literal...) // link text
-		}
-		link.target = string(p.lit[pos:])
-	}
-	p.lit = append(p.lit, p.curTok.Literal...) // )
-	if !p.expect(TokRPAREN) {
-		return nil
-	}
+	// Parse Text
+	p.append(p.curTok.Literal...) // [
 	p.next()
 
-	return link
+	if !p.curTokenIs(TokRBRACK) {
+		p.push()
+		p.append(p.curTok.Literal...) // text
+		p.next()
+
+		for !p.curTokenIs(TokRBRACK, TokLBRACK, TokRPAREN, TokLPAREN, TokEOF) {
+			p.append(p.curTok.Literal...) // text
+			p.next()
+
+			// Allow excaped chars to not close.
+			if p.curTokenIs(TokSLASH) {
+				p.append(p.curTok.Literal...) // text
+				p.next()
+			}
+		}
+		link.text = p.Literal()
+	}
+
+	if !p.expect(TokRBRACK) {
+		return nil
+	}
+
+	p.append(p.curTok.Literal...) // ]
+	p.next()
+
+	// Parse Target
+	if p.curTokenIs(TokLPAREN) && !p.peekTokenIs(TokRPAREN) {
+		p.append(p.curTok.Literal...) // (
+		p.next()
+
+		p.push()
+		l := p.ParseLink()
+		p.pop()
+
+		if l == nil {
+			return nil
+		}
+
+		link.target = l.target
+
+		if !p.expect(TokRPAREN) {
+			return nil
+		}
+
+		p.append(p.curTok.Literal...) // )
+		p.next()
+
+		return link
+	}
+
+	return nil
 }
 
 // ParseCode from tokens
@@ -1082,18 +1266,21 @@ func (p *parser) ParseLink() *Link {
 //   ```
 func (p *parser) ParseCode() *Code {
 	code := &Code{}
-	p.lit = append(p.lit, p.curTok.Literal...) // )
+	p.append(p.curTok.Literal...) // )
 
-	if len(p.lit) >= 6 && string(p.lit[:3]) == "```" && string(p.lit[len(p.lit)-3:]) == "```" {
-		code.lit = string(p.lit[3 : len(p.lit)-3])
-		code.isBlock = true
+	lit := p.Literal()
+	if len(lit) >= 6 && lit[:3] == "```" && lit[len(lit)-3:] == "```" {
+		code.codeType = CodeBlock
+		code.lit = string(lit[3 : len(lit)-3])
 
 		p.next()
 
 		return code
 	}
 
-	code.lit = string(p.lit[1 : len(p.lit)-1])
+	code.codeType = CodeInline
+	code.lit = string(lit[1 : len(lit)-1])
+
 	p.next()
 
 	return code
@@ -1246,37 +1433,56 @@ func (lis Comments) String() string {
 	return b.String()
 }
 
-func (lis Comments) GetN(key string, n int) (string, bool) {
+func (lis Comments) GetN(key string, n int) (types.Value, bool) {
 	idx := make([]int, 0, len(lis))
 
 	for i := range lis {
 		if n == 0 && key == lis[i].key {
-			return lis[i].value, true
+			return lis[i], true
 		}
 
 		if key == lis[i].key {
 			idx = append(idx, i)
 		}
 
-		if n == len(idx) {
-			return lis[i].value, true
+		if n == len(idx) && key == lis[i].key {
+			return lis[i], true
 		}
 	}
 
 	if n < 0 && -n < len(idx) {
-		return lis[idx[len(idx)+n]].value, true
+		return lis[idx[len(idx)+n]], true
 	}
 
-	return "", false
+	return nil, false
 }
 
-func (lis Comments) GetAll(prefix string) []string {
-	nlis := make([]string, 0, len(lis))
+func (lis Comments) GetAll(prefix string) []types.Value {
+	nlis := make([]types.Value, 0, len(lis))
 
 	for i := range lis {
-		if strings.HasPrefix(lis[i].key, prefix) {
-			nlis = append(nlis, lis[i].value)
+		if lis[i].key == "" {
+			continue
 		}
+
+		if strings.HasPrefix(lis[i].key, prefix) {
+			nlis = append(nlis, lis[i])
+		}
+	}
+
+	return nlis
+}
+
+func (lis Comments) Followers() []types.Value {
+	flis := lis.GetAll("follow")
+	nlis := make([]types.Value, 0, len(flis))
+
+	for _, o := range flis {
+		sp := strings.Fields(o.Value())
+		if len(sp) < 2 {
+			continue
+		}
+		nlis = append(nlis, &Comment{comment: o.Value(), key: sp[0], value: sp[1]})
 	}
 
 	return nlis
@@ -1317,7 +1523,7 @@ type Mention struct {
 }
 
 var _ Elem = (*Mention)(nil)
-var _ types.Mention = (*Mention)(nil)
+var _ types.TwtMention = (*Mention)(nil)
 
 func NewMention(name, target string) *Mention {
 	m := &Mention{name: name, target: target}
@@ -1383,7 +1589,7 @@ type Tag struct {
 }
 
 var _ Elem = (*Tag)(nil)
-var _ types.Tag = (*Tag)(nil)
+var _ types.TwtTag = (*Tag)(nil)
 
 func NewTag(tag, target string) *Tag {
 	m := &Tag{tag: tag, target: target}
@@ -1429,9 +1635,9 @@ type Subject struct {
 
 var _ Elem = (*Subject)(nil)
 
-func NewSubject(text string) *Subject  { return &Subject{subject: text} }
+func NewSubject(text string) *Subject           { return &Subject{subject: text} }
 func NewSubjectTag(tag, target string) *Subject { return &Subject{tag: NewTag(tag, target)} }
-func (n *Subject) IsNil() bool         { return n == nil }
+func (n *Subject) IsNil() bool                  { return n == nil }
 func (n *Subject) Literal() string {
 	if n.tag != nil {
 		return "(" + n.tag.Literal() + ")"
@@ -1446,7 +1652,7 @@ func (n *Subject) Text() string {
 	}
 	return n.tag.Literal()
 }
-func (n *Subject) Tag() types.Tag { return n.tag }
+func (n *Subject) Tag() types.TwtTag { return n.tag }
 func (n *Subject) FormatText() string {
 	if n.tag == nil {
 		return fmt.Sprintf("(%s)", n.subject)
@@ -1460,52 +1666,76 @@ type Text struct {
 
 var _ Elem = (*Text)(nil)
 
-func NewText(txt string) *Text { return &Text{txt} }
-func (n *Text) IsNil() bool    { return n == nil }
-func (n *Text) Literal() string {
-	return n.lit
-}
+func NewText(txt string) *Text  { return &Text{txt} }
+func (n *Text) IsNil() bool     { return n == nil }
+func (n *Text) Literal() string { return n.lit }
+func (n *Text) String() string  { return n.Literal() }
 
-// String replaces line separator with newlines
-func (n *Text) String() string {
-	return strings.ReplaceAll(n.Literal(), string(TokLS), "\n")
-}
+type lineSeparator struct{}
+
+var LineSeparator Elem = &lineSeparator{}
+
+func (n *lineSeparator) IsNil() bool     { return false }
+func (n *lineSeparator) Literal() string { return "\u2028" }
+func (n *lineSeparator) String() string  { return "\n" }
 
 type Link struct {
-	isMedia bool
-	alt     string
-	target  string
+	linkType LinkType
+	text     string
+	target   string
 }
 
 var _ Elem = (*Link)(nil)
 
-func NewLink(alt, target string, isMedia bool) *Link { return &Link{isMedia, alt, target} }
-func (n *Link) IsNil() bool                          { return n == nil }
+type LinkType int
+
+const (
+	LinkStandard LinkType = iota + 1
+	LinkMedia
+	LinkPlain
+	LinkNaked
+)
+
+func NewLink(text, target string, linkType LinkType) *Link { return &Link{linkType, text, target} }
+func (n *Link) IsNil() bool                                { return n == nil }
 func (n *Link) Literal() string {
-	if n.isMedia {
-		return fmt.Sprintf("![%s](%s)", n.alt, n.target)
+	switch n.linkType {
+	case LinkNaked:
+		return n.target
+	case LinkPlain:
+		return fmt.Sprintf("<%s>", n.target)
+	case LinkMedia:
+		return fmt.Sprintf("![%s](%s)", n.text, n.target)
+	default:
+		return fmt.Sprintf("[%s](%s)", n.text, n.target)
 	}
-	return fmt.Sprintf("[%s](%s)", n.alt, n.target)
 }
 
 func (n *Link) String() string {
 	return n.Literal()
 }
-func (n *Link) IsMedia() bool  { return n.isMedia }
-func (n *Link) Alt() string    { return n.alt }
+func (n *Link) IsMedia() bool  { return n.linkType == LinkMedia }
+func (n *Link) Text() string   { return n.text }
 func (n *Link) Target() string { return n.target }
 
 type Code struct {
-	isBlock bool
-	lit     string
+	codeType CodeType
+	lit      string
 }
+
+type CodeType int
+
+const (
+	CodeInline CodeType = iota + 1
+	CodeBlock
+)
 
 var _ Elem = (*Code)(nil)
 
-func NewCode(text string, isBlock bool) *Code { return &Code{isBlock, text} }
-func (n *Code) IsNil() bool                   { return n == nil }
+func NewCode(text string, codeType CodeType) *Code { return &Code{codeType, text} }
+func (n *Code) IsNil() bool                        { return n == nil }
 func (n *Code) Literal() string {
-	if n.isBlock {
+	if n.codeType == CodeBlock {
 		return fmt.Sprintf("```%s```", n.lit)
 	}
 	return fmt.Sprintf("`%s`", n.lit)
@@ -1513,7 +1743,7 @@ func (n *Code) Literal() string {
 
 // String replaces line separator with newlines
 func (n *Code) String() string {
-	return strings.ReplaceAll(n.Literal(), string(TokLS), "\n")
+	return strings.ReplaceAll(n.Literal(), "\u2028", "\n")
 }
 
 type Twt struct {
@@ -1521,6 +1751,7 @@ type Twt struct {
 	msg      []Elem
 	mentions []*Mention
 	tags     []*Tag
+	links    []*Link
 	hash     string
 	subject  *Subject
 	twter    types.Twter
@@ -1533,8 +1764,11 @@ func NewTwt(dt *DateTime, elems ...Elem) *Twt {
 	twt := &Twt{dt: dt, msg: elems}
 
 	for _, elem := range elems {
-		if subject, ok := elem.(*Subject); ok && twt.subject != nil {
+		if subject, ok := elem.(*Subject); ok && twt.subject == nil {
 			twt.subject = subject
+			if subject.tag != nil {
+				twt.tags = append(twt.tags, subject.tag)
+			}
 		}
 
 		if tag, ok := elem.(*Tag); ok {
@@ -1543,6 +1777,10 @@ func NewTwt(dt *DateTime, elems ...Elem) *Twt {
 
 		if mention, ok := elem.(*Mention); ok {
 			twt.mentions = append(twt.mentions, mention)
+		}
+
+		if link, ok := elem.(*Link); ok {
+			twt.links = append(twt.links, link)
 		}
 	}
 
@@ -1633,19 +1871,26 @@ func DecodeJSON(data []byte) (types.Twt, error) {
 	return types.NilTwt, err
 }
 func (twt Twt) FormatText(types.TwtTextFormat, types.FmtOpts) string { return twt.Literal() }
-func (twt Twt) String() string                                       { return twt.Literal() }
+func (twt Twt) String() string                                       { return strings.ReplaceAll(twt.Literal(), "\u2028", "\n") }
 func (twt Twt) Created() time.Time                                   { return twt.dt.DateTime() }
 func (twt Twt) Mentions() types.MentionList {
-	lis := make([]types.Mention, len(twt.mentions))
+	lis := make([]types.TwtMention, len(twt.mentions))
 	for i := range twt.mentions {
 		lis[i] = twt.mentions[i]
 	}
 	return lis
 }
 func (twt Twt) Tags() types.TagList {
-	lis := make([]types.Tag, len(twt.tags))
+	lis := make([]types.TwtTag, len(twt.tags))
 	for i := range twt.tags {
 		lis[i] = twt.tags[i]
+	}
+	return lis
+}
+func (twt Twt) Links() types.LinkList {
+	lis := make([]types.TwtLink, len(twt.links))
+	for i := range twt.links {
+		lis[i] = twt.links[i]
 	}
 	return lis
 }
@@ -1663,7 +1908,7 @@ func (twt Twt) Hash() string {
 }
 func (twt Twt) Subject() types.Subject {
 	if twt.subject == nil {
-		twt.subject = &Subject{tag: &Tag{tag: twt.Hash()}}
+		twt.subject = NewSubjectTag(twt.Hash(), "")
 	}
 	return twt.subject
 }
@@ -1707,10 +1952,9 @@ type lextwtFile struct {
 
 var _ types.TwtFile = (*lextwtFile)(nil)
 
-func NewTwtFile(twter types.Twter, twts types.Twts, comments Comments) *lextwtFile {
+func NewTwtFile(twter types.Twter, comments Comments, twts types.Twts) *lextwtFile {
 	return &lextwtFile{twter, twts, comments}
 }
 func (r *lextwtFile) Twter() types.Twter { return r.twter }
-func (r *lextwtFile) Comment() string    { return r.comments.String() }
-func (r *lextwtFile) Info() types.KV     { return r.comments }
+func (r *lextwtFile) Info() types.Info   { return r.comments }
 func (r *lextwtFile) Twts() types.Twts   { return r.twts }

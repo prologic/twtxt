@@ -68,7 +68,9 @@ func TestLexerTokens(t *testing.T) {
 		{lextwt.TokLT, []rune("<")},
 		{lextwt.TokSTRING, []rune("example")},
 		{lextwt.TokSPACE, []rune(" ")},
-		{lextwt.TokSTRING, []rune("http://example.org/twtxt.txt")},
+		{lextwt.TokSTRING, []rune("http")},
+		{lextwt.TokSCHEME, []rune("://")},
+		{lextwt.TokSTRING, []rune("example.org/twtxt.txt")},
 		{lextwt.TokGT, []rune(">")},
 		{lextwt.TokLS, []rune("\u2028")},
 		{lextwt.TokSTRING, []rune("welcome")},
@@ -98,7 +100,9 @@ func TestLexerTokens(t *testing.T) {
 		{lextwt.TokLT, []rune("<")},
 		{lextwt.TokSTRING, []rune("prologic")},
 		{lextwt.TokSPACE, []rune(" ")},
-		{lextwt.TokSTRING, []rune("https://twtxt.net/user/prologic/twtxt.txt")},
+		{lextwt.TokSTRING, []rune("https")},
+		{lextwt.TokSCHEME, []rune("://")},
+		{lextwt.TokSTRING, []rune("twtxt.net/user/prologic/twtxt.txt")},
 		{lextwt.TokGT, []rune(">")},
 		{lextwt.TokSPACE, []rune(" ")},
 		{lextwt.TokLPAREN, []rune("(")},
@@ -106,7 +110,9 @@ func TestLexerTokens(t *testing.T) {
 		{lextwt.TokLT, []rune("<")},
 		{lextwt.TokSTRING, []rune("pdrsg2q")},
 		{lextwt.TokSPACE, []rune(" ")},
-		{lextwt.TokSTRING, []rune("https://twtxt.net/search?tag=pdrsg2q")},
+		{lextwt.TokSTRING, []rune("https")},
+		{lextwt.TokSCHEME, []rune("://")},
+		{lextwt.TokSTRING, []rune("twtxt.net/search?tag=pdrsg2q")},
 		{lextwt.TokGT, []rune(">")},
 		{lextwt.TokRPAREN, []rune(")")},
 		{lextwt.TokSPACE, []rune(" ")},
@@ -148,7 +154,8 @@ func TestLexerEdgecases(t *testing.T) {
 		{lextwt.TokHASH, []rune("#")},
 		{lextwt.TokLT, []rune("<")},
 		{lextwt.TokGT, []rune(">")},
-		{lextwt.TokSTRING, []rune("Ted:")},
+		{lextwt.TokSTRING, []rune("Ted")},
+		{lextwt.TokSTRING, []rune(":")},
 	}
 	testLexerTokens(t, lexer, testvalues)
 }
@@ -225,6 +232,14 @@ func TestParseMention(t *testing.T) {
 		{
 			lit:  "@<https://sour.is/xuu/twtxt.txt>",
 			elem: lextwt.NewMention("", "https://sour.is/xuu/twtxt.txt"),
+		},
+		{
+			lit:  "@xuu",
+			elem: lextwt.NewMention("xuu", ""),
+		},
+		{
+			lit:  "@xuu@sour.is",
+			elem: lextwt.NewMention("xuu@sour.is", ""),
 		},
 	}
 
@@ -380,12 +395,27 @@ func TestParseLink(t *testing.T) {
 	tests := []linkTestCase{
 		{
 			lit:  "[asdfasdf](https://sour.is/search?tag=asdfasdf)",
-			elem: lextwt.NewLink("asdfasdf", "https://sour.is/search?tag=asdfasdf", false),
+			elem: lextwt.NewLink("asdfasdf", "https://sour.is/search?tag=asdfasdf", lextwt.LinkStandard),
+		},
+
+		{
+			lit:  "[asdfasdf hgfhgf](https://sour.is/search?tag=asdfasdf)",
+			elem: lextwt.NewLink("asdfasdf hgfhgf", "https://sour.is/search?tag=asdfasdf", lextwt.LinkStandard),
 		},
 
 		{
 			lit:  "![](https://sour.is/search?tag=asdfasdf)",
-			elem: lextwt.NewLink("", "https://sour.is/search?tag=asdfasdf", true),
+			elem: lextwt.NewLink("", "https://sour.is/search?tag=asdfasdf", lextwt.LinkMedia),
+		},
+
+		{
+			lit:  "<https://sour.is/search?tag=asdfasdf>",
+			elem: lextwt.NewLink("", "https://sour.is/search?tag=asdfasdf", lextwt.LinkPlain),
+		},
+
+		{
+			lit:  "https://sour.is/search?tag=asdfasdf",
+			elem: lextwt.NewLink("", "https://sour.is/search?tag=asdfasdf", lextwt.LinkNaked),
 		},
 	}
 
@@ -410,7 +440,7 @@ func testParseLink(t *testing.T, expect, elem *lextwt.Link) {
 
 	is.True(elem != nil)
 	is.Equal(expect.Literal(), elem.Literal())
-	is.Equal(expect.Alt(), elem.Alt())
+	is.Equal(expect.Text(), elem.Text())
 	is.Equal(expect.Target(), elem.Target())
 }
 
@@ -437,10 +467,10 @@ func TestParseTwt(t *testing.T) {
 			twt: lextwt.NewTwt(
 				lextwt.NewDateTime("2020-12-25T16:55:57Z"),
 				lextwt.NewText("I'm busy, but here's an 1+ "),
-				lextwt.NewLink("Christmas Tree", "https://codegolf.stackexchange.com/questions/4244/code-golf-christmas-edition-how-to-print-out-a-christmas-tree-of-height-n", false),
-				lextwt.NewText(" "),
-				lextwt.NewText(" "),
-				lextwt.NewCode(" . 11+1< (Any unused function name|\"\\\"/1+^<#     \"     (row|\"(Fluff|\"\\\"/^<#               11+\"\"*\"**;               1+           \"\\\"/^<#\"<*)           1           (Mess|/\"\\^/\"\\\"+1+1+^<#               11+\"\"*+\"\"*+;               1+           /\"\\^/\"\\\"+1+1+^<#\"<*)           11+\"\"\"**+;     )     1+ \"\\\"/1+^<#) 11+1<(row) ", true),
+				lextwt.NewLink("Christmas Tree", "https://codegolf.stackexchange.com/questions/4244/code-golf-christmas-edition-how-to-print-out-a-christmas-tree-of-height-n", lextwt.LinkStandard),
+				lextwt.LineSeparator,
+				lextwt.LineSeparator,
+				lextwt.NewCode(" . 11+1< (Any unused function name|\"\\\"/1+^<#     \"     (row|\"(Fluff|\"\\\"/^<#               11+\"\"*\"**;               1+           \"\\\"/^<#\"<*)           1           (Mess|/\"\\^/\"\\\"+1+1+^<#               11+\"\"*+\"\"*+;               1+           /\"\\^/\"\\\"+1+1+^<#\"<*)           11+\"\"\"**+;     )     1+ \"\\\"/1+^<#) 11+1<(row) ", lextwt.CodeBlock),
 			),
 		},
 		{
@@ -453,16 +483,31 @@ func TestParseTwt(t *testing.T) {
 				lextwt.NewText(" "),
 				lextwt.NewMention("prologic", "https://twtxt.net/user/prologic/twtxt.txt"),
 				lextwt.NewText(" make this a blog post plz"),
-				lextwt.NewText(" "),
-				lextwt.NewText(" "),
+				lextwt.LineSeparator,
+				lextwt.LineSeparator,
 				lextwt.NewText("And I forgot, "),
-				lextwt.NewLink("Try It Online Again!", "https://tio.run/#jVVbb5tIFH7nV5zgB8DGYJxU7br2Q1IpVausFWXbhxUhCMO4RgszdGbIRZv97d4zYAy2Y7fIRnP5znfuh@JFrhgdr9c9WElZiInrFhGPsxcZPZPMkWW@yLgTs9wtmJDuh/ejD@/eexfn3h9uSiXhBSf4Hi4ZH3rDlA6Lik/TemduKbi7SKlL6CNsjnvgDaAjh2u4ba5uK73wTSkGF74STnK1pTaMR94FIm7SmNCYQCrg0ye4@nv41yVcOCMEX1/egOec4@rz/Dt8vr15PNfSvGBcgngR2pKzHGKWZSSWKaMCNncJ@VkSTRM2iARm9da0bPj3P01LyBIYJUVWClMgdgZz3FoTDfBJl0AZcnNZ7zdnGaEm6nMi/uPRgrMZjNtr9RQcnQf9u4h@kAnoMIAG7Y8C3OngL9OMgGSwIECeSVxKkgT6DokSIc@pND2r1U0LNJAVHf2@F9hgcKMF8", false),
+				lextwt.NewLink("Try It Online Again!", "https://tio.run/#jVVbb5tIFH7nV5zgB8DGYJxU7br2Q1IpVausFWXbhxUhCMO4RgszdGbIRZv97d4zYAy2Y7fIRnP5znfuh@JFrhgdr9c9WElZiInrFhGPsxcZPZPMkWW@yLgTs9wtmJDuh/ejD@/eexfn3h9uSiXhBSf4Hi4ZH3rDlA6Lik/TemduKbi7SKlL6CNsjnvgDaAjh2u4ba5uK73wTSkGF74STnK1pTaMR94FIm7SmNCYQCrg0ye4@nv41yVcOCMEX1/egOec4@rz/Dt8vr15PNfSvGBcgngR2pKzHGKWZSSWKaMCNncJ@VkSTRM2iARm9da0bPj3P01LyBIYJUVWClMgdgZz3FoTDfBJl0AZcnNZ7zdnGaEm6nMi/uPRgrMZjNtr9RQcnQf9u4h@kAnoMIAG7Y8C3OngL9OMgGSwIECeSVxKkgT6DokSIc@pND2r1U0LNJAVHf2@F9hgcKMF8", lextwt.LinkStandard),
+			),
+		},
+
+		{
+			lit: "2020-12-04T21:43:43Z	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<63dtg5a https://txt.sour.is/search?tag=63dtg5a>) Web Key Directory: a way to self host your public key. instead of using a central system like pgp.mit.net or OpenPGP.org you have your key on a server you own.   it takes an email@address.com hashes the part before the @ and turns it into `[openpgpkey.]address.com/.well-known/openpgpkey[/address.com]/<hash>`",
+			twt: lextwt.NewTwt(
+				lextwt.NewDateTime("2020-12-04T21:43:43Z"),
+				lextwt.NewMention("prologic", "https://twtxt.net/user/prologic/twtxt.txt"),
+				lextwt.NewText(" "),
+				lextwt.NewSubjectTag("63dtg5a", "https://txt.sour.is/search?tag=63dtg5a"),
+				lextwt.NewText(" Web Key Directory: a way to self host your public key. instead of using a central system like pgp.mit.net or OpenPGP.org you have your key on a server you own. "),
+				lextwt.LineSeparator,
+				lextwt.LineSeparator,
+				lextwt.NewText("it takes an email@address.com hashes the part before the @ and turns it into "),
+				lextwt.NewCode("[openpgpkey.]address.com/.well-known/openpgpkey[/address.com]/<hash>", lextwt.CodeInline),
 			),
 		},
 	}
 
 	for i, tt := range tests {
-		t.Logf("TestParseTwt %d - %v", i, tt.lit)
+		t.Logf("TestParseTwt %d\n%v", i, tt.twt.String())
 
 		r := strings.NewReader(tt.lit)
 		lexer := lextwt.NewLexer(r)
@@ -471,48 +516,56 @@ func TestParseTwt(t *testing.T) {
 
 		is.True(elem != nil)
 		if elem != nil {
-			is.Equal(tt.twt.String(), elem.String())
-
-			{
-				m := elem.Subject()
-				n := tt.twt.Subject()
-				testParseSubject(t, n.(*lextwt.Subject), m.(*lextwt.Subject))
-			}
-
-			{
-				m := elem.Mentions()
-				n := tt.twt.Mentions()
-				is.Equal(len(n), len(m))
-				for i := range m {
-					testParseMention(t, m[i].(*lextwt.Mention), n[i].(*lextwt.Mention))
-				}
-				is.Equal(n, m)
-			}
-
-			{
-				m := elem.Tags()
-				n := tt.twt.Tags()
-
-				is.Equal(len(n), len(m))
-				for i := range m {
-					testParseTag(t, m[i].(*lextwt.Tag), n[i].(*lextwt.Tag))
-				}
-				is.Equal(n, m)
-			}
-
+			testParseTwt(t, tt.twt, elem)
 		}
-
 	}
 }
 
-func TestParseTwts(t *testing.T) {
-	r := strings.NewReader("2016-02-03T23:05:00Z	@<example http://example.org/twtxt.txt>\u2028welcome to twtxt!\n2020-11-13T16:13:22+01:00	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<pdrsg2q https://twtxt.net/search?tag=pdrsg2q>) Thanks!")
-	lexer := lextwt.NewLexer(r)
-	parser := lextwt.NewParser(lexer)
-	elem := parser.ParseLine()
-	t.Logf("%v", elem)
-	elem = parser.ParseLine()
-	t.Logf("%v", elem)
+func testParseTwt(t *testing.T, expect, elem types.Twt) {
+	is := is.New(t)
+
+	is.Equal(expect.String(), elem.String())
+
+	{
+		m := elem.Subject()
+		n := expect.Subject()
+		testParseSubject(t, n.(*lextwt.Subject), m.(*lextwt.Subject))
+	}
+
+	{
+		m := elem.Mentions()
+		n := expect.Mentions()
+		for i := range m {
+			t.Log(m[i])
+		}
+		is.Equal(len(n), len(m))
+		for i := range m {
+			testParseMention(t, m[i].(*lextwt.Mention), n[i].(*lextwt.Mention))
+		}
+		is.Equal(n, m)
+	}
+
+	{
+		m := elem.Tags()
+		n := expect.Tags()
+
+		is.Equal(len(n), len(m))
+		for i := range m {
+			testParseTag(t, m[i].(*lextwt.Tag), n[i].(*lextwt.Tag))
+		}
+		is.Equal(n, m)
+	}
+
+	{
+		m := elem.Links()
+		n := expect.Links()
+
+		is.Equal(len(n), len(m))
+		for i := range m {
+			testParseLink(t, m[i].(*lextwt.Link), n[i].(*lextwt.Link))
+		}
+		is.Equal(n, m)
+	}
 }
 
 type commentTestCase struct {
@@ -551,6 +604,42 @@ func TestParseComment(t *testing.T) {
 	}
 }
 
+type textTestCase struct {
+	lit   string
+	elems []*lextwt.Text
+}
+
+func TestParseText(t *testing.T) {
+	is := is.New(t)
+
+	tests := []textTestCase{
+		{
+			lit: "@ ",
+			elems: []*lextwt.Text{
+				lextwt.NewText("@ "),
+			},
+		},
+	}
+	for i, tt := range tests {
+		t.Logf("TestText %d - %v", i, tt.lit)
+
+		r := strings.NewReader(tt.lit)
+		lexer := lextwt.NewLexer(r)
+		parser := lextwt.NewParser(lexer)
+
+		var lis []lextwt.Elem
+		for elem := parser.ParseElem(); elem != nil; elem = parser.ParseElem() {
+			lis = append(lis, elem)
+		}
+
+		is.Equal(len(tt.elems), len(lis))
+		for i, expect := range tt.elems {
+			t.Logf("'%s' = '%s'", expect, lis[i])
+			is.Equal(expect, lis[i])
+		}
+	}
+}
+
 type fileTestCase struct {
 	in    io.Reader
 	twter types.Twter
@@ -563,12 +652,12 @@ func TestParseFile(t *testing.T) {
 	tests := []fileTestCase{
 		{
 			twter: types.Twter{Nick: "example", URL: "https://example.com/twtxt.txt"},
-			in: strings.NewReader(`
-# My Twtxt!
+			in: strings.NewReader(`# My Twtxt!
+# nick = example
 # url = https://example.com/twtxt.txt
 # follows = xuu@txt.sour.is https://txt.sour.is/users/xuu.txt
 
-2016-02-03T23:05:00Z	@<example http://example.org/twtxt.txt>\u2028welcome to twtxt!
+2016-02-03T23:05:00Z	@<example http://example.org/twtxt.txt>` + "\u2028" + `welcome to twtxt!
 2020-11-13T16:13:22+01:00	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<pdrsg2q https://twtxt.net/search?tag=pdrsg2q>) Thanks!
 `),
 			out: lextwt.NewTwtFile(
@@ -576,12 +665,31 @@ func TestParseFile(t *testing.T) {
 					Nick: "example",
 					URL:  "https://example.com/twtxt.txt",
 				},
-				[]types.Twt{
-					&lextwt.Twt{},
-				},
+
 				lextwt.Comments{
 					lextwt.NewComment("# My Twtxt!"),
-					lextwt.NewCommentValue("# url = https://example.com/twtxt.txt", "follows", "https://example.com/twtxt.txt"),
+					lextwt.NewCommentValue("# nick = example", "nick", "example"),
+					lextwt.NewCommentValue("# url = https://example.com/twtxt.txt", "url", "https://example.com/twtxt.txt"),
+					lextwt.NewCommentValue("# follows = xuu@txt.sour.is https://txt.sour.is/users/xuu.txt", "follows", "xuu@txt.sour.is https://txt.sour.is/users/xuu.txt"),
+				},
+
+				[]types.Twt{
+					lextwt.NewTwt(
+						lextwt.NewDateTime("2016-02-03T23:05:00Z"),
+						lextwt.NewMention("example", "http://example.org/twtxt.txt"),
+						lextwt.LineSeparator,
+						lextwt.NewText("welcome to twtxt"),
+						lextwt.NewText("!"),
+					),
+
+					lextwt.NewTwt(
+						lextwt.NewDateTime("2020-11-13T16:13:22+01:00"),
+						lextwt.NewMention("prologic", "https://twtxt.net/user/prologic/twtxt.txt"),
+						lextwt.NewText(" "),
+						lextwt.NewSubjectTag("pdrsg2q", "https://twtxt.net/search?tag=pdrsg2q"),
+						lextwt.NewText(" Thanks"),
+						lextwt.NewText("!"),
+					),
 				},
 			),
 		},
@@ -593,11 +701,36 @@ func TestParseFile(t *testing.T) {
 
 		is.Equal(tt.twter, f.Twter())
 
-		info := f.Info()
-		for _, c := range tt.out.Info().(lextwt.Comments) {
-			v, ok := info.GetN(c.Key(), 0)
-			is.True(ok)
-			is.Equal(c.Value(), v)
+		{
+			lis := f.Info().GetAll("")
+			expect := tt.out.Info().GetAll("")
+			is.Equal(len(expect), len(lis))
+
+			for i := range expect {
+				is.Equal(expect[i].Key(), lis[i].Key())
+				is.Equal(expect[i].Value(), lis[i].Value())
+			}
+
+			is.Equal(f.Info().String(), tt.out.Info().String())
 		}
+
+		t.Log(f.Info().Followers())
+		t.Log(tt.out.Info().Followers())
+
+		{
+			lis := f.Twts()
+			expect := tt.out.Twts()
+			is.Equal(len(expect), len(lis))
+			for i := range expect {
+				testParseTwt(t, expect[i], lis[i])
+			}
+		}
+
 	}
 }
+
+/*
+
+2020-12-04T21:43:43Z	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<63dtg5a https://txt.sour.is/search?tag=63dtg5a>) Web Key Directory: a way to self host your public key. instead of using a central system like pgp.mit.net or OpenPGP.org you have your key on a server you own.   it takes an email@address.com hashes the part before the @ and turns it into `[openpgpkey.]address.com/.well-known/openpgpkey[/address.com]/<hash>`
+2020-12-04T21:43:43Z	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<63dtg5a https://txt.sour.is/search?tag=63dtg5a>) Web Key Directory: a way to self host your public key. instead of using a central system like pgp.mit.net or OpenPGP.org you have your key on a server you own. �� it takes an email@address.com hashes the part before the @@ and turns it into `[openpgpkey.]address.com/.well-known/openpgpkey[/address.com]/<hash>`
+*/

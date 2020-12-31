@@ -53,23 +53,24 @@ type Twt interface {
 	Hash() string
 	Subject() Subject
 	Mentions() MentionList
+	Links() LinkList
 	Tags() TagList
 
 	fmt.Stringer
 }
 
-type Mention interface {
+type TwtMention interface {
 	Twter() Twter
 }
 
-type MentionList []Mention
+type MentionList []TwtMention
 
-type Tag interface {
+type TwtTag interface {
 	Text() string
 	Target() string
 }
 
-type TagList []Tag
+type TagList []TwtTag
 
 func (tags *TagList) Tags() []string {
 	if tags == nil {
@@ -82,10 +83,19 @@ func (tags *TagList) Tags() []string {
 	return lis
 }
 
+type TwtLink interface {
+	Text() string
+	Target() string
+
+	fmt.Stringer
+}
+
+type LinkList []TwtLink
+
 type Subject interface {
 	Text() string
 	FormatText() string
-	Tag() Tag
+	Tag() TwtTag
 }
 
 // TwtMap ...
@@ -105,14 +115,62 @@ func (twts Twts) Swap(i, j int) {
 }
 
 // Tags ...
+func (twts Twts) Tags() TagList {
+	var tags TagList
+	for _, twt := range twts {
+		tags = append(tags, twt.Tags()...)
+	}
+	return tags
+}
+
 func (twts Twts) TagCount() map[string]int {
 	tags := make(map[string]int)
 	for _, twt := range twts {
 		for _, tag := range twt.Tags() {
-			tags[tag.Text()]++
+			if txt := tag.Text(); txt != "" {
+				tags[txt]++
+			} else {
+				tags[tag.Target()]++
+			}
 		}
 	}
 	return tags
+}
+
+// Mentions ...
+func (twts Twts) Mentions() MentionList {
+	var mentions MentionList
+	for _, twt := range twts {
+		mentions = append(mentions, twt.Mentions()...)
+	}
+	return mentions
+}
+func (twts Twts) MentionCount() map[string]int {
+	mentions := make(map[string]int)
+	for _, twt := range twts {
+		for _, m := range twt.Mentions() {
+			mentions[m.Twter().Nick]++
+		}
+	}
+	return mentions
+}
+
+// Links ...
+func (twts Twts) Links() LinkList {
+	var links LinkList
+	for _, twt := range twts {
+		links = append(links, twt.Links()...)
+	}
+	return links
+}
+func (twts Twts) LinkCount() map[string]int {
+	links := make(map[string]int)
+	for _, twt := range twts {
+		for _, link := range twt.Links() {
+			links[link.String()]++
+		}
+	}
+	return links
 }
 
 type FmtOpts interface {
@@ -151,6 +209,7 @@ func (nilTwt) Hash() string                             { return "" }
 func (nilTwt) Subject() Subject                         { return nil }
 func (nilTwt) Mentions() MentionList                    { return nil }
 func (nilTwt) Tags() TagList                            { return nil }
+func (nilTwt) Links() LinkList                          { return nil }
 func (nilTwt) String() string                           { return "" }
 func (nilTwt) GobDecode([]byte) error                   { return ErrNotImplemented }
 func (nilTwt) GobEncode() ([]byte, error)               { return nil, ErrNotImplemented }
@@ -195,39 +254,24 @@ func SetTwtManager(m TwtManager) {
 
 type TwtFile interface {
 	Twter() Twter
-	Info() KV
+	Info() Info
 	Twts() Twts
 }
 
+type Info interface {
+	Followers() []Value
+
+	KV
+}
 type KV interface {
-	GetN(string, int) (string, bool)
-	GetAll(string) []string
+	GetN(string, int) (Value, bool)
+	GetAll(string) []Value
+	fmt.Stringer
 }
 
-type MetaValue struct {
-	key   string
-	value string
-}
-type Meta map[string][]string
-
-func NewMeta(lis ...MetaValue) *Meta {
-	kv := make(Meta, len(lis))
-	for _, pair := range lis {
-		kv[pair.key] = append(kv[pair.key], pair.value)
-	}
-	return &kv
-}
-func (m *Meta) Get(key string) (string, bool) {
-	return m.GetN(key, 0)
-}
-func (m *Meta) GetN(key string, n int) (string, bool) {
-	if m == nil || *m == nil {
-		return "", false
-	}
-	if lis, ok := (*m)[key]; ok && len(lis) >= n {
-		return lis[n], true
-	}
-	return "", false
+type Value interface {
+	Key() string
+	Value() string
 }
 
 // SplitTwts into two groupings. The first with created > ttl or at most N. the second all remaining twts.

@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sort"
+	"strings"
 
 	"github.com/jointwt/twtxt/types"
 	"github.com/jointwt/twtxt/types/lextwt"
@@ -77,18 +79,81 @@ func run(r io.Reader) {
 	}
 
 	fmt.Println("twts: ", len(twt.Twts()))
+
+	fmt.Printf("days of week:\n%v\n", daysOfWeek(twt.Twts()))
+
 	fmt.Println("tags: ", len(twt.Twts().Tags()))
+	var tags stats
 	for tag, count := range twt.Twts().TagCount() {
-		fmt.Println("   ", tag, ": ", count)
+		tags = append(tags, stat{count, tag})
 	}
+	fmt.Println(tags)
 
 	fmt.Println("mentions: ", len(twt.Twts().Mentions()))
-	for m, count := range twt.Twts().MentionCount() {
-		fmt.Println("   ", m, ": ", count)
+	var mentions stats
+	for mention, count := range twt.Twts().MentionCount() {
+		mentions = append(mentions, stat{count, mention})
 	}
+	fmt.Println(mentions)
+
+	fmt.Println("subjects: ", len(twt.Twts().Subjects()))
+	var subjects stats
+	for subject, count := range twt.Twts().SubjectCount() {
+		subjects = append(subjects, stat{count, subject})
+	}
+	fmt.Println(subjects)
 
 	fmt.Println("links: ", len(twt.Twts().Links()))
-	for m, count := range twt.Twts().LinkCount() {
-		fmt.Println("   ", m, ": ", count)
+	var links stats
+	for link, count := range twt.Twts().LinkCount() {
+		links = append(links, stat{count, link})
 	}
+	fmt.Println(links)
+
+}
+
+func daysOfWeek(twts types.Twts) stats {
+	s := make(map[string]int)
+
+	for _, twt := range twts {
+		s[fmt.Sprint(twt.Created().Format("tz-Z0700"))]++
+		s[fmt.Sprint(twt.Created().Format("dow-Mon"))]++
+		s[fmt.Sprint(twt.Created().Format("2006-01-02"))]++
+	}
+
+	var lis stats
+	for k, v := range s {
+		lis = append(lis, stat{v, k})
+	}
+	return lis
+}
+
+type stat struct {
+	count int
+	text  string
+}
+
+func (s stat) String() string {
+	return fmt.Sprintf("  %v : %v\n", s.count, s.text)
+}
+
+func (s stats) Len() int {
+	return len(s)
+}
+func (s stats) Less(i, j int) bool {
+	return s[i].count > s[j].count
+}
+func (s stats) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+type stats []stat
+
+func (s stats) String() string {
+	var b strings.Builder
+	sort.Sort(s)
+	for _, line := range s {
+		b.WriteString(line.String())
+	}
+	return b.String()
 }

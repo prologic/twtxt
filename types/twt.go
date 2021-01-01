@@ -173,6 +173,23 @@ func (twts Twts) LinkCount() map[string]int {
 	return links
 }
 
+// Subjects ...
+func (twts Twts) Subjects() []Subject {
+	var subjects []Subject
+	for _, twt := range twts {
+		subjects = append(subjects, twt.Subject())
+	}
+	return subjects
+}
+
+func (twts Twts) SubjectCount() map[string]int {
+	subjects := make(map[string]int)
+	for _, twt := range twts {
+		subjects[twt.Subject().FormatText()]++
+	}
+	return subjects
+}
+
 type FmtOpts interface {
 	LocalURL() *url.URL
 	IsLocalURL(string) bool

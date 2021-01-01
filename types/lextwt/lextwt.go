@@ -88,8 +88,13 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 
 	for !parser.IsEOF() {
 		elem := parser.ParseLine()
+		if elem == nil {
+			continue
+		}
 
+		// fmt.Println(elem)
 		nLines++
+		nErrors += len(parser.Errs())
 
 		switch e := elem.(type) {
 		case *Comment:
@@ -509,7 +514,7 @@ func (l *lexer) loadCode() {
 		l.readRune()
 	}
 
-	for !(l.rune == '`' || l.rune == 0 || l.rune == EOF) {
+	for !(l.rune == '`' || l.rune == 0 || l.rune == EOF || l.rune == '\n') {
 		l.Literal = append(l.Literal, l.rune)
 		l.readRune()
 
@@ -654,7 +659,11 @@ func (p *parser) ParseElem() Elem {
 	case TokNL, TokEOF:
 		return nil
 	default:
-		e = p.ParseText()
+		if p.curTokenIs(TokSTRING) && p.peekTokenIs(TokSCHEME) {
+			e = p.ParseLink()
+		} else {
+			e = p.ParseText()
+		}
 	}
 
 	// If parsing above failed convert to Text
@@ -1116,8 +1125,15 @@ func (p *parser) ParseText() *Text {
 	p.append(p.curTok.Literal...)
 	p.next()
 
-	for p.curTokenIs(TokSTRING, TokSPACE) || // We don't want to parse an email address or link accidentally as a mention or tag. So check if it is preceded with a space.
+	for p.curTokenIs(TokSTRING, TokSPACE) ||
+		// We don't want to parse an email address or link accidentally as a mention or tag. So check if it is preceded with a space.
 		(p.curTokenIs(TokHASH, TokAMP, TokLT, TokLPAREN) && (len(p.lit) == 0 || !unicode.IsSpace(p.lit[len(p.lit)-1]))) {
+
+		// if it looks like a link break out.
+		if p.curTokenIs(TokSTRING) && p.peekTokenIs(TokSCHEME) {
+			break
+		}
+
 		p.append(p.curTok.Literal...)
 		p.next()
 	}
@@ -1150,7 +1166,7 @@ func (p *parser) ParseLink() *Link {
 		p.next()
 
 		p.append(p.curTok.Literal...) // link text
-		for !p.nextTokenIs(TokGT, TokRPAREN, TokSPACE, TokEOF) {
+		for !p.nextTokenIs(TokGT, TokRPAREN, TokSPACE, TokNL, TokLS, TokEOF) {
 			p.next()
 			p.append(p.curTok.Literal...) // link text
 

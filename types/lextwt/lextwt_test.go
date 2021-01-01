@@ -45,7 +45,7 @@ func testLexerRunes(t *testing.T, lexer Lexer, values []rune) {
 }
 
 func TestLexerTokens(t *testing.T) {
-	r := strings.NewReader("# comment\n2016-02-03T23:05:00Z	@<example http://example.org/twtxt.txt>\u2028welcome to twtxt!\n2020-11-13T16:13:22+01:00	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<pdrsg2q https://twtxt.net/search?tag=pdrsg2q>) Thanks! [link](index.html) ![](img.png)`` ```hi```")
+	r := strings.NewReader("# comment\n2016-02-03T23:05:00Z	@<example http://example.org/twtxt.txt>\u2028welcome to twtxt!\n2020-11-13T16:13:22+01:00	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<pdrsg2q https://twtxt.net/search?tag=pdrsg2q>) Thanks! [link](index.html) ![](img.png)`` ```hi```gopher://example.com")
 	values := []lextwt.Token{
 		{lextwt.TokHASH, []rune("#")},
 		{lextwt.TokSPACE, []rune(" ")},
@@ -135,6 +135,9 @@ func TestLexerTokens(t *testing.T) {
 		{lextwt.TokCODE, []rune("``")},
 		{lextwt.TokSPACE, []rune(" ")},
 		{lextwt.TokCODE, []rune("```hi```")},
+		{lextwt.TokSTRING, []rune("gopher")},
+		{lextwt.TokSCHEME, []rune("://")},
+		{lextwt.TokSTRING, []rune("example.com")},
 	}
 	lexer := lextwt.NewLexer(r)
 	testLexerTokens(t, lexer, values)
@@ -502,6 +505,20 @@ func TestParseTwt(t *testing.T) {
 				lextwt.LineSeparator,
 				lextwt.NewText("it takes an email@address.com hashes the part before the @ and turns it into "),
 				lextwt.NewCode("[openpgpkey.]address.com/.well-known/openpgpkey[/address.com]/<hash>", lextwt.CodeInline),
+			),
+		},
+
+		{
+			lit: "2020-07-20T06:59:52Z	@<hjertnes https://hjertnes.social/twtxt.txt> Is it okay to have two personas :) I have https://twtxt.net/u/prologic and https://prologic.github.io/twtxt.txt 🤔",
+			twt: lextwt.NewTwt(
+				lextwt.NewDateTime("2020-07-20T06:59:52Z"),
+				lextwt.NewMention("hjertnes", "https://hjertnes.social/twtxt.txt"),
+				lextwt.NewText(" Is it okay to have two personas :"),
+				lextwt.NewText(") I have "),
+				lextwt.NewLink("", "https://twtxt.net/u/prologic", lextwt.LinkNaked),
+				lextwt.NewText(" and "),
+				lextwt.NewLink("", "https://prologic.github.io/twtxt.txt", lextwt.LinkNaked),
+				lextwt.NewText(" 🤔"),
 			),
 		},
 	}

@@ -88,11 +88,7 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 
 	for !parser.IsEOF() {
 		elem := parser.ParseLine()
-		if elem == nil {
-			continue
-		}
 
-		// fmt.Println(elem)
 		nLines++
 		nErrors += len(parser.Errs())
 
@@ -624,6 +620,8 @@ func (p *parser) ParseLine() Elem {
 		e = p.ParseComment()
 	case TokNUMBER:
 		e = p.ParseTwt()
+	default:
+		p.nextLine()
 	}
 	if !(p.expect(TokNL) || p.expect(TokEOF)) {
 		return nil
@@ -1331,6 +1329,12 @@ func (p *parser) next() {
 	p.l.NextTok()
 	p.nextTok.Type = p.l.Token
 	p.nextTok.Literal = append(p.nextTok.Literal, p.l.Literal...)
+}
+
+func (p *parser) nextLine() {
+	for !p.curTokenIs(TokNL, TokEOF) {
+		p.next()
+	}
 }
 
 // curTokenIs returns true if any of provited TokTypes match current token.

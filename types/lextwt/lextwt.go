@@ -90,7 +90,6 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 		elem := parser.ParseLine()
 
 		nLines++
-		nErrors += len(parser.Errs())
 
 		switch e := elem.(type) {
 		case *Comment:
@@ -99,10 +98,11 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 			f.twts = append(f.twts, e)
 		}
 	}
+	nErrors = len(parser.Errs())
 
 	if (nLines+nErrors > 0) && nLines == nErrors {
 		log.Warnf("erroneous feed dtected (nLines + nErrors > 0 && nLines == nErrors): %d/%d", nLines, nErrors)
-		return nil, ErrParseElm
+		// return nil, ErrParseElm
 	}
 
 	if v, ok := f.Info().GetN("nick", 0); ok {
@@ -138,6 +138,8 @@ type lexer struct {
 	last rune
 	buf  []byte
 	pos  int
+	rpos int
+	fpos int
 	size int
 
 	// state to assist token state machine
@@ -447,6 +449,8 @@ func (l *lexer) readRune() {
 	}
 
 	l.pos += size
+	l.rpos = l.fpos
+	l.fpos += size
 
 	if l.last == '\n' {
 		l.last = 0
@@ -546,7 +550,9 @@ func (l *lexer) loadSpace() {
 type parser struct {
 	l       *lexer
 	curTok  Token
+	curPos  int
 	nextTok Token
+	nextPos int
 
 	twter types.Twter
 
@@ -715,6 +721,7 @@ func (p *parser) ParseTwt() *Twt {
 	if !p.expect(TokNUMBER) {
 		return nil
 	}
+	twt.pos = p.curPos
 	twt.dt = p.ParseDateTime()
 	if twt.dt == nil {
 		return nil
@@ -1324,6 +1331,7 @@ func (p *parser) IsEOF() bool {
 // next promotes the next token and loads a new one.
 // the parser keeps two buffers to store tokens and alternates them here.
 func (p *parser) next() {
+	p.curPos, p.nextPos = p.nextPos, p.l.rpos
 	p.curTok, p.nextTok = p.nextTok, p.curTok
 	p.nextTok.Literal = p.nextTok.Literal[:0]
 	p.l.NextTok()
@@ -1493,16 +1501,16 @@ func (lis Comments) GetAll(prefix string) []types.Value {
 	return nlis
 }
 
-func (lis Comments) Followers() []types.Value {
+func (lis Comments) Followers() []types.Twter {
 	flis := lis.GetAll("follow")
-	nlis := make([]types.Value, 0, len(flis))
+	nlis := make([]types.Twter, 0, len(flis))
 
 	for _, o := range flis {
 		sp := strings.Fields(o.Value())
 		if len(sp) < 2 {
 			continue
 		}
-		nlis = append(nlis, &Comment{comment: o.Value(), key: sp[0], value: sp[1]})
+		nlis = append(nlis, types.Twter{Nick: sp[0], URL: sp[1]})
 	}
 
 	return nlis
@@ -1775,6 +1783,7 @@ type Twt struct {
 	hash     string
 	subject  *Subject
 	twter    types.Twter
+	pos      int
 }
 
 var _ Elem = (*Twt)(nil)
@@ -1807,6 +1816,7 @@ func NewTwt(dt *DateTime, elems ...Elem) *Twt {
 	return twt
 }
 func (twt *Twt) IsNil() bool  { return twt == nil }
+func (twt *Twt) FilePos() int { return twt.pos }
 func (twt *Twt) IsZero() bool { return twt.IsNil() || twt.Literal() == "" || twt.Created().IsZero() }
 func (twt *Twt) Literal() string {
 	if twt == nil {

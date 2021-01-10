@@ -276,7 +276,7 @@ type TwtFile interface {
 }
 
 type Info interface {
-	Followers() []Value
+	Followers() []Twter
 
 	KV
 }

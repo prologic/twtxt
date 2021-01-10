@@ -9,6 +9,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/prologic/go-gopher"
+
 	"github.com/jointwt/twtxt/types"
 	"github.com/jointwt/twtxt/types/lextwt"
 )
@@ -49,6 +51,21 @@ func main() {
 		defer f.Body.Close()
 
 		run(f.Body)
+
+	case "gopher":
+		res, err := gopher.Get(url.String())
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
+		if res.Body == nil {
+			fmt.Printf("Error: body is empty %v", res.Type)
+			os.Exit(1)
+		}
+		defer res.Body.Close()
+
+		run(res.Body)
+
 	}
 }
 
@@ -75,7 +92,7 @@ func run(r io.Reader) {
 
 	fmt.Println("followers:")
 	for _, c := range twt.Info().Followers() {
-		fmt.Printf("  % -30s = %s\n", c.Key(), c.Value())
+		fmt.Printf("  % -30s = %s\n", c.Nick, c.URL)
 	}
 
 	fmt.Println("twts: ", len(twt.Twts()))
@@ -83,18 +100,10 @@ func run(r io.Reader) {
 	fmt.Printf("days of week:\n%v\n", daysOfWeek(twt.Twts()))
 
 	fmt.Println("tags: ", len(twt.Twts().Tags()))
-	var tags stats
-	for tag, count := range twt.Twts().TagCount() {
-		tags = append(tags, stat{count, tag})
-	}
-	fmt.Println(tags)
+	fmt.Println(getTags(twt.Twts().Tags()))
 
 	fmt.Println("mentions: ", len(twt.Twts().Mentions()))
-	var mentions stats
-	for mention, count := range twt.Twts().MentionCount() {
-		mentions = append(mentions, stat{count, mention})
-	}
-	fmt.Println(mentions)
+	fmt.Println(getMentions(twt.Twts(), twt.Info().Followers()))
 
 	fmt.Println("subjects: ", len(twt.Twts().Subjects()))
 	var subjects stats
@@ -110,6 +119,10 @@ func run(r io.Reader) {
 	}
 	fmt.Println(links)
 
+	for _, twt := range twt.Twts() {
+		fmt.Print(twt.(*lextwt.Twt).FilePos(), "\t", twt)
+	}
+
 }
 
 func daysOfWeek(twts types.Twts) stats {
@@ -118,13 +131,43 @@ func daysOfWeek(twts types.Twts) stats {
 	for _, twt := range twts {
 		s[fmt.Sprint(twt.Created().Format("tz-Z0700"))]++
 		s[fmt.Sprint(twt.Created().Format("dow-Mon"))]++
-		s[fmt.Sprint(twt.Created().Format("2006-01-02"))]++
+		s[fmt.Sprint(twt.Created().Format("year-2006"))]++
+		s[fmt.Sprint(twt.Created().Format("day-2006-01-02"))]++
 	}
 
 	var lis stats
 	for k, v := range s {
 		lis = append(lis, stat{v, k})
 	}
+	return lis
+}
+
+func getMentions(twts types.Twts, follows []types.Twter) stats {
+	counts := make(map[string]int)
+	for _, m := range twts.Mentions() {
+		t := m.Twter()
+		counts[fmt.Sprint(t.Nick, "\t", t.URL)]++
+	}
+
+	lis := make(stats, 0, len(counts))
+	for name, count := range counts {
+		lis = append(lis, stat{count, name})
+	}
+
+	return lis
+}
+
+func getTags(twts types.TagList) stats {
+	counts := make(map[string]int)
+	for _, m := range twts {
+		counts[fmt.Sprint(m.Text(), "\t", m.Target())]++
+	}
+
+	lis := make(stats, 0, len(counts))
+	for name, count := range counts {
+		lis = append(lis, stat{count, name})
+	}
+
 	return lis
 }
 

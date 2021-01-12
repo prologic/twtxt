@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/url"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -43,10 +44,32 @@ func (twter Twter) MarshalJSON() ([]byte, error) {
 }
 func (twter Twter) String() string { return fmt.Sprintf("%v\t%v", twter.Nick, twter.URL) }
 
+func (twter Twter) Domain() string {
+	if sp := strings.SplitN(twter.Nick, "@", 2); len(sp) == 2 {
+		return sp[1]
+	}
+	if url, err := url.Parse(twter.URL); err == nil {
+		return url.Hostname()
+	}
+	return ""
+}
+func (twter Twter) DomainNick() string {
+	if strings.ContainsRune(twter.Nick, '@') {
+		return twter.Nick
+	}
+
+	if url, err := url.Parse(twter.URL); err == nil {
+		return twter.Nick + "@" + url.Hostname()
+	}
+
+	return twter.Nick
+}
+
 // Twt ...
 type Twt interface {
 	Twter() Twter
 	Text() string
+	ExpandLinks(FmtOpts, FeedLookup)
 	FormatText(TwtTextFormat, FmtOpts) string
 	Created() time.Time
 	IsZero() bool
@@ -195,6 +218,8 @@ type FmtOpts interface {
 	IsLocalURL(string) bool
 	UserURL(string) string
 	ExternalURL(nick, uri string) string
+	URLForTag(tag string) string
+	URLForUser(user string) string
 }
 
 // TwtTextFormat represents the format of which the twt text gets formatted to
@@ -219,6 +244,8 @@ var _ gob.GobDecoder = NilTwt
 
 func (nilTwt) Twter() Twter                             { return Twter{} }
 func (nilTwt) Text() string                             { return "" }
+func (nilTwt) ExpandLinks(FmtOpts, FeedLookup)          {}
+func (nilTwt) FormatTwt(TwtTextFormat, FmtOpts) string  { return "" }
 func (nilTwt) FormatText(TwtTextFormat, FmtOpts) string { return "" }
 func (nilTwt) Created() time.Time                       { return time.Now() }
 func (nilTwt) IsZero() bool                             { return true }
@@ -310,4 +337,16 @@ func SplitTwts(twts Twts, ttl time.Duration, N int) (Twts, Twts) {
 	}
 
 	return twts[:pos], twts[pos:]
+}
+
+type FeedLookup interface {
+	FeedLookup(string) *Twter
+}
+
+type FeedLookupFn func(string) *Twter
+
+func (fn FeedLookupFn) FeedLookup(s string) *Twter { return fn(s) }
+
+func NormalizeUsername(username string) string {
+	return strings.TrimSpace(strings.ToLower(username))
 }

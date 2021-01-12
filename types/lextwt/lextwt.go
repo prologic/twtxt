@@ -738,28 +738,7 @@ func (p *parser) ParseTwt() *Twt {
 
 	for elem := p.ParseElem(); elem != nil; elem = p.ParseElem() {
 		p.push()
-		twt.msg = append(twt.msg, elem)
-
-		// I could inline ParseElem here to avoid typechecks. But there doesn't appear to be a performance difference.
-		if subject, ok := elem.(*Subject); ok && twt.subject == nil {
-			twt.subject = subject
-
-			if subject.tag != nil {
-				twt.tags = append(twt.tags, subject.tag)
-			}
-		}
-
-		if tag, ok := elem.(*Tag); ok {
-			twt.tags = append(twt.tags, tag)
-		}
-
-		if mention, ok := elem.(*Mention); ok {
-			twt.mentions = append(twt.mentions, mention)
-		}
-
-		if link, ok := elem.(*Link); ok {
-			twt.links = append(twt.links, link)
-		}
+		twt.append(elem)
 	}
 
 	return twt
@@ -1604,7 +1583,34 @@ func (n *Mention) Err() error {
 	return n.err
 }
 func (n *Mention) FormatText() string {
-	return fmt.Sprintf("@%s", n.name)
+	if n.name == "" && n.target != "" {
+		return fmt.Sprintf("@<%s>", n.target)
+	}
+
+	nick := n.name
+
+	if n.domain != "" {
+		nick += "@" + n.domain
+	}
+
+	if n.target == "" {
+		return fmt.Sprintf("@%s", nick)
+	}
+
+	return fmt.Sprintf("@<%s %s>", nick, n.target)
+}
+func (n *Mention) Markdown() string {
+	nick := n.name
+
+	if n.domain != "" {
+		nick += "@" + n.domain
+	}
+
+	if n.target == "" {
+		return fmt.Sprintf("@%s", nick)
+	}
+
+	return fmt.Sprintf("[@%s](%s)", nick, n.target)
 }
 
 type Tag struct {
@@ -1621,17 +1627,7 @@ var _ types.TwtTag = (*Tag)(nil)
 
 func NewTag(tag, target string) *Tag {
 	m := &Tag{tag: tag, target: target}
-
-	switch {
-	case tag != "" && target == "":
-		m.lit = fmt.Sprintf("#%s", tag)
-
-	case tag != "" && target != "":
-		m.lit = fmt.Sprintf("#<%s %s>", tag, target)
-
-	case tag == "" && target != "":
-		m.lit = fmt.Sprintf("#<%s>", target)
-	}
+	m.lit = m.FormatText()
 
 	return m
 }
@@ -1653,7 +1649,27 @@ func (n *Tag) URL() *url.URL {
 	return n.url
 }
 func (n *Tag) FormatText() string {
-	return fmt.Sprintf("#%s", n.tag)
+	if n.target == "" {
+		return fmt.Sprintf("#%s", n.tag)
+	}
+
+	if n.tag == "" {
+		return fmt.Sprintf("#<%s>", n.target)
+	}
+
+	return fmt.Sprintf("#<%s %s>", n.tag, n.target)
+}
+func (n *Tag) Markdown() string {
+	if n.target == "" {
+		return fmt.Sprintf("#%s", n.tag)
+	}
+
+	if n.tag == "" {
+		url := n.URL()
+		return fmt.Sprintf("[%s%s](%s)", url.Hostname(), url.Path, n.target)
+	}
+
+	return fmt.Sprintf("[#%s](%s)", n.tag, n.target)
 }
 
 type Subject struct {
@@ -1687,6 +1703,12 @@ func (n *Subject) FormatText() string {
 	}
 	return fmt.Sprintf("(%s)", n.tag.FormatText())
 }
+func (n *Subject) Markdown() string {
+	if n.tag == nil {
+		return fmt.Sprintf("(%s)", n.subject)
+	}
+	return fmt.Sprintf("(%s)", n.tag.Markdown())
+}
 
 type Text struct {
 	lit string
@@ -1694,18 +1716,22 @@ type Text struct {
 
 var _ Elem = (*Text)(nil)
 
-func NewText(txt string) *Text  { return &Text{txt} }
-func (n *Text) IsNil() bool     { return n == nil }
-func (n *Text) Literal() string { return n.lit }
-func (n *Text) String() string  { return n.Literal() }
+func NewText(txt string) *Text     { return &Text{txt} }
+func (n *Text) IsNil() bool        { return n == nil }
+func (n *Text) Literal() string    { return n.lit }
+func (n *Text) String() string     { return n.Literal() }
+func (n *Text) FormatText() string { return n.Literal() }
+func (n *Text) Markdown() string   { return n.Literal() }
 
 type lineSeparator struct{}
 
 var LineSeparator Elem = &lineSeparator{}
 
-func (n *lineSeparator) IsNil() bool     { return false }
-func (n *lineSeparator) Literal() string { return "\u2028" }
-func (n *lineSeparator) String() string  { return "\n" }
+func (n *lineSeparator) IsNil() bool        { return false }
+func (n *lineSeparator) Literal() string    { return "\u2028" }
+func (n *lineSeparator) String() string     { return "\n" }
+func (n *lineSeparator) FormatText() string { return n.String() }
+func (n *lineSeparator) Markdown() string   { return n.String() }
 
 type Link struct {
 	linkType LinkType
@@ -1738,6 +1764,8 @@ func (n *Link) Literal() string {
 		return fmt.Sprintf("[%s](%s)", n.text, n.target)
 	}
 }
+func (n *Link) FormatText() string { return n.Literal() }
+func (n *Link) Markdown() string   { return n.Literal() }
 
 func (n *Link) String() string {
 	return n.Literal()
@@ -1768,6 +1796,8 @@ func (n *Code) Literal() string {
 	}
 	return fmt.Sprintf("`%s`", n.lit)
 }
+func (n *Code) FormatText() string { return n.Literal() }
+func (n *Code) Markdown() string   { return n.Literal() }
 
 // String replaces line separator with newlines
 func (n *Code) String() string {
@@ -1790,30 +1820,35 @@ var _ Elem = (*Twt)(nil)
 var _ types.Twt = (*Twt)(nil)
 
 func NewTwt(dt *DateTime, elems ...Elem) *Twt {
-	twt := &Twt{dt: dt, msg: elems}
+	twt := &Twt{dt: dt, msg: make([]Elem, 0, len(elems))}
 
 	for _, elem := range elems {
-		if subject, ok := elem.(*Subject); ok && twt.subject == nil {
-			twt.subject = subject
-			if subject.tag != nil {
-				twt.tags = append(twt.tags, subject.tag)
-			}
-		}
-
-		if tag, ok := elem.(*Tag); ok {
-			twt.tags = append(twt.tags, tag)
-		}
-
-		if mention, ok := elem.(*Mention); ok {
-			twt.mentions = append(twt.mentions, mention)
-		}
-
-		if link, ok := elem.(*Link); ok {
-			twt.links = append(twt.links, link)
-		}
+		twt.append(elem)
 	}
 
 	return twt
+}
+func (twt *Twt) append(elem Elem) {
+	twt.msg = append(twt.msg, elem)
+
+	if subject, ok := elem.(*Subject); ok && twt.subject == nil {
+		twt.subject = subject
+		if subject.tag != nil {
+			twt.tags = append(twt.tags, subject.tag)
+		}
+	}
+
+	if tag, ok := elem.(*Tag); ok {
+		twt.tags = append(twt.tags, tag)
+	}
+
+	if mention, ok := elem.(*Mention); ok {
+		twt.mentions = append(twt.mentions, mention)
+	}
+
+	if link, ok := elem.(*Link); ok {
+		twt.links = append(twt.links, link)
+	}
 }
 func (twt *Twt) IsNil() bool  { return twt == nil }
 func (twt *Twt) FilePos() int { return twt.pos }
@@ -1900,9 +1935,34 @@ func DecodeJSON(data []byte) (types.Twt, error) {
 
 	return types.NilTwt, err
 }
-func (twt Twt) FormatText(types.TwtTextFormat, types.FmtOpts) string { return twt.Literal() }
-func (twt Twt) String() string                                       { return strings.ReplaceAll(twt.Literal(), "\u2028", "\n") }
-func (twt Twt) Created() time.Time                                   { return twt.dt.DateTime() }
+func (twt Twt) FormatText(types.TwtTextFormat, types.FmtOpts) string {
+	var b strings.Builder
+	for _, s := range twt.msg {
+		b.WriteString(s.Literal())
+	}
+	return b.String()
+}
+func (twt *Twt) ExpandLinks(opts types.FmtOpts, lookup types.FeedLookup) {
+	for _, tag := range twt.tags {
+		if tag.target == "" {
+			tag.target = opts.URLForTag(tag.tag)
+		}
+	}
+
+	for _, m := range twt.mentions {
+		if m.target == "" && lookup != nil {
+			twter := lookup.FeedLookup(m.name)
+			m.name = twter.Nick
+			if sp := strings.SplitN(twter.Nick, "@", 2); len(sp) == 2 {
+				m.name = sp[0]
+				m.domain = sp[1]
+			}
+			m.target = twter.URL
+		}
+	}
+}
+func (twt Twt) String() string     { return strings.ReplaceAll(twt.Literal(), "\u2028", "\n") }
+func (twt Twt) Created() time.Time { return twt.dt.DateTime() }
 func (twt Twt) Mentions() types.MentionList {
 	lis := make([]types.TwtMention, len(twt.mentions))
 	for i := range twt.mentions {
@@ -1926,7 +1986,12 @@ func (twt Twt) Links() types.LinkList {
 }
 func (twt Twt) Twter() types.Twter { return twt.twter }
 func (twt Twt) Hash() string {
-	payload := twt.Twter().URL + "\n" + twt.Created().Format(time.RFC3339) + "\n" + twt.Literal()
+	payload := fmt.Sprintf(
+		"%s\n%s\n%s",
+		twt.Twter().URL,
+		twt.Created().Format(time.RFC3339),
+		twt.Literal(),
+	)
 	sum := blake2b.Sum256([]byte(payload))
 
 	// Base32 is URL-safe, unlike Base64, and shorter than hex.

@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
 
@@ -20,52 +19,6 @@ import (
 const (
 	feedsDir = "feeds"
 )
-
-// ExpandMentions turns "@nick" into "@<nick URL>" if we're following the user or feed
-// or if they exist on the local pod. Also turns @user@domain into
-// @<user URL> as a convenient way to mention users across pods.
-func ExpandMentions(conf *Config, db Store, user *User, text string) string {
-	re := regexp.MustCompile(`@([a-zA-Z0-9][a-zA-Z0-9_-]+)(?:@)?((?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9]\.)|(?:[0-9]+/[0-9]{2})\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?)?`)
-	return re.ReplaceAllStringFunc(text, func(match string) string {
-		parts := re.FindStringSubmatch(match)
-		mentionedNick := parts[1]
-		mentionedDomain := parts[2]
-
-		if mentionedNick != "" && mentionedDomain != "" {
-			// TODO: Validate the remote end for a valid Twtxt pod?
-			// XXX: Should we always assume https:// ?
-			return fmt.Sprintf(
-				"@<%s https://%s/user/%s/twtxt.txt>",
-				mentionedNick, mentionedDomain, mentionedNick,
-			)
-		}
-
-		for followedNick, followedURL := range user.Following {
-			if mentionedNick == followedNick {
-				return fmt.Sprintf("@<%s %s>", followedNick, followedURL)
-			}
-		}
-
-		username := NormalizeUsername(mentionedNick)
-		if db.HasUser(username) || db.HasFeed(username) {
-			return fmt.Sprintf("@<%s %s>", username, URLForUser(conf, username))
-		}
-
-		// Not expanding if we're not following, not a local user/feed
-		return match
-	})
-}
-
-// Turns #tag into "@<tag URL>"
-func ExpandTag(conf *Config, db Store, user *User, text string) string {
-	re := regexp.MustCompile(`#([-\w]+)`)
-	return re.ReplaceAllStringFunc(text, func(match string) string {
-		parts := re.FindStringSubmatch(match)
-		tag := parts[1]
-
-		return fmt.Sprintf("#<%s %s>", tag, URLForTag(conf.BaseURL, tag))
-	})
-}
 
 func DeleteLastTwt(conf *Config, user *User) error {
 	p := filepath.Join(conf.Data, feedsDir)
@@ -127,15 +80,17 @@ func AppendTwt(conf *Config, db Store, user *User, text string, args ...interfac
 	line := fmt.Sprintf(
 		"%s\t%s\n",
 		now.Format(time.RFC3339),
-		ExpandTag(conf, db, user, ExpandMentions(conf, db, user, text)),
+		text,
 	)
-
-	if _, err = f.WriteString(line); err != nil {
-		return types.NilTwt, err
-	}
 
 	twt, err := types.ParseLine(strings.TrimSpace(line), user.Twter())
 	if err != nil {
+		return types.NilTwt, err
+	}
+
+	twt.ExpandLinks(conf, NewFeedLookup(conf, db, user))
+
+	if _, err = f.WriteString(twt.String()); err != nil {
 		return types.NilTwt, err
 	}
 

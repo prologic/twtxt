@@ -1577,6 +1577,7 @@ func FormatForDateTime(t time.Time) string {
 // FormatTwtFactory formats a twt into a valid HTML snippet
 func FormatTwtFactory(conf *Config) func(twt types.Twt) template.HTML {
 	return func(twt types.Twt) template.HTML {
+		twt.ExpandLinks(conf, nil)
 		text := twt.Text()
 		renderHookProcessURLs := func(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
 			// Ensure only whitelisted ![](url) images
@@ -1638,7 +1639,7 @@ func FormatTwtFactory(conf *Config) func(twt types.Twt) template.HTML {
 		// renderer can interpreter newlines as `<br />` and `<p>`.
 		text = strings.ReplaceAll(text, "\u2028", "\n")
 		// Replace simple '#just-tag' entrys with local link
-		text = ExpandTag(conf, nil, nil, text)
+		//text = ExpandTag(conf, text)
 		extensions := parser.CommonExtensions | parser.HardLineBreak | parser.NoEmptyLineBeforeBlock
 		mdParser := parser.NewWithExtensions(extensions)
 
@@ -1712,16 +1713,6 @@ func FormatMentionsAndTags(conf *Config, text string, format TwtTextFormat) stri
 	})
 }
 
-// // FormatMentionsAndTagsForSubject turns `@<nick URL>` into `@nick`
-// func FormatMentionsAndTagsForSubject(text string) string {
-// 	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
-// 	return re.ReplaceAllStringFunc(text, func(match string) string {
-// 		parts := re.FindStringSubmatch(match)
-// 		prefix, nick := parts[1], parts[2]
-// 		return fmt.Sprintf(`%s%s`, prefix, nick)
-// 	})
-// }
-
 // FormatRequest generates ascii representation of a request
 func FormatRequest(r *http.Request) string {
 	return fmt.Sprintf(
@@ -1757,4 +1748,21 @@ func GetMediaNamesFromText(text string) []string {
 	}
 
 	return mediaNames
+}
+
+func NewFeedLookup(conf *Config, db Store, user *User) types.FeedLookup {
+	return types.FeedLookupFn(func(nick string) *types.Twter {
+		for followedNick, followedURL := range user.Following {
+			if nick == followedNick {
+				return &types.Twter{Nick: followedNick, URL: followedURL}
+			}
+		}
+
+		username := NormalizeUsername(nick)
+		if db.HasUser(username) || db.HasFeed(username) {
+			return &types.Twter{Nick: username, URL: URLForUser(conf, username)}
+		}
+
+		return &types.Twter{Nick: nick}
+	})
 }

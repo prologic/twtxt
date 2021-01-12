@@ -75,7 +75,7 @@ func (twt *reTwt) GobDecode(data []byte) error {
 }
 
 func (twt reTwt) String() string {
-	return fmt.Sprintf("%v\t%v", twt.created.Format(time.RFC3339), twt.text)
+	return fmt.Sprintf("%v\t%v\n", twt.created.Format(time.RFC3339), twt.text)
 }
 
 func NewReTwt(twter types.Twter, text string, created time.Time) *reTwt {
@@ -83,7 +83,7 @@ func NewReTwt(twter types.Twter, text string, created time.Time) *reTwt {
 }
 
 func DecodeJSON(data []byte) (types.Twt, error) {
-	twt := reTwt{}
+	twt := &reTwt{}
 	if err := twt.GobDecode(data); err != nil {
 		return types.NilTwt, err
 	}
@@ -166,8 +166,11 @@ func (twt reTwt) MarkdownText() string {
 func (twt reTwt) FormatText(textFmt types.TwtTextFormat, fmtOpts types.FmtOpts) string {
 	return formatMentionsAndTags(fmtOpts, twt.text, textFmt)
 }
+func (twt *reTwt) ExpandLinks(opts types.FmtOpts, lookup types.FeedLookup) {
+	twt.text = ExpandTag(opts, twt.text)
+	twt.text = ExpandMentions(opts, lookup, twt.text)
+}
 
-// func (twt *reTwt) SetFmtOpts(opts types.FmtOpts) { twt.fmtOpts = opts }
 func (twt reTwt) Created() time.Time { return twt.created }
 func (twt reTwt) MarshalJSON() ([]byte, error) {
 	var tags types.TagList = twt.Tags()
@@ -313,6 +316,7 @@ func (t *reTag) Target() string {
 func formatMentionsAndTags(opts types.FmtOpts, text string, format types.TwtTextFormat) string {
 	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
+		fmt.Println("match: ", match)
 		parts := re.FindStringSubmatch(match)
 		prefix, nick, url := parts[1], parts[2], parts[3]
 
@@ -429,4 +433,55 @@ func (r reSubject) Text() string {
 }
 func (r reSubject) FormatText() string {
 	return FormatMentionsAndTagsForSubject(string(r))
+}
+
+// ExpandMentions turns "@nick" into "@<nick URL>" if we're following the user or feed
+// or if they exist on the local pod. Also turns @user@domain into
+// @<user URL> as a convenient way to mention users across pods.
+func ExpandMentions(opts types.FmtOpts, lookup types.FeedLookup, text string) string {
+	re := regexp.MustCompile(`@([a-zA-Z0-9][a-zA-Z0-9_-]+)(?:@)?((?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9]\.)|(?:[0-9]+/[0-9]{2})\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?)?`)
+	return re.ReplaceAllStringFunc(text, func(match string) string {
+		parts := re.FindStringSubmatch(match)
+		mentionedNick := parts[1]
+		mentionedDomain := parts[2]
+
+		if mentionedNick != "" && mentionedDomain != "" {
+			// TODO: Validate the remote end for a valid Twtxt pod?
+			// XXX: Should we always assume https:// ?
+			return fmt.Sprintf(
+				"@<%s https://%s/user/%s/twtxt.txt>",
+				mentionedNick, mentionedDomain, mentionedNick,
+			)
+		}
+
+		// for followedNick, followedURL := range user.Following {
+		// 	if mentionedNick == followedNick {
+		// 		return fmt.Sprintf("@<%s %s>", followedNick, followedURL)
+		// 	}
+		// }
+
+		// username := NormalizeUsername(mentionedNick)
+		// if db.HasUser(username) || db.HasFeed(username) {
+		// 	return fmt.Sprintf("@<%s %s>", username, opts.URLForUser(conf, username))
+		// }
+
+		if lookup != nil {
+			twter := lookup.FeedLookup(mentionedNick)
+			return fmt.Sprintf("@<%s %s>", twter.Nick, twter.URL)
+		}
+
+		// Not expanding if we're not following, not a local user/feed
+		return match
+	})
+}
+
+// Turns #tag into "@<tag URL>"
+func ExpandTag(opts types.FmtOpts, text string) string {
+	re := regexp.MustCompile(`#([-\w]+)`)
+	return re.ReplaceAllStringFunc(text, func(match string) string {
+		parts := re.FindStringSubmatch(match)
+		tag := parts[1]
+
+		return fmt.Sprintf("#<%s %s>", tag, opts.URLForTag(tag))
+	})
 }

@@ -91,6 +91,8 @@ func (c *Config) IsLocalURL(url string) bool {
 func (c *Config) LocalURL() *url.URL                  { return c.baseURL }
 func (c *Config) ExternalURL(nick, uri string) string { return URLForExternalProfile(c, nick, uri) }
 func (c *Config) UserURL(url string) string           { return UserURL(url) }
+func (c *Config) URLForUser(user string) string       { return URLForUser(c, user) }
+func (c *Config) URLForTag(tag string) string         { return URLForTag(c.BaseURL, tag) }
 
 // Settings returns a `Settings` struct containing pod settings that can
 // then be persisted to disk to override some configuration options.

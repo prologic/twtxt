@@ -10,10 +10,10 @@ deps:
 	@go get -u github.com/GeertJohan/go.rice/rice
 	@go get -u github.com/tdewolff/minify/v2/cmd/...
 
-dev: build 
+dev: build
 	@ DEBUG=1
 	@./twt -v
-	@./twtd -D -O -R
+	@./twtd -D -O -R --whitelist-domain twtxt.net
 
 cli:
 	@go build -tags "netgo static_build" -installsuffix netgo \

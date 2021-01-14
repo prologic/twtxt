@@ -47,13 +47,13 @@ Starting with a second follower, the format changes. It aims to be fairly
 compact:
 
 ```
-<client.name>/<client.version> (~<who-follows.url>; +<support.url>)
+<client.name>/<client.version> (~<who-follows.url>; contact=<client.contact>)
 ```
 
 For example:
 
 ```
-twtxt/0.1.0@abcdefg (~https://example.com/whoFollows?token=randomtoken123; +https://example.com/support)
+twtxt/0.1.0@abcdefg (~https://example.com/whoFollows?token=randomtoken123; contact=https://example.com/support)
 ```
 
 The feed URL and nick from the Single Follower format are replaced with just a
@@ -62,9 +62,9 @@ parsing and quickly differentiate these `User-Agent` headers from other
 software, such as search engine spiders, the Who Follows URL is prefixed with a
 tilde (`~`) rather than the plus sign (`+`).
 
-The plus sign (`+`) is reserved to prefix an optional support contact URL, just
-like some web crawlers do, too. If present, this URL should point to a page
-were the client owner can be contacted.
+An optional contact URL or e-mail address may be included as well. If present,
+this should be either the client operator's e-mail address or a URL pointing to
+a page were the client owner can be contacted.
 
 ### Who Follows Resource
 

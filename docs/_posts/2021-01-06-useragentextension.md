@@ -47,7 +47,7 @@ Starting with a second follower, the format changes. It aims to be fairly
 compact:
 
 ```
-<client.name>/<client.version> (~<who-follows.url>; contact=<client.contact>)
+<client.name>/<client.version> (~<who-follows.url>; contact=<client.contact-uri>)
 ```
 
 For example:

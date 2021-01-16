@@ -12,6 +12,7 @@ import (
 	"io"
 	"io/ioutil"
 	"math"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -30,6 +31,7 @@ import (
 	"image/png"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/audiolion/ipip"
 	"github.com/bakape/thumbnailer/v2"
 	"github.com/chai2010/webp"
 	"github.com/disintegration/gift"
@@ -1137,6 +1139,31 @@ type TwtxtUserAgent struct {
 	Client string
 	Nick   string
 	URL    string
+}
+
+func (ua TwtxtUserAgent) IsPublicURL() bool {
+	u, err := url.Parse(ua.URL)
+	if err != nil {
+		log.WithError(err).Warn("error parsing User-Agent URL")
+		return false
+	}
+
+	hostname := u.Hostname()
+
+	ips, err := net.LookupIP(hostname)
+	if err != nil {
+		log.WithError(err).Warn("error looking up User-Agent IP")
+		return false
+	}
+
+	if len(ips) == 0 {
+		log.Warn("error User-Agent lookup failed or has no resolable IP")
+		return false
+	}
+
+	ip := ips[0]
+
+	return !ipip.IsPrivate(ip)
 }
 
 func DetectFollowerFromUserAgent(ua string) (*TwtxtUserAgent, error) {

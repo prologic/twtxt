@@ -602,7 +602,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 			if err != nil {
 				log.WithError(err).Warnf("error loading user object for %s", nick)
 			} else {
-				if !user.FollowedBy(followerClient.URL) {
+				if (s.config.Debug || followerClient.IsPublicURL()) && !user.FollowedBy(followerClient.URL) {
 					if _, err := AppendSpecial(
 						s.config, s.db,
 						twtxtBot,

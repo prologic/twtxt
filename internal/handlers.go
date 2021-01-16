@@ -758,7 +758,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 			}
 		}
 
-		http.Redirect(w, r, RedirectURL(r, s.config, "/"), http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
 
@@ -1225,7 +1225,7 @@ func (s *Server) LoginHandler() httprouter.Handle {
 			_ = sess.(*session.Session).Set("persist", "1")
 		}
 
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Redirect(w, r, RedirectRefererURL(r, s.config, "/"), http.StatusFound)
 	}
 }
 

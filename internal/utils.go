@@ -1189,7 +1189,11 @@ func NormalizeURL(url string) string {
 	return norm
 }
 
-func RedirectURL(r *http.Request, conf *Config, defaultURL string) string {
+// RedirectRefererURL constructs a Redirect URL from the given Request URL
+// and possibly Referer, if the Referer's Base URL matches the Pod's Base URL
+// will return the Referer URL otherwise the defaultURL. This is primarily used
+// to redirect a user from a successful /login back to the page they were on.
+func RedirectRefererURL(r *http.Request, conf *Config, defaultURL string) string {
 	referer := NormalizeURL(r.Header.Get("Referer"))
 	if referer != "" && strings.HasPrefix(referer, conf.BaseURL) {
 		return referer

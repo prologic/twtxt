@@ -396,6 +396,6 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 		// Re-populate/Warm cache with local twts for this pod
 		s.cache.GetByPrefix(s.config.BaseURL, true)
 
-		http.Redirect(w, r, RedirectURL(r, s.config, "/"), http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }

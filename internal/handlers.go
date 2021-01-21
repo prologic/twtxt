@@ -941,8 +941,6 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			}...)
 		}
 
-		fmt.Println("TWT", twt)
-
 		ctx.Twts = FilterTwts(ctx.User, types.Twts{twt})
 		s.render("permalink", w, ctx)
 

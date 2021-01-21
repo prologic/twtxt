@@ -59,6 +59,7 @@ package lextwt
 
 import (
 	"encoding/base32"
+	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -120,12 +121,25 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 	return f, nil
 }
 func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
+	if line == "" {
+		return types.NilTwt, nil
+	}
+
 	r := strings.NewReader(line)
 	lexer := NewLexer(r)
 	parser := NewParser(lexer)
 	parser.SetTwter(twter)
 
-	return parser.ParseTwt(), parser.Errs()
+	twt = parser.ParseTwt()
+	
+	if twt.IsZero() {
+		return types.NilTwt, fmt.Errorf("Empty Twt: %s", line)
+	}
+
+	return twt, err
+}
+func init() {
+	gob.Register(&Twt{})
 }
 
 // Lexer
@@ -618,8 +632,8 @@ func (p *parser) SetTwter(twter types.Twter) {
 // Forms parsed:
 //   #... -> ParseComment
 //   [digit]... -> ParseTwt
-func (p *parser) ParseLine() Elem {
-	var e Elem
+func (p *parser) ParseLine() Line {
+	var e Line
 
 	switch p.curTok.Type {
 	case TokHASH:
@@ -683,7 +697,7 @@ func (p *parser) ParseElem() Elem {
 //   # comment
 //   # key = value
 func (p *parser) ParseComment() *Comment {
-	if !p.expect(TokHASH) {
+	if !p.curTokenIs(TokHASH) {
 		return nil
 	}
 
@@ -716,7 +730,7 @@ func (p *parser) ParseComment() *Comment {
 // Forms parsed:
 //   [Date]\t... -> ParseElem (will consume all elems till end of line/file.)
 func (p *parser) ParseTwt() *Twt {
-	twt := &Twt{}
+	twt := &Twt{twter: p.twter}
 
 	if !p.expect(TokNUMBER) {
 		return nil
@@ -932,7 +946,7 @@ func (p *parser) ParseMention() *Mention {
 
 			p.append(p.curTok.Literal...) // string
 			p.next()
-			if !p.expect(TokSPACE) {
+			if !p.curTokenIs(TokSPACE) {
 				return nil
 			}
 		}
@@ -951,7 +965,7 @@ func (p *parser) ParseMention() *Mention {
 
 			p.append(p.curTok.Literal...)
 			p.next()
-			if !p.expect(TokSPACE) {
+			if !p.curTokenIs(TokSPACE) {
 				return nil
 			}
 		}
@@ -974,7 +988,7 @@ func (p *parser) ParseMention() *Mention {
 			m.target = l.target
 		}
 
-		if !p.expect(TokGT) {
+		if !p.curTokenIs(TokGT) {
 			return nil
 		}
 		p.append(p.curTok.Literal...) // >
@@ -1041,7 +1055,7 @@ func (p *parser) ParseTag() *Tag {
 			tag.target = l.target
 		}
 
-		if !p.expect(TokGT) {
+		if !p.curTokenIs(TokGT) {
 			return nil
 		}
 
@@ -1074,7 +1088,7 @@ func (p *parser) ParseSubject() *Subject {
 		subject.tag = p.ParseTag()
 		p.pop()
 
-		if !p.expect(TokRPAREN) {
+		if !p.curTokenIs(TokRPAREN) {
 			return nil
 		}
 		p.append(p.curTok.Literal...) // )
@@ -1089,7 +1103,7 @@ func (p *parser) ParseSubject() *Subject {
 		subject.subject = p.ParseText().String()
 		p.pop()
 
-		if !p.expect(TokRPAREN) {
+		if !p.curTokenIs(TokRPAREN) {
 			return nil
 		}
 
@@ -1179,7 +1193,7 @@ func (p *parser) ParseLink() *Link {
 		if l == nil {
 			return nil
 		}
-		if !p.expect(TokGT) {
+		if !p.curTokenIs(TokGT) {
 			return nil
 		}
 
@@ -1197,7 +1211,7 @@ func (p *parser) ParseLink() *Link {
 		p.next()
 	}
 
-	if !p.expect(TokLBRACK) {
+	if !p.curTokenIs(TokLBRACK) {
 		return nil
 	}
 
@@ -1223,7 +1237,7 @@ func (p *parser) ParseLink() *Link {
 		link.text = p.Literal()
 	}
 
-	if !p.expect(TokRBRACK) {
+	if !p.curTokenIs(TokRBRACK) {
 		return nil
 	}
 
@@ -1245,7 +1259,7 @@ func (p *parser) ParseLink() *Link {
 
 		link.target = l.target
 
-		if !p.expect(TokRPAREN) {
+		if !p.curTokenIs(TokRPAREN) {
 			return nil
 		}
 
@@ -1287,6 +1301,9 @@ func (p *parser) ParseCode() *Code {
 }
 
 func (p *parser) Errs() ListError {
+	if len(p.errs) == 0 {
+		return nil
+	}
 	return p.errs
 }
 
@@ -1355,7 +1372,11 @@ func (p *parser) nextTokenIs(tokens ...TokType) bool {
 }
 
 // expect returns true if the current token matches. adds error if not.
+// Need to come up with a good proxy for failed parsing of a twtxt line.
+// Current mode is to treat failed elements as text.
 func (p *parser) expect(t TokType) bool {
+	// return p.curTokenIs(t)
+
 	if p.curTokenIs(t) {
 		return true
 	}
@@ -1366,6 +1387,8 @@ func (p *parser) expect(t TokType) bool {
 
 // expectNext returns true if the current token matches and reads to next token. adds error if not.
 func (p *parser) expectNext(t TokType) bool {
+	// return p.peekTokenIs(t)
+
 	if p.peekTokenIs(t) {
 		p.next()
 		return true
@@ -1403,6 +1426,16 @@ var ErrParseToken = errors.New("error parsing digit")
 // Elem AST structs
 
 type Elem interface {
+	IsNil() bool        // A typed nil will fail `elem == nil` We need to unbox to test.
+	Literal() string    // value as read from input.
+	Markdown() string   // format to markdown.
+	FormatText() string // format to write to disk.
+	Clone() Elem        // clone element.
+
+	fmt.Stringer // alias for Literal() for printing.
+}
+
+type Line interface {
 	IsNil() bool     // A typed nil will fail `elem == nil` We need to unbox to test.
 	Literal() string // value as read from input.
 	fmt.Stringer     // alias for Literal() for printing.
@@ -1414,7 +1447,7 @@ type Comment struct {
 	value   string
 }
 
-var _ Elem = (*Comment)(nil)
+var _ Line = (*Comment)(nil)
 
 func NewComment(comment string) *Comment {
 	return &Comment{comment: comment}
@@ -1501,17 +1534,27 @@ type DateTime struct {
 	dt time.Time
 }
 
-var _ Elem = (*DateTime)(nil)
+// var _ Elem = (*DateTime)(nil)
 
-func NewDateTime(s string) *DateTime {
-	dt := &DateTime{lit: s}
-	dt.dt, _ = time.Parse(time.RFC3339, s)
-
-	return dt
+func NewDateTime(dt time.Time) *DateTime {
+	return &DateTime{dt: dt, lit: dt.Format(time.RFC3339)}
 }
-func (n *DateTime) IsNil() bool     { return n == nil }
-func (n *DateTime) Literal() string { return n.lit }
-func (n *DateTime) String() string  { return n.Literal() }
+func (n *DateTime) CloneDateTime() *DateTime {
+	if n == nil {
+		return nil
+	}
+	return &DateTime{
+		n.lit, n.dt,
+	}
+}
+func (n *DateTime) IsNil() bool { return n == nil }
+func (n *DateTime) Literal() string {
+	if n == nil {
+		return ""
+	}
+	return n.lit
+}
+func (n *DateTime) String() string { return n.Literal() }
 func (n *DateTime) DateTime() time.Time {
 	if n == nil {
 		return time.Time{}
@@ -1559,10 +1602,18 @@ func NewMention(name, target string) *Mention {
 
 	return m
 }
+func (n *Mention) Clone() Elem {
+	if n == nil {
+		return nil
+	}
+	return &Mention{
+		n.lit, n.name, n.domain, n.target, n.url, n.err,
+	}
+}
 func (n *Mention) IsNil() bool        { return n == nil }
 func (n *Mention) Twter() types.Twter { return types.Twter{Nick: n.name, URL: n.target} }
-func (n *Mention) Literal() string    { return n.lit }
-func (n *Mention) String() string     { return n.Literal() }
+func (n *Mention) Literal() string    { return n.FormatText() }
+func (n *Mention) String() string     { return n.FormatText() }
 func (n *Mention) Name() string       { return n.name }
 func (n *Mention) Domain() string {
 	if url := n.URL(); n.domain == "" && url != nil {
@@ -1631,9 +1682,20 @@ func NewTag(tag, target string) *Tag {
 
 	return m
 }
+func (n *Tag) Clone() Elem {
+	return n.CloneTag()
+}
+func (n *Tag) CloneTag() *Tag {
+	if n == nil {
+		return nil
+	}
+	return &Tag{
+		n.lit, n.tag, n.target, n.url, n.err,
+	}
+}
 func (n *Tag) IsNil() bool     { return n == nil }
-func (n *Tag) Literal() string { return n.lit }
-func (n *Tag) String() string  { return n.Literal() }
+func (n *Tag) Literal() string { return n.FormatText() }
+func (n *Tag) String() string  { return n.FormatText() }
 func (n *Tag) Text() string    { return n.tag }
 func (n *Tag) Target() string  { return n.target }
 func (n *Tag) SetTarget(target string) {
@@ -1681,7 +1743,16 @@ var _ Elem = (*Subject)(nil)
 
 func NewSubject(text string) *Subject           { return &Subject{subject: text} }
 func NewSubjectTag(tag, target string) *Subject { return &Subject{tag: NewTag(tag, target)} }
-func (n *Subject) IsNil() bool                  { return n == nil }
+func (n *Subject) Clone() Elem {
+	if n == nil {
+		return nil
+	}
+	return &Subject{
+		n.subject,
+		n.tag.CloneTag(),
+	}
+}
+func (n *Subject) IsNil() bool { return n == nil }
 func (n *Subject) Literal() string {
 	if n.tag != nil {
 		return "(" + n.tag.Literal() + ")"
@@ -1716,7 +1787,13 @@ type Text struct {
 
 var _ Elem = (*Text)(nil)
 
-func NewText(txt string) *Text     { return &Text{txt} }
+func NewText(txt string) *Text { return &Text{txt} }
+func (n *Text) Clone() Elem {
+	if n == nil {
+		return nil
+	}
+	return &Text{n.lit}
+}
 func (n *Text) IsNil() bool        { return n == nil }
 func (n *Text) Literal() string    { return n.lit }
 func (n *Text) String() string     { return n.Literal() }
@@ -1727,6 +1804,7 @@ type lineSeparator struct{}
 
 var LineSeparator Elem = &lineSeparator{}
 
+func (n *lineSeparator) Clone() Elem        { return LineSeparator }
 func (n *lineSeparator) IsNil() bool        { return false }
 func (n *lineSeparator) Literal() string    { return "\u2028" }
 func (n *lineSeparator) String() string     { return "\n" }
@@ -1751,7 +1829,15 @@ const (
 )
 
 func NewLink(text, target string, linkType LinkType) *Link { return &Link{linkType, text, target} }
-func (n *Link) IsNil() bool                                { return n == nil }
+func (n *Link) Clone() Elem {
+	if n == nil {
+		return nil
+	}
+	return &Link{
+		n.linkType, n.text, n.target,
+	}
+}
+func (n *Link) IsNil() bool { return n == nil }
 func (n *Link) Literal() string {
 	switch n.linkType {
 	case LinkNaked:
@@ -1789,7 +1875,15 @@ const (
 var _ Elem = (*Code)(nil)
 
 func NewCode(text string, codeType CodeType) *Code { return &Code{codeType, text} }
-func (n *Code) IsNil() bool                        { return n == nil }
+func (n *Code) Clone() Elem {
+	if n == nil {
+		return nil
+	}
+	return &Code{
+		n.codeType, n.lit,
+	}
+}
+func (n *Code) IsNil() bool { return n == nil }
 func (n *Code) Literal() string {
 	if n.codeType == CodeBlock {
 		return fmt.Sprintf("```%s```", n.lit)
@@ -1816,19 +1910,40 @@ type Twt struct {
 	pos      int
 }
 
-var _ Elem = (*Twt)(nil)
+var _ Line = (*Twt)(nil)
 var _ types.Twt = (*Twt)(nil)
 
-func NewTwt(dt *DateTime, elems ...Elem) *Twt {
-	twt := &Twt{dt: dt, msg: make([]Elem, 0, len(elems))}
+func NewTwt(twter types.Twter, dt *DateTime, elems ...Elem) *Twt {
+	twt := &Twt{twter: twter, dt: dt, msg: make([]Elem, 0, len(elems))}
 
 	for _, elem := range elems {
+		twt.append(elem.Clone())
+	}
+
+	return twt
+}
+func MakeTwt(twter types.Twter, ts time.Time, text string) types.Twt {
+	dt := NewDateTime(ts)
+	twt := NewTwt(twter, dt, nil)
+	twt.twter = twter
+
+	r := strings.NewReader(" " + text)
+	lexer := NewLexer(r)
+	lexer.NextTok() // remove first token we added to avoid parsing as comment.
+	parser := NewParser(lexer)
+
+	for elem := parser.ParseElem(); elem != nil; elem = parser.ParseElem() {
+		parser.push()
 		twt.append(elem)
 	}
 
 	return twt
 }
 func (twt *Twt) append(elem Elem) {
+	if elem == nil || elem.IsNil() {
+		return
+	}
+
 	twt.msg = append(twt.msg, elem)
 
 	if subject, ok := elem.(*Subject); ok && twt.subject == nil {
@@ -1854,22 +1969,32 @@ func (twt *Twt) IsNil() bool  { return twt == nil }
 func (twt *Twt) FilePos() int { return twt.pos }
 func (twt *Twt) IsZero() bool { return twt.IsNil() || twt.Literal() == "" || twt.Created().IsZero() }
 func (twt *Twt) Literal() string {
-	if twt == nil {
-		return ""
-	}
 	var b strings.Builder
 	b.WriteString(twt.dt.Literal())
 	b.WriteRune('\t')
 	for _, s := range twt.msg {
+		if s == nil || s.IsNil() {
+			continue
+		}
 		b.WriteString(s.Literal())
 	}
 	b.WriteRune('\n')
 	return b.String()
 }
+func (twt Twt) Clone() types.Twt {
+	return twt.CloneTwt()
+}
+func (twt Twt) CloneTwt() *Twt {
+	msg := make([]Elem, len(twt.msg))
+	for i := range twt.msg {
+		msg[i] = twt.msg[i].Clone()
+	}
+	return NewTwt(twt.twter, twt.dt, msg...)
+}
 func (twt *Twt) Text() string {
 	var b strings.Builder
 	for _, s := range twt.msg {
-		b.WriteString(s.Literal())
+		b.WriteString(s.FormatText())
 	}
 	return b.String()
 }
@@ -1888,10 +2013,10 @@ func (twt *Twt) GobEncode() ([]byte, error) {
 func (twt *Twt) GobDecode(data []byte) error {
 	sp := strings.SplitN(string(data), "\t", 4)
 	if len(sp) != 4 {
-		return fmt.Errorf("unable to decode twt: %s", data)
+		return fmt.Errorf("unable to decode twt: %s ", data)
 	}
 	twter := types.Twter{Nick: sp[0], URL: sp[1]}
-	t, err := ParseLine(sp[4], twter)
+	t, err := ParseLine(sp[3], twter)
 	if err != nil {
 		return err
 	}
@@ -1902,15 +2027,42 @@ func (twt *Twt) GobDecode(data []byte) error {
 		twt.msg = t.msg
 		twt.mentions = t.mentions
 		twt.tags = t.tags
+		twt.links = t.links
+		twt.subject = t.subject
+		twt.twter = t.twter
 	}
 
 	return nil
+}
+func (twt Twt) MarshalJSON() ([]byte, error) {
+	var tags types.TagList = twt.Tags()
+	return json.Marshal(struct {
+		Twter        types.Twter `json:"twter"`
+		Text         string      `json:"text"`
+		Created      time.Time   `json:"created"`
+		MarkdownText string      `json:"markdownText"`
+
+		// Dynamic Fields
+		Hash    string   `json:"hash"`
+		Tags    []string `json:"tags"`
+		Subject string   `json:"subject"`
+	}{
+		Twter:        twt.Twter(),
+		Text:         twt.Text(),
+		Created:      twt.Created(),
+		MarkdownText: twt.FormatText(types.MarkdownFmt, nil),
+
+		// Dynamic Fields
+		Hash:    twt.Hash(),
+		Tags:    tags.Tags(),
+		Subject: twt.Subject().Text(),
+	})
 }
 func DecodeJSON(data []byte) (types.Twt, error) {
 	enc := struct {
 		Twter   types.Twter `json:"twter"`
 		Text    string      `json:"text"`
-		Created string      `json:"created"`
+		Created time.Time   `json:"created"`
 		Hash    string      `json:"hash"`
 	}{}
 	err := json.Unmarshal(data, &enc)
@@ -1919,10 +2071,13 @@ func DecodeJSON(data []byte) (types.Twt, error) {
 	}
 
 	twter := enc.Twter
-	t, err := ParseLine(fmt.Sprintf("%s\t%s\n", enc.Created, enc.Text), twter)
-	if err != nil {
+	// line := fmt.Sprintf("%s\t%s\n", enc.Created, enc.Text)
+	// t, err := ParseLine(line, twter)
+	t := MakeTwt(twter, enc.Created, enc.Text)
+	if err != nil || t == nil {
 		return types.NilTwt, err
 	}
+
 	twt := &Twt{}
 	twt.hash = enc.Hash
 	if t, ok := t.(*Twt); ok {
@@ -1930,26 +2085,95 @@ func DecodeJSON(data []byte) (types.Twt, error) {
 		twt.msg = t.msg
 		twt.mentions = t.mentions
 		twt.tags = t.tags
+		twt.links = t.links
+		twt.subject = t.subject
+		twt.twter = t.twter
+
 		return twt, nil
 	}
 
 	return types.NilTwt, err
 }
-func (twt Twt) FormatText(types.TwtTextFormat, types.FmtOpts) string {
+func (twt Twt) FormatTwt() string {
 	var b strings.Builder
+	b.WriteString(twt.dt.String())
+	b.WriteRune('\t')
 	for _, s := range twt.msg {
-		b.WriteString(s.Literal())
+		if s == nil || s.IsNil() {
+			continue
+		}
+		b.WriteString(s.FormatText())
 	}
+	b.WriteRune('\n')
 	return b.String()
 }
-func (twt *Twt) ExpandLinks(opts types.FmtOpts, lookup types.FeedLookup) {
-	for _, tag := range twt.tags {
-		if tag.target == "" {
-			tag.target = opts.URLForTag(tag.tag)
+func (twt Twt) FormatText(mode types.TwtTextFormat, opts types.FmtOpts) string {
+	twt = *twt.CloneTwt()
+
+	if opts != nil {
+		for i := range twt.tags {
+			switch mode {
+			case types.TextFmt:
+				twt.tags[i].target = ""
+			}
+		}
+
+		for i := range twt.mentions {
+			switch mode {
+			case types.TextFmt:
+				if twt.mentions[i].domain == "" &&
+					opts.IsLocalURL(twt.mentions[i].target) &&
+					strings.HasSuffix(twt.mentions[i].target, "/twtxt.txt") {
+					twt.mentions[i].domain = opts.LocalURL().Hostname()
+				}
+				twt.mentions[i].target = ""
+			case types.MarkdownFmt, types.HTMLFmt:
+				if opts.IsLocalURL(twt.mentions[i].target) && strings.HasSuffix(twt.mentions[i].target, "/twtxt.txt") {
+					twt.mentions[i].target = opts.UserURL(twt.mentions[i].target)
+				} else {
+					if twt.mentions[i].domain == "" {
+						if u, err := url.Parse(twt.mentions[i].target); err == nil {
+							twt.mentions[i].domain = u.Hostname()
+						}
+					}
+					twt.mentions[i].target = opts.ExternalURL(twt.mentions[i].name, twt.mentions[i].target)
+				}
+			}
 		}
 	}
 
-	for _, m := range twt.mentions {
+	switch mode {
+	case types.TextFmt:
+		var b strings.Builder
+		for _, s := range twt.msg {
+			b.WriteString(s.FormatText())
+		}
+		return b.String()
+	case types.MarkdownFmt:
+		var b strings.Builder
+		for _, s := range twt.msg {
+			b.WriteString(s.Markdown())
+		}
+		return b.String()
+	case types.HTMLFmt:
+		var b strings.Builder
+		for _, s := range twt.msg {
+			b.WriteString(s.Markdown())
+		}
+		return b.String()
+
+	}
+	return twt.Literal()
+}
+func (twt *Twt) ExpandLinks(opts types.FmtOpts, lookup types.FeedLookup) {
+	for i, tag := range twt.tags {
+		if tag.target == "" {
+			tag.target = opts.URLForTag(tag.tag)
+		}
+		twt.tags[i] = tag
+	}
+
+	for i, m := range twt.mentions {
 		if m.target == "" && lookup != nil {
 			twter := lookup.FeedLookup(m.name)
 			m.name = twter.Nick
@@ -1959,6 +2183,9 @@ func (twt *Twt) ExpandLinks(opts types.FmtOpts, lookup types.FeedLookup) {
 			}
 			m.target = twter.URL
 		}
+
+		fmt.Printf("Set %d - %v\n", i, m.target)
+		twt.mentions[i] = m
 	}
 }
 func (twt Twt) String() string     { return strings.ReplaceAll(twt.Literal(), "\u2028", "\n") }
@@ -1990,7 +2217,7 @@ func (twt Twt) Hash() string {
 		"%s\n%s\n%s",
 		twt.Twter().URL,
 		twt.Created().Format(time.RFC3339),
-		twt.Literal(),
+		twt.FormatText(types.TextFmt, nil),
 	)
 	sum := blake2b.Sum256([]byte(payload))
 
@@ -2033,6 +2260,9 @@ func (*lextwtManager) ParseLine(line string, twter types.Twter) (twt types.Twt, 
 }
 func (*lextwtManager) ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 	return ParseFile(r, twter)
+}
+func (*lextwtManager) MakeTwt(twter types.Twter, ts time.Time, text string) types.Twt {
+	return MakeTwt(twter, ts, text)
 }
 
 func DefaultTwtManager() {

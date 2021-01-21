@@ -70,6 +70,7 @@ type Twt interface {
 	Twter() Twter
 	Text() string
 	ExpandLinks(FmtOpts, FeedLookup)
+	FormatTwt() string
 	FormatText(TwtTextFormat, FmtOpts) string
 	Created() time.Time
 	IsZero() bool
@@ -78,6 +79,7 @@ type Twt interface {
 	Mentions() MentionList
 	Links() LinkList
 	Tags() TagList
+	Clone() Twt
 
 	fmt.Stringer
 }
@@ -213,6 +215,14 @@ func (twts Twts) SubjectCount() map[string]int {
 	return subjects
 }
 
+func (twts Twts) Clone() Twts {
+	lis := make([]Twt, len(twts))
+	for i := range twts {
+		lis[i] = twts[i].Clone()
+	}
+	return lis
+}
+
 type FmtOpts interface {
 	LocalURL() *url.URL
 	IsLocalURL(string) bool
@@ -245,7 +255,7 @@ var _ gob.GobDecoder = NilTwt
 func (nilTwt) Twter() Twter                             { return Twter{} }
 func (nilTwt) Text() string                             { return "" }
 func (nilTwt) ExpandLinks(FmtOpts, FeedLookup)          {}
-func (nilTwt) FormatTwt(TwtTextFormat, FmtOpts) string  { return "" }
+func (nilTwt) FormatTwt() string                        { return "" }
 func (nilTwt) FormatText(TwtTextFormat, FmtOpts) string { return "" }
 func (nilTwt) Created() time.Time                       { return time.Now() }
 func (nilTwt) IsZero() bool                             { return true }
@@ -257,6 +267,7 @@ func (nilTwt) Links() LinkList                          { return nil }
 func (nilTwt) String() string                           { return "" }
 func (nilTwt) GobDecode([]byte) error                   { return ErrNotImplemented }
 func (nilTwt) GobEncode() ([]byte, error)               { return nil, ErrNotImplemented }
+func (nilTwt) Clone() Twt                               { return NilTwt }
 
 func init() {
 	gob.Register(&nilTwt{})
@@ -266,6 +277,7 @@ type TwtManager interface {
 	DecodeJSON([]byte) (Twt, error)
 	ParseLine(string, Twter) (Twt, error)
 	ParseFile(io.Reader, Twter) (TwtFile, error)
+	MakeTwt(twter Twter, ts time.Time, text string) Twt
 }
 
 type nilManager struct{}
@@ -279,6 +291,9 @@ func (nilManager) ParseLine(line string, twter Twter) (twt Twt, err error) {
 func (nilManager) ParseFile(r io.Reader, twter Twter) (TwtFile, error) {
 	panic("twt managernot configured")
 }
+func (nilManager) MakeTwt(twter Twter, ts time.Time, text string) Twt {
+	panic("twt managernot configured")
+}
 
 var ErrNotImplemented = errors.New("not implemented")
 
@@ -290,6 +305,9 @@ func ParseLine(line string, twter Twter) (twt Twt, err error) {
 }
 func ParseFile(r io.Reader, twter Twter) (TwtFile, error) {
 	return twtManager.ParseFile(r, twter)
+}
+func MakeTwt(twter Twter, ts time.Time, text string) Twt {
+	return twtManager.MakeTwt(twter, ts, text)
 }
 
 func SetTwtManager(m TwtManager) {

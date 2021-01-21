@@ -81,6 +81,9 @@ func (twt reTwt) String() string {
 func NewReTwt(twter types.Twter, text string, created time.Time) *reTwt {
 	return &reTwt{twter: twter, text: text, created: created}
 }
+func (twt reTwt) Clone() types.Twt {
+	return &reTwt{twter: twt.twter, text: twt.text, created: twt.created}
+}
 
 func DecodeJSON(data []byte) (types.Twt, error) {
 	twt := &reTwt{}
@@ -163,8 +166,13 @@ func (twt reTwt) MarkdownText() string {
 	// we assume FmtOpts is always null for markdown.
 	return formatMentionsAndTags(nil, twt.text, types.MarkdownFmt)
 }
+func (twt reTwt) FormatTwt() string {
+	return twt.String()
+}
+
 func (twt reTwt) FormatText(textFmt types.TwtTextFormat, fmtOpts types.FmtOpts) string {
-	return formatMentionsAndTags(fmtOpts, twt.text, textFmt)
+	text := strings.ReplaceAll(twt.text, "\u2028", "\n")
+	return formatMentionsAndTags(fmtOpts, text, textFmt)
 }
 func (twt *reTwt) ExpandLinks(opts types.FmtOpts, lookup types.FeedLookup) {
 	twt.text = ExpandTag(opts, twt.text)
@@ -316,7 +324,7 @@ func (t *reTag) Target() string {
 func formatMentionsAndTags(opts types.FmtOpts, text string, format types.TwtTextFormat) string {
 	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
-		fmt.Println("match: ", match)
+
 		parts := re.FindStringSubmatch(match)
 		prefix, nick, url := parts[1], parts[2], parts[3]
 
@@ -399,6 +407,9 @@ func (retwtManager) ParseLine(line string, twter types.Twter) (twt types.Twt, er
 }
 func (retwtManager) ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 	return ParseFile(r, twter)
+}
+func (retwtManager) MakeTwt(twter types.Twter, ts time.Time, text string) types.Twt {
+	return NewReTwt(twter, text, ts)
 }
 
 func DefaultTwtManager() {

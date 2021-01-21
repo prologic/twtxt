@@ -16,13 +16,15 @@ import (
 
 	"github.com/jointwt/twtxt"
 	"github.com/jointwt/twtxt/internal"
+	"github.com/jointwt/twtxt/types/lextwt"
 	"github.com/jointwt/twtxt/types/retwt"
 )
 
 var (
-	bind    string
-	debug   bool
-	version bool
+	bind     string
+	debug    bool
+	lexParse bool
+	version  bool
 
 	// Basic options
 	name        string
@@ -74,6 +76,7 @@ var (
 
 func init() {
 	flag.BoolVarP(&debug, "debug", "D", false, "enable debug logging")
+	flag.BoolVarP(&lexParse, "lex-parse", "e", false, "enable experimental parser")
 	flag.StringVarP(&bind, "bind", "b", "0.0.0.0:8000", "[int]:<port> to bind to")
 	flag.BoolVarP(&version, "version", "v", false, "display version information")
 
@@ -224,7 +227,11 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 	}
 
-	retwt.DefaultTwtManager()
+	if lexParse {
+		lextwt.DefaultTwtManager()
+	} else {
+		retwt.DefaultTwtManager()
+	}
 
 	svr, err := internal.NewServer(bind,
 		// Debug mode

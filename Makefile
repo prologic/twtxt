@@ -13,7 +13,7 @@ deps:
 dev: build
 	@ DEBUG=1
 	@./twt -v
-	@./twtd -D -O -R --whitelist-domain twtxt.net
+	@./twtd -D -O -R --whitelist-domain twtxt.net $(FLAGS)
 
 cli:
 	@go build -tags "netgo static_build" -installsuffix netgo \

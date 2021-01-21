@@ -275,6 +275,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 						twter.Avatar = URLForExternalAvatar(conf, feed.URL)
 					}
 				}
+				log.Debugf("cache: parsing %s for %s", feed.URL, twter)
 				twtFile, err := types.ParseFile(limitedReader, twter)
 				if err != nil {
 					log.WithError(err).Errorf("error parsing feed %s", feed)

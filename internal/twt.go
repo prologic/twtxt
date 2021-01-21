@@ -77,20 +77,15 @@ func AppendTwt(conf *Config, db Store, user *User, text string, args ...interfac
 		}
 	}
 
-	line := fmt.Sprintf(
-		"%s\t%s\n",
-		now.Format(time.RFC3339),
-		text,
-	)
+	twt := types.MakeTwt(user.Twter(), now, strings.TrimSpace(text))
 
-	twt, err := types.ParseLine(strings.TrimSpace(line), user.Twter())
-	if err != nil {
-		return types.NilTwt, err
-	}
 
 	twt.ExpandLinks(conf, NewFeedLookup(conf, db, user))
+	for _, m := range twt.Mentions() {
+		fmt.Println("Mention", m)
+	}
 
-	if _, err = f.WriteString(twt.String()); err != nil {
+	if _, err = f.WriteString(twt.FormatTwt()); err != nil {
 		return types.NilTwt, err
 	}
 
@@ -188,6 +183,7 @@ func GetAllTwts(conf *Config, name string) (types.Twts, error) {
 		log.WithError(err).Warnf("error opening feed: %s", fn)
 		return nil, err
 	}
+	log.Debugf("twt: parsing %s for %s", name, twter)
 	t, err := types.ParseFile(f, twter)
 	if err != nil {
 		log.WithError(err).Errorf("error processing feed %s", fn)

@@ -1094,6 +1094,7 @@ func ValidateFeed(conf *Config, nick, url string) error {
 
 	limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
 	twter := types.Twter{Nick: nick, URL: url}
+	log.Debugf("utils: parsing %s for %s", url, twter)
 	_, err = types.ParseFile(limitedReader, twter)
 	if err != nil {
 		return err
@@ -1577,8 +1578,6 @@ func FormatForDateTime(t time.Time) string {
 // FormatTwtFactory formats a twt into a valid HTML snippet
 func FormatTwtFactory(conf *Config) func(twt types.Twt) template.HTML {
 	return func(twt types.Twt) template.HTML {
-		twt.ExpandLinks(conf, nil)
-		text := twt.Text()
 		renderHookProcessURLs := func(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
 			// Ensure only whitelisted ![](url) images
 			image, ok := node.(*ast.Image)
@@ -1637,9 +1636,9 @@ func FormatTwtFactory(conf *Config) func(twt types.Twt) template.HTML {
 
 		// Replace  `LS: Line Separator, U+2028` with `\n` so the Markdown
 		// renderer can interpreter newlines as `<br />` and `<p>`.
-		text = strings.ReplaceAll(text, "\u2028", "\n")
+		// text = strings.ReplaceAll(text, "\u2028", "\n")
 		// Replace simple '#just-tag' entrys with local link
-		//text = ExpandTag(conf, text)
+		// text = ExpandTag(conf, text)
 		extensions := parser.CommonExtensions | parser.HardLineBreak | parser.NoEmptyLineBeforeBlock
 		mdParser := parser.NewWithExtensions(extensions)
 
@@ -1651,7 +1650,8 @@ func FormatTwtFactory(conf *Config) func(twt types.Twt) template.HTML {
 		}
 		renderer := html.NewRenderer(opts)
 
-		md := []byte(FormatMentionsAndTags(conf, text, HTMLFmt))
+		twt.ExpandLinks(conf, nil)
+		md := []byte(twt.FormatText(types.HTMLFmt, conf))
 		maybeUnsafeHTML := markdown.ToHTML(md, mdParser, renderer)
 		p := bluemonday.UGCPolicy()
 		p.AllowAttrs("id", "controls").OnElements("audio")

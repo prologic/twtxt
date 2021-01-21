@@ -2184,7 +2184,6 @@ func (twt *Twt) ExpandLinks(opts types.FmtOpts, lookup types.FeedLookup) {
 			m.target = twter.URL
 		}
 
-		fmt.Printf("Set %d - %v\n", i, m.target)
 		twt.mentions[i] = m
 	}
 }

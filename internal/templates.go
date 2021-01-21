@@ -13,6 +13,7 @@ import (
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/Masterminds/sprig"
 	humanize "github.com/dustin/go-humanize"
+	"github.com/jointwt/twtxt/types"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -22,6 +23,7 @@ const (
 	partialsTemplate = "_partials.html"
 	baseName         = "base"
 )
+
 var _ = templatesPath // dead code?
 type TemplateManager struct {
 	sync.RWMutex
@@ -46,6 +48,7 @@ func NewTemplateManager(conf *Config, blogs *BlogsCache, cache *Cache) (*Templat
 	funcMap["urlForBlog"] = URLForBlogFactory(conf, blogs)
 	funcMap["urlForConv"] = URLForConvFactory(conf, cache)
 	funcMap["isAdminUser"] = IsAdminUserFactory(conf)
+	funcMap["twtType"] = func(twt types.Twt) string { return fmt.Sprintf("%T", twt) }
 
 	m := &TemplateManager{debug: conf.Debug, templates: templates, funcMap: funcMap}
 

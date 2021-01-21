@@ -5,6 +5,8 @@
 *.idea
 .vscode
 *.sw?
+*.rej
+*.orig
 
 /dist
 
@@ -14,8 +16,10 @@
 /cmd/twt/twt
 /cmd/twtd/twtd
 
+/data/msgs
 /data/cache
 /data/blogscache
+/data/msgscache
 /data/feedsources
 /data/settings.yaml
 

@@ -6,6 +6,7 @@
         <h2>Update your Pod settings here</h2>
       </hgroup>
       <form action="/manage/pod" enctype="multipart/form-data" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
         <div>
           <hgroup>
             <h2>
@@ -44,7 +45,7 @@
                 </label>
             </div>
         </div>
-        
+
         <button type="submit" class="primary">Update</button>
       </form>
     </div>

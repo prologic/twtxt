@@ -19,21 +19,33 @@
 
 ![](https://twtxt.net/media/XsLsDHuisnXcL6NuUkYguK.png)
 
-> Technically `twtxt` is a [twtxt](https://twtxt.readthedocs.io/en/latest/) client in the form
-> of a web application. It supports multiple users and
-> also hosts user feeds directly.
+> Technically `twtxt` is a multi-user [twtxt](https://twtxt.readthedocs.io/en/latest/) client in the form
+> of a web app and api. It supports multiple users and
+> also hosts user feeds directly and provides a familiar "social" experience with minimal user profiles.
+> 
+> It also supports "rich" text by utilising Markdown as well as multimedia such as photos, videos and even audio.
+>
+> There is also a set of [Mobile App]s(https://jointwt.org/goryon/) available for both the App Store and Play Store. 
 
 There is also a publicly (_free_) available Pod available at:
 
 - https://twtxt.net/
 
-> __NOTE:__ I [James Mills](https://github.com/prologic) run this first (_of which I hope to be many_) `twtxt` instance on pretty cheap hardware on a limited budget. Please use it fairly so everyone can enjoy using it equally! Please be sure to read the [/privacy](https://twtxt.net/privacy) policy before signing up (_pretty striaght forward_) and happy Twt'ing! 🤗
+> __NOTE:__ I, [James Mills](https://github.com/prologic), run this first (_of which I hope to be many_) `twtxt` instance on pretty cheap hardware on a limited budget. Please use it fairly so everyone can enjoy using it equally! Please be sure to read the [/privacy](https://twtxt.net/privacy) policy before signing up (_pretty striaght forward_) and happy Twt'ing! 🤗
 
-> **[Sponsor](#Sponsor)** this project to support the development of new features
-> the upcoming Mobile App and much more! Or contact [Support](https://twtxt.net)
-> for help with running your own Twtxt!
+> **[Sponsor](#Sponsor)** this project to support the development of new features, improving existings ones and fix bugs!
+> Or contact [Support](https://twtxt.net) for help with running your own Pod!
+> Or host your own Twtxt feed and support our [Extensions](https://dev.twtxt.net).
 
 ![Demo_1](https://user-images.githubusercontent.com/15314237/90351548-cac74b80-dffd-11ea-8288-b347af548465.gif)
+
+## Mobile Apps
+
+![](https://jointwt.org/goryon/images/logo.svg)
+
+Goryon for Twt available for both the App Store and Play Store.
+
+Install Goryon today on your mobile device [here](https://jointwt.org/goryon/)
 
 ## Hosted Pods
 
@@ -89,22 +101,15 @@ Linux, macOS:
 ```console
 make deps
 ```
-FreeBSD:
-
-- Install ```gmake```
-- Install ```pkgconf``` that brings ```pkg-config```
-- ```console
-gmake deps
-```
+Note that in order to get the media upload functions to work, you need to 
+install ffmpeg and its associated `-dev` packages. Consult your distribution's package 
+repository for availability and names.
 
 FreeBSD:
 
-- Install ```gmake```
-- Install ```pkgconf``` that brings ```pkg-config```
-
-```console
-gmake deps
-```
+- Install `gmake`
+- Install `pkgconf` that brings `pkg-config`
+`gmake deps`
 
 3. Build the binaries
 
@@ -175,10 +180,10 @@ Then visit: http://localhost:8000/
 Run twtd:
 
 ```console
-twtd -r
+twtd -R
 ```
 
-__NOTE:__ Registrations are disabled by default so hence the `-r` flag above.
+__NOTE:__ Registrations are disabled by default so hence the `-R` flag above.
 
 Then visit: http://localhost:8000/
 
@@ -197,7 +202,7 @@ Usage of ./twtd:
       --cookie-secret string        cookie secret to use secure sessions (default "PLEASE_CHANGE_ME!!!")
   -d, --data string                 data directory (default "./data")
   -D, --debug                       enable debug logging
-      --feed-sources strings        external feed sources for discovery of other feeds (default [https://feeds.twtxt.net/we-are-feeds.txt,https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt,https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt])
+      --feed-sources strings        external feed sources for discovery of other feeds (default [https://feeds.twtxt.net/we-are-feeds.txt,https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-bots.txt,https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-twtxt.txt])
       --magiclink-secret string     magiclink secret to use for password reset tokens (default "PLEASE_CHANGE_ME!!!")
   -F, --max-fetch-limit int         maximum feed fetch limit in bytes (default 2097152)
   -L, --max-twt-length int          maximum length of posts (default 288)
@@ -234,8 +239,8 @@ docker stack deploy -c twtxt.yml
 
 ## In the News
 
-- [Console-30](https://console.substack.com/p/console-30) from the [Console](https://console.substack.com/) weekly newslsetter on open-source proejcts.
-- [Reddit post on r/golang](https://www.reddit.com/r/golang/comments/k3cmzl/twtxt_is_a_selfhosted_twitterlike_decentralised/)
+- 07-12-2020: [Console-30](https://console.substack.com/p/console-30) from the [Console](https://console.substack.com/) weekly newslsetter on open-source proejcts.
+- 30-11-2020: [Reddit post on r/golang](https://www.reddit.com/r/golang/comments/k3cmzl/twtxt_is_a_selfhosted_twitterlike_decentralised/)
 
 ## Sponsor
 

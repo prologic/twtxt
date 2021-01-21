@@ -12,6 +12,7 @@ import (
 	"github.com/jointwt/twtxt"
 	"github.com/jointwt/twtxt/internal/session"
 	"github.com/jointwt/twtxt/types"
+	"github.com/justinas/nosurf"
 	"github.com/theplant-retired/timezones"
 )
 
@@ -64,6 +65,9 @@ type Context struct {
 	Links        types.Links
 	Alternatives types.Alternatives
 
+	Messages    Messages
+	NewMessages int
+
 	Twter       types.Twter
 	Twts        types.Twts
 	BlogPost    *BlogPost
@@ -78,6 +82,9 @@ type Context struct {
 
 	// Reset Password Token
 	PasswordResetToken string
+
+	// CSRF Token
+	CSRFToken string
 }
 
 func NewContext(conf *Config, db Store, req *http.Request) *Context {
@@ -115,6 +122,8 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 			},
 		},
 	}
+
+	ctx.CSRFToken = nosurf.Token(req)
 
 	if sess := req.Context().Value(session.SessionKey); sess != nil {
 		if username, ok := sess.(*session.Session).Get("username"); ok {

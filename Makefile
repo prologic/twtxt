@@ -4,14 +4,14 @@ CGO_ENABLED=0
 VERSION=$(shell git describe --abbrev=0 --tags 2>/dev/null || echo "$VERSION")
 COMMIT=$(shell git rev-parse --short HEAD || echo "$COMMIT")
 
-all: dev
+all: build
 
 deps:
 	@go get -u github.com/GeertJohan/go.rice/rice
 	@go get -u github.com/tdewolff/minify/v2/cmd/...
 
-dev: build
-	@ DEBUG=1
+dev : DEBUG=1
+dev : build
 	@./twt -v
 	@./twtd -D -O -R --whitelist-domain twtxt.net $(FLAGS)
 
@@ -31,17 +31,16 @@ server: generate
 
 build: cli server
 
-ifeq ($(DEBUG), 1)
 generate:
-	@echo 'Running in debug mode...'
-	@rm -f -v ./internal/rice-box.go
-else
-generate:
-	@minify -b -o ./internal/static/css/twtxt.min.css ./internal/static/css/[0-9]*-*.css
-	@minify -b -o ./internal/static/js/twtxt.min.js ./internal/static/js/[0-9]*-*.js
-	@rm -f ./internal/rice-box.go
-	@rice -i ./internal embed-go
-endif
+	@if [ x"$(DEBUG)" = x"1"  ]; then		\
+	  echo 'Running in debug mode...';	\
+	  rm -f -v ./internal/rice-box.go;	\
+	else								\
+	  minify -b -o ./internal/static/css/twtxt.min.css ./internal/static/css/[0-9]*-*.css;	\
+	  minify -b -o ./internal/static/js/twtxt.min.js ./internal/static/js/[0-9]*-*.js;		\
+	  rm -f ./internal/rice-box.go;	\
+	  rice -i ./internal embed-go;	\
+	fi
 
 install: build
 	@go install ./cmd/twt/...

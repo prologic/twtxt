@@ -4,6 +4,6 @@
       <h2>Editing <a href="{{ $.BlogPost.URL $.BaseURL }}">{{ $.BlogPost.Title }}</a></h2>
       <h3>You are editing your Twt Blog post entitled: {{ $.BlogPost.Title }} (<i>Note that you cannot however change it's title!</i>)</h3>
     </hgroup>
-    {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true "BlogPost" $.BlogPost) }}
+    {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true "BlogPost" $.BlogPost "CSRFToken" $.CSRFToken) }}
   </article>
 {{ end }}

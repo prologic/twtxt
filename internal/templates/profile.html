@@ -5,12 +5,12 @@
         <h2 class="u-author h-card">
           {{ if $.User.Is .Profile.URL }}
             <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
-              <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" />
+              <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" alt="" />
               <span class="p-name">me</span>
             </a>
           {{ else }}
             <a href="{{ .Profile.URL | trimSuffix "/twtxt.txt" }}" class="u-url p-name">
-              <img class="avatar u-photo" src="/user/{{ $.Profile.Username }}/avatar" />
+              <img class="avatar u-photo" src="/user/{{ $.Profile.Username }}/avatar" alt="" />
               <span class="p-name">{{ .Profile.Username }}</span>
             </a>
           {{ end }}
@@ -44,7 +44,7 @@
           </p>
           <p>
             You are also free to Unfollow or Mute this user or feed. Muting will
-            also remove that user/feed's content from view and you will
+            also remove that user/feed's content from your view and you will
             no longer see content from that user/feed anywhere.
           </p>
           <ul>
@@ -94,6 +94,6 @@
       <h3>Recent twts from {{ .Profile.Username }}</h3>
     </hgroup>
   </div>
-  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true) }}
+  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true "CSRFToken" $.CSRFToken) }}
   {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" $.Twts) }}
 {{end}}

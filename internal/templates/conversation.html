@@ -8,7 +8,7 @@
   </article>
   {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" ($.Twts | rest)) }}
   {{ if .Authenticated }}
-    {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" false) }}
+    {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" false "CSRFToken" $.CSRFToken) }}
   {{ else }}
     <small>You must be <a href="/login">Logged in</a> to join the conversation.</small>
   {{ end }}

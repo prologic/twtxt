@@ -471,9 +471,19 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			return
 		}
 
+		preferredContentType := accept.PreferredContentTypeLike(r.Header, "image/webp")
+
+		// Apple iOS 14.3 is lying. It claims it can support WebP and sends
+		// an Accept: image/webp,... however it doesn't render the WebP
+		// correctly at all.
+		// XXX: https://github.com/jointwt/twtxt/issues/337 for details
+		if preferredContentType == "image/webp" && strings.Contains(r.UserAgent(), "iPhone OS 14_3") {
+			preferredContentType = "image/png"
+		}
+
 		var fn string
 
-		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+		if preferredContentType == "image/webp" {
 			fn = filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.webp", nick))
 			w.Header().Set("Content-Type", "image/webp")
 		} else {
@@ -536,7 +546,7 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			return
 		}
 
-		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+		if preferredContentType == "image/webp" {
 			w.Header().Set("Content-Type", "image/webp")
 			if r.Method == http.MethodHead {
 				return
@@ -549,10 +559,11 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			return
 		}
 
-		// Support older browsers like IE11 that don't support WebP :/
 		if r.Method == http.MethodHead {
 			return
 		}
+
+		// Support older browsers like IE11 that don't support WebP :/
 		metrics.Counter("media", "old_avatar").Inc()
 		w.Header().Set("Content-Type", "image/png")
 		if err := png.Encode(w, img); err != nil {
@@ -590,6 +601,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
 		w.Header().Set("Link", fmt.Sprintf(`<%s/user/%s/webmention>; rel="webmention"`, s.config.BaseURL, nick))
 		w.Header().Set("Last-Modified", fileInfo.ModTime().UTC().Format(http.TimeFormat))
 
@@ -597,11 +609,23 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 		if err != nil {
 			log.WithError(err).Warnf("unable to detect twtxt client from %s", FormatRequest(r))
 		} else {
-			user, err := s.db.GetUser(nick)
-			if err != nil {
-				log.WithError(err).Warnf("error loading user object for %s", nick)
+			var (
+				user       *User
+				feed       *Feed
+				err        error
+				followedBy bool
+			)
+
+			if user, err = s.db.GetUser(nick); err == nil {
+				followedBy = user.FollowedBy(followerClient.URL)
+			} else if feed, err = s.db.GetFeed(nick); err == nil {
+				followedBy = feed.FollowedBy(followerClient.URL)
 			} else {
-				if !user.FollowedBy(followerClient.URL) {
+				log.WithError(err).Warnf("unable to load user or feed object for %s", nick)
+			}
+
+			if (user != nil) || (feed != nil) {
+				if (s.config.Debug || followerClient.IsPublicURL()) && !followedBy {
 					if _, err := AppendSpecial(
 						s.config, s.db,
 						twtxtBot,
@@ -614,9 +638,20 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 					); err != nil {
 						log.WithError(err).Warnf("error appending special FOLLOW post")
 					}
-					user.AddFollower(followerClient.Nick, followerClient.URL)
-					if err := s.db.SetUser(nick, user); err != nil {
-						log.WithError(err).Warnf("error updating user object for %s", nick)
+
+					if user != nil {
+						user.AddFollower(followerClient.Nick, followerClient.URL)
+						if err := s.db.SetUser(nick, user); err != nil {
+							log.WithError(err).Warnf("error updating user object for %s", nick)
+						}
+					} else if feed != nil {
+						feed.AddFollower(followerClient.Nick, followerClient.URL)
+						if err := s.db.SetFeed(nick, feed); err != nil {
+							log.WithError(err).Warnf("error updating feed object for %s", nick)
+						}
+					} else {
+						panic("should not be reached")
+						// Should not be reached
 					}
 				}
 			}
@@ -757,7 +792,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 			}
 		}
 
-		http.Redirect(w, r, RedirectURL(r, s.config, "/"), http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
 
@@ -1222,7 +1257,7 @@ func (s *Server) LoginHandler() httprouter.Handle {
 			_ = sess.(*session.Session).Set("persist", "1")
 		}
 
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Redirect(w, r, RedirectRefererURL(r, s.config, "/"), http.StatusFound)
 	}
 }
 
@@ -1666,7 +1701,17 @@ func (s *Server) ExternalAvatarHandler() httprouter.Handle {
 
 		var fn string
 
-		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+		preferredContentType := accept.PreferredContentTypeLike(r.Header, "image/webp")
+
+		// Apple iOS 14.3 is lying. It claims it can support WebP and sends
+		// an Accept: image/webp,... however it doesn't render the WebP
+		// correctly at all.
+		// XXX: https://github.com/jointwt/twtxt/issues/337 for details
+		if preferredContentType == "image/webp" && strings.Contains(r.UserAgent(), "iPhone OS 14_3") {
+			preferredContentType = "image/png"
+		}
+
+		if preferredContentType == "image/webp" {
 			fn = filepath.Join(s.config.Data, externalDir, fmt.Sprintf("%s.webp", slug))
 			w.Header().Set("Content-Type", "image/webp")
 		} else {
@@ -2062,7 +2107,17 @@ func (s *Server) PodAvatarHandler() httprouter.Handle {
 
 		var fn string
 
-		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+		preferredContentType := accept.PreferredContentTypeLike(r.Header, "image/webp")
+
+		// Apple iOS 14.3 is lying. It claims it can support WebP and sends
+		// an Accept: image/webp,... however it doesn't render the WebP
+		// correctly at all.
+		// XXX: https://github.com/jointwt/twtxt/issues/337 for details
+		if preferredContentType == "image/webp" && strings.Contains(r.UserAgent(), "iPhone OS 14_3") {
+			preferredContentType = "image/png"
+		}
+
+		if preferredContentType == "image/webp" {
 			fn = filepath.Join(s.config.Data, "", "logo.webp")
 			w.Header().Set("Content-Type", "image/webp")
 		} else {

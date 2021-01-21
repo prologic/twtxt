@@ -6,6 +6,7 @@
       <h3>Manage <b>{{ .Profile.Username}}</b> details</h3>
     </hgroup>
     <form action="/feed/{{  .Profile.Username }}/manage"  enctype="multipart/form-data" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
       <label for="avatar_upload">
         Change avatar
         <input id="avatar_upload" type="file" accept="image/png, image/jpeg" name="avatar_file" aria-label="Upload Avatar" />
@@ -25,6 +26,7 @@
       <b>WARNING:</b>&nbsp;This is permanent and cannot be undone! (<i>There is no confirmation!</i>)
     </p>
     <form action="/feed/{{  .Profile.Username }}/archive" method="POST" onsubmit="return confirm('Are you sure you want to archive this feed? This cannot be undone!');">
+      <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
       <button type="submit" class="contrast">Archive</button>
     </form>
 
@@ -36,6 +38,7 @@
       <b>WARNING:</b>&nbsp;This is permanent and cannot be undone!
     </p>
     <form action="/transferFeed/{{  .Profile.Username }}" method="GET">
+      <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
       <button type="submit" class="contrast">Transfer Feed</button>
     </form>
   </div>

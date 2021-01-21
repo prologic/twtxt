@@ -34,7 +34,6 @@ type BlogPost struct {
 	Date   int    `json:"date"`
 	Slug   string `json:"slub"`
 	Title  string `json:"title"`
-	Twt    string `json:"twt"`
 
 	PublishedAt time.Time `json:"published_at"`
 

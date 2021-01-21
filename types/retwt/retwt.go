@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/jointwt/twtxt/types"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -23,7 +23,7 @@ func init() {
 
 var (
 	tagsRe    = regexp.MustCompile(`#([-\w]+)`)
-	subjectRe = regexp.MustCompile(`^(@<.*>[, ]*)*(\(.*?\))(.*)`)
+	subjectRe = regexp.MustCompile(`^(@(?:<.*>|[a-zA-Z0-9][a-zA-Z0-9_-]+)[, ]*)*(\(.*?\))(.*)`)
 
 	uriTagsRe     = regexp.MustCompile(`#<(.*?) .*?>`)
 	uriMentionsRe = regexp.MustCompile(`@<(.*?) (.*?)>`)
@@ -473,7 +473,7 @@ func ExpandMentions(opts types.FmtOpts, lookup types.FeedLookup, text string) st
 
 		// username := NormalizeUsername(mentionedNick)
 		// if db.HasUser(username) || db.HasFeed(username) {
-		// 	return fmt.Sprintf("@<%s %s>", username, opts.URLForUser(conf, username))
+		// 	return fmt.Sprintf("@<%s %s>", username, URLForUser(conf, username))
 		// }
 
 		if lookup != nil {
@@ -486,13 +486,16 @@ func ExpandMentions(opts types.FmtOpts, lookup types.FeedLookup, text string) st
 	})
 }
 
-// Turns #tag into "@<tag URL>"
+// Turns #tag into "#<tag URL>"
 func ExpandTag(opts types.FmtOpts, text string) string {
-	re := regexp.MustCompile(`#([-\w]+)`)
+	// Sadly, Go's regular expressions don't support negative lookbehind, so we
+	// need to bake it differently into the regex with several choices.
+	re := regexp.MustCompile(`(^|\s|(^|[^\]])\()#([-\w]+)`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
-		tag := parts[1]
+		prefix := parts[1]
+		tag := parts[3]
 
-		return fmt.Sprintf("#<%s %s>", tag, opts.URLForTag(tag))
+		return fmt.Sprintf("%s<%s %s>", prefix, tag, opts.URLForTag(tag))
 	})
 }

@@ -20,7 +20,7 @@
     {{ range .Links }}
       <link href="{{ .Href }}" rel="{{ .Rel }}" />
     {{ end }}
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -42,6 +42,14 @@
   <nav id="mainNav" class="container-fluid">
     <ul>
       <li class="mobile-menu">
+        {{ if .Authenticated }}
+          <a id="messagesMenu" href="/messages">
+            <i class="icss-mail-box"></i>
+            {{ if gt $.NewMessages  0 }}
+              <span class="badge">{{ $.NewMessages }}</span>
+            {{ end }}
+          </a>
+        {{ end }}
         <a id="burgerMenu" href="javascript:void(0);">
           <i class="icss-bars"></i>
         </a>
@@ -92,6 +100,16 @@
     <ul>
       {{ if .Authenticated }}
         <li>
+          <a href="/messages">
+            {{ if gt $.NewMessages 0 }}
+              <i class="icss-mail-box-in"></i>
+            {{ else }}
+              <i class="icss-mail-box"></i>
+            {{ end }}
+            Messages
+          </a>
+        </li>
+        <li>
           <a href="/follow">
             <i class="icss-plus"></i>
             Follow
@@ -137,24 +155,20 @@
   <main class="container">
     {{template "content" . }}
   </main>
-  <footer>
-    <div class="container">
-      <small>
-        <div class="footer-copyright"><a href="https://github.com/jointwt/twtxt" target="_blank">twtxt v{{ .SoftwareVersion }}</a>
-            ·
-            Created with 💚 by <a att href="https://github.com/prologic" target="_blank">James Mills</a>
-            ·
-            &copy; 2020 <a href="https://github.com/prologic" target="_blank">James Mills</a>. All rights reserved.
-        </div>
-        <div class="footer-menu">
-          <a href="/about" target="_blank" class="menu-item">About</a>
-          <a href="/privacy" target="_blank" class="menu-item">Privacy</a>
-          <a href="/abuse" target="_blank" class="menu-item">Abuse</a>
-          <a href="/help" target="_blank" class="menu-item">Help</a>
-          <a href="/support" target="_blank" class="menu-item">Support</a>
-          <a href="/atom.xml" target="_blank">Atom&nbsp;<i class="icss-rss"></i></a>
-        </div>
-      </small>
+  <footer class="container">
+    <div class="footer-copyright"><a href="https://github.com/jointwt/twtxt" target="_blank">twtxt v{{ .SoftwareVersion }}</a>
+        ·
+        Created with 💚 by <a href="https://github.com/prologic" target="_blank">James Mills</a>
+        ·
+        &copy; 2020 <a href="https://github.com/prologic" target="_blank">James Mills</a>. All rights reserved.
+    </div>
+    <div class="footer-menu">
+      <a href="/about" target="_blank" class="menu-item">About</a>
+      <a href="/privacy" target="_blank" class="menu-item">Privacy</a>
+      <a href="/abuse" target="_blank" class="menu-item">Abuse</a>
+      <a href="/help" target="_blank" class="menu-item">Help</a>
+      <a href="/support" target="_blank" class="menu-item">Support</a>
+      <a href="/atom.xml" target="_blank">Atom&nbsp;<i class="icss-rss"></i></a>
     </div>
   </footer>
   {{ if $.Debug }}

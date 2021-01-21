@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rickb777/accept"
+	log "github.com/sirupsen/logrus"
 )
 
 // MediaHandler ...

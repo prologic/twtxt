@@ -1,21 +1,16 @@
-version: '3'
+---
+version: "3.8"
 
 services:
-
-    twtxt:
-        build: .
-        ports:
-            - 8000:8000
-        volumes:
-            - ./data:/data
-        environment: 
-            NAME: "twtxt.net"
-            BASE_URL: "http://0.0.0.0:8000"
-            BIND: "0.0.0.0:8000"
-            COOKIE_SECRET: "PLEASE_CHANGE_ME_TO_A_64_BYTE_RANDOM_STRING"
-            REGISTER: "true"
-            DEBUG: "false"
-            THEME: "dark"
-            MAX_TWT_LENGTH: 288
-            TWTS_PER_PAGE: 50
-            # See more in the documentation
+  twtxt:
+    build: .
+    image: jointwt/twtxt:latest
+    command: -d /data -s bitcask:///data/twtxt.db -u http://127.0.0.1:8000
+    environment:
+      - OPEN_PROFILES=true
+      - OPEN_REGISTRATIONS=true
+      - COOKIE_SECRET=supersecretchange me
+    ports:
+      - "8000:8000/tcp"
+    volumes:
+      - ./data:/data

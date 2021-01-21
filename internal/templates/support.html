@@ -6,6 +6,7 @@
         <h3>How can we help you?</h3>
       </hgroup>
       <form action="/support" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
         <input type="text" name="name" placeholder="Name" aria-label="Name" autofocus required>
         <input type="email" name="email" placeholder="Email address" aria-label="Email" required>
         <input type="text" name="subject" placeholder="Subject" aria-label="Subject" required>

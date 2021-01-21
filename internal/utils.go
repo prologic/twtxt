@@ -3,6 +3,7 @@ package internal
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"encoding/base32"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"io"
 	"io/ioutil"
 	"math"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -29,6 +31,7 @@ import (
 	"image/png"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/audiolion/ipip"
 	"github.com/bakape/thumbnailer/v2"
 	"github.com/chai2010/webp"
 	"github.com/disintegration/gift"
@@ -124,6 +127,12 @@ var (
 		},
 	}
 )
+
+func GenerateRandomToken() string {
+	b := make([]byte, 16)
+	_, _ =rand.Read(b)
+	return fmt.Sprintf("%x", b)
+}
 
 func FastHash(s string) string {
 	sum := blake2b.Sum256([]byte(s))
@@ -1133,6 +1142,31 @@ type TwtxtUserAgent struct {
 	URL    string
 }
 
+func (ua TwtxtUserAgent) IsPublicURL() bool {
+	u, err := url.Parse(ua.URL)
+	if err != nil {
+		log.WithError(err).Warn("error parsing User-Agent URL")
+		return false
+	}
+
+	hostname := u.Hostname()
+
+	ips, err := net.LookupIP(hostname)
+	if err != nil {
+		log.WithError(err).Warn("error looking up User-Agent IP")
+		return false
+	}
+
+	if len(ips) == 0 {
+		log.Warn("error User-Agent lookup failed or has no resolable IP")
+		return false
+	}
+
+	ip := ips[0]
+
+	return !ipip.IsPrivate(ip)
+}
+
 func DetectFollowerFromUserAgent(ua string) (*TwtxtUserAgent, error) {
 	match := userAgentRegex.FindStringSubmatch(ua)
 	if match == nil {
@@ -1183,7 +1217,11 @@ func NormalizeURL(url string) string {
 	return norm
 }
 
-func RedirectURL(r *http.Request, conf *Config, defaultURL string) string {
+// RedirectRefererURL constructs a Redirect URL from the given Request URL
+// and possibly Referer, if the Referer's Base URL matches the Pod's Base URL
+// will return the Referer URL otherwise the defaultURL. This is primarily used
+// to redirect a user from a successful /login back to the page they were on.
+func RedirectRefererURL(r *http.Request, conf *Config, defaultURL string) string {
 	referer := NormalizeURL(r.Header.Get("Referer"))
 	if referer != "" && strings.HasPrefix(referer, conf.BaseURL) {
 		return referer
@@ -1423,7 +1461,7 @@ func UnparseTwtFactory(conf *Config) func(text string) string {
 						log.WithField("uri", uri).Warn("UnparseTwt(): error parsing uri")
 						return match
 					}
-					return fmt.Sprintf("@%s@%sd", nick, u.Hostname())
+					return fmt.Sprintf("@%s@%s", nick, u.Hostname())
 				}
 				return fmt.Sprintf("@%s", nick)
 			case "#":

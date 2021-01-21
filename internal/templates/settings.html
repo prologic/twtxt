@@ -6,11 +6,12 @@
         <h3>Update your account settings and password here</h3>
       </hgroup>
       <form action="/settings" enctype="multipart/form-data" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
         <div class="grid">
           <div>
             <hgroup>
               <h2>
-                <img id="avatar" class="avatar" src="/user/{{ .User.Username }}/avatar" />
+                <img id="avatar" class="avatar" src="/user/{{ .User.Username }}/avatar" alt="avatar" />
                 <a href="/user/{{ .User.Username }}" data-tooltip="View profile">{{ .User.Username }}</a>
               </h2>
               <h3>
@@ -118,6 +119,7 @@
               <td>{{$val.ExpiresAt}}</td>
               <td>
                 <form action="/token/delete/{{$val.Signature}}" method="POST" onsubmit="return confirm('Are you sure you want to delete this token? This cannot be undone!');">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
                   <button type="submit" data-tooltip="Delete" class="outline secondary">
                     <i class="icss-x"></i>
                   </button>
@@ -130,12 +132,31 @@
       </details>  
 
       <details>
+        <summary>Messaging Tokens</summary>
+        <div class="grid">
+          <div>
+            <label for="smtpToken">
+              SMTP Token:
+              <input value="{{ .User.SMTPToken }}" readonly />
+            </label>
+          </div>
+          <div>
+            <label for="pop3Token">
+              POP3 Token:
+              <input value="{{ .User.POP3Token }}" readonly />
+            </label>
+          </div>
+        </div>
+      </details>
+
+      <details>
         <summary>Delete account</summary>
         <p>
           <b>WARNING:</b>&nbsp;This is permanent and cannot be undone!
           (<i>There is no confirmation!</i>)
         </p>
         <form action="/deleteFeeds" method="GET">
+          <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
           <button type="submit" class="contrast">Delete</button>
         </form>
       </details>

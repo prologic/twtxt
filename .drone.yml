@@ -1,0 +1,34 @@
+---
+kind: pipeline
+name: default
+
+steps:
+  - name: build
+    image: r.mills.io/prologic/golang-alpine-ffmpeg:latest
+    volumes:
+      - name: gomodcache
+        path: /go/pkg/mod/cache
+    privileged: true
+    environment:
+      GOPROXY: https://goproxy.mills.io
+    commands:
+      - make deps
+      - make build
+
+  - name: notify
+    image: plugins/webhook
+    settings:
+      urls:
+        - https://msgbus.mills.io/ci.mills.io
+    when:
+      status:
+        - success
+        - failure
+
+image_pull_secrets:
+  - dockerconfigjson
+
+volumes:
+  - name: gomodcache
+    host:
+      path: /var/lib/cache/go

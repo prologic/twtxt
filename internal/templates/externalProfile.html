@@ -5,7 +5,7 @@
         <h2 class="u-author h-card">
           <a href="{{ .Profile.URL }}" class="u-url p-name">
             {{ if $.Twter.Avatar }}
-              <img class="avatar u-photo" src="{{ $.Twter.Avatar }}" />
+              <img class="avatar u-photo" src="{{ $.Twter.Avatar }}" alt="" />
             {{ else }}
               <i class="icss-rss" style="font-size:1.75em"></i>
             {{ end }}
@@ -51,6 +51,6 @@
       <h3>Recent twts from {{ .Profile.Username }}</h3>
     </hgroup>
   </div>
-  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true) }}
+  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true "CSRFToken" $.CSRFToken) }}
   {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" $.Twts) }}
 {{end}}

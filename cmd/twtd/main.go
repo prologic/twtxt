@@ -63,6 +63,10 @@ var (
 	smtpPass string
 	smtpFrom string
 
+	// Messaging Settings
+	smtpBind string
+	pop3Bind string
+
 	// Timeouts
 	sessionExpiry     time.Duration
 	sessionCacheTTL   time.Duration
@@ -149,6 +153,10 @@ func init() {
 	flag.StringVar(&smtpUser, "smtp-user", internal.DefaultSMTPUser, "SMTP User to use for email sending")
 	flag.StringVar(&smtpPass, "smtp-pass", internal.DefaultSMTPPass, "SMTP Pass to use for email sending")
 	flag.StringVar(&smtpFrom, "smtp-from", internal.DefaultSMTPFrom, "SMTP From to use for email sending")
+
+	// Messaging Settings
+	flag.StringVar(&smtpBind, "smtp-bind", internal.DefaultSMTPBind, "SMTP interface and port to bind to")
+	flag.StringVar(&pop3Bind, "pop3-bind", internal.DefaultPOP3Bind, "POP3 interface and port to bind to")
 
 	// Timeouts
 	flag.DurationVar(
@@ -273,6 +281,10 @@ func main() {
 		internal.WithSMTPUser(smtpUser),
 		internal.WithSMTPPass(smtpPass),
 		internal.WithSMTPFrom(smtpFrom),
+
+		// Messaging Settings
+		internal.WithSMTPBind(smtpBind),
+		internal.WithPOP3Bind(pop3Bind),
 
 		// Timeouts
 		internal.WithSessionExpiry(sessionExpiry),

@@ -3,7 +3,7 @@
     <hgroup>
       <h2 class="u-author h-card">
         <a href="/user/{{ $.BlogPost.Author }}" class="u-url">
-          <img class="avatar u-photo" src="/user/{{ $.BlogPost.Author }}/avatar" />
+          <img class="avatar u-photo" src="/user/{{ $.BlogPost.Author }}/avatar" alt="" />
         <span class="p-name">{{ $.BlogPost.Author }}</span>
         </a>
       </h2>
@@ -41,7 +41,7 @@
         <h2>Have your say!</h2>
         <h3>Post your twt here and add to the discussion!</h3>
       </hgroup>
-      {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" false) }}
+      {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" false "CSRFToken" $.CSRFToken) }}
     {{ else }}
       <small>You must be <a href="/login">Logged in</a> to comment.</small>
     {{ end }}

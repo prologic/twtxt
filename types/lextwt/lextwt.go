@@ -131,7 +131,7 @@ func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
 	parser.SetTwter(twter)
 
 	twt = parser.ParseTwt()
-	
+
 	if twt.IsZero() {
 		return types.NilTwt, fmt.Errorf("Empty Twt: %s", line)
 	}
@@ -1917,7 +1917,7 @@ func NewTwt(twter types.Twter, dt *DateTime, elems ...Elem) *Twt {
 	twt := &Twt{twter: twter, dt: dt, msg: make([]Elem, 0, len(elems))}
 
 	for _, elem := range elems {
-		twt.append(elem.Clone())
+		twt.append(elem)
 	}
 
 	return twt

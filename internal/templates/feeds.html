@@ -11,6 +11,7 @@
         </p>
       </hgroup>
       <form action="/feed" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
         <input type="text" name="name" placeholder="Name of your feed" aria-label="Username" autofocus required />
         <button type="submit" class="primary">Create</button>
       </form>
@@ -88,8 +89,8 @@
           following sources:
           <ul>
             <li><a href="https://feeds.twtxt.net">feeds.twtxt.net</a> an RSS/Atom to twtxt feed aggregator</li>
-            <li><a href="https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt">we-are-bots</a>a directory of twtxt bots (<i>automated feeds</i>)</li>
-            <li><a href="https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt">we-are-twtxt</a>a directory of twtxt users (<i>this is managed by users voluntarily adding themselves to this list</i>)</li>
+            <li><a href="https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-bots.txt">we-are-bots</a>a directory of twtxt bots (<i>automated feeds</i>)</li>
+            <li><a href="https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-twtxt.txt">we-are-twtxt</a>a directory of twtxt users (<i>this is managed by users voluntarily adding themselves to this list</i>)</li>
           </ul>
         </p>
         <p>

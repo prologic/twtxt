@@ -79,7 +79,6 @@ func AppendTwt(conf *Config, db Store, user *User, text string, args ...interfac
 
 	twt := types.MakeTwt(user.Twter(), now, strings.TrimSpace(text))
 
-
 	twt.ExpandLinks(conf, NewFeedLookup(conf, db, user))
 	for _, m := range twt.Mentions() {
 		fmt.Println("Mention", m)

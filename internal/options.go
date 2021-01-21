@@ -58,6 +58,9 @@ const (
 	// of twts in memory
 	DefaultMaxCacheItems = DefaultTwtsPerPage * 3 // We get bored after paging thorughh > 3 pages :D
 
+	// DefaultMsgPerPage is the server's default msgs per page to display
+	DefaultMsgsPerPage = 20
+
 	// DefaultOpenProfiles is the default for whether or not to have open user profiles
 	DefaultOpenProfiles = false
 
@@ -75,6 +78,10 @@ const (
 
 	// DefaultMagicLinkSecret is the jwt magic link secret
 	DefaultMagicLinkSecret = "PLEASE_CHANGE_ME!!!"
+
+	// Default Messaging settings
+	DefaultSMTPBind = "0.0.0.0:8025"
+	DefaultPOP3Bind = "0.0.0.0:8110"
 
 	// Default SMTP configuration
 	DefaultSMTPHost = "smtp.gmail.com"
@@ -97,8 +104,8 @@ var (
 	// DefaultFeedSources is the default list of external feed sources
 	DefaultFeedSources = []string{
 		"https://feeds.twtxt.net/we-are-feeds.txt",
-		"https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt",
-		"https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt",
+		"https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-bots.txt",
+		"https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-twtxt.txt",
 	}
 
 	// DefaultTwtPrompts are the set of default prompts  for twt text(s)
@@ -137,6 +144,7 @@ func NewConfig() *Config {
 		TwtPrompts:        DefaultTwtPrompts,
 		TwtsPerPage:       DefaultTwtsPerPage,
 		MaxTwtLength:      DefaultMaxTwtLength,
+		MsgsPerPage:       DefaultMsgsPerPage,
 		OpenProfiles:      DefaultOpenProfiles,
 		OpenRegistrations: DefaultOpenRegistrations,
 		SessionExpiry:     DefaultSessionExpiry,
@@ -336,6 +344,22 @@ func WithTranscoderTimeout(timeout time.Duration) Option {
 func WithMagicLinkSecret(secret string) Option {
 	return func(cfg *Config) error {
 		cfg.MagicLinkSecret = secret
+		return nil
+	}
+}
+
+// WithSMTPBind sets the interface and port to bind to for SMTP
+func WithSMTPBind(smtpBind string) Option {
+	return func(cfg *Config) error {
+		cfg.SMTPBind = smtpBind
+		return nil
+	}
+}
+
+// WithPOP3Bind sets the interface and port to use for POP3
+func WithPOP3Bind(pop3Bind string) Option {
+	return func(cfg *Config) error {
+		cfg.POP3Bind = pop3Bind
 		return nil
 	}
 }

@@ -34,6 +34,21 @@ article hgroup footer {
   width: 0px !important;
 }
 
+.mobile-menu a {
+  display: inline-block;
+  margin: -1rem -1rem 0 1rem;
+}
+
+.badge {
+  background-color: #c11010;
+  color: white;
+  border-radius: 100px;
+  padding: 0px 4px;
+  font-size: 9px;
+  margin-left: -3px;
+  position: absolute;
+}
+
 .nav {
     z-index: 1050;
 }
@@ -268,7 +283,7 @@ video {
   padding: 5px 15px;
   font-size: 13px;
   color: #dcdcdc !important;
-  border-color: 1px solid var(--primary) !important; 
+  border-color: 1px solid var(--primary) !important;
   border-radius: 0.25rem !important;
 }
 
@@ -292,23 +307,44 @@ article .p-summary blockquote {
 footer{
   border-top: 1px solid var(--primary);
   background-color: rgba(234, 232, 232, 0.1);
+  font-size: 85%;
 }
-footer small{
+@media (min-width: 576px) {
+  footer {
+    font-size: 83%;
+  }
+}
+@media (min-width: 768px) {
+  footer {
+    font-size: 81%;
+  }
+}
+@media (min-width: 992px) {
+  footer {
+    font-size: 79%;
+  }
+}
+@media (min-width: 1200px) {
+  footer {
+    font-size: 77%;
+  }
+}
+body > footer{
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-content: center;
 }
-footer small .footer-menu{
+footer .footer-menu{
   display: flex;
   flex-direction: row;
 }
-footer small .footer-menu a{
+footer .footer-menu a{
   margin-right: 10px;
   padding-right: 10px;
   position: relative;
 }
-footer small .footer-menu a::after{
+footer .footer-menu a::after{
   content: '';
   height: 12px;
   width: 1px;
@@ -317,12 +353,12 @@ footer small .footer-menu a::after{
   right: 0px;
   bottom: 4px;
 }
-footer small .footer-menu a:last-child{
+footer .footer-menu a:last-child{
   border: none;
   padding-right: 0px;
   margin-right: 0px;
 }
-footer small .footer-menu a:last-child::after{
+footer .footer-menu a:last-child::after{
   content: none;
 }
 
@@ -375,8 +411,10 @@ footer small .footer-menu a:last-child::after{
   }
 
   /* Name off timeline author */
-  .u-author.h-card{
+  hgroup .u-author.h-card{
     display: inline;
+  }
+  .u-author.h-card{
     margin-bottom: 10px;
   }
   .u-author.h-card>div{
@@ -408,19 +446,22 @@ footer small .footer-menu a:last-child::after{
   }
   .u-author.h-card .publish-time{
     font-size: 14px;
+    flex-flow: wrap;
   }
   nav.pagination-nav{
     justify-content: space-between;
   }
+}
+@media (max-width: 1200px) {
   /* Footer Style */
-  footer small{
+  body > footer{
     text-align: center;
     flex-direction: column-reverse;
   }
-  footer small .footer-copyright{
+  footer .footer-copyright{
     margin-top: 10px;
   }
-  footer small .footer-menu{
+  footer .footer-menu{
     justify-content: center;
   }
 }

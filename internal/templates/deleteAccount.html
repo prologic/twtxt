@@ -26,7 +26,8 @@
     <div class="grid">
         <div>
             <form action="/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete your account and all feeds? This cannot be undone!');">
-                <button type="submit" class="contrast">Delete All</button>
+              <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+              <button type="submit" class="contrast">Delete All</button>
             </form>
         </div>
     </div>

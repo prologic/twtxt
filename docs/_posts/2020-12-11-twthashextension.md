@@ -13,10 +13,11 @@ Specification](https://twtxt.readthedocs.io/en/latest/user/twtxtfile.html#format
 ## Purpose
 
 Twt hashes make twts identifiable, so replies can be created to build up
-conversations. The twt's hash is used in the **Twt Subject** (another
-extension) of the reply twt to indicate to which original twt it refers to. The
-twt hash is similar to the `Message-ID` header of an e-mail which the response
-e-mail would reference in its `In-Reply-To` header.
+conversations. The twt's hash is used in the [Twt
+Subject](twtsubjectextension.html) of the reply twt to indicate to which
+original twt it refers to. The twt hash is similar to the `Message-ID` header
+of an e-mail which the response e-mail would reference in its `In-Reply-To`
+header.
 
 Another use case of twt hashes in some twtxt clients is to store which twts
 have already been read by the user. Then they can be hidden the next time the

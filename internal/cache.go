@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/jointwt/twtxt"
@@ -264,6 +265,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 			switch res.StatusCode {
 			case http.StatusOK: // 200
 				limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
+
 				twter := types.Twter{Nick: feed.Nick}
 				if strings.HasPrefix(feed.URL, conf.BaseURL) {
 					twter.URL = URLForUser(conf, feed.Nick)
@@ -283,6 +285,17 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 					return
 				}
 				twts, old := types.SplitTwts(twtFile.Twts(), conf.MaxCacheTTL, conf.MaxCacheItems)
+
+				// If N == 0 we possibly exceeded conf.MaxFetchLimit when
+				// reading this feed. Log it and bump a cache_limited counter
+				if limitedReader.N <= 0 {
+					log.Warnf(
+						"feed size possibly exceeds MaxFetchLimit of %s for %s",
+						humanize.Bytes(uint64(conf.MaxFetchLimit)),
+						feed,
+					)
+					metrics.Counter("cache", "limited").Inc()
+				}
 
 				// Archive old twts
 				for _, twt := range old {

@@ -176,6 +176,7 @@ function deleteTwt(e) {
     Twix.ajax({
       type: "DELETE",
       url: u("#form").attr("action"),
+      data: new FormData(u("#form").first()),
       success: function (data) {
         var hash = u(e.target).data("hash");
         u("#" + hash).remove();
@@ -454,7 +455,7 @@ u("#writeBtn").on("click", function (e) {
   u("#title").attr("type", "");
 
   var title = localStorage.getItem('title');
-  if (title != undefined || title != "") {
+  if (title) {
     if (u("input#title").attr("type") != 'hidden') {
       insertText(u("input#title"), title);
     }
@@ -855,7 +856,27 @@ window.onbeforeunload = function () {
 
 window.onload =  function () {
   var text = localStorage.getItem('text');
-  if (text != undefined || text != "") {
+  if (text) {
     insertText(u("textarea#text"), text);
+    return;
+  }
+
+  // Support Bookmarklet
+  /*
+    var url = document.URL ;
+    var title = document.title ;
+
+    window.location.href = "https://twtxt.net"
+                            + "/?title="
+                            + title + "&url="
+                            + url;
+  */
+  if (typeof(window.URLSearchParams) != "undefined") {
+    const urlParams = new URLSearchParams(window.location.search);
+    const titleParam = urlParams.get("title");
+    const urlParam = urlParams.get("url");
+    if (titleParam && urlParam) {
+      insertText(u("textarea#text"), "[" + titleParam + "](" + urlParam + ")\r\n\r\n");
+    }
   }
 }

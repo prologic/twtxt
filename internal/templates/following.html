@@ -20,7 +20,7 @@
               {{ else }}
                 <a href="/external?uri={{ $URL }}&nick={{ $Nick  }}">
               {{ end }}
-              {{ if $.User.Is $URL }}me{{ else }}{{ $Nick }}{{ end }}
+              {{ if $.User.Is $URL }}me{{ else }}{{ $Nick }}{{ end }}</a>
 
               {{ if $.Authenticated }}
                 {{ if not ($.User.Is $URL) }}
@@ -33,7 +33,7 @@
               {{ end }}
             </li>
           {{ end }}
-        </oL>
+        </ol>
       {{ else }}
         <small>
           {{ if $.User.Is .Profile.URL }}

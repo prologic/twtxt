@@ -15,6 +15,7 @@
         {{ end }}
         <li class="toolbar-form-button">
           <form id="imageUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload image">
+            <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
             <label for="uploadImage">
               <i id="uploadImageButton" class="icss-camera"></i>
             </label>
@@ -23,6 +24,7 @@
         </li>
         <li class="toolbar-form-button">
           <form id="audioUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload audio">
+            <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
             <label for="uploadAudio">
               <i id="uploadAudioButton" class="icss-microphone"></i>
             </label>
@@ -31,6 +33,7 @@
         </li>
         <li class="toolbar-form-button">
           <form id="videoUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload video">
+            <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
             <label for="uploadVideo">
               <i id="uploadVideoButton" class="icss-video-camera"></i>
             </label>
@@ -40,6 +43,7 @@
       </ul>
     </nav>
     <form id="form" action="{{ with $.BlogPost }}/blog{{ else }}/post{{ end }}" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
       {{ with $.BlogPost }}
         <input type="hidden" id="replaceBlog" name="hash" value="{{ $.BlogPost.Hash }}" />
       {{ else }}
@@ -90,28 +94,35 @@
       <div>
         {{ if $.User.Is $.Twt.Twter.URL }}
           <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
-            <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" />
+            <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" alt="" />
           </a>
         {{ else }}
           {{ if isLocalURL $.Twt.Twter.URL }}
             <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
-              <img class="avatar u-photo" src="/user/{{ $.Twt.Twter.Nick }}/avatar" />
+              <img class="avatar u-photo" src="/user/{{ $.Twt.Twter.Nick }}/avatar" alt="" />
           {{ else }}
-            <a href="/external?uri={{ $.Twt.Twter.URL }}&nick={{ $.Twt.Twter.Nick  }}" class="u-url">
+            <a href="/external?uri={{ $.Twt.Twter.URL }}&nick={{ $.Twt.Twter.Nick }}" class="u-url">
               {{ if $.Twt.Twter.Avatar }}
-                <img class="avatar u-photo" src="{{ $.Twt.Twter.Avatar }}" />
+                <img class="avatar u-photo" src="{{ $.Twt.Twter.Avatar }}" alt="" />
               {{ else }}
                 <i class="icss-rss" style="font-size:3em"></i>
-              {{ end  }}
+              {{ end }}
           {{ end }}
           </a>
         {{ end }}
       </div>
       <div class="author">
         {{ if $.User.Is $.Twt.Twter.URL }}
-          <span class="p-name">me</span>
+          <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="p-name">me</a>
         {{ else }}
-          <span class="p-name">{{ $.Twt.Twter.Nick }}</span><span class="p-org">@{{ $.Twt.Twter.URL | hostnameFromURL}}</span>
+          {{ if isLocalURL $.Twt.Twter.URL }}
+            <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="p-name">{{ $.Twt.Twter.Nick }}</a>
+          {{ else }}
+            <a href="/external?uri={{ $.Twt.Twter.URL }}&nick={{ $.Twt.Twter.Nick }}" class="p-name">
+              {{ $.Twt.Twter.Nick }}
+              <span class="p-org">@{{ $.Twt.Twter.URL | hostnameFromURL }}</span>
+            </a>
+          {{ end }}
         {{ end }}
         <div class="publish-time">
           <a class="u-url" href="/twt/{{ $.Twt.Hash }}">
@@ -230,13 +241,13 @@
   <ul>
     {{ if $.ShowConfig }}
       <li><a target="_blank" href="/user/{{ $.Profile.Username }}/config.yaml">Config&nbsp;<i class="icss-gear"></i></a></li>
-    {{ end  }}
+    {{ end }}
     <li><a href="{{ $.Profile.BlogsURL }}">Blogs&nbsp;<i class="icss-quill-pen"></i></a></li>
     <li><a target="_blank" href="{{ $.Profile.URL }}">Twtxt&nbsp;<i class="icss-link"></i></a></li>
     <li><a target="_blank" href="{{ $.Profile.URL | trimSuffix "/twtxt.txt" }}/atom.xml">Atom&nbsp;<i class="icss-rss"></i></a></li>
     <li><a href="/user/{{ $.Profile.Username }}/followers">Followers: {{ $.Profile.Followers | len }}</a></li>
     {{ if eq $.Profile.Type "User" }}
       <li><a href="/user/{{ $.Profile.Username }}/following">Following: {{ $.Profile.Following | len }}</a></li>
-    {{ end  }}
+    {{ end }}
   </ul>
 {{ end }}

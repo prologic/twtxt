@@ -72,6 +72,10 @@ func TestSubject(t *testing.T) {
 			Name:     "single mention with hashed subject uri and content",
 			Input:    "@<prologic foo.com> (#<il5rdfq blah.com>) foo bar baz",
 			Expected: "(#il5rdfq)",
+		}, {
+			Name:     "mixxed mentions with hashed subject uri and content",
+			Input:    "@<prologic foo.com> @antonio (#<il5rdfq blah.com>) foo bar baz",
+			Expected: "(#il5rdfq)",
 		},
 	}
 

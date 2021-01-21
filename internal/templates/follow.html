@@ -6,6 +6,7 @@
         <h3>Follow a new user or feed</h3>
       </hgroup>
       <form action="/follow" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
         <input type="nick" name="nick" placeholder="Nickname for the feed" aria-label="Username" autocomplete="nickname" autofocus required>
         <input type="url" name="url" placeholder="URL of the feed" aria-label="URL" autocomplete="url" required>
         <button type="submit" class="primary">Follow</button>

@@ -53,6 +53,7 @@ type Config struct {
 	MaxTwtLength      int
 	MaxCacheTTL       time.Duration
 	MaxCacheItems     int
+	MsgsPerPage       int
 	OpenProfiles      bool
 	OpenRegistrations bool
 	SessionExpiry     time.Duration
@@ -60,6 +61,9 @@ type Config struct {
 	TranscoderTimeout time.Duration
 
 	MagicLinkSecret string
+
+	SMTPBind string
+	POP3Bind string
 
 	SMTPHost string
 	SMTPPort int

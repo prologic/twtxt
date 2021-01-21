@@ -56,6 +56,9 @@ type User struct {
 	Feeds  []string `default:"[]"`
 	Tokens []string `default:"[]"`
 
+	SMTPToken string `default:""`
+	POP3Token string `default:""`
+
 	Followers map[string]string `default:"{}"`
 	Following map[string]string `default:"{}"`
 	Muted     map[string]string `default:"{}"`
@@ -232,6 +235,13 @@ func LoadUser(data []byte) (user *User, err error) {
 		return nil, err
 	}
 
+	if user.SMTPToken == "" {
+		user.SMTPToken = GenerateRandomToken()
+	}
+	if user.POP3Token == "" {
+		user.POP3Token = GenerateRandomToken()
+	}
+
 	if user.Followers == nil {
 		user.Followers = make(map[string]string)
 	}
@@ -264,6 +274,12 @@ func LoadUser(data []byte) (user *User, err error) {
 	}
 
 	return
+}
+
+func (f *Feed) AddFollower(nick, url string) {
+	url = NormalizeURL(url)
+	f.Followers[nick] = url
+	f.remotes[url] = nick
 }
 
 func (f *Feed) FollowedBy(url string) bool {

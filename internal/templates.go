@@ -17,18 +17,21 @@ import (
 )
 
 const (
+	templatesPath    = "templates"
 	baseTemplate     = "base.html"
 	partialsTemplate = "_partials.html"
 	baseName         = "base"
 )
+var _ = templatesPath // dead code?
+type TemplateManager struct {
+	sync.RWMutex
 
-type Templates struct {
-	sync.Mutex
-
+	debug     bool
 	templates map[string]*template.Template
+	funcMap   template.FuncMap
 }
 
-func NewTemplates(conf *Config, blogs *BlogsCache, cache *Cache) (*Templates, error) {
+func NewTemplateManager(conf *Config, blogs *BlogsCache, cache *Cache) (*TemplateManager, error) {
 	templates := make(map[string]*template.Template)
 
 	funcMap := sprig.FuncMap()
@@ -44,53 +47,83 @@ func NewTemplates(conf *Config, blogs *BlogsCache, cache *Cache) (*Templates, er
 	funcMap["urlForConv"] = URLForConvFactory(conf, cache)
 	funcMap["isAdminUser"] = IsAdminUserFactory(conf)
 
+	m := &TemplateManager{debug: conf.Debug, templates: templates, funcMap: funcMap}
+
+	if err := m.LoadTemplates(); err != nil {
+		log.WithError(err).Error("error loading templates")
+		return nil, fmt.Errorf("error loading templates: %w", err)
+	}
+
+	return m, nil
+}
+
+func (m *TemplateManager) LoadTemplates() error {
+	m.Lock()
+	defer m.Unlock()
+
 	box, err := rice.FindBox("templates")
 	if err != nil {
 		log.WithError(err).Errorf("error finding templates")
-		return nil, err
+		return fmt.Errorf("error finding templates: %w", err)
 	}
 
 	err = box.Walk("", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.WithError(err).Error("error finding templates")
-			return err
+			log.WithError(err).Error("error talking templates")
+			return fmt.Errorf("error walking templates: %w", err)
 		}
 
-		if !info.IsDir() && info.Name() != baseTemplate {
-			if info.Name() == partialsTemplate {
+		fname := info.Name()
+		if !info.IsDir() && fname != baseTemplate {
+			// Skip _partials.html and also editor swap files, to improve the development
+			// cycle. Editors often add suffixes to their swap files, e.g "~" or ".swp"
+			// (Vim) and those files are not parsable as templates, causing panics.
+			if fname == partialsTemplate || !strings.HasSuffix(fname, ".html") {
 				return nil
 			}
 
-			name := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
+			name := strings.TrimSuffix(fname, filepath.Ext(fname))
 			t := template.New(name).Option("missingkey=zero")
-			t.Funcs(funcMap)
-			template.Must(t.Parse(box.MustString(info.Name())))
+			t.Funcs(m.funcMap)
+
+			template.Must(t.Parse(box.MustString(fname)))
 			template.Must(t.Parse(box.MustString(partialsTemplate)))
 			template.Must(t.Parse(box.MustString(baseTemplate)))
-			templates[name] = t
+
+			m.templates[name] = t
 		}
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		log.WithError(err).Error("error loading templates")
+		return fmt.Errorf("error loading templates: %w", err)
 	}
 
-	return &Templates{templates: templates}, nil
+	return nil
 }
 
-func (t *Templates) Add(name string, template *template.Template) {
-	t.Lock()
-	defer t.Unlock()
+func (m *TemplateManager) Add(name string, template *template.Template) {
+	m.Lock()
+	defer m.Unlock()
 
-	t.templates[name] = template
+	m.templates[name] = template
 }
 
-func (t *Templates) Exec(name string, ctx *Context) (io.WriterTo, error) {
-	t.Lock()
-	template, ok := t.templates[name]
-	t.Unlock()
+func (m *TemplateManager) Exec(name string, ctx *Context) (io.WriterTo, error) {
+	if m.debug {
+		log.Debug("reloading templates in debug mode...")
+		if err := m.LoadTemplates(); err != nil {
+			log.WithError(err).Error("error reloading templates")
+			return nil, fmt.Errorf("error reloading templates: %w", err)
+		}
+	}
+
+	m.RLock()
+	template, ok := m.templates[name]
+	m.RUnlock()
+
 	if !ok {
-		log.Errorf("template %s not found", name)
+		log.WithField("name", name).Errorf("template not found")
 		return nil, fmt.Errorf("no such template: %s", name)
 	}
 
@@ -101,8 +134,8 @@ func (t *Templates) Exec(name string, ctx *Context) (io.WriterTo, error) {
 	buf := bytes.NewBuffer([]byte{})
 	err := template.ExecuteTemplate(buf, baseName, ctx)
 	if err != nil {
-		log.WithError(err).Errorf("error parsing template %s: %s", name, err)
-		return nil, err
+		log.WithError(err).WithField("name", name).Errorf("error executing template")
+		return nil, fmt.Errorf("error executing template %s: %w", name, err)
 	}
 
 	return buf, nil

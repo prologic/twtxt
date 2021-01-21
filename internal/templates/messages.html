@@ -1,0 +1,63 @@
+{{define "content"}}
+  <article class="grid">
+    <div>
+      <hgroup>
+        <h2>Private Messages</h2>
+        <h3>Your private messages</h3>
+      </hgroup>
+      <form id="delete" action="/messages/delete" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col"><input id="delete_all" type="checkbox" name="delete_all" data-tooltip="Delete all"></th>
+              <th scope="col">From</th>
+              <th scope="col">Subject</th>
+              <th scope="col">Received</th>
+              <th scope="col">Status</th>
+            </tr>
+            <tr>
+            {{ template "pager" $.Pager }}
+          </thead>
+          <tbody>
+            {{ range .Messages }}
+              <tr>
+                <th scope="row"><input type="checkbox" name="msgid" value="{{ .Id }}"></th>
+                <td><a href="/user/{{ .User }}">{{ .User }}</a></td>
+                <td>
+                  <a class="u-url" href="/messages/{{ .Id }}">{{ .Subject }}</a>
+                <td>
+                  <time class="dt-published" datetime="{{ .Sent | date "2006-01-02T15:04:05Z07:00" }}">
+                    {{ dateInZone (.Sent | formatForDateTime) .Sent $.User.DisplayDatesInTimezone }}
+                  </time>
+                  <span>&nbsp;({{ .Sent | time }})</span>   
+                </td>
+                <td>{{ if eq .Status "RO" }}Read{{ else }}<strong>NEW</strong>{{ end }}</td>
+              </tr>
+            {{ end }}
+          </tbody>
+        </table>
+        <input type="submit" name="delete" value="Delete Selected">
+      </form>
+      <hgroup>
+        <h2>Compose Message</h2>
+      </hgroup>
+      <form id="compose" action="/messages/send" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+        <input id="recipient" name="recipient" placeholder="Username" required>
+        <input id="subject" name="subject" placeholder="Subject" required>
+        <div class="textarea-container">
+          <textarea id="body" name="body" placeholder="Your message" rows=3 maxlength={{ $.MaxTwtLength }} required></textarea>
+        </div>
+        <div class="grid">
+          <div>
+            <button id="send" type="submit">
+              <i class="icss-paper-plane"></i>
+              Send
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </article>
+{{end}}

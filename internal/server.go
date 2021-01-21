@@ -18,6 +18,7 @@ import (
 	"github.com/andyleap/microformats"
 	humanize "github.com/dustin/go-humanize"
 	"github.com/gabstv/merger"
+	"github.com/justinas/nosurf"
 	"github.com/prologic/observe"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
@@ -41,14 +42,17 @@ func init() {
 
 // Server ...
 type Server struct {
-	bind      string
-	config    *Config
-	templates *Templates
-	router    *Router
-	server    *http.Server
+	bind    string
+	config  *Config
+	tmplman *TemplateManager
+	router  *Router
+	server  *http.Server
 
 	// Blogs Cache
 	blogs *BlogsCache
+
+	// Messages Cache
+	msgs *MessagesCache
 
 	// Feed Cache
 	cache *Cache
@@ -75,12 +79,22 @@ type Server struct {
 	// API
 	api *API
 
+	// POP3 Service
+	pop3Service *POP3Service
+
+	// SMTP Service
+	smtpService *SMTPService
+
 	// Passwords
 	pm passwords.Passwords
 }
 
 func (s *Server) render(name string, w http.ResponseWriter, ctx *Context) {
-	buf, err := s.templates.Exec(name, ctx)
+	if ctx.Authenticated && ctx.Username != "" {
+		ctx.NewMessages = s.msgs.Get(ctx.User.Username)
+	}
+
+	buf, err := s.tmplman.Exec(name, ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -106,6 +120,7 @@ func (s *Server) AddShutdownHook(f func()) {
 func (s *Server) Shutdown(ctx context.Context) error {
 	s.cron.Stop()
 	s.tasks.Stop()
+	s.smtpService.Stop()
 
 	if err := s.server.Shutdown(ctx); err != nil {
 		log.WithError(err).Error("error shutting down server")
@@ -242,6 +257,12 @@ func (s *Server) setupMetrics() {
 	metrics.NewGauge(
 		"cache", "last_processed_seconds",
 		"Number of seconds for a feed cache cycle",
+	)
+
+	// feed cache limited fetch (feed exceeded MaxFetchLImit or unknown size)
+	metrics.NewCounter(
+		"cache", "limited",
+		"Number of feed cache fetches affected by MaxFetchLimit",
 	)
 
 	// archive size
@@ -427,15 +448,14 @@ func (s *Server) runStartupJobs() {
 }
 
 func (s *Server) initRoutes() {
-	cssBox := rice.MustFindBox("static/css").HTTPBox()
-	imgBox := rice.MustFindBox("static/img").HTTPBox()
-	jsBox := rice.MustFindBox("static/js").HTTPBox()
-
 	if s.config.Debug {
-		s.router.ServeFilesWithCacheControl("/css/*filepath", cssBox)
-		s.router.ServeFilesWithCacheControl("/img/*filepath", imgBox)
-		s.router.ServeFilesWithCacheControl("/js/*filepath", jsBox)
+		s.router.ServeFiles("/css/*filepath", http.Dir("./internal/static/css"))
+		s.router.ServeFiles("/img/*filepath", http.Dir("./internal/static/img"))
+		s.router.ServeFiles("/js/*filepath", http.Dir("./internal/static/js"))
 	} else {
+		cssBox := rice.MustFindBox("static/css").HTTPBox()
+		imgBox := rice.MustFindBox("static/img").HTTPBox()
+		jsBox := rice.MustFindBox("static/js").HTTPBox()
 		s.router.ServeFilesWithCacheControl("/css/:commit/*filepath", cssBox)
 		s.router.ServeFilesWithCacheControl("/img/:commit/*filepath", imgBox)
 		s.router.ServeFilesWithCacheControl("/js/:commit/*filepath", jsBox)
@@ -470,6 +490,12 @@ func (s *Server) initRoutes() {
 	s.router.POST("/post", s.am.MustAuth(s.PostHandler()))
 	s.router.PATCH("/post", s.am.MustAuth(s.PostHandler()))
 	s.router.DELETE("/post", s.am.MustAuth(s.PostHandler()))
+
+	// Private Messages
+	s.router.GET("/messages", s.am.MustAuth(s.ListMessagesHandler()))
+	s.router.GET("/messages/:msgid", s.am.MustAuth(s.ViewMessageHandler()))
+	s.router.POST("/messages/send", s.am.MustAuth(s.SendMessageHandler()))
+	s.router.POST("/messages/delete", s.am.MustAuth(s.DeleteMessagesHandler()))
 
 	s.router.POST("/blog", s.am.MustAuth(s.PublishBlogHandler()))
 	s.router.GET("/blogs/:author", s.BlogsHandler())
@@ -525,13 +551,13 @@ func (s *Server) initRoutes() {
 	s.router.POST("/feed/:name/manage", s.am.MustAuth(s.ManageFeedHandler()))
 	s.router.POST("/feed/:name/archive", s.am.MustAuth(s.ArchiveFeedHandler()))
 
-	s.router.GET("/login", s.LoginHandler())
+	s.router.GET("/login", s.am.HasAuth(s.LoginHandler()))
 	s.router.POST("/login", s.LoginHandler())
 
 	s.router.GET("/logout", s.LogoutHandler())
 	s.router.POST("/logout", s.LogoutHandler())
 
-	s.router.GET("/register", s.RegisterHandler())
+	s.router.GET("/register", s.am.HasAuth(s.RegisterHandler()))
 	s.router.POST("/register", s.RegisterHandler())
 
 	// Reset Password
@@ -625,6 +651,14 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		blogs.UpdateBlogs(config)
 	}
 
+	msgs, err := LoadMessagesCache(config.Data)
+	if err != nil {
+		log.WithError(err).Error("error loading messages cache (re-creating)")
+		msgs = NewMessagesCache()
+	}
+	log.Info("updating messages cache")
+	msgs.Refresh(config)
+
 	cache, err := LoadCache(config.Data)
 	if err != nil {
 		log.WithError(err).Error("error loading feed cache")
@@ -648,9 +682,9 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		return nil, err
 	}
 
-	templates, err := NewTemplates(config, blogs, cache)
+	tmplman, err := NewTemplateManager(config, blogs, cache)
 	if err != nil {
-		log.WithError(err).Error("error loading templates")
+		log.WithError(err).Error("error creating template manager")
 		return nil, err
 	}
 
@@ -676,11 +710,18 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	api := NewAPI(router, config, cache, archive, db, pm, tasks)
 
+	pop3Service := NewPOP3Service(config, db, pm, msgs, tasks)
+
+	smtpService := NewSMTPService(config, db, pm, msgs, tasks)
+
+	csrfHandler := nosurf.New(router)
+	csrfHandler.ExemptGlob("/api/v1/*")
+
 	server := &Server{
-		bind:      bind,
-		config:    config,
-		router:    router,
-		templates: templates,
+		bind:    bind,
+		config:  config,
+		router:  router,
+		tmplman: tmplman,
 
 		server: &http.Server{
 			Addr: bind,
@@ -689,7 +730,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 				RemoteAddressHeaders: []string{"X-Forwarded-For"},
 			}).Handler(
 				gziphandler.GzipHandler(
-					sm.Handler(router),
+					sm.Handler(csrfHandler),
 				),
 			),
 		},
@@ -697,8 +738,17 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		// API
 		api: api,
 
+		// POP3 Servicee
+		pop3Service: pop3Service,
+
+		// SMTP Servicee
+		smtpService: smtpService,
+
 		// Blogs Cache
 		blogs: blogs,
+
+		// Messages Cache
+		msgs: msgs,
 
 		// Feed Cache
 		cache: cache,
@@ -735,6 +785,12 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	server.tasks.Start()
 	log.Info("started task dispatcher")
+
+	server.pop3Service.Start()
+	log.Info("started POP3 service")
+
+	server.smtpService.Start()
+	log.Info("started SMTP service")
 
 	server.setupWebMentions()
 	log.Infof("started webmentions processor")

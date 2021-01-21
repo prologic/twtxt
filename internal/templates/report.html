@@ -9,6 +9,7 @@
         </p>
       </hgroup>
       <form action="/report" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
         <input type="hidden" name="nick" value="{{ .ReportNick }}">
         <input type="hidden" name="url" value="{{ .ReportURL }}">
 

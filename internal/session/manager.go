@@ -54,6 +54,7 @@ func (m *Manager) Create(w http.ResponseWriter) (*Session, error) {
 		Path:     "/",
 		Secure:   m.options.secure,
 		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge:   int(m.options.expiry.Seconds()),
 		Expires:  time.Now().Add(m.options.expiry),
 	}
@@ -140,6 +141,7 @@ func (m *Manager) Delete(w http.ResponseWriter, r *http.Request) {
 		Value:    "",
 		Secure:   m.options.secure,
 		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
 		MaxAge:   -1,
 		Expires:  time.Now(),
 	}

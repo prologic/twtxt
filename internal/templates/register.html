@@ -6,6 +6,7 @@
         <p>Create and register a new Twt.social account on {{ .InstanceName }}</p>
       </hgroup>
       <form id="register" action="/register" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
         <input type="text" name="username" placeholder="Username" aria-label="Username" autocomplete="nickname" autofocus required>
         <input type="password" name="password" placeholder="Password" aria-label="Password" autocomplete="current-password" required>
         <input type="email" name="email" placeholder="Email address" aria-label="Email">
@@ -15,7 +16,7 @@
           be impossible to recovery your Twt.social account!
         </small>
         <fieldset>
-          <label for="switch">
+          <label>
             <input id="agree" type="checkbox" name="agree" role="switch">
             I agree to abide by the <a href="/abuse">Community Guidelines</a>.
           </label>

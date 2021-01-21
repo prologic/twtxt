@@ -1663,6 +1663,21 @@ func (n *Mention) Markdown() string {
 
 	return fmt.Sprintf("[@%s](%s)", nick, n.target)
 }
+func (n *Mention) FormatHTML() string {
+	if n.target == "" {
+		nick := n.name
+		if n.domain != "" {
+			nick += "@" + n.domain
+		}
+		return fmt.Sprintf("@%s", nick)
+	}
+
+	if n.domain != "" {
+		return fmt.Sprintf(`<a href="%s">@%s<em>@%s</em></a>`, n.target, n.name, n.domain)
+	}
+
+	return fmt.Sprintf(`<a href="%s">@%s</a>`, n.target, n.name)
+}
 
 type Tag struct {
 	lit string
@@ -2158,7 +2173,11 @@ func (twt Twt) FormatText(mode types.TwtTextFormat, opts types.FmtOpts) string {
 	case types.HTMLFmt:
 		var b strings.Builder
 		for _, s := range twt.msg {
-			b.WriteString(s.Markdown())
+			if h, ok := s.(interface{ FormatHTML() string }); ok {
+				b.WriteString(h.FormatHTML())
+			} else {
+				b.WriteString(s.Markdown())
+			}
 		}
 		return b.String()
 

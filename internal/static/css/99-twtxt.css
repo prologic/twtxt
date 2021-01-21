@@ -303,6 +303,17 @@ article .p-summary blockquote {
   position: relative;
 }
 
+/* lextwt enhancements */
+article .p-summary a em, em.twt-type {
+  color: darkgray;
+  font-weight: 100;
+  color: var(--muted-text);
+}
+em.twt-type {
+  float: right;
+  font-size: small;
+}
+
 /* Footer Style */
 footer{
   border-top: 1px solid var(--primary);

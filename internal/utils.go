@@ -130,7 +130,7 @@ var (
 
 func GenerateRandomToken() string {
 	b := make([]byte, 16)
-	_, _ =rand.Read(b)
+	_, _ = rand.Read(b)
 	return fmt.Sprintf("%x", b)
 }
 
@@ -1691,6 +1691,7 @@ func FormatTwtFactory(conf *Config) func(twt types.Twt) template.HTML {
 		twt.ExpandLinks(conf, nil)
 		md := []byte(twt.FormatText(types.HTMLFmt, conf))
 		maybeUnsafeHTML := markdown.ToHTML(md, mdParser, renderer)
+
 		p := bluemonday.UGCPolicy()
 		p.AllowAttrs("id", "controls").OnElements("audio")
 		p.AllowAttrs("id", "controls", "playsinline", "preload", "poster").OnElements("video")

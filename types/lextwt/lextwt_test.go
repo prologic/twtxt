@@ -456,11 +456,13 @@ type twtTestCase struct {
 func TestParseTwt(t *testing.T) {
 	is := is.New(t)
 
+	twter := types.Twter{Nick: "example", URL: "http://example.com/example.txt"}
+
 	tests := []twtTestCase{
 		{
 			lit: "2016-02-03T23:05:00Z	@<example http://example.org/twtxt.txt>\u2028welcome to twtxt!\n",
 			twt: lextwt.NewTwt(
-				types.Twter{},
+				twter,
 				lextwt.NewDateTime(parseTime("2016-02-03T23:05:00Z")),
 				lextwt.NewMention("example", "http://example.org/twtxt.txt"),
 				lextwt.NewText("\u2028welcome to twtxt!"),
@@ -470,7 +472,7 @@ func TestParseTwt(t *testing.T) {
 		{
 			lit: "2020-12-25T16:55:57Z	I'm busy, but here's an 1+ [Christmas Tree](https://codegolf.stackexchange.com/questions/4244/code-golf-christmas-edition-how-to-print-out-a-christmas-tree-of-height-n)  ``` . 11+1< (Any unused function name|\"\\\"/1+^<#     \"     (row|\"(Fluff|\"\\\"/^<#               11+\"\"*\"**;               1+           \"\\\"/^<#\"<*)           1           (Mess|/\"\\^/\"\\\"+1+1+^<#               11+\"\"*+\"\"*+;               1+           /\"\\^/\"\\\"+1+1+^<#\"<*)           11+\"\"\"**+;     )     1+ \"\\\"/1+^<#) 11+1<(row) ```",
 			twt: lextwt.NewTwt(
-				types.Twter{},
+				twter,
 				lextwt.NewDateTime(parseTime("2020-12-25T16:55:57Z")),
 				lextwt.NewText("I'm busy, but here's an 1+ "),
 				lextwt.NewLink("Christmas Tree", "https://codegolf.stackexchange.com/questions/4244/code-golf-christmas-edition-how-to-print-out-a-christmas-tree-of-height-n", lextwt.LinkStandard),
@@ -482,7 +484,7 @@ func TestParseTwt(t *testing.T) {
 		{
 			lit: "2020-12-25T16:57:57Z	@<hirad https://twtxt.net/user/hirad/twtxt.txt> (#<hrqg53a https://twtxt.net/search?tag=hrqg53a>) @<prologic https://twtxt.net/user/prologic/twtxt.txt> make this a blog post plz  And I forgot, [Try It Online Again!](https://tio.run/#jVVbb5tIFH7nV5zgB8DGYJxU7br2Q1IpVausFWXbhxUhCMO4RgszdGbIRZv97d4zYAy2Y7fIRnP5znfuh@JFrhgdr9c9WElZiInrFhGPsxcZPZPMkWW@yLgTs9wtmJDuh/ejD@/eexfn3h9uSiXhBSf4Hi4ZH3rDlA6Lik/TemduKbi7SKlL6CNsjnvgDaAjh2u4ba5uK73wTSkGF74STnK1pTaMR94FIm7SmNCYQCrg0ye4@nv41yVcOCMEX1/egOec4@rz/Dt8vr15PNfSvGBcgngR2pKzHGKWZSSWKaMCNncJ@VkSTRM2iARm9da0bPj3P01LyBIYJUVWClMgdgZz3FoTDfBJl0AZcnNZ7zdnGaEm6nMi/uPRgrMZjNtr9RQcnQf9u4h@kAnoMIAG7Y8C3OngL9OMgGSwIECeSVxKkgT6DokSIc@pND2r1U0LNJAVHf2@F9hgcKMF8)",
 			twt: lextwt.NewTwt(
-				types.Twter{},
+				twter,
 				lextwt.NewDateTime(parseTime("2020-12-25T16:57:57Z")),
 				lextwt.NewMention("hirad", "https://twtxt.net/user/hirad/twtxt.txt"),
 				lextwt.NewText(" "),
@@ -500,7 +502,7 @@ func TestParseTwt(t *testing.T) {
 		{
 			lit: "2020-12-04T21:43:43Z	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<63dtg5a https://txt.sour.is/search?tag=63dtg5a>) Web Key Directory: a way to self host your public key. instead of using a central system like pgp.mit.net or OpenPGP.org you have your key on a server you own.   it takes an email@address.com hashes the part before the @ and turns it into `[openpgpkey.]address.com/.well-known/openpgpkey[/address.com]/<hash>`",
 			twt: lextwt.NewTwt(
-				types.Twter{},
+				twter,
 				lextwt.NewDateTime(parseTime("2020-12-04T21:43:43Z")),
 				lextwt.NewMention("prologic", "https://twtxt.net/user/prologic/twtxt.txt"),
 				lextwt.NewText(" "),
@@ -516,7 +518,7 @@ func TestParseTwt(t *testing.T) {
 		{
 			lit: "2020-07-20T06:59:52Z	@<hjertnes https://hjertnes.social/twtxt.txt> Is it okay to have two personas :) I have https://twtxt.net/u/prologic and https://prologic.github.io/twtxt.txt 🤔",
 			twt: lextwt.NewTwt(
-				types.Twter{},
+				twter,
 				lextwt.NewDateTime(parseTime("2020-07-20T06:59:52Z")),
 				lextwt.NewMention("hjertnes", "https://hjertnes.social/twtxt.txt"),
 				lextwt.NewText(" Is it okay to have two personas :"),
@@ -531,7 +533,7 @@ func TestParseTwt(t *testing.T) {
 		{
 			lit: `2021-01-21T23:25:59Z	Alligator  ![](https://twtxt.net/media/L6g5PMqA2JXX7ra5PWiMsM)  > Guy says to his colleague “just don’t fall in!” She replies “yeah good advice!”  🤣  #AustraliaZoo`,
 			twt: lextwt.NewTwt(
-				types.Twter{},
+				twter,
 				lextwt.NewDateTime(parseTime("2021-01-21T23:25:59Z")),
 				lextwt.NewText("Alligator"),
 				lextwt.LineSeparator,
@@ -556,16 +558,21 @@ func TestParseTwt(t *testing.T) {
 		r := strings.NewReader(tt.lit)
 		lexer := lextwt.NewLexer(r)
 		parser := lextwt.NewParser(lexer)
+		parser.SetTwter(twter)
 		twt := parser.ParseTwt()
 
 		// t.Log(twt.FormatText(types.HTMLFmt, nil))
 
-		rt, err := retwt.ParseLine(strings.TrimRight(tt.lit, "\n"), types.Twter{})
+		rt, err := retwt.ParseLine(strings.TrimRight(tt.lit, "\n"), twter)
 		is.NoErr(err)
-		// t.Log(rt.FormatText(types.HTMLFmt, nil))
+		is.True(rt != nil)
 
-		is.Equal(twt.FormatText(types.MarkdownFmt, nil), rt.FormatText(types.MarkdownFmt, nil))
-		is.Equal(twt.FormatText(types.HTMLFmt, nil), rt.FormatText(types.HTMLFmt, nil))
+		// t.Log(rt.FormatText(types.HTMLFmt, nil))
+		if twt != nil && rt != nil {
+			is.Equal(twt.FormatText(types.MarkdownFmt, nil), rt.FormatText(types.MarkdownFmt, nil))
+			is.Equal(twt.FormatText(types.HTMLFmt, nil), rt.FormatText(types.HTMLFmt, nil))
+			is.Equal(twt.Hash(), rt.Hash())
+		}
 
 		is.True(twt != nil)
 		if twt != nil {
@@ -575,8 +582,7 @@ func TestParseTwt(t *testing.T) {
 	for i, tt := range tests {
 		t.Logf("TestMakeTwt %d\n%v", i, tt.twt.String())
 		sp := strings.SplitN(tt.lit, "\t", 2)
-
-		twt := lextwt.MakeTwt(types.Twter{}, parseTime(sp[0]), sp[1])
+		twt := lextwt.MakeTwt(twter, parseTime(sp[0]), sp[1])
 
 		is.True(twt != nil)
 		if twt != nil {
@@ -846,3 +852,19 @@ func (m mockFmtOpts) UserURL(s string) string             { return m.userURL(s) 
 func (m mockFmtOpts) ExternalURL(nick, uri string) string { return m.externalURL(nick, uri) }
 func (m mockFmtOpts) URLForTag(tag string) string         { return m.urlForTag(tag) }
 func (m mockFmtOpts) URLForUser(user string) string       { return m.urlForUser(user) }
+
+// func TestSomethingWeird(t *testing.T) {
+// 	is := is.New(t)
+// 	twter := types.Twter{Nick: "prologic", URL: "https://twtxt.net/user/prologic/twtxt.txt"}
+// 	res, _ := http.Get("https://twtxt.net/user/prologic/twtxt.txt")
+// 	twt, err := lextwt.ParseFile(res.Body, twter)
+// 	is.NoErr(err)
+
+// 	for _, tt := range twt.Twts() {
+// 		s := tt.(*lextwt.Twt).LiteralText()
+// 		if strings.HasPrefix(s, "Alligator") {
+// 			t.Log(s)
+// 		}
+// 	}
+// 	is.True(false)
+// }

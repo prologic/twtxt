@@ -138,7 +138,7 @@
       {{ $.Twt | formatTwt }}
     </div>
     <hr />
-    <em class="twt-type"> {{ $.Twt | twtType }} </em>
+    <em class="twt-type"> {{ $.Twt | twtType }} #{{ $.Twt.Hash }} </em>
     <nav>
       <ul>
         {{ if $.Authenticated }}

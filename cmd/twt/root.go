@@ -12,6 +12,8 @@ import (
 
 	"github.com/jointwt/twtxt"
 	"github.com/jointwt/twtxt/client"
+	"github.com/jointwt/twtxt/types/lextwt"
+	"github.com/jointwt/twtxt/types/retwt"
 )
 
 var configFile string
@@ -50,9 +52,14 @@ func init() {
 		"config file (default: $HOME/.twt.yaml)",
 	)
 
-	RootCmd.PersistentFlags().BoolP(
+	lexparse := RootCmd.PersistentFlags().BoolP(
 		"debug", "d", false,
 		"Enable debug logging",
+	)
+
+	RootCmd.PersistentFlags().BoolP(
+		"lex-parse", "e", false,
+		"Enable experimental parser",
 	)
 
 	RootCmd.PersistentFlags().StringP(
@@ -73,6 +80,15 @@ func init() {
 
 	viper.BindPFlag("debug", RootCmd.PersistentFlags().Lookup("debug"))
 	viper.SetDefault("debug", false)
+
+	// I have no idea how to work with cobra :)
+	// put this someplace to run on startup.
+	if *lexparse {
+		lextwt.DefaultTwtManager()
+	} else {
+		retwt.DefaultTwtManager()
+	}
+
 }
 
 // initConfig reads in config file and ENV variables if set.

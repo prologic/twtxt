@@ -67,19 +67,22 @@ func (twter Twter) DomainNick() string {
 
 // Twt ...
 type Twt interface {
-	Twter() Twter
-	Text() string
-	ExpandLinks(FmtOpts, FeedLookup)
-	FormatTwt() string
-	FormatText(TwtTextFormat, FmtOpts) string
-	Created() time.Time
 	IsZero() bool
+	Clone() Twt
+
+	Twter() Twter
+	Created() time.Time
+	Text() string
+
 	Hash() string
 	Subject() Subject
 	Mentions() MentionList
 	Links() LinkList
 	Tags() TagList
-	Clone() Twt
+
+	ExpandLinks(FmtOpts, FeedLookup)
+	FormatTwt() string
+	FormatText(TwtTextFormat, FmtOpts) string
 
 	fmt.Stringer
 }
@@ -111,16 +114,15 @@ func (tags *TagList) Tags() []string {
 type TwtLink interface {
 	Text() string
 	Target() string
-
-	fmt.Stringer
 }
 
 type LinkList []TwtLink
 
 type Subject interface {
 	Text() string
-	FormatText() string
 	Tag() TwtTag
+
+	FormatDisplay() string
 }
 
 // TwtMap ...
@@ -192,7 +194,7 @@ func (twts Twts) LinkCount() map[string]int {
 	links := make(map[string]int)
 	for _, twt := range twts {
 		for _, link := range twt.Links() {
-			links[link.String()]++
+			links[link.Target()]++
 		}
 	}
 	return links
@@ -210,7 +212,7 @@ func (twts Twts) Subjects() []Subject {
 func (twts Twts) SubjectCount() map[string]int {
 	subjects := make(map[string]int)
 	for _, twt := range twts {
-		subjects[twt.Subject().Text()]++
+		subjects[twt.Subject().FormatDisplay()]++
 	}
 	return subjects
 }
@@ -221,6 +223,26 @@ func (twts Twts) Clone() Twts {
 		lis[i] = twts[i].Clone()
 	}
 	return lis
+}
+
+func (twts *Twts) UnmarshalJSON(data []byte) error {
+	if twts == nil {
+		return fmt.Errorf("uninitialized *Twts")
+	}
+	var lis []json.RawMessage
+	err := json.Unmarshal(data, &lis)
+	if err != nil {
+		return err
+	}
+
+	for _, b := range lis {
+		twt, err := DecodeJSON(b)
+		if err != nil {
+			return err
+		}
+		*twts = append(*twts, twt)
+	}
+	return nil
 }
 
 type FmtOpts interface {
@@ -252,22 +274,26 @@ var _ Twt = NilTwt
 var _ gob.GobEncoder = NilTwt
 var _ gob.GobDecoder = NilTwt
 
-func (nilTwt) Twter() Twter                             { return Twter{} }
-func (nilTwt) Text() string                             { return "" }
+func (nilTwt) IsZero() bool { return true }
+func (nilTwt) Clone() Twt   { return NilTwt }
+
+func (nilTwt) Twter() Twter       { return Twter{} }
+func (nilTwt) Created() time.Time { return time.Now() }
+func (nilTwt) Text() string       { return "" }
+
+func (nilTwt) Hash() string          { return "" }
+func (nilTwt) Subject() Subject      { return nil }
+func (nilTwt) Mentions() MentionList { return nil }
+func (nilTwt) Tags() TagList         { return nil }
+func (nilTwt) Links() LinkList       { return nil }
+
 func (nilTwt) ExpandLinks(FmtOpts, FeedLookup)          {}
 func (nilTwt) FormatTwt() string                        { return "" }
 func (nilTwt) FormatText(TwtTextFormat, FmtOpts) string { return "" }
-func (nilTwt) Created() time.Time                       { return time.Now() }
-func (nilTwt) IsZero() bool                             { return true }
-func (nilTwt) Hash() string                             { return "" }
-func (nilTwt) Subject() Subject                         { return nil }
-func (nilTwt) Mentions() MentionList                    { return nil }
-func (nilTwt) Tags() TagList                            { return nil }
-func (nilTwt) Links() LinkList                          { return nil }
-func (nilTwt) String() string                           { return "" }
-func (nilTwt) GobDecode([]byte) error                   { return ErrNotImplemented }
-func (nilTwt) GobEncode() ([]byte, error)               { return nil, ErrNotImplemented }
-func (nilTwt) Clone() Twt                               { return NilTwt }
+
+func (nilTwt) String() string             { return "" }
+func (nilTwt) GobDecode([]byte) error     { return ErrNotImplemented }
+func (nilTwt) GobEncode() ([]byte, error) { return nil, ErrNotImplemented }
 
 func init() {
 	gob.Register(&nilTwt{})

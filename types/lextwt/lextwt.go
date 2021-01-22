@@ -2022,26 +2022,27 @@ func (twt *Twt) Text() string {
 func (twt *Twt) GobEncode() ([]byte, error) {
 	twter := twt.Twter()
 	s := fmt.Sprintf(
-		"%s\t%s\t%s\t%s",
+		"%s\t%s\t%s\t%s\t%s",
 		twter.Nick,
 		twter.URL,
+		twter.Avatar,
 		twt.Hash(),
 		twt.Literal(),
 	)
 	return []byte(s), nil
 }
 func (twt *Twt) GobDecode(data []byte) error {
-	sp := strings.SplitN(string(data), "\t", 4)
-	if len(sp) != 4 {
+	sp := strings.SplitN(string(data), "\t", 5)
+	if len(sp) != 5 {
 		return fmt.Errorf("unable to decode twt: %s ", data)
 	}
-	twter := types.Twter{Nick: sp[0], URL: sp[1]}
-	t, err := ParseLine(sp[3], twter)
+	twter := types.Twter{Nick: sp[0], URL: sp[1], Avatar: sp[2]}
+	twt.hash = sp[3]
+	t, err := ParseLine(sp[4], twter)
 	if err != nil {
 		return err
 	}
 
-	twt.hash = sp[3]
 	if t, ok := t.(*Twt); ok {
 		twt.dt = t.dt
 		twt.msg = t.msg

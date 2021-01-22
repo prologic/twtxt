@@ -1612,7 +1612,7 @@ func (n *Mention) Clone() Elem {
 }
 func (n *Mention) IsNil() bool        { return n == nil }
 func (n *Mention) Twter() types.Twter { return types.Twter{Nick: n.name, URL: n.target} }
-func (n *Mention) Literal() string    { return n.FormatText() }
+func (n *Mention) Literal() string    { return n.lit }
 func (n *Mention) String() string     { return n.FormatText() }
 func (n *Mention) Name() string       { return n.name }
 func (n *Mention) Domain() string {
@@ -1661,7 +1661,7 @@ func (n *Mention) Markdown() string {
 		return fmt.Sprintf("@%s", nick)
 	}
 
-	return fmt.Sprintf("[@%s](%s)", nick, n.target)
+	return fmt.Sprintf("[@%s](%s#%s)", nick, n.target, n.name)
 }
 func (n *Mention) FormatHTML() string {
 	if n.target == "" {
@@ -1748,6 +1748,13 @@ func (n *Tag) Markdown() string {
 
 	return fmt.Sprintf("[#%s](%s)", n.tag, n.target)
 }
+func (n *Tag) FormatHTML() string {
+	if n.target == "" {
+		return fmt.Sprintf("#%s", n.tag)
+	}
+
+	return fmt.Sprintf(`<a href="%s">#%s</a>`, n.target, n.tag)
+}
 
 type Subject struct {
 	subject string
@@ -1795,6 +1802,12 @@ func (n *Subject) Markdown() string {
 	}
 	return fmt.Sprintf("(%s)", n.tag.Markdown())
 }
+func (n *Subject) FormatHTML() string {
+	if n.tag == nil {
+		return fmt.Sprintf("(%s)", n.subject)
+	}
+	return fmt.Sprintf("(%s)", n.tag.FormatHTML())
+}
 
 type Text struct {
 	lit string
@@ -1823,8 +1836,8 @@ func (n *lineSeparator) Clone() Elem        { return LineSeparator }
 func (n *lineSeparator) IsNil() bool        { return false }
 func (n *lineSeparator) Literal() string    { return "\u2028" }
 func (n *lineSeparator) String() string     { return "\n" }
-func (n *lineSeparator) FormatText() string { return n.String() }
-func (n *lineSeparator) Markdown() string   { return n.String() }
+func (n *lineSeparator) FormatText() string { return "\n" }
+func (n *lineSeparator) Markdown() string   { return "\n" }
 
 type Link struct {
 	linkType LinkType
@@ -1906,7 +1919,7 @@ func (n *Code) Literal() string {
 	return fmt.Sprintf("`%s`", n.lit)
 }
 func (n *Code) FormatText() string { return n.Literal() }
-func (n *Code) Markdown() string   { return n.Literal() }
+func (n *Code) Markdown() string   { return n.String() }
 
 // String replaces line separator with newlines
 func (n *Code) String() string {
@@ -2235,7 +2248,7 @@ func (twt Twt) Hash() string {
 		"%s\n%s\n%s",
 		twt.Twter().URL,
 		twt.Created().Format(time.RFC3339),
-		twt.FormatText(types.TextFmt, nil),
+		twt.Literal(),
 	)
 	sum := blake2b.Sum256([]byte(payload))
 

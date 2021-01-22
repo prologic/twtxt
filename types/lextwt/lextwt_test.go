@@ -10,6 +10,7 @@ import (
 
 	"github.com/jointwt/twtxt/types"
 	"github.com/jointwt/twtxt/types/lextwt"
+	"github.com/jointwt/twtxt/types/retwt"
 	"github.com/matryer/is"
 )
 
@@ -526,6 +527,27 @@ func TestParseTwt(t *testing.T) {
 				lextwt.NewText(" 🤔"),
 			),
 		},
+
+		{
+			lit: `2021-01-21T23:25:59Z	Alligator  ![](https://twtxt.net/media/L6g5PMqA2JXX7ra5PWiMsM)  > Guy says to his colleague “just don’t fall in!” She replies “yeah good advice!”  🤣  #AustraliaZoo`,
+			twt: lextwt.NewTwt(
+				types.Twter{},
+				lextwt.NewDateTime(parseTime("2021-01-21T23:25:59Z")),
+				lextwt.NewText("Alligator"),
+				lextwt.LineSeparator,
+				lextwt.LineSeparator,
+				lextwt.NewLink("", "https://twtxt.net/media/L6g5PMqA2JXX7ra5PWiMsM", lextwt.LinkMedia),
+				lextwt.LineSeparator,
+				lextwt.LineSeparator,
+				lextwt.NewText("> Guy says to his colleague “just don’t fall in!” She replies “yeah good advice!”"),
+				lextwt.LineSeparator,
+				lextwt.LineSeparator,
+				lextwt.NewText("🤣"),
+				lextwt.LineSeparator,
+				lextwt.LineSeparator,
+				lextwt.NewTag("AustraliaZoo", ""),
+			),
+		},
 	}
 
 	for i, tt := range tests {
@@ -535,6 +557,15 @@ func TestParseTwt(t *testing.T) {
 		lexer := lextwt.NewLexer(r)
 		parser := lextwt.NewParser(lexer)
 		twt := parser.ParseTwt()
+
+		// t.Log(twt.FormatText(types.HTMLFmt, nil))
+
+		rt, err := retwt.ParseLine(strings.TrimRight(tt.lit, "\n"), types.Twter{})
+		is.NoErr(err)
+		// t.Log(rt.FormatText(types.HTMLFmt, nil))
+
+		is.Equal(twt.FormatText(types.MarkdownFmt, nil), rt.FormatText(types.MarkdownFmt, nil))
+		is.Equal(twt.FormatText(types.HTMLFmt, nil), rt.FormatText(types.HTMLFmt, nil))
 
 		is.True(twt != nil)
 		if twt != nil {
@@ -587,7 +618,6 @@ func testParseTwt(t *testing.T, expect, elem types.Twt) {
 		for i := range m {
 			testParseTag(t, m[i].(*lextwt.Tag), n[i].(*lextwt.Tag))
 		}
-		is.Equal(n, m)
 	}
 
 	{
@@ -598,7 +628,6 @@ func testParseTwt(t *testing.T, expect, elem types.Twt) {
 		for i := range m {
 			testParseLink(t, m[i].(*lextwt.Link), n[i].(*lextwt.Link))
 		}
-		is.Equal(n, m)
 	}
 }
 

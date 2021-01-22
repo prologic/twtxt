@@ -331,7 +331,7 @@ func formatMentionsAndTags(opts types.FmtOpts, text string, format types.TwtText
 		if format == types.TextFmt {
 			switch prefix {
 			case "@":
-				if opts.IsLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
+				if opts != nil && opts.IsLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
 					return fmt.Sprintf("%s@%s", nick, opts.LocalURL().Hostname())
 				}
 				return fmt.Sprintf("@%s", nick)
@@ -343,10 +343,15 @@ func formatMentionsAndTags(opts types.FmtOpts, text string, format types.TwtText
 		if format == types.HTMLFmt {
 			switch prefix {
 			case "@":
-				if opts.IsLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
-					return fmt.Sprintf(`<a href="%s">@%s</a>`, opts.UserURL(url), nick)
+				if opts != nil {
+					if opts.IsLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
+						url = opts.UserURL(url)
+					} else {
+						url = opts.ExternalURL(nick, url)
+					}
 				}
-				return fmt.Sprintf(`<a href="%s">@%s</a>`, opts.ExternalURL(nick, url), nick)
+				return fmt.Sprintf(`<a href="%s">@%s</a>`, url, nick)
+
 			default:
 				return fmt.Sprintf(`<a href="%s">%s%s</a>`, url, prefix, nick)
 			}

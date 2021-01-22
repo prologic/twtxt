@@ -516,7 +516,7 @@ func (u *User) Reply(twt types.Twt) string {
 	}
 
 	mentions = UniqStrings(mentions)
-	mentions = append(mentions, twt.Subject().Text())
+	mentions = append(mentions, twt.Subject().FormatText())
 
 	return fmt.Sprintf("%s ", strings.Join(mentions, " "))
 }

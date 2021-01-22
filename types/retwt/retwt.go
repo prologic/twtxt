@@ -201,7 +201,7 @@ func (twt reTwt) MarshalJSON() ([]byte, error) {
 		// Dynamic Fields
 		Hash:    twt.Hash(),
 		Tags:    tags.Tags(),
-		Subject: twt.Subject().Text(),
+		Subject: twt.Subject().FormatText(),
 	})
 }
 

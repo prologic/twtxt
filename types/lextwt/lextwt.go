@@ -435,32 +435,20 @@ func (l *lexer) readRune() {
 	}
 
 	// if not enough bytes left shift and fill.
-	// After testing the DecodeRune internally calls FullRune
-	// So it is better to optimistically attempt a decode and
-	// replenish the buffer if that fails.
 	var size int
-	// if !utf8.FullRune(l.buf[l.pos:]) {
-	// 	copy(l.buf[:], l.buf[l.pos:l.size])
-	// 	l.pos = l.size - l.pos
-	// 	l.size = l.pos
-	// 	l.readBuf()
-	// 	l.pos = 0
-	// }
-	// if !utf8.FullRune(l.buf[l.pos:]) {
-	// 	l.rune = EOF
-	// 	return
-	// }
-
-	l.rune, size = utf8.DecodeRune(l.buf[l.pos:])
-	if l.rune == utf8.RuneError && size == 0 {
+	if !utf8.FullRune(l.buf[l.pos:l.size]) {
 		copy(l.buf[:], l.buf[l.pos:l.size])
 		l.pos = l.size - l.pos
 		l.size = l.pos
 		l.readBuf()
 		l.pos = 0
-
-		l.rune, size = utf8.DecodeRune(l.buf[l.pos:])
 	}
+	if !utf8.FullRune(l.buf[l.pos:l.size]) {
+		l.rune = EOF
+		return
+	}
+
+	l.rune, size = utf8.DecodeRune(l.buf[l.pos:l.size])
 
 	l.pos += size
 	l.rpos = l.fpos
@@ -1709,7 +1697,7 @@ func (n *Tag) CloneTag() *Tag {
 	}
 }
 func (n *Tag) IsNil() bool     { return n == nil }
-func (n *Tag) Literal() string { return n.FormatText() }
+func (n *Tag) Literal() string { return n.lit }
 func (n *Tag) String() string  { return n.FormatText() }
 func (n *Tag) Text() string    { return n.tag }
 func (n *Tag) Target() string  { return n.target }
@@ -2000,13 +1988,18 @@ func (twt *Twt) Literal() string {
 	var b strings.Builder
 	b.WriteString(twt.dt.Literal())
 	b.WriteRune('\t')
+	b.WriteString(twt.LiteralText())
+	b.WriteRune('\n')
+	return b.String()
+}
+func (twt *Twt) LiteralText() string {
+	var b strings.Builder
 	for _, s := range twt.msg {
 		if s == nil || s.IsNil() {
 			continue
 		}
 		b.WriteString(s.Literal())
 	}
-	b.WriteRune('\n')
 	return b.String()
 }
 func (twt Twt) Clone() types.Twt {
@@ -2029,27 +2022,27 @@ func (twt *Twt) Text() string {
 func (twt *Twt) GobEncode() ([]byte, error) {
 	twter := twt.Twter()
 	s := fmt.Sprintf(
-		"%s\t%s\t%s\t%s\t%s\n",
+		"%s\t%s\t%s\t%s\t%s",
 		twter.Nick,
 		twter.URL,
+		twter.Avatar,
 		twt.Hash(),
-		twt.Created().Format(time.RFC3339),
-		twt.Text(),
+		twt.Literal(),
 	)
 	return []byte(s), nil
 }
 func (twt *Twt) GobDecode(data []byte) error {
-	sp := strings.SplitN(string(data), "\t", 4)
-	if len(sp) != 4 {
+	sp := strings.SplitN(string(data), "\t", 5)
+	if len(sp) != 5 {
 		return fmt.Errorf("unable to decode twt: %s ", data)
 	}
-	twter := types.Twter{Nick: sp[0], URL: sp[1]}
-	t, err := ParseLine(sp[3], twter)
+	twter := types.Twter{Nick: sp[0], URL: sp[1], Avatar: sp[2]}
+	twt.hash = sp[3]
+	t, err := ParseLine(sp[4], twter)
 	if err != nil {
 		return err
 	}
 
-	twt.hash = sp[3]
 	if t, ok := t.(*Twt); ok {
 		twt.dt = t.dt
 		twt.msg = t.msg
@@ -2248,7 +2241,7 @@ func (twt Twt) Hash() string {
 		"%s\n%s\n%s",
 		twt.Twter().URL,
 		twt.Created().Format(time.RFC3339),
-		twt.Literal(),
+		twt.LiteralText(),
 	)
 	sum := blake2b.Sum256([]byte(payload))
 

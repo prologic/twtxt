@@ -210,7 +210,7 @@ func (twts Twts) Subjects() []Subject {
 func (twts Twts) SubjectCount() map[string]int {
 	subjects := make(map[string]int)
 	for _, twt := range twts {
-		subjects[twt.Subject().FormatText()]++
+		subjects[twt.Subject().Text()]++
 	}
 	return subjects
 }

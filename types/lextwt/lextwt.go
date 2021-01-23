@@ -1,7 +1,7 @@
 package lextwt
 
 // EBNF
-// lower = rune, Inital = []rune, CAPS = Element
+// lower = rune, Initial = []rune, CAPS = Element
 // ```
 // eof     = EOF ;
 // illegal =  0 ;

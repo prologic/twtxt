@@ -1784,6 +1784,12 @@ func (n *Subject) FormatText() string {
 	}
 	return fmt.Sprintf("(%s)", n.tag.Literal())
 }
+func (n *Subject) FormatDisplay() string {
+	if n.tag == nil {
+		return fmt.Sprintf("(%s)", n.subject)
+	}
+	return fmt.Sprintf("(#%s)", n.tag.Text())
+}
 func (n *Subject) Markdown() string {
 	if n.tag == nil {
 		return fmt.Sprintf("(%s)", n.subject)
@@ -2076,7 +2082,7 @@ func (twt Twt) MarshalJSON() ([]byte, error) {
 		// Dynamic Fields
 		Hash:    twt.Hash(),
 		Tags:    tags.Tags(),
-		Subject: twt.Subject().FormatText(),
+		Subject: twt.Subject().FormatDisplay(),
 	})
 }
 func DecodeJSON(data []byte) (types.Twt, error) {

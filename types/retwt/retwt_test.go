@@ -83,9 +83,9 @@ func TestSubject(t *testing.T) {
 		t.Run(testCase.String(), func(t *testing.T) {
 			twt := retwt.NewReTwt(types.Twter{}, testCase.Input, time.Now())
 			if testCase.Expected == "" {
-				assert.Equal(fmt.Sprintf("(#%s)", twt.Hash()), twt.Subject().Text())
+				assert.Equal(fmt.Sprintf("(#%s)", twt.Hash()), twt.Subject().FormatDisplay())
 			} else {
-				assert.Equal(testCase.Expected, twt.Subject().Text())
+				assert.Equal(testCase.Expected, twt.Subject().FormatDisplay())
 			}
 		})
 	}

@@ -201,7 +201,7 @@ func (twt reTwt) MarshalJSON() ([]byte, error) {
 		// Dynamic Fields
 		Hash:    twt.Hash(),
 		Tags:    tags.Tags(),
-		Subject: twt.Subject().FormatText(),
+		Subject: twt.Subject().FormatDisplay(),
 	})
 }
 
@@ -450,7 +450,9 @@ func (r reSubject) Text() string {
 func (r reSubject) FormatText() string {
 	return FormatMentionsAndTagsForSubject(string(r))
 }
-
+func (r reSubject) FormatDisplay() string {
+	return string(r)
+}
 // ExpandMentions turns "@nick" into "@<nick URL>" if we're following the user or feed
 // or if they exist on the local pod. Also turns @user@domain into
 // @<user URL> as a convenient way to mention users across pods.

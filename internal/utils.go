@@ -1323,7 +1323,7 @@ func URLForExternalAvatar(conf *Config, uri string) string {
 
 func URLForBlogFactory(conf *Config, blogs *BlogsCache) func(twt types.Twt) string {
 	return func(twt types.Twt) string {
-		subject := twt.Subject().FormatText()
+		subject := twt.Subject().FormatDisplay()
 		if subject == "" {
 			return ""
 		}
@@ -1353,7 +1353,7 @@ func URLForBlogFactory(conf *Config, blogs *BlogsCache) func(twt types.Twt) stri
 
 func URLForConvFactory(conf *Config, cache *Cache) func(twt types.Twt) string {
 	return func(twt types.Twt) string {
-		subject := twt.Subject().FormatText()
+		subject := twt.Subject().FormatDisplay()
 		if subject == "" {
 			return ""
 		}

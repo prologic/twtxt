@@ -59,6 +59,10 @@ Please visit [Twt.social](https://twt.social) to get your pod today!
 
 ### Pre-built Binaries
 
+__NOTE:__ Please don't use the  pre-built binaries until [Issue #250](https://github.com/jointwt/twtxt/issues/250) is resolved.
+          Plese build from source or use the [Docker Images](https://hub.docker.com/jointwt).
+          Thank you. 🙇‍♂️
+
 As a first point, please try to use one of the pre-built binaries  that are
 available on the [Releases](https://github.com/jointwt/twtxt/releases) page.
 
@@ -223,6 +227,42 @@ Usage of ./twtd:
       --whitelist-domain strings    whitelist of external domains to permit for display of inline images (default [imgur\.com,giphy\.com,reactiongifs\.com,githubusercontent\.com])
 pflag: help requested
 ```
+
+## Configuring your Pod
+
+At a bare minimum you should set the  following options:
+
+- `-d /path/to/data`
+- `-s bitcask:///path/to/data/twtxt.db` (_we will likely simplify/default this_)
+- `-R` to enable open registrations.
+- `-O` to enable open profiles.
+
+Most other configuration values _should_ be done via environment variables.
+
+It is _recommended_ you pick an account you want to usee to "administer" the
+pod with and set the following environment values:
+
+- `ADMIN_USER=username`
+- `ADMIN_EMAIL=email`
+
+In order to configure email settings for password recovery and the /support
+and /abuse endpoints, you should set appropriate `SMTP_` values.
+
+It is **highly** recommended you also set the following values to secure your Pod:
+
+- `API_SIGNING_KEY`
+- `COOKIE_SECRET`
+- `MAGICLINK_SECRET`
+
+These values _should_ be generated with a secure random number generator and
+be of length `64` characters long. You can use the following shell snippet
+to generates  secrets for your  pod for the above values:
+
+```console
+$ cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1
+```
+
+**DO NOT** publish or share thesevalues. **BE SURE** to only set them as env vars.
 
 ## Production Deployments
 

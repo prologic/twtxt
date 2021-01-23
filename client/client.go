@@ -107,7 +107,7 @@ func (c *Client) do(req *http.Request, v interface{}) error {
 
 // Login ...
 func (c *Client) Login(username, password string) (res types.AuthResponse, err error) {
-	req, err := c.newRequest("POST", "/auth", types.AuthRequest{username, password})
+	req, err := c.newRequest("POST", "/auth", types.AuthRequest{Username: username, Password: password})
 	if err != nil {
 		return types.AuthResponse{}, err
 	}

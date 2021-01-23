@@ -2082,7 +2082,7 @@ func (twt Twt) MarshalJSON() ([]byte, error) {
 		// Dynamic Fields
 		Hash:    twt.Hash(),
 		Tags:    tags.Tags(),
-		Subject: twt.Subject().FormatDisplay(),
+		Subject: twt.Subject().String(),
 	})
 }
 func DecodeJSON(data []byte) (types.Twt, error) {

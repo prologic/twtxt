@@ -122,7 +122,7 @@ type Subject interface {
 	Text() string
 	Tag() TwtTag
 
-	FormatDisplay() string
+	String() string
 }
 
 // TwtMap ...
@@ -212,7 +212,7 @@ func (twts Twts) Subjects() []Subject {
 func (twts Twts) SubjectCount() map[string]int {
 	subjects := make(map[string]int)
 	for _, twt := range twts {
-		subjects[twt.Subject().FormatDisplay()]++
+		subjects[twt.Subject().String()]++
 	}
 	return subjects
 }

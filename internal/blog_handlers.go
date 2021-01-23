@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -306,8 +305,9 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 		}
 
 		// Expand Mentions and Tags
-		text = ExpandTag(s.config, ExpandMentions(s.config, s.db, ctx.User, text))
-		text = FormatMentionsAndTags(s.config, text, MarkdownFmt)
+		twt := types.MakeTwt(types.NilTwt.Twter(), time.Time{}, text)
+		twt.ExpandLinks(s.config, NewFeedLookup(s.config, s.db, ctx.User))
+		text = twt.FormatText(types.MarkdownFmt, s.config)
 
 		hash := r.FormValue("hash")
 		if hash != "" {
@@ -403,53 +403,4 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
-}
-
-// ExpandMentions turns "@nick" into "@<nick URL>" if we're following the user or feed
-// or if they exist on the local pod. Also turns @user@domain into
-// @<user URL> as a convenient way to mention users across pods.
-func ExpandMentions(conf *Config, db Store, user *User, text string) string {
-	re := regexp.MustCompile(`@([a-zA-Z0-9][a-zA-Z0-9_-]+)(?:@)?((?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9]\.)|(?:[0-9]+/[0-9]{2})\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?)?`)
-	return re.ReplaceAllStringFunc(text, func(match string) string {
-		parts := re.FindStringSubmatch(match)
-		mentionedNick := parts[1]
-		mentionedDomain := parts[2]
-
-		if mentionedNick != "" && mentionedDomain != "" {
-			// TODO: Validate the remote end for a valid Twtxt pod?
-			// XXX: Should we always assume https:// ?
-			return fmt.Sprintf(
-				"@<%s https://%s/user/%s/twtxt.txt>",
-				mentionedNick, mentionedDomain, mentionedNick,
-			)
-		}
-
-		for followedNick, followedURL := range user.Following {
-			if mentionedNick == followedNick {
-				return fmt.Sprintf("@<%s %s>", followedNick, followedURL)
-			}
-		}
-
-		username := NormalizeUsername(mentionedNick)
-		if db.HasUser(username) || db.HasFeed(username) {
-			return fmt.Sprintf("@<%s %s>", username, URLForUser(conf, username))
-		}
-
-		// Not expanding if we're not following, not a local user/feed
-		return match
-	})
-}
-
-// Turns #tag into "#<tag URL>"
-func ExpandTag(conf *Config, text string) string {
-	// Sadly, Go's regular expressions don't support negative lookbehind, so we
-	// need to bake it differently into the regex with several choices.
-	re := regexp.MustCompile(`(^|\s|(^|[^\]])\()#([-\w]+)`)
-	return re.ReplaceAllStringFunc(text, func(match string) string {
-		parts := re.FindStringSubmatch(match)
-		prefix := parts[1]
-		tag := parts[3]
-
-		return fmt.Sprintf("%s#<%s %s>", prefix, tag, URLForTag(conf.BaseURL, tag))
-	})
 }

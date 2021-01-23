@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -86,4 +88,18 @@ func TestExpandTag(t *testing.T) {
 			assert.Equal(testCase.expected, ExpandTag(conf, testCase.input))
 		})
 	}
+}
+
+// Turns #tag into "#<tag URL>"
+func ExpandTag(conf *Config, text string) string {
+	// Sadly, Go's regular expressions don't support negative lookbehind, so we
+	// need to bake it differently into the regex with several choices.
+	re := regexp.MustCompile(`(^|\s|(^|[^\]])\()#([-\w]+)`)
+	return re.ReplaceAllStringFunc(text, func(match string) string {
+		parts := re.FindStringSubmatch(match)
+		prefix := parts[1]
+		tag := parts[3]
+
+		return fmt.Sprintf("%s#<%s %s>", prefix, tag, URLForTag(conf.BaseURL, tag))
+	})
 }

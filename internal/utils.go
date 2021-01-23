@@ -1672,11 +1672,6 @@ func FormatTwtFactory(conf *Config) func(twt types.Twt) template.HTML {
 			return ast.GoToNext, false
 		}
 
-		// Replace  `LS: Line Separator, U+2028` with `\n` so the Markdown
-		// renderer can interpreter newlines as `<br />` and `<p>`.
-		// text = strings.ReplaceAll(text, "\u2028", "\n")
-		// Replace simple '#just-tag' entrys with local link
-		// text = ExpandTag(conf, text)
 		extensions := parser.CommonExtensions | parser.HardLineBreak | parser.NoEmptyLineBeforeBlock
 		mdParser := parser.NewWithExtensions(extensions)
 

@@ -303,13 +303,13 @@ article .p-summary blockquote {
   position: relative;
 }
 
-/* lextwt enhancements */
-article .p-summary a em, em.twt-type {
+/* Twt Hash */
+article .p-summary a em, em.twt-hash {
   color: darkgray;
   font-weight: 100;
   color: var(--muted-text);
 }
-em.twt-type {
+em.twt-hash {
   float: right;
   font-size: small;
 }

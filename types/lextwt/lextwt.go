@@ -225,7 +225,7 @@ const (
 	TokLBRACK TokType = "["
 	TokRBRACK TokType = "]"
 	TokBANG   TokType = "!"
-	TokSLASH  TokType = `\`
+	TokBSLASH TokType = `\`
 )
 
 // // Tested using int8 for TokenType -1 debug +0 memory/performance
@@ -339,7 +339,7 @@ func (l *lexer) NextTok() bool {
 			l.loadRune(TokBANG)
 			return true
 		case '\\':
-			l.loadRune(TokSLASH)
+			l.loadRune(TokBSLASH)
 			return true
 		case '`':
 			l.loadCode()
@@ -1157,7 +1157,7 @@ func (p *parser) ParseLink() *Link {
 			p.append(p.curTok.Literal...) // link text
 
 			// Allow excaped chars to not close.
-			if p.curTokenIs(TokSLASH) {
+			if p.curTokenIs(TokBSLASH) {
 				p.next()
 				p.append(p.curTok.Literal...) // text
 			}
@@ -1217,7 +1217,7 @@ func (p *parser) ParseLink() *Link {
 			p.next()
 
 			// Allow excaped chars to not close.
-			if p.curTokenIs(TokSLASH) {
+			if p.curTokenIs(TokBSLASH) {
 				p.append(p.curTok.Literal...) // text
 				p.next()
 			}

@@ -217,7 +217,7 @@ const (
 	TokHASH  TokType = "#"
 	TokEQUAL TokType = "="
 
-	TokAMP    TokType = "@"
+	TokAT     TokType = "@"
 	TokLT     TokType = "<"
 	TokGT     TokType = ">"
 	TokLPAREN TokType = "("
@@ -225,7 +225,7 @@ const (
 	TokLBRACK TokType = "["
 	TokRBRACK TokType = "]"
 	TokBANG   TokType = "!"
-	TokSLASH  TokType = `\`
+	TokBSLASH TokType = `\`
 )
 
 // // Tested using int8 for TokenType -1 debug +0 memory/performance
@@ -243,7 +243,7 @@ const (
 // 	TokSPACE  // White Space
 // 	TokTAB    // Tab
 //
-// 	TokAMP
+// 	TokAT
 // 	TokCOLON
 // 	TokDOT
 // 	TokHASH
@@ -312,7 +312,7 @@ func (l *lexer) NextTok() bool {
 
 		switch l.rune {
 		case '@':
-			l.loadRune(TokAMP)
+			l.loadRune(TokAT)
 			return true
 		case '#':
 			l.loadRune(TokHASH)
@@ -339,7 +339,7 @@ func (l *lexer) NextTok() bool {
 			l.loadRune(TokBANG)
 			return true
 		case '\\':
-			l.loadRune(TokSLASH)
+			l.loadRune(TokBSLASH)
 			return true
 		case '`':
 			l.loadCode()
@@ -660,7 +660,7 @@ func (p *parser) ParseElem() Elem {
 		e = p.ParseSubject()
 	case TokHASH:
 		e = p.ParseTag()
-	case TokAMP:
+	case TokAT:
 		e = p.ParseMention()
 	case TokNL, TokEOF:
 		return nil
@@ -897,7 +897,7 @@ func (p *parser) ParseMention() *Mention {
 	m := &Mention{}
 
 	// form: @nick
-	if p.curTokenIs(TokAMP) && p.peekTokenIs(TokSTRING) {
+	if p.curTokenIs(TokAT) && p.peekTokenIs(TokSTRING) {
 		p.append(p.curTok.Literal...) // @
 		p.next()
 
@@ -906,7 +906,7 @@ func (p *parser) ParseMention() *Mention {
 		p.append(p.curTok.Literal...)
 		p.next()
 
-		if p.curTokenIs(TokAMP) && p.peekTokenIs(TokSTRING) {
+		if p.curTokenIs(TokAT) && p.peekTokenIs(TokSTRING) {
 			p.append(p.curTok.Literal...)
 			p.next()
 
@@ -921,7 +921,7 @@ func (p *parser) ParseMention() *Mention {
 	}
 
 	// forms: @<...>
-	if p.curTokenIs(TokAMP) && p.peekTokenIs(TokLT) {
+	if p.curTokenIs(TokAT) && p.peekTokenIs(TokLT) {
 		p.append(p.curTok.Literal...) // @
 		p.next()
 
@@ -940,7 +940,7 @@ func (p *parser) ParseMention() *Mention {
 		}
 
 		// form: @<nick@domain scheme://example.com>
-		if p.curTokenIs(TokSTRING) && p.peekTokenIs(TokAMP) {
+		if p.curTokenIs(TokSTRING) && p.peekTokenIs(TokAT) {
 			m.name = string(p.curTok.Literal)
 
 			p.append(p.curTok.Literal...) // string
@@ -1113,7 +1113,7 @@ func (p *parser) ParseText() *Text {
 
 	for p.curTokenIs(TokSTRING, TokSPACE) ||
 		// We don't want to parse an email address or link accidentally as a mention or tag. So check if it is preceded with a space.
-		(p.curTokenIs(TokHASH, TokAMP, TokLT, TokLPAREN) && (len(p.lit) == 0 || !unicode.IsSpace(p.lit[len(p.lit)-1]))) {
+		(p.curTokenIs(TokHASH, TokAT, TokLT, TokLPAREN) && (len(p.lit) == 0 || !unicode.IsSpace(p.lit[len(p.lit)-1]))) {
 
 		// if it looks like a link break out.
 		if p.curTokenIs(TokSTRING) && p.peekTokenIs(TokSCHEME) {
@@ -1157,7 +1157,7 @@ func (p *parser) ParseLink() *Link {
 			p.append(p.curTok.Literal...) // link text
 
 			// Allow excaped chars to not close.
-			if p.curTokenIs(TokSLASH) {
+			if p.curTokenIs(TokBSLASH) {
 				p.next()
 				p.append(p.curTok.Literal...) // text
 			}
@@ -1217,7 +1217,7 @@ func (p *parser) ParseLink() *Link {
 			p.next()
 
 			// Allow excaped chars to not close.
-			if p.curTokenIs(TokSLASH) {
+			if p.curTokenIs(TokBSLASH) {
 				p.append(p.curTok.Literal...) // text
 				p.next()
 			}

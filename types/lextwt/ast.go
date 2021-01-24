@@ -889,6 +889,10 @@ func (twt Twt) Links() types.LinkList {
 }
 func (twt Twt) Twter() types.Twter { return twt.twter }
 func (twt Twt) Hash() string {
+	if twt.hash != "" {
+		return twt.hash
+	}
+
 	payload := fmt.Sprintf(
 		"%s\n%s\n%s",
 		twt.Twter().URL,

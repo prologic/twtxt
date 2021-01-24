@@ -12,7 +12,7 @@
 
 [![Go Report Card](https://goreportcard.com/badge/jointwt/twtxt)](https://goreportcard.com/report/jointwt/twtxt)
 [![codebeat badge](https://codebeat.co/badges/15fba8a5-3044-4f40-936f-9e0f5d5d1fd9)](https://codebeat.co/projects/github-com-prologic-twtxt-master)
-[![GoDoc](https://godoc.org/github.com/jointwt/twtxt?status.svg)](https://godoc.org/github.com/jointwt/twtxt) 
+[![GoDoc](https://godoc.org/github.com/jointwt/twtxt?status.svg)](https://godoc.org/github.com/jointwt/twtxt)
 [![GitHub license](https://img.shields.io/github/license/jointwt/twtxt.svg)](https://github.com/jointwt/twtxt)
 
 📕 twtxt is a Self-Hosted, Twitter™-like Decentralised micro-Blogging platform. No ads, no tracking, your content, your data!
@@ -22,16 +22,16 @@
 > Technically `twtxt` is a multi-user [twtxt](https://twtxt.readthedocs.io/en/latest/) client in the form
 > of a web app and api. It supports multiple users and
 > also hosts user feeds directly and provides a familiar "social" experience with minimal user profiles.
-> 
+>
 > It also supports "rich" text by utilising Markdown as well as multimedia such as photos, videos and even audio.
 >
-> There is also a set of [Mobile App]s(https://jointwt.org/goryon/) available for both the App Store and Play Store. 
+> There is also a set of [Mobile Apps](https://jointwt.org/goryon/) available for both the App Store and Play Store.
 
 There is also a publicly (_free_) available Pod available at:
 
 - https://twtxt.net/
 
-> __NOTE:__ I, [James Mills](https://github.com/prologic), run this first (_of which I hope to be many_) `twtxt` instance on pretty cheap hardware on a limited budget. Please use it fairly so everyone can enjoy using it equally! Please be sure to read the [/privacy](https://twtxt.net/privacy) policy before signing up (_pretty striaght forward_) and happy Twt'ing! 🤗
+> __NOTE:__ I, [James Mills](https://github.com/prologic), run this first (_of which I hope to be many_) `twtxt` instance on pretty cheap hardware on a limited budget. Please use it fairly so everyone can enjoy using it equally! Please be sure to read the [/privacy](https://twtxt.net/privacy) policy before signing up (_pretty straight forward_) and happy Twt'ing! 🤗
 
 > **[Sponsor](#Sponsor)** this project to support the development of new features, improving existings ones and fix bugs!
 > Or contact [Support](https://twtxt.net) for help with running your own Pod!
@@ -59,11 +59,11 @@ Please visit [Twt.social](https://twt.social) to get your pod today!
 
 ### Pre-built Binaries
 
-__NOTE:__ Please don't use the  pre-built binaries until [Issue #250](https://github.com/jointwt/twtxt/issues/250) is resolved.
-          Plese build from source or use the [Docker Images](https://hub.docker.com/jointwt).
+__NOTE:__ Please don't use the pre-built binaries until [Issue #250](https://github.com/jointwt/twtxt/issues/250) is resolved.
+          Please build from source or use the [Docker Images](https://hub.docker.com/jointwt).
           Thank you. 🙇‍♂️
 
-As a first point, please try to use one of the pre-built binaries  that are
+As a first point, please try to use one of the pre-built binaries that are
 available on the [Releases](https://github.com/jointwt/twtxt/releases) page.
 
 ### Using Homebrew
@@ -105,8 +105,8 @@ Linux, macOS:
 ```console
 make deps
 ```
-Note that in order to get the media upload functions to work, you need to 
-install ffmpeg and its associated `-dev` packages. Consult your distribution's package 
+Note that in order to get the media upload functions to work, you need to
+install ffmpeg and its associated `-dev` packages. Consult your distribution's package
 repository for availability and names.
 
 FreeBSD:
@@ -230,7 +230,7 @@ pflag: help requested
 
 ## Configuring your Pod
 
-At a bare minimum you should set the  following options:
+At a bare minimum you should set the following options:
 
 - `-d /path/to/data`
 - `-s bitcask:///path/to/data/twtxt.db` (_we will likely simplify/default this_)
@@ -239,14 +239,14 @@ At a bare minimum you should set the  following options:
 
 Most other configuration values _should_ be done via environment variables.
 
-It is _recommended_ you pick an account you want to usee to "administer" the
+It is _recommended_ you pick an account you want to use to "administer" the
 pod with and set the following environment values:
 
 - `ADMIN_USER=username`
 - `ADMIN_EMAIL=email`
 
-In order to configure email settings for password recovery and the /support
-and /abuse endpoints, you should set appropriate `SMTP_` values.
+In order to configure email settings for password recovery and the `/support`
+and `/abuse` endpoints, you should set appropriate `SMTP_` values.
 
 It is **highly** recommended you also set the following values to secure your Pod:
 
@@ -256,13 +256,13 @@ It is **highly** recommended you also set the following values to secure your Po
 
 These values _should_ be generated with a secure random number generator and
 be of length `64` characters long. You can use the following shell snippet
-to generates  secrets for your  pod for the above values:
+to generate secrets for your pod for the above values:
 
 ```console
 $ cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1
 ```
 
-**DO NOT** publish or share thesevalues. **BE SURE** to only set them as env vars.
+**DO NOT** publish or share these values. **BE SURE** to only set them as env vars.
 
 ## Production Deployments
 
@@ -303,7 +303,7 @@ you can contribute:
 Please see the [Contributing Guidelines](/CONTRIBUTING.md) and checkout the
 [Developer Documentation](https://dev.twtxt.net) or over at [/docs](/docs).
 
-> __Please note:__ If you wish to contribute to this proejct off-[Github](https://github.com)
+> __Please note:__ If you wish to contribute to this project off-[Github](https://github.com)
 > please get in touch with us and let us know! We have this project mirroed to
 > private Git hosting using [Gitea](https://gitea.io/en-us/) and can fully support
 > external collaborator this way (_even via email!_).
@@ -312,7 +312,7 @@ Please see the [Contributing Guidelines](/CONTRIBUTING.md) and checkout the
 
 Thank you to all those that have contributed to this project, battle-tested it, used it in their own projects or products, fixed bugs, improved performance and even fix tiny typos in documentation! Thank you and keep contributing!
 
-You can find an [AUTHORS](/AUTHORS) file where we keep a list of contributors to the project. If you contriibute a PR please consider adding your name there. There is also Github's own [Contributors](https://github.com/jointwt/twtxt/graphs/contributors) statistics.
+You can find an [AUTHORS](/AUTHORS) file where we keep a list of contributors to the project. If you contribute a PR please consider adding your name there. There is also Github's own [Contributors](https://github.com/jointwt/twtxt/graphs/contributors) statistics.
 
 [![](https://sourcerer.io/fame/prologic/jointwt/twtxt/images/0)](https://sourcerer.io/fame/prologic/jointwt/twtxt/links/0)
 [![](https://sourcerer.io/fame/prologic/jointwt/twtxt/images/1)](https://sourcerer.io/fame/prologic/jointwt/twtxt/links/1)

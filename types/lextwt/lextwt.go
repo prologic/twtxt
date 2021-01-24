@@ -1968,8 +1968,10 @@ func (twt *Twt) append(elem Elem) {
 
 	twt.msg = append(twt.msg, elem)
 
-	if subject, ok := elem.(*Subject); ok && twt.subject == nil {
-		twt.subject = subject
+	if subject, ok := elem.(*Subject); ok {
+		if twt.subject == nil {
+			twt.subject = subject
+		}
 		if subject.tag != nil {
 			twt.tags = append(twt.tags, subject.tag)
 		}
@@ -1990,6 +1992,7 @@ func (twt *Twt) append(elem Elem) {
 func (twt *Twt) IsNil() bool  { return twt == nil }
 func (twt *Twt) FilePos() int { return twt.pos }
 func (twt *Twt) IsZero() bool { return twt.IsNil() || twt.Literal() == "" || twt.Created().IsZero() }
+func (twt *Twt) Elems() []Elem { return twt.msg }
 func (twt *Twt) Literal() string {
 	var b strings.Builder
 	b.WriteString(twt.dt.Literal())

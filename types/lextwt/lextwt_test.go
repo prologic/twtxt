@@ -459,95 +459,116 @@ func TestParseTwt(t *testing.T) {
 	twter := types.Twter{Nick: "example", URL: "http://example.com/example.txt"}
 
 	tests := []twtTestCase{
-		{
-			lit: "2016-02-03T23:05:00Z	@<example http://example.org/twtxt.txt>\u2028welcome to twtxt!\n",
-			twt: lextwt.NewTwt(
-				twter,
-				lextwt.NewDateTime(parseTime("2016-02-03T23:05:00Z")),
-				lextwt.NewMention("example", "http://example.org/twtxt.txt"),
-				lextwt.NewText("\u2028welcome to twtxt!"),
-			),
-		},
+		// {
+		// 	lit: "2016-02-03T23:05:00Z	@<example http://example.org/twtxt.txt>\u2028welcome to twtxt!\n",
+		// 	twt: lextwt.NewTwt(
+		// 		twter,
+		// 		lextwt.NewDateTime(parseTime("2016-02-03T23:05:00Z")),
+		// 		lextwt.NewMention("example", "http://example.org/twtxt.txt"),
+		// 		lextwt.LineSeparator,
+		// 		lextwt.NewText("welcome to twtxt"),
+		// 		lextwt.NewText("!"),
+		// 	),
+		// },
+
+		// {
+		// 	lit: "2020-12-25T16:55:57Z	I'm busy, but here's an 1+ [Christmas Tree](https://codegolf.stackexchange.com/questions/4244/code-golf-christmas-edition-how-to-print-out-a-christmas-tree-of-height-n)  ``` . 11+1< (Any unused function name|\"\\\"/1+^<#     \"     (row|\"(Fluff|\"\\\"/^<#               11+\"\"*\"**;               1+           \"\\\"/^<#\"<*)           1           (Mess|/\"\\^/\"\\\"+1+1+^<#               11+\"\"*+\"\"*+;               1+           /\"\\^/\"\\\"+1+1+^<#\"<*)           11+\"\"\"**+;     )     1+ \"\\\"/1+^<#) 11+1<(row) ```",
+		// 	twt: lextwt.NewTwt(
+		// 		twter,
+		// 		lextwt.NewDateTime(parseTime("2020-12-25T16:55:57Z")),
+		// 		lextwt.NewText("I'm busy, but here's an 1+ "),
+		// 		lextwt.NewLink("Christmas Tree", "https://codegolf.stackexchange.com/questions/4244/code-golf-christmas-edition-how-to-print-out-a-christmas-tree-of-height-n", lextwt.LinkStandard),
+		// 		lextwt.LineSeparator,
+		// 		lextwt.LineSeparator,
+		// 		lextwt.NewCode(" . 11+1< (Any unused function name|\"\\\"/1+^<#     \"     (row|\"(Fluff|\"\\\"/^<#               11+\"\"*\"**;               1+           \"\\\"/^<#\"<*)           1           (Mess|/\"\\^/\"\\\"+1+1+^<#               11+\"\"*+\"\"*+;               1+           /\"\\^/\"\\\"+1+1+^<#\"<*)           11+\"\"\"**+;     )     1+ \"\\\"/1+^<#) 11+1<(row) ", lextwt.CodeBlock),
+		// 	),
+		// },
+		// {
+		// 	lit: "2020-12-25T16:57:57Z	@<hirad https://twtxt.net/user/hirad/twtxt.txt> (#<hrqg53a https://twtxt.net/search?tag=hrqg53a>) @<prologic https://twtxt.net/user/prologic/twtxt.txt> make this a blog post plz  And I forgot, [Try It Online Again!](https://tio.run/#jVVbb5tIFH7nV5zgB8DGYJxU7br2Q1IpVausFWXbhxUhCMO4RgszdGbIRZv97d4zYAy2Y7fIRnP5znfuh@JFrhgdr9c9WElZiInrFhGPsxcZPZPMkWW@yLgTs9wtmJDuh/ejD@/eexfn3h9uSiXhBSf4Hi4ZH3rDlA6Lik/TemduKbi7SKlL6CNsjnvgDaAjh2u4ba5uK73wTSkGF74STnK1pTaMR94FIm7SmNCYQCrg0ye4@nv41yVcOCMEX1/egOec4@rz/Dt8vr15PNfSvGBcgngR2pKzHGKWZSSWKaMCNncJ@VkSTRM2iARm9da0bPj3P01LyBIYJUVWClMgdgZz3FoTDfBJl0AZcnNZ7zdnGaEm6nMi/uPRgrMZjNtr9RQcnQf9u4h@kAnoMIAG7Y8C3OngL9OMgGSwIECeSVxKkgT6DokSIc@pND2r1U0LNJAVHf2@F9hgcKMF8)",
+		// 	twt: lextwt.NewTwt(
+		// 		twter,
+		// 		lextwt.NewDateTime(parseTime("2020-12-25T16:57:57Z")),
+		// 		lextwt.NewMention("hirad", "https://twtxt.net/user/hirad/twtxt.txt"),
+		// 		lextwt.NewText(" "),
+		// 		lextwt.NewSubjectTag("hrqg53a", "https://twtxt.net/search?tag=hrqg53a"),
+		// 		lextwt.NewText(" "),
+		// 		lextwt.NewMention("prologic", "https://twtxt.net/user/prologic/twtxt.txt"),
+		// 		lextwt.NewText(" make this a blog post plz"),
+		// 		lextwt.LineSeparator,
+		// 		lextwt.LineSeparator,
+		// 		lextwt.NewText("And I forgot, "),
+		// 		lextwt.NewLink("Try It Online Again!", "https://tio.run/#jVVbb5tIFH7nV5zgB8DGYJxU7br2Q1IpVausFWXbhxUhCMO4RgszdGbIRZv97d4zYAy2Y7fIRnP5znfuh@JFrhgdr9c9WElZiInrFhGPsxcZPZPMkWW@yLgTs9wtmJDuh/ejD@/eexfn3h9uSiXhBSf4Hi4ZH3rDlA6Lik/TemduKbi7SKlL6CNsjnvgDaAjh2u4ba5uK73wTSkGF74STnK1pTaMR94FIm7SmNCYQCrg0ye4@nv41yVcOCMEX1/egOec4@rz/Dt8vr15PNfSvGBcgngR2pKzHGKWZSSWKaMCNncJ@VkSTRM2iARm9da0bPj3P01LyBIYJUVWClMgdgZz3FoTDfBJl0AZcnNZ7zdnGaEm6nMi/uPRgrMZjNtr9RQcnQf9u4h@kAnoMIAG7Y8C3OngL9OMgGSwIECeSVxKkgT6DokSIc@pND2r1U0LNJAVHf2@F9hgcKMF8", lextwt.LinkStandard),
+		// 	),
+		// },
+
+		// {
+		// 	lit: "2020-12-04T21:43:43Z	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<63dtg5a https://txt.sour.is/search?tag=63dtg5a>) Web Key Directory: a way to self host your public key. instead of using a central system like pgp.mit.net or OpenPGP.org you have your key on a server you own.   it takes an email@address.com hashes the part before the @ and turns it into `[openpgpkey.]address.com/.well-known/openpgpkey[/address.com]/<hash>`",
+		// 	twt: lextwt.NewTwt(
+		// 		twter,
+		// 		lextwt.NewDateTime(parseTime("2020-12-04T21:43:43Z")),
+		// 		lextwt.NewMention("prologic", "https://twtxt.net/user/prologic/twtxt.txt"),
+		// 		lextwt.NewText(" "),
+		// 		lextwt.NewSubjectTag("63dtg5a", "https://txt.sour.is/search?tag=63dtg5a"),
+		// 		lextwt.NewText(" Web Key Directory: a way to self host your public key. instead of using a central system like pgp.mit.net or OpenPGP.org you have your key on a server you own. "),
+		// 		lextwt.LineSeparator,
+		// 		lextwt.LineSeparator,
+		// 		lextwt.NewText("it takes an email@address.com hashes the part before the "),
+		// 		lextwt.NewText("@ and turns it into "),
+		// 		lextwt.NewCode("[openpgpkey.]address.com/.well-known/openpgpkey[/address.com]/<hash>", lextwt.CodeInline),
+		// 	),
+		// },
+
+		// {
+		// 	lit: "2020-07-20T06:59:52Z	@<hjertnes https://hjertnes.social/twtxt.txt> Is it okay to have two personas :) I have https://twtxt.net/u/prologic and https://prologic.github.io/twtxt.txt 🤔",
+		// 	twt: lextwt.NewTwt(
+		// 		twter,
+		// 		lextwt.NewDateTime(parseTime("2020-07-20T06:59:52Z")),
+		// 		lextwt.NewMention("hjertnes", "https://hjertnes.social/twtxt.txt"),
+		// 		lextwt.NewText(" Is it okay to have two personas :"),
+		// 		lextwt.NewText(") I have "),
+		// 		lextwt.NewLink("", "https://twtxt.net/u/prologic", lextwt.LinkNaked),
+		// 		lextwt.NewText(" and "),
+		// 		lextwt.NewLink("", "https://prologic.github.io/twtxt.txt", lextwt.LinkNaked),
+		// 		lextwt.NewText(" 🤔"),
+		// 	),
+		// },
+
+		// {
+		// 	lit: `2021-01-21T23:25:59Z	Alligator  ![](https://twtxt.net/media/L6g5PMqA2JXX7ra5PWiMsM)  > Guy says to his colleague “just don’t fall in!” She replies “yeah good advice!”  🤣  #AustraliaZoo`,
+		// 	twt: lextwt.NewTwt(
+		// 		twter,
+		// 		lextwt.NewDateTime(parseTime("2021-01-21T23:25:59Z")),
+		// 		lextwt.NewText("Alligator"),
+		// 		lextwt.LineSeparator,
+		// 		lextwt.LineSeparator,
+		// 		lextwt.NewLink("", "https://twtxt.net/media/L6g5PMqA2JXX7ra5PWiMsM", lextwt.LinkMedia),
+		// 		lextwt.LineSeparator,
+		// 		lextwt.LineSeparator,
+		// 		lextwt.NewText("> Guy says to his colleague “just don’t fall in"),
+		// 		lextwt.NewText("!” She replies “yeah good advice"),
+		// 		lextwt.NewText("!”"),
+		// 		lextwt.LineSeparator,
+		// 		lextwt.LineSeparator,
+		// 		lextwt.NewText("🤣"),
+		// 		lextwt.LineSeparator,
+		// 		lextwt.LineSeparator,
+		// 		lextwt.NewTag("AustraliaZoo", ""),
+		// 	),
+		// },
 
 		{
-			lit: "2020-12-25T16:55:57Z	I'm busy, but here's an 1+ [Christmas Tree](https://codegolf.stackexchange.com/questions/4244/code-golf-christmas-edition-how-to-print-out-a-christmas-tree-of-height-n)  ``` . 11+1< (Any unused function name|\"\\\"/1+^<#     \"     (row|\"(Fluff|\"\\\"/^<#               11+\"\"*\"**;               1+           \"\\\"/^<#\"<*)           1           (Mess|/\"\\^/\"\\\"+1+1+^<#               11+\"\"*+\"\"*+;               1+           /\"\\^/\"\\\"+1+1+^<#\"<*)           11+\"\"\"**+;     )     1+ \"\\\"/1+^<#) 11+1<(row) ```",
+			lit: `2021-01-24T02:19:54Z	(#ezmdswq) @<lyse https://lyse.isobeef.org/twtxt.txt> (#ezmdswq) Looks good for me!  ![](https://txt.sour.is/media/353DzAXLDCv43GofSMw6SL)`,
 			twt: lextwt.NewTwt(
 				twter,
-				lextwt.NewDateTime(parseTime("2020-12-25T16:55:57Z")),
-				lextwt.NewText("I'm busy, but here's an 1+ "),
-				lextwt.NewLink("Christmas Tree", "https://codegolf.stackexchange.com/questions/4244/code-golf-christmas-edition-how-to-print-out-a-christmas-tree-of-height-n", lextwt.LinkStandard),
-				lextwt.LineSeparator,
-				lextwt.LineSeparator,
-				lextwt.NewCode(" . 11+1< (Any unused function name|\"\\\"/1+^<#     \"     (row|\"(Fluff|\"\\\"/^<#               11+\"\"*\"**;               1+           \"\\\"/^<#\"<*)           1           (Mess|/\"\\^/\"\\\"+1+1+^<#               11+\"\"*+\"\"*+;               1+           /\"\\^/\"\\\"+1+1+^<#\"<*)           11+\"\"\"**+;     )     1+ \"\\\"/1+^<#) 11+1<(row) ", lextwt.CodeBlock),
-			),
-		},
-		{
-			lit: "2020-12-25T16:57:57Z	@<hirad https://twtxt.net/user/hirad/twtxt.txt> (#<hrqg53a https://twtxt.net/search?tag=hrqg53a>) @<prologic https://twtxt.net/user/prologic/twtxt.txt> make this a blog post plz  And I forgot, [Try It Online Again!](https://tio.run/#jVVbb5tIFH7nV5zgB8DGYJxU7br2Q1IpVausFWXbhxUhCMO4RgszdGbIRZv97d4zYAy2Y7fIRnP5znfuh@JFrhgdr9c9WElZiInrFhGPsxcZPZPMkWW@yLgTs9wtmJDuh/ejD@/eexfn3h9uSiXhBSf4Hi4ZH3rDlA6Lik/TemduKbi7SKlL6CNsjnvgDaAjh2u4ba5uK73wTSkGF74STnK1pTaMR94FIm7SmNCYQCrg0ye4@nv41yVcOCMEX1/egOec4@rz/Dt8vr15PNfSvGBcgngR2pKzHGKWZSSWKaMCNncJ@VkSTRM2iARm9da0bPj3P01LyBIYJUVWClMgdgZz3FoTDfBJl0AZcnNZ7zdnGaEm6nMi/uPRgrMZjNtr9RQcnQf9u4h@kAnoMIAG7Y8C3OngL9OMgGSwIECeSVxKkgT6DokSIc@pND2r1U0LNJAVHf2@F9hgcKMF8)",
-			twt: lextwt.NewTwt(
-				twter,
-				lextwt.NewDateTime(parseTime("2020-12-25T16:57:57Z")),
-				lextwt.NewMention("hirad", "https://twtxt.net/user/hirad/twtxt.txt"),
+				lextwt.NewDateTime(parseTime("2021-01-24T02:19:54Z")),
+				lextwt.NewSubjectTag("ezmdswq", ""),
 				lextwt.NewText(" "),
-				lextwt.NewSubjectTag("hrqg53a", "https://twtxt.net/search?tag=hrqg53a"),
+				lextwt.NewMention("lyse", "https://lyse.isobeef.org/twtxt.txt"),
 				lextwt.NewText(" "),
-				lextwt.NewMention("prologic", "https://twtxt.net/user/prologic/twtxt.txt"),
-				lextwt.NewText(" make this a blog post plz"),
-				lextwt.LineSeparator,
-				lextwt.LineSeparator,
-				lextwt.NewText("And I forgot, "),
-				lextwt.NewLink("Try It Online Again!", "https://tio.run/#jVVbb5tIFH7nV5zgB8DGYJxU7br2Q1IpVausFWXbhxUhCMO4RgszdGbIRZv97d4zYAy2Y7fIRnP5znfuh@JFrhgdr9c9WElZiInrFhGPsxcZPZPMkWW@yLgTs9wtmJDuh/ejD@/eexfn3h9uSiXhBSf4Hi4ZH3rDlA6Lik/TemduKbi7SKlL6CNsjnvgDaAjh2u4ba5uK73wTSkGF74STnK1pTaMR94FIm7SmNCYQCrg0ye4@nv41yVcOCMEX1/egOec4@rz/Dt8vr15PNfSvGBcgngR2pKzHGKWZSSWKaMCNncJ@VkSTRM2iARm9da0bPj3P01LyBIYJUVWClMgdgZz3FoTDfBJl0AZcnNZ7zdnGaEm6nMi/uPRgrMZjNtr9RQcnQf9u4h@kAnoMIAG7Y8C3OngL9OMgGSwIECeSVxKkgT6DokSIc@pND2r1U0LNJAVHf2@F9hgcKMF8", lextwt.LinkStandard),
-			),
-		},
-
-		{
-			lit: "2020-12-04T21:43:43Z	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<63dtg5a https://txt.sour.is/search?tag=63dtg5a>) Web Key Directory: a way to self host your public key. instead of using a central system like pgp.mit.net or OpenPGP.org you have your key on a server you own.   it takes an email@address.com hashes the part before the @ and turns it into `[openpgpkey.]address.com/.well-known/openpgpkey[/address.com]/<hash>`",
-			twt: lextwt.NewTwt(
-				twter,
-				lextwt.NewDateTime(parseTime("2020-12-04T21:43:43Z")),
-				lextwt.NewMention("prologic", "https://twtxt.net/user/prologic/twtxt.txt"),
-				lextwt.NewText(" "),
-				lextwt.NewSubjectTag("63dtg5a", "https://txt.sour.is/search?tag=63dtg5a"),
-				lextwt.NewText(" Web Key Directory: a way to self host your public key. instead of using a central system like pgp.mit.net or OpenPGP.org you have your key on a server you own. "),
-				lextwt.LineSeparator,
-				lextwt.LineSeparator,
-				lextwt.NewText("it takes an email@address.com hashes the part before the @ and turns it into "),
-				lextwt.NewCode("[openpgpkey.]address.com/.well-known/openpgpkey[/address.com]/<hash>", lextwt.CodeInline),
-			),
-		},
-
-		{
-			lit: "2020-07-20T06:59:52Z	@<hjertnes https://hjertnes.social/twtxt.txt> Is it okay to have two personas :) I have https://twtxt.net/u/prologic and https://prologic.github.io/twtxt.txt 🤔",
-			twt: lextwt.NewTwt(
-				twter,
-				lextwt.NewDateTime(parseTime("2020-07-20T06:59:52Z")),
-				lextwt.NewMention("hjertnes", "https://hjertnes.social/twtxt.txt"),
-				lextwt.NewText(" Is it okay to have two personas :"),
-				lextwt.NewText(") I have "),
-				lextwt.NewLink("", "https://twtxt.net/u/prologic", lextwt.LinkNaked),
-				lextwt.NewText(" and "),
-				lextwt.NewLink("", "https://prologic.github.io/twtxt.txt", lextwt.LinkNaked),
-				lextwt.NewText(" 🤔"),
-			),
-		},
-
-		{
-			lit: `2021-01-21T23:25:59Z	Alligator  ![](https://twtxt.net/media/L6g5PMqA2JXX7ra5PWiMsM)  > Guy says to his colleague “just don’t fall in!” She replies “yeah good advice!”  🤣  #AustraliaZoo`,
-			twt: lextwt.NewTwt(
-				twter,
-				lextwt.NewDateTime(parseTime("2021-01-21T23:25:59Z")),
-				lextwt.NewText("Alligator"),
-				lextwt.LineSeparator,
-				lextwt.LineSeparator,
-				lextwt.NewLink("", "https://twtxt.net/media/L6g5PMqA2JXX7ra5PWiMsM", lextwt.LinkMedia),
-				lextwt.LineSeparator,
-				lextwt.LineSeparator,
-				lextwt.NewText("> Guy says to his colleague “just don’t fall in!” She replies “yeah good advice!”"),
-				lextwt.LineSeparator,
-				lextwt.LineSeparator,
-				lextwt.NewText("🤣"),
-				lextwt.LineSeparator,
-				lextwt.LineSeparator,
-				lextwt.NewTag("AustraliaZoo", ""),
+				lextwt.NewSubjectTag("ezmdswq", ""),
+				lextwt.NewText(" Looks good for me"),
+				lextwt.NewText("!  "),
+				lextwt.NewLink("", "https://txt.sour.is/media/353DzAXLDCv43GofSMw6SL", lextwt.LinkMedia),
 			),
 		},
 	}
@@ -619,6 +640,7 @@ func testParseTwt(t *testing.T, expect, elem types.Twt) {
 	{
 		m := elem.Tags()
 		n := expect.Tags()
+		t.Log(n)
 
 		is.Equal(len(n), len(m))
 		for i := range m {
@@ -633,6 +655,35 @@ func testParseTwt(t *testing.T, expect, elem types.Twt) {
 		is.Equal(len(n), len(m))
 		for i := range m {
 			testParseLink(t, m[i].(*lextwt.Link), n[i].(*lextwt.Link))
+		}
+	}
+
+	{
+		m := elem.(*lextwt.Twt).Elems()
+		n := expect.(*lextwt.Twt).Elems()
+		is.Equal(len(m), len(n)) // len(elem) == len(expect)
+		for i, e := range m {
+			switch elem := e.(type) {
+			case *lextwt.Mention:
+				expect, ok := n[i].(*lextwt.Mention)
+				is.True(ok)
+				testParseMention(t, elem, expect)
+			case *lextwt.Tag:
+				expect, ok := n[i].(*lextwt.Tag)
+				is.True(ok)
+				testParseTag(t, elem, expect)
+			case *lextwt.Link:
+				expect, ok := n[i].(*lextwt.Link)
+				is.True(ok)
+				testParseLink(t, elem, expect)
+			case *lextwt.Subject:
+				expect, ok := n[i].(*lextwt.Subject)
+				is.True(ok)
+				testParseSubject(t, elem, expect)
+
+			default:
+				is.Equal(e, n[i])
+			}
 		}
 	}
 }

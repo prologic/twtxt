@@ -896,7 +896,7 @@ func (twt Twt) Hash() string {
 	payload := fmt.Sprintf(
 		"%s\n%s\n%s",
 		twt.Twter().URL,
-		twt.Created().Format(time.RFC3339),
+		twt.dt.Literal(),
 		twt.LiteralText(),
 	)
 	sum := blake2b.Sum256([]byte(payload))

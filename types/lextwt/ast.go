@@ -20,19 +20,30 @@ func init() {
 // Elem AST structs
 
 type Elem interface {
-	IsNil() bool        // A typed nil will fail `elem == nil` We need to unbox to test.
-	Literal() string    // value as read from input.
-	Markdown() string   // format to markdown.
-	FormatText() string // format to write to disk.
-	Clone() Elem        // clone element.
+	IsNil() bool     // A typed nil will fail `elem == nil` We need to unbox to test.
+	Literal() string // value as read from input.
+	Clone() Elem     // clone element.
+}
+type ElemHTML interface {
+	FormatHTML() string
 
-	fmt.Stringer // alias for Literal() for printing.
+	Elem
+}
+type ElemMarkdown interface {
+	Markdown() string // format to markdown.
+
+	Elem
+}
+
+type ElemText interface {
+	FormatText() string // format to write to disk.
+
+	Elem
 }
 
 type Line interface {
 	IsNil() bool     // A typed nil will fail `elem == nil` We need to unbox to test.
 	Literal() string // value as read from input.
-	fmt.Stringer     // alias for Literal() for printing.
 }
 
 type Comment struct {
@@ -629,7 +640,11 @@ func (twt Twt) CloneTwt() *Twt {
 func (twt *Twt) Text() string {
 	var b strings.Builder
 	for _, s := range twt.msg {
-		b.WriteString(s.FormatText())
+		if s, ok := s.(ElemText); ok {
+			b.WriteString(s.FormatText())
+		} else {
+			b.WriteString(s.Literal())
+		}
 	}
 	return b.String()
 }
@@ -737,7 +752,11 @@ func (twt Twt) FormatTwt() string {
 		if s == nil || s.IsNil() {
 			continue
 		}
-		b.WriteString(s.FormatText())
+		if s, ok := s.(ElemText); ok {
+			b.WriteString(s.FormatText())
+		} else {
+			b.WriteString(s.Literal())
+		}
 	}
 	b.WriteRune('\n')
 	return b.String()
@@ -781,23 +800,38 @@ func (twt Twt) FormatText(mode types.TwtTextFormat, opts types.FmtOpts) string {
 	case types.TextFmt:
 		var b strings.Builder
 		for _, s := range twt.msg {
-			b.WriteString(s.FormatText())
+			if s, ok := s.(ElemText); ok {
+				b.WriteString(s.FormatText())
+			} else {
+				b.WriteString(s.Literal())
+			}
 		}
 		return b.String()
 	case types.MarkdownFmt:
 		var b strings.Builder
 		for _, s := range twt.msg {
-			b.WriteString(s.Markdown())
+			if s, ok := s.(ElemMarkdown); ok {
+				b.WriteString(s.Markdown())
+			} else if s, ok := s.(ElemText); ok {
+				b.WriteString(s.FormatText())
+			} else {
+				b.WriteString(s.Literal())
+			}
 		}
 		return b.String()
 	case types.HTMLFmt:
 		var b strings.Builder
 		for _, s := range twt.msg {
-			if h, ok := s.(interface{ FormatHTML() string }); ok {
+			if h, ok := s.(ElemHTML); ok {
 				b.WriteString(h.FormatHTML())
-			} else {
+			} else if s, ok := s.(ElemMarkdown); ok {
 				b.WriteString(s.Markdown())
+			} else if s, ok := s.(ElemText); ok {
+				b.WriteString(s.FormatText())
+			} else {
+				b.WriteString(s.Literal())
 			}
+
 		}
 		return b.String()
 

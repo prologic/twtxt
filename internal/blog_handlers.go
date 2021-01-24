@@ -296,6 +296,7 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 		// Cleanup the text and convert DOS line ending \r\n to UNIX \n
 		text = strings.TrimSpace(text)
 		text = strings.ReplaceAll(text, "\r\n", "\n")
+		text = strings.ReplaceAll(text, "\n", "\u2028")
 
 		if text == "" {
 			ctx.Error = true

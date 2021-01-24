@@ -376,7 +376,6 @@ func (n *Subject) Literal() string {
 
 	return "(" + n.subject + ")"
 }
-func (n *Subject) String() string { return n.Literal() }
 func (n *Subject) Text() string {
 	if n.tag == nil {
 		return n.subject
@@ -390,7 +389,7 @@ func (n *Subject) FormatText() string {
 	}
 	return fmt.Sprintf("(%s)", n.tag.Literal())
 }
-func (n *Subject) FormatDisplay() string {
+func (n *Subject) String() string {
 	if n.tag == nil {
 		return fmt.Sprintf("(%s)", n.subject)
 	}

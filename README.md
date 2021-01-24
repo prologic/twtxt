@@ -82,7 +82,7 @@ Run the server:
 twtd
 ```
 
-Run the commanad-line client:
+Run the command-line client:
 
 ```console
 twt
@@ -304,7 +304,7 @@ Please see the [Contributing Guidelines](/CONTRIBUTING.md) and checkout the
 [Developer Documentation](https://dev.twtxt.net) or over at [/docs](/docs).
 
 > __Please note:__ If you wish to contribute to this project off-[Github](https://github.com)
-> please get in touch with us and let us know! We have this project mirroed to
+> please get in touch with us and let us know! We have this project mirrored to
 > private Git hosting using [Gitea](https://gitea.io/en-us/) and can fully support
 > external collaborator this way (_even via email!_).
 

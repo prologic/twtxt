@@ -640,9 +640,10 @@ func (twt Twt) CloneTwt() *Twt {
 func (twt *Twt) Text() string {
 	var b strings.Builder
 	for _, s := range twt.msg {
-		if s, ok := s.(ElemText); ok {
+		switch s := s.(type) {
+		case ElemText:
 			b.WriteString(s.FormatText())
-		} else {
+		default:
 			b.WriteString(s.Literal())
 		}
 	}
@@ -752,9 +753,10 @@ func (twt Twt) FormatTwt() string {
 		if s == nil || s.IsNil() {
 			continue
 		}
-		if s, ok := s.(ElemText); ok {
+		switch s := s.(type) {
+		case ElemText:
 			b.WriteString(s.FormatText())
-		} else {
+		default:
 			b.WriteString(s.Literal())
 		}
 	}
@@ -800,9 +802,10 @@ func (twt Twt) FormatText(mode types.TwtTextFormat, opts types.FmtOpts) string {
 	case types.TextFmt:
 		var b strings.Builder
 		for _, s := range twt.msg {
-			if s, ok := s.(ElemText); ok {
+			switch s := s.(type) {
+			case ElemText:
 				b.WriteString(s.FormatText())
-			} else {
+			default:
 				b.WriteString(s.Literal())
 			}
 		}
@@ -810,11 +813,12 @@ func (twt Twt) FormatText(mode types.TwtTextFormat, opts types.FmtOpts) string {
 	case types.MarkdownFmt:
 		var b strings.Builder
 		for _, s := range twt.msg {
-			if s, ok := s.(ElemMarkdown); ok {
+			switch s := s.(type) {
+			case ElemMarkdown:
 				b.WriteString(s.Markdown())
-			} else if s, ok := s.(ElemText); ok {
+			case ElemText:
 				b.WriteString(s.FormatText())
-			} else {
+			default:
 				b.WriteString(s.Literal())
 			}
 		}
@@ -822,16 +826,16 @@ func (twt Twt) FormatText(mode types.TwtTextFormat, opts types.FmtOpts) string {
 	case types.HTMLFmt:
 		var b strings.Builder
 		for _, s := range twt.msg {
-			if h, ok := s.(ElemHTML); ok {
-				b.WriteString(h.FormatHTML())
-			} else if s, ok := s.(ElemMarkdown); ok {
+			switch s := s.(type) {
+			case ElemHTML:
+				b.WriteString(s.FormatHTML())
+			case ElemMarkdown:
 				b.WriteString(s.Markdown())
-			} else if s, ok := s.(ElemText); ok {
+			case ElemText:
 				b.WriteString(s.FormatText())
-			} else {
+			default:
 				b.WriteString(s.Literal())
 			}
-
 		}
 		return b.String()
 

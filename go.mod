@@ -27,6 +27,7 @@ require (
 	github.com/emersion/go-message v0.14.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gabstv/merger v1.0.1
+	github.com/go-mail/mail v2.3.1+incompatible
 	github.com/goccy/go-yaml v1.8.4
 	github.com/gomarkdown/markdown v0.0.0-20201113031856-722100d81a8e
 	github.com/gorilla/feeds v1.1.1
@@ -87,8 +88,8 @@ require (
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
-	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/ini.v1 v1.62.0 // indirect
+	gopkg.in/mail.v2 v2.3.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 	gorm.io/gorm v1.20.9 // indirect

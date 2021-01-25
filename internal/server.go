@@ -515,10 +515,10 @@ func (s *Server) initRoutes() {
 	s.router.HEAD("/user/:nick/avatar.png", s.OldAvatarHandler())
 
 	if s.config.OpenProfiles {
-		s.router.GET("/user/:nick", s.ProfileHandler())
+		s.router.GET("/user/:nick/", s.ProfileHandler())
 		s.router.GET("/user/:nick/config.yaml", s.UserConfigHandler())
 	} else {
-		s.router.GET("/user/:nick", s.am.MustAuth(s.ProfileHandler()))
+		s.router.GET("/user/:nick/", s.am.MustAuth(s.ProfileHandler()))
 		s.router.GET("/user/:nick/config.yaml", s.am.MustAuth(s.UserConfigHandler()))
 	}
 	s.router.GET("/user/:nick/avatar", s.AvatarHandler())

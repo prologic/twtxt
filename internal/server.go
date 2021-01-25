@@ -639,6 +639,11 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		}
 	}
 
+	if err := config.Validate(); err != nil {
+		log.WithError(err).Error("error validating config")
+		return nil, fmt.Errorf("error validating config: %w", err)
+	}
+
 	blogs, err := LoadBlogsCache(config.Data)
 	if err != nil {
 		log.WithError(err).Error("error loading blogs cache (re-creating)")

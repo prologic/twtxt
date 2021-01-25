@@ -19,6 +19,7 @@
 
 /data/msgs
 /data/cache
+/data/logo.*
 /data/blogscache
 /data/msgscache
 /data/feedsources

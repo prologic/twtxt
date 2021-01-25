@@ -533,8 +533,6 @@ func (s *Server) initRoutes() {
 	s.router.GET("/user/:nick/following", s.FollowingHandler())
 	s.router.GET("/user/:nick/bookmarks", s.BookmarksHandler())
 
-	s.router.GET("/pod/avatar", s.PodAvatarHandler())
-
 	// WebMentions
 	s.router.POST("/user/:nick/webmention", s.WebMentionHandler())
 

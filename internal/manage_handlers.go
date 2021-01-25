@@ -34,44 +34,31 @@ func (s *Server) ManagePodHandler() httprouter.Handle {
 		}
 
 		name := strings.TrimSpace(r.FormValue("podName"))
+		logo := strings.TrimSpace(r.FormValue("podLogo"))
 		description := strings.TrimSpace(r.FormValue("podDescription"))
 		maxTwtLength := SafeParseInt(r.FormValue("maxTwtLength"), s.config.MaxTwtLength)
 		openProfiles := r.FormValue("enableOpenProfiles") == "on"
 		openRegistrations := r.FormValue("enableOpenRegistrations") == "on"
 
-		// Update pod avatar
-		avatarFile, _, err := r.FormFile("avatar_file")
-		if err != nil && err != http.ErrMissingFile {
-			log.WithError(err).Error("error parsing form file")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if avatarFile != nil {
-			opts := &ImageOptions{
-				Resize: true,
-				Width:  AvatarResolution,
-				Height: AvatarResolution,
-			}
-			_, err = StoreUploadedImage(
-				s.config, avatarFile,
-				"", "logo", opts,
-			)
-			if err != nil {
-				ctx.Error = true
-				ctx.Message = fmt.Sprintf("Error updating pod avatar: %s", err)
-				s.render("error", w, ctx)
-				return
-			}
-		}
+		// Clean lines from DOS (\r\n) to UNIX (\n)
+		logo = strings.ReplaceAll(logo, "\r\n", "\n")
 
 		// Update pod name
 		if name != "" {
 			s.config.Name = name
 		} else {
-			log.WithError(err).Errorf("Pod name not specified")
 			ctx.Error = true
-			ctx.Message = ""
+			ctx.Message = "Pod name not specified"
+			s.render("error", w, ctx)
+			return
+		}
+
+		// Update pod logo
+		if logo != "" {
+			s.config.Logo = logo
+		} else {
+			ctx.Error = true
+			ctx.Message = "Pod logo not provided"
 			s.render("error", w, ctx)
 			return
 		}
@@ -80,9 +67,8 @@ func (s *Server) ManagePodHandler() httprouter.Handle {
 		if description != "" {
 			s.config.Description = description
 		} else {
-			log.WithError(err).Errorf("Pod description not specified")
 			ctx.Error = true
-			ctx.Message = ""
+			ctx.Message = "Pod description not provided"
 			s.render("error", w, ctx)
 			return
 		}

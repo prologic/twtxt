@@ -2110,67 +2110,6 @@ func (s *Server) PodConfigHandler() httprouter.Handle {
 	}
 }
 
-// PodAvatarHandler ...
-func (s *Server) PodAvatarHandler() httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		w.Header().Set("Cache-Control", "public, no-cache, must-revalidate")
-
-		var fn string
-
-		preferredContentType := accept.PreferredContentTypeLike(r.Header, "image/webp")
-
-		// Apple iOS 14.3 is lying. It claims it can support WebP and sends
-		// an Accept: image/webp,... however it doesn't render the WebP
-		// correctly at all.
-		// XXX: https://github.com/jointwt/twtxt/issues/337 for details
-		if preferredContentType == "image/webp" && strings.Contains(r.UserAgent(), "iPhone OS 14_3") {
-			preferredContentType = "image/png"
-		}
-
-		if preferredContentType == "image/webp" {
-			fn = filepath.Join(s.config.Data, "", "logo.webp")
-			w.Header().Set("Content-Type", "image/webp")
-		} else {
-			// Support older browsers like IE11 that don't support WebP :/
-			metrics.Counter("media", "old_avatar").Inc()
-			fn = filepath.Join(s.config.Data, "", "logo.png")
-			w.Header().Set("Content-Type", "image/png")
-		}
-
-		if fileInfo, err := os.Stat(fn); err == nil {
-			etag := fmt.Sprintf("W/\"%s-%s\"", r.RequestURI, fileInfo.ModTime().Format(time.RFC3339))
-
-			if match := r.Header.Get("If-None-Match"); match != "" {
-				if strings.Contains(match, etag) {
-					w.WriteHeader(http.StatusNotModified)
-					return
-				}
-			}
-
-			w.Header().Set("Etag", etag)
-			if r.Method == http.MethodHead {
-				return
-			}
-
-			f, err := os.Open(fn)
-			if err != nil {
-				log.WithError(err).Error("error opening avatar file")
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-			defer f.Close()
-
-			if _, err := io.Copy(w, f); err != nil {
-				log.WithError(err).Error("error writing avatar response")
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-
-			return
-		}
-	}
-}
-
 // TransferFeedHandler...
 func (s *Server) TransferFeedHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

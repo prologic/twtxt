@@ -31,6 +31,7 @@ type Context struct {
 
 	Debug bool
 
+	Logo                    template.HTML
 	BaseURL                 string
 	InstanceName            string
 	SoftwareVersion         string
@@ -91,6 +92,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	ctx := &Context{
 		Debug: conf.Debug,
 
+		Logo:             template.HTML(conf.Logo),
 		BaseURL:          conf.BaseURL,
 		InstanceName:     conf.Name,
 		SoftwareVersion:  twtxt.FullVersion(),

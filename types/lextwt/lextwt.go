@@ -87,7 +87,18 @@ func (*lextwtManager) ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, 
 	return ParseFile(r, twter)
 }
 func (*lextwtManager) MakeTwt(twter types.Twter, ts time.Time, text string) types.Twt {
-	return MakeTwt(twter, ts, text)
+	dt := NewDateTime(ts, "")
+	elems, err := ParseText(text)
+	if err != nil {
+		return types.NilTwt
+	}
+
+	twt := NewTwt(twter, dt, elems...)
+	if err != nil {
+		return types.NilTwt
+	}
+
+	return twt
 }
 
 type lextwtFile struct {

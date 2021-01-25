@@ -141,8 +141,11 @@ type DateTime struct {
 
 // var _ Elem = (*DateTime)(nil)
 
-func NewDateTime(dt time.Time) *DateTime {
-	return &DateTime{dt: dt, lit: dt.Format(time.RFC3339)}
+func NewDateTime(dt time.Time, lit string) *DateTime {
+	if lit == "" {
+		lit = dt.Format(time.RFC3339)
+	}
+	return &DateTime{dt: dt, lit: lit}
 }
 func (n *DateTime) CloneDateTime() *DateTime {
 	if n == nil {
@@ -245,9 +248,9 @@ func (n *Mention) FormatText() string {
 
 	nick := n.name
 
-	if n.domain != "" {
-		nick += "@" + n.domain
-	}
+	// if n.domain != "" {
+	// 	nick += "@" + n.domain
+	// }
 
 	if n.target == "" {
 		return fmt.Sprintf("@%s", nick)
@@ -560,22 +563,24 @@ func NewTwt(twter types.Twter, dt *DateTime, elems ...Elem) *Twt {
 
 	return twt
 }
-func MakeTwt(twter types.Twter, ts time.Time, text string) types.Twt {
-	dt := NewDateTime(ts)
-	twt := NewTwt(twter, dt, nil)
-	twt.twter = twter
-
+func ParseText(text string) ([]Elem, error) {
 	r := strings.NewReader(" " + text)
 	lexer := NewLexer(r)
 	lexer.NextTok() // remove first token we added to avoid parsing as comment.
 	parser := NewParser(lexer)
 
+	var lis []Elem
 	for elem := parser.ParseElem(); elem != nil; elem = parser.ParseElem() {
 		parser.push()
-		twt.append(elem)
+		lis = append(lis, elem)
+	}
+	var err error
+
+	if e := parser.Errs(); len(e) > 0 {
+		err = e
 	}
 
-	return twt
+	return lis, err
 }
 func (twt *Twt) append(elem Elem) {
 	if elem == nil || elem.IsNil() {
@@ -721,33 +726,24 @@ func DecodeJSON(data []byte) (types.Twt, error) {
 		return types.NilTwt, err
 	}
 
-	twter := enc.Twter
-	// line := fmt.Sprintf("%s\t%s\n", enc.Created, enc.Text)
-	// t, err := ParseLine(line, twter)
-	t := MakeTwt(twter, enc.Created, enc.Text)
-	if err != nil || t == nil {
+	dt := NewDateTime(enc.Created, "")
+	elems, err := ParseText(enc.Text)
+	if err != nil {
 		return types.NilTwt, err
 	}
 
-	twt := &Twt{}
-	twt.hash = enc.Hash
-	if t, ok := t.(*Twt); ok {
-		twt.dt = t.dt
-		twt.msg = t.msg
-		twt.mentions = t.mentions
-		twt.tags = t.tags
-		twt.links = t.links
-		twt.subject = t.subject
-		twt.twter = t.twter
-
-		return twt, nil
+	twt := NewTwt(enc.Twter, dt, elems...)
+	if err != nil {
+		return types.NilTwt, err
 	}
 
-	return types.NilTwt, err
+	twt.hash = enc.Hash
+
+	return twt, nil
 }
 func (twt Twt) FormatTwt() string {
 	var b strings.Builder
-	b.WriteString(twt.dt.String())
+	b.WriteString(twt.dt.Literal())
 	b.WriteRune('\t')
 	for _, s := range twt.msg {
 		if s == nil || s.IsNil() {
@@ -896,7 +892,7 @@ func (twt Twt) Hash() string {
 	payload := fmt.Sprintf(
 		"%s\n%s\n%s",
 		twt.Twter().URL,
-		twt.dt.Literal(),
+		twt.Created().Format(time.RFC3339),
 		twt.LiteralText(),
 	)
 	sum := blake2b.Sum256([]byte(payload))

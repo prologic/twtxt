@@ -573,6 +573,19 @@ func TestParseTwt(t *testing.T) {
 				lextwt.NewLink("", "https://txt.sour.is/media/353DzAXLDCv43GofSMw6SL", lextwt.LinkMedia),
 			),
 		},
+
+		{
+			lit: `2021-01-18T20:45:57Z	#9c913a	Web UI for Picoblog: I'm thinking of something similar to [Saisho Edit](/saisho-edit). #picoblog`,
+			twt: lextwt.NewTwt(
+				twter,
+				lextwt.NewDateTime(parseTime("2021-01-18T20:45:57Z"), "2021-01-18T20:45:57Z"),
+				lextwt.NewTag("9c913a", ""),
+				lextwt.NewText("	Web UI for Picoblog: I'm thinking of something similar to "),
+				lextwt.NewLink("Saisho Edit", "/saisho-edit", lextwt.LinkStandard),
+				lextwt.NewText(". "),
+				lextwt.NewTag("picoblog", ""),
+			),
+		},
 	}
 
 	for i, tt := range tests {
@@ -584,13 +597,10 @@ func TestParseTwt(t *testing.T) {
 		parser.SetTwter(twter)
 		twt := parser.ParseTwt()
 
-		// t.Log(twt.FormatText(types.HTMLFmt, nil))
-
 		rt, err := retwt.ParseLine(strings.TrimRight(tt.lit, "\n"), twter)
 		is.NoErr(err)
 		is.True(rt != nil)
 
-		// t.Log(rt.FormatText(types.HTMLFmt, nil))
 		if twt != nil && rt != nil {
 			is.Equal(twt.FormatText(types.MarkdownFmt, nil), rt.FormatText(types.MarkdownFmt, nil))
 			is.Equal(twt.FormatText(types.HTMLFmt, nil), rt.FormatText(types.HTMLFmt, nil))

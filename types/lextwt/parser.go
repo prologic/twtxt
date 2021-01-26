@@ -664,6 +664,7 @@ func (p *parser) ParseLink() *Link {
 			}
 		}
 		link.text = p.Literal()
+		p.pop()
 	}
 
 	if !p.curTokenIs(TokRBRACK) {
@@ -681,6 +682,25 @@ func (p *parser) ParseLink() *Link {
 		p.push()
 		l := p.ParseLink()
 		p.pop()
+
+		if l == nil && !p.curTokenIs(TokRBRACK) {
+			p.push()
+			p.append(p.curTok.Literal...) // text
+			p.next()
+
+			for !p.curTokenIs(TokRBRACK, TokLBRACK, TokRPAREN, TokLPAREN, TokEOF) {
+				p.append(p.curTok.Literal...) // text
+				p.next()
+
+				// Allow excaped chars to not close.
+				if p.curTokenIs(TokBSLASH) {
+					p.append(p.curTok.Literal...) // text
+					p.next()
+				}
+			}
+			l = &Link{target: p.Literal()}
+			p.pop()
+		}
 
 		if l == nil {
 			return nil

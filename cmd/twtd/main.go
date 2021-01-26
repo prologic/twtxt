@@ -236,6 +236,7 @@ func main() {
 	}
 
 	if lexParse {
+		fmt.Println("Enable Lextwt Parser!")
 		lextwt.DefaultTwtManager()
 	} else {
 		retwt.DefaultTwtManager()

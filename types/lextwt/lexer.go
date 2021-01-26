@@ -279,7 +279,7 @@ func (l *lexer) NextTok() bool {
 			l.loadScheme()
 			return true
 		default:
-			l.loadString(" @#!:`<>()[]\u2028\n")
+			l.loadString(" @#!:`<>()[]\u2028\n\t")
 			return true
 		}
 

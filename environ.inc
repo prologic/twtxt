@@ -1,1 +1,1 @@
-export FLAGS=" -u http://[::1]:8000 --whitelist-domain twtxt.net"
+export FLAGS=-u http://[::1]:8000 --whitelist-domain twtxt.net --enable-feature-lextwt

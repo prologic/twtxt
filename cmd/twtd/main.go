@@ -80,7 +80,7 @@ var (
 
 func init() {
 	flag.BoolVarP(&debug, "debug", "D", false, "enable debug logging")
-	flag.BoolVarP(&lexParse, "lex-parse", "e", false, "enable experimental parser")
+	flag.BoolVarP(&lexParse, "enable-feature-lextwt", "", false, "enable experimental parser")
 	flag.StringVarP(&bind, "bind", "b", "0.0.0.0:8000", "[int]:<port> to bind to")
 	flag.BoolVarP(&version, "version", "v", false, "display version information")
 

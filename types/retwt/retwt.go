@@ -42,6 +42,7 @@ type reTwt struct {
 var _ types.Twt = (*reTwt)(nil)
 var _ gob.GobEncoder = (*reTwt)(nil)
 var _ gob.GobDecoder = (*reTwt)(nil)
+var _ fmt.Formatter = (*reTwt)(nil)
 
 func (twt reTwt) Links() types.LinkList { return nil }
 func (twt reTwt) GobEncode() ([]byte, error) {
@@ -171,11 +172,10 @@ func (twt reTwt) Format(state fmt.State, c rune) {
 		fmt.Fprint(state, twt.Created().Format(time.RFC3339))
 		state.Write([]byte("\t"))
 	}
-
 	switch c {
 	default:
 		_, _ = state.Write([]byte(twt.text))
-	case 'H', 'M': // html
+	case 'h', 'm': // html
 		_, _ = state.Write([]byte(twt.MarkdownText()))
 	}
 }
@@ -183,8 +183,10 @@ func (twt reTwt) FormatTwt() string {
 	return twt.String()
 }
 func (twt reTwt) FormatText(textFmt types.TwtTextFormat, fmtOpts types.FmtOpts) string {
+	twt.ExpandLinks(fmtOpts, nil)
 	text := strings.ReplaceAll(twt.text, "\u2028", "\n")
-	return formatMentionsAndTags(fmtOpts, text, textFmt)
+	text = formatMentionsAndTags(fmtOpts, text, textFmt)
+	return text
 }
 func (twt *reTwt) ExpandLinks(opts types.FmtOpts, lookup types.FeedLookup) {
 	twt.text = ExpandTag(opts, twt.text)
@@ -505,6 +507,6 @@ func ExpandTag(opts types.FmtOpts, text string) string {
 		prefix := parts[1]
 		tag := parts[3]
 
-		return fmt.Sprintf("%s<%s %s>", prefix, tag, opts.URLForTag(tag))
+		return fmt.Sprintf("%s#<%s %s>", prefix, tag, opts.URLForTag(tag))
 	})
 }

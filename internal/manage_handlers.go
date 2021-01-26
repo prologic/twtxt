@@ -269,7 +269,7 @@ func (s *Server) DelUserHandler() httprouter.Handle {
 								return
 							}
 
-							mediaPaths := GetMediaNamesFromText(fmt.Sprintf("%T", twt))
+							mediaPaths := GetMediaNamesFromText(fmt.Sprintf("%t", twt))
 
 							// Remove all uploaded media in a twt
 							for _, mediaPath := range mediaPaths {
@@ -342,7 +342,7 @@ func (s *Server) DelUserHandler() httprouter.Handle {
 				return
 			}
 
-			mediaPaths := GetMediaNamesFromText(fmt.Sprintf("%T", twt))
+			mediaPaths := GetMediaNamesFromText(fmt.Sprintf("%t", twt))
 
 			// Remove all uploaded media in a twt
 			for _, mediaPath := range mediaPaths {

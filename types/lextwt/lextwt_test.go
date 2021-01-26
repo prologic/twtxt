@@ -635,7 +635,7 @@ func testParseTwt(t *testing.T, expect, elem types.Twt) {
 	is := is.New(t)
 
 	is.Equal(expect.Twter(), elem.Twter())
-	is.Equal(fmt.Sprintf("%+L", expect), fmt.Sprintf("%+L", elem))
+	is.Equal(fmt.Sprintf("%+l", expect), fmt.Sprintf("%+l", elem))
 
 	{
 		m := elem.Subject()

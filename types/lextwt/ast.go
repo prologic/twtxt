@@ -791,7 +791,7 @@ func (twt Twt) Format(state fmt.State, c rune) {
 	}
 
 	switch c {
-	case 'H': // html
+	case 'h': // html
 		for _, elem := range twt.msg {
 			switch elem := elem.(type) {
 			case ElemHTML:
@@ -805,7 +805,7 @@ func (twt Twt) Format(state fmt.State, c rune) {
 			}
 		}
 
-	case 'T': // twtxt
+	case 't': // twtxt
 		for _, elem := range twt.msg {
 			switch elem := elem.(type) {
 			case ElemText:
@@ -815,7 +815,7 @@ func (twt Twt) Format(state fmt.State, c rune) {
 			}
 		}
 
-	case 'M': // markdown
+	case 'm': // markdown
 		for _, elem := range twt.msg {
 			switch elem := elem.(type) {
 			case ElemMarkdown:
@@ -827,12 +827,12 @@ func (twt Twt) Format(state fmt.State, c rune) {
 			}
 		}
 
-	case 'L': // literal
+	case 'l': // literal
 		for _, elem := range twt.msg {
 			state.Write([]byte(elem.Literal()))
 		}
 
-	case 'C': // compact
+	case 'c': // compact
 		for _, elem := range twt.msg {
 			switch elem := elem.(type) {
 			case ElemCompact:
@@ -850,7 +850,7 @@ func (twt Twt) Format(state fmt.State, c rune) {
 }
 
 func (twt Twt) FormatTwt() string {
-	return fmt.Sprintf("%+L\n", twt)
+	return fmt.Sprintf("%+t\n", twt)
 }
 func (twt Twt) FormatText(mode types.TwtTextFormat, opts types.FmtOpts) string {
 	twt = *twt.CloneTwt()
@@ -889,13 +889,13 @@ func (twt Twt) FormatText(mode types.TwtTextFormat, opts types.FmtOpts) string {
 
 	switch mode {
 	case types.HTMLFmt:
-		return fmt.Sprintf("%H", twt)
+		return fmt.Sprintf("%h", twt)
 	case types.TextFmt:
-		return fmt.Sprintf("%T", twt)
+		return fmt.Sprintf("%t", twt)
 	case types.MarkdownFmt:
-		return fmt.Sprintf("%M", twt)
+		return fmt.Sprintf("%m", twt)
 	default:
-		return fmt.Sprintf("%L", twt)
+		return fmt.Sprintf("%l", twt)
 	}
 }
 func (twt *Twt) ExpandLinks(opts types.FmtOpts, lookup types.FeedLookup) {

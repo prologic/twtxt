@@ -1196,9 +1196,10 @@ func NormalizeURL(url string) string {
 	if url == "" {
 		return ""
 	}
+
 	u, err := urlx.Parse(url)
 	if err != nil {
-		log.WithError(err).Errorf("error parsing url %s", url)
+		log.WithError(err).Errorf("NormalizeURL: error parsing url %s", url)
 		return ""
 	}
 	if u.Scheme == "http" && strings.HasSuffix(u.Host, ":80") {
@@ -1622,7 +1623,7 @@ func FormatTwtFactory(conf *Config) func(twt types.Twt) template.HTML {
 			if ok && entering {
 				u, err := url.Parse(string(image.Destination))
 				if err != nil {
-					log.WithError(err).Warn("error parsing url")
+					log.WithError(err).Warn("TwtFactory: error parsing url")
 					return ast.GoToNext, false
 				}
 

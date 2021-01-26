@@ -14,7 +14,7 @@
       Published
       <a class="u-url" href="{{ $.BlogPost.URL $.BaseURL }}">
         <time class="dt-published" datetime="{{ $.BlogPost.Published | date "2006-01-02T15:04:05Z07:00" }}">
-          {{ dateInZone ($.BlogPost.Published | formatForDateTime) $.BlogPost.Created $.User.DisplayDatesInTimezone }}
+          {{ dateInZone ($.BlogPost.Published | formatForDateTime) $.BlogPost.Published $.User.DisplayDatesInTimezone }}
         </time>
       </a>
       &nbsp;({{ $.BlogPost.Published | time }})

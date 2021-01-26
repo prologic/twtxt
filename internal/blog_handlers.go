@@ -19,17 +19,31 @@ import (
 	"github.com/vcraescu/go-paginator/adapter"
 )
 
-// BlogHandler ...
-func (s *Server) BlogHandler() httprouter.Handle {
+// ViewBlogHandler ...
+func (s *Server) ViewBlogHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		blogPost, err := BlogPostFromParams(s.config, p)
-		if err != nil {
+		blogPost := BlogPostFromParams(s.config, p)
+		if !s.blogs.Has(blogPost.Hash()) {
+			ctx.Error = true
+			ctx.Message = "Error blog post not found!"
+			s.render("404", w, ctx)
+			return
+		}
+
+		if err := blogPost.Load(s.config); err != nil {
 			log.WithError(err).Error("error loading blog post")
 			ctx.Error = true
 			ctx.Message = "Error loading blog post! Please contact support."
 			s.render("error", w, ctx)
+			return
+		}
+
+		if blogPost.Draft() && blogPost.Author != ctx.User.Username {
+			ctx.Error = true
+			ctx.Message = "Blog post not found!"
+			s.render("404", w, ctx)
 			return
 		}
 
@@ -71,7 +85,11 @@ func (s *Server) BlogHandler() httprouter.Handle {
 		who := fmt.Sprintf("%s %s", blogPost.Author, URLForUser(s.config, blogPost.Author))
 		when := blogPost.Created().Format(time.RFC3339)
 
-		var ks []string
+		var (
+			ks  []string
+			err error
+		)
+
 		if ks, err = keywords.Extract(blogPost.Content()); err != nil {
 			log.WithError(err).Warn("error extracting keywords")
 		}
@@ -146,8 +164,15 @@ func (s *Server) EditBlogHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		blogPost, err := BlogPostFromParams(s.config, p)
-		if err != nil {
+		blogPost := BlogPostFromParams(s.config, p)
+		if !s.blogs.Has(blogPost.Hash()) {
+			ctx.Error = true
+			ctx.Message = "Error blog post not found!"
+			s.render("404", w, ctx)
+			return
+		}
+
+		if err := blogPost.Load(s.config); err != nil {
 			log.WithError(err).Error("error loading blog post")
 			ctx.Error = true
 			ctx.Message = "Error loading blog post! Please contact support."
@@ -167,8 +192,45 @@ func (s *Server) DeleteBlogHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		blogPost, err := BlogPostFromParams(s.config, p)
-		if err != nil {
+		blogPost := BlogPostFromParams(s.config, p)
+		if !s.blogs.Has(blogPost.Hash()) {
+			ctx.Error = true
+			ctx.Message = "Error blog post not found!"
+			s.render("404", w, ctx)
+			return
+		}
+
+		if err := blogPost.Delete(s.config); err != nil {
+			log.WithError(err).Error("error deleting blog post")
+			ctx.Error = true
+			ctx.Message = "Error deleting blog post! Please contact support."
+			s.render("error", w, ctx)
+			return
+		}
+
+		// Update blogs cache
+		s.blogs.Delete(blogPost.Hash())
+
+		ctx.Error = false
+		ctx.Message = "Successfully deleted blog post"
+		s.render("error", w, ctx)
+	}
+}
+
+// PublishBlogHandler ...
+func (s *Server) PublishBlogHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		blogPost := BlogPostFromParams(s.config, p)
+		if !s.blogs.Has(blogPost.Hash()) {
+			ctx.Error = true
+			ctx.Message = "Error blog post not found!"
+			s.render("404", w, ctx)
+			return
+		}
+
+		if err := blogPost.Load(s.config); err != nil {
 			log.WithError(err).Error("error loading blog post")
 			ctx.Error = true
 			ctx.Message = "Error loading blog post! Please contact support."
@@ -176,15 +238,41 @@ func (s *Server) DeleteBlogHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = fmt.Sprintf("Editing Twt Blog: %s", blogPost.Title)
-		ctx.BlogPost = blogPost
+		blogPost.Publish()
 
-		s.render("delete_blogpost", w, ctx)
+		if err := blogPost.Save(s.config); err != nil {
+			log.WithError(err).Error("error saving blog post")
+			ctx.Error = true
+			ctx.Message = "Error publishing blog post! Please contact support."
+			s.render("error", w, ctx)
+			return
+		}
+
+		twtText := fmt.Sprintf("[%s](%s)", blogPost.Title, blogPost.URL(s.config.BaseURL))
+
+		if _, err := AppendSpecial(s.config, s.db, blogPost.Author, twtText); err != nil {
+			log.WithError(err).Error("error posting blog post twt")
+			ctx.Error = true
+			ctx.Message = "Error posting announcement twt for new blog post"
+			s.render("error", w, ctx)
+			return
+		}
+
+		// Update blogs cache
+		s.blogs.Add(blogPost)
+
+		// Update user's own timeline with their own new post.
+		s.cache.FetchTwts(s.config, s.archive, ctx.User.Source(), nil)
+
+		// Re-populate/Warm cache with local twts for this pod
+		s.cache.GetByPrefix(s.config.BaseURL, true)
+
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
 
-// BlogsHandler ...
-func (s *Server) BlogsHandler() httprouter.Handle {
+// ListBlogsHandler ...
+func (s *Server) ListBlogsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
@@ -279,8 +367,8 @@ func (s *Server) BlogsHandler() httprouter.Handle {
 	}
 }
 
-// PublishBlogHandler ...
-func (s *Server) PublishBlogHandler() httprouter.Handle {
+// CreateorUpdateBlogHandler ...
+func (s *Server) CreateOrUpdateBlogHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
@@ -318,6 +406,15 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 				s.render("error", w, ctx)
 				return
 			}
+
+			if err := blogPost.Load(s.config); err != nil {
+				log.WithError(err).Error("error loading blog post")
+				ctx.Error = true
+				ctx.Message = "Error loading blog post! Please contact support."
+				s.render("error", w, ctx)
+				return
+			}
+
 			blogPost.Reset()
 
 			if _, err := blogPost.WriteString(text); err != nil {
@@ -346,22 +443,16 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 			return
 		}
 
-		user, err := s.db.GetUser(ctx.Username)
-		if err != nil {
-			log.WithError(err).Errorf("error loading user object for %s", ctx.Username)
-			ctx.Error = true
-			ctx.Message = "Error publishing blog post"
-			s.render("error", w, ctx)
-			return
-		}
-
-		var blogPost *BlogPost
+		var (
+			blogPost *BlogPost
+			err      error
+		)
 
 		switch postas {
-		case "", user.Username:
-			blogPost, err = WriteBlog(s.config, user, title, text)
+		case "", ctx.User.Username:
+			blogPost, err = WriteBlog(s.config, ctx.User, title, text)
 		default:
-			if user.OwnsFeed(postas) {
+			if ctx.User.OwnsFeed(postas) {
 				blogPost, err = WriteBlogAs(s.config, postas, title, text)
 			} else {
 				err = ErrFeedImposter
@@ -369,24 +460,9 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 		}
 
 		if err != nil {
-			log.WithError(err).Error("error publishing blog post")
+			log.WithError(err).Error("error creating blog post")
 			ctx.Error = true
-			ctx.Message = "Error publishing blog post"
-			s.render("error", w, ctx)
-			return
-		}
-
-		twtText := fmt.Sprintf("[%s](%s)", blogPost.Title, blogPost.URL(s.config.BaseURL))
-
-		if postas == "" || postas == user.Username {
-			_, err = AppendTwt(s.config, s.db, user, twtText)
-		} else {
-			_, err = AppendSpecial(s.config, s.db, postas, twtText)
-		}
-		if err != nil {
-			log.WithError(err).Error("error posting blog post twt")
-			ctx.Error = true
-			ctx.Message = "Error posting announcement twt for new blog post"
+			ctx.Message = "Error creating blog post"
 			s.render("error", w, ctx)
 			return
 		}
@@ -394,12 +470,6 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 		// Update blogs cache
 		s.blogs.Add(blogPost)
 
-		// Update user's own timeline with their own new post.
-		s.cache.FetchTwts(s.config, s.archive, user.Source(), nil)
-
-		// Re-populate/Warm cache with local twts for this pod
-		s.cache.GetByPrefix(s.config.BaseURL, true)
-
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Redirect(w, r, blogPost.URL(s.config.BaseURL), http.StatusFound)
 	}
 }

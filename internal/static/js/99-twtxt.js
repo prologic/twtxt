@@ -18,7 +18,7 @@ function createDiv() {
 
 // Array.findIndex polyfill
 if (!Array.prototype.findIndex) {
-  Array.prototype.findIndex = function (predicate) {
+  Array.prototype.findIndex = function(predicate) {
     if (this == null) {
       throw new TypeError(
         "Array.prototype.findIndex called on null or undefined"
@@ -44,7 +44,7 @@ if (!Array.prototype.findIndex) {
 
 if (!Array.prototype.find) {
   Object.defineProperty(Array.prototype, "find", {
-    value: function (predicate) {
+    value: function(predicate) {
       // 1. Let O be ? ToObject(this value).
       if (this == null) {
         throw new TypeError('"this" is null or not defined');
@@ -114,7 +114,7 @@ function eraseCookie(name) {
   createCookie(name, "", -1);
 }
 
-window.onload = function () {
+window.onload = function() {
   if (checkCookie(window.cookieName) != window.cookieValue) {
     createDiv();
   }
@@ -177,7 +177,7 @@ function deleteTwt(e) {
       type: "DELETE",
       url: u("#form").attr("action"),
       data: new FormData(u("#form").first()),
-      success: function (data) {
+      success: function(data) {
         var hash = u(e.target).data("hash");
         u("#" + hash).remove();
       },
@@ -185,7 +185,7 @@ function deleteTwt(e) {
   }
 }
 
-u("#theme input").on("change", function (e) {
+u("#theme input").on("change", function(e) {
   var value = u(e.target).first().value;
 
   switch (value) {
@@ -212,7 +212,7 @@ u(".reply").on("click", replyTo);
 u(".edit").on("click", editTwt);
 u(".delete").on("click", deleteTwt);
 
-u("#post").on("click", function (e) {
+u("#post").on("click", function(e) {
   e.preventDefault();
   localStorage.setItem('title', '');
   localStorage.setItem('text', '');
@@ -221,14 +221,14 @@ u("#post").on("click", function (e) {
   u("#form").first().submit();
 });
 
-u.prototype.getSelection = function () {
+u.prototype.getSelection = function() {
   var e = this.first();
 
   return (
     /* mozilla / dom 3.0 */
     (
       ("selectionStart" in e &&
-        function () {
+        function() {
           var l = e.selectionEnd - e.selectionStart;
           return {
             start: e.selectionStart,
@@ -239,12 +239,16 @@ u.prototype.getSelection = function () {
         }) ||
       /* exploder */
       (document.selection &&
-        function () {
+        function() {
           e.focus();
 
           var r = document.selection.createRange();
           if (r === null) {
-            return { start: 0, end: e.value.length, length: 0 };
+            return {
+              start: 0,
+              end: e.value.length,
+              length: 0
+            };
           }
 
           var re = e.createTextRange();
@@ -260,14 +264,14 @@ u.prototype.getSelection = function () {
           };
         }) ||
       /* browser not supported */
-      function () {
+      function() {
         return null;
       }
     )()
   );
 };
 
-u.prototype.replaceSelection = function () {
+u.prototype.replaceSelection = function() {
   var e = this.first();
 
   var text = arguments[0] || "";
@@ -276,7 +280,7 @@ u.prototype.replaceSelection = function () {
     /* mozilla / dom 3.0 */
     (
       ("selectionStart" in e &&
-        function () {
+        function() {
           e.value =
             e.value.substr(0, e.selectionStart) +
             text +
@@ -285,13 +289,13 @@ u.prototype.replaceSelection = function () {
         }) ||
       /* exploder */
       (document.selection &&
-        function () {
+        function() {
           e.focus();
           document.selection.createRange().text = text;
           return this;
         }) ||
       /* browser not supported */
-      function () {
+      function() {
         e.value += text;
         return jQuery(e);
       }
@@ -304,16 +308,16 @@ function createMentionedUserNode(username) {
     .addClass("user-list__user")
     .append(
       u("<div>")
-        .addClass("avatar")
-        .attr(
-          "style",
-          "background-image: url('/user/" + username + "/avatar.png')"
-        )
+      .addClass("avatar")
+      .attr(
+        "style",
+        "background-image: url('/user/" + username + "/avatar.png')"
+      )
     )
     .append(
       u("<div>")
-        .addClass("info")
-        .append(u("<div>").addClass("nickname").text(username))
+      .addClass("info")
+      .append(u("<div>").addClass("nickname").text(username))
     );
 }
 
@@ -348,9 +352,9 @@ function insertText(selector, text) {
   selector.first().focus();
 
   var selectionRange =
-    selector.first().value.substr(start + text.length - 1, 1) === ")"
-      ? start + text.length - 1
-      : start + text.length;
+    selector.first().value.substr(start + text.length - 1, 1) === ")" ?
+    start + text.length - 1 :
+    start + text.length;
 
   selector.first().setSelectionRange(selectionRange, selectionRange);
 }
@@ -379,7 +383,7 @@ var fetchUsersTimeout = null;
 
 function getUsers(searchStr) {
   clearTimeout(fetchUsersTimeout);
-  fetchUsersTimeout = setTimeout(function () {
+  fetchUsersTimeout = setTimeout(function() {
     let requestUrl = "/lookup";
 
     if (searchStr) {
@@ -389,9 +393,9 @@ function getUsers(searchStr) {
     Twix.ajax({
       type: "GET",
       url: requestUrl,
-      success: function (data) {
+      success: function(data) {
         u("#mentioned-list-content").empty();
-        data.map(function (name) {
+        data.map(function(name) {
           u("#mentioned-list-content").append(createMentionedUserNode(name));
         });
         if (data.length) {
@@ -404,37 +408,37 @@ function getUsers(searchStr) {
 
 var mentions = [];
 
-u("#bBtn").on("click", function (e) {
+u("#bBtn").on("click", function(e) {
   e.preventDefault();
   formatText(u("textarea#text"), "**");
 });
 
-u("#iBtn").on("click", function (e) {
+u("#iBtn").on("click", function(e) {
   e.preventDefault();
   formatText(u("textarea#text"), "*");
 });
 
-u("#sBtn").on("click", function (e) {
+u("#sBtn").on("click", function(e) {
   e.preventDefault();
   formatText(u("textarea#text"), "~~");
 });
 
-u("#cBtn").on("click", function (e) {
+u("#cBtn").on("click", function(e) {
   e.preventDefault();
   formatText(u("textarea#text"), "`");
 });
 
-u("#lnkBtn").on("click", function (e) {
+u("#lnkBtn").on("click", function(e) {
   e.preventDefault();
   insertText(u("textarea#text"), "[title](https://)");
 });
 
-u("#imgBtn").on("click", function (e) {
+u("#imgBtn").on("click", function(e) {
   e.preventDefault();
   insertText(u("textarea#text"), "![](https://)");
 });
 
-u("#usrBtn").on("click", function (e) {
+u("#usrBtn").on("click", function(e) {
   e.preventDefault();
   if (!$mentionedList.classList.contains("show")) {
     u("textarea#text").first().focus();
@@ -449,7 +453,7 @@ u("#usrBtn").on("click", function (e) {
   }
 });
 
-u("#writeBtn").on("click", function (e) {
+u("#writeBtn").on("click", function(e) {
   e.preventDefault();
 
   u("#title").attr("type", "");
@@ -462,20 +466,20 @@ u("#writeBtn").on("click", function (e) {
   }
 
   u("#title").first().focus();
-  u("#post").html('<i class="icss-print"></i>&nbsp;Publish!');
+  u("#post").html('<i class="icss-floppy"></i>&nbsp;Save!');
   u("#text").attr("maxlength", "");
   u("#text").attr("rows", 24);
   u("#form").attr("action", "/blog");
 });
 
-u("textarea#text").on("keydown", function (e) {
+u("textarea#text").on("keydown", function(e) {
   if (e.ctrlKey && e.keyCode == 13) {
     e.preventDefault();
     u("#post").trigger("click");
   }
 });
 
-u("textarea#text").on("focus", function (e) {
+u("textarea#text").on("focus", function(e) {
   if (e.relatedTarget === u("#usrBtn").first()) {
     showMentionedList();
     getUsers();
@@ -484,7 +488,7 @@ u("textarea#text").on("focus", function (e) {
 
 var startMention = null;
 
-u("textarea#text").on("keyup", function (e) {
+u("textarea#text").on("keyup", function(e) {
   if (e.key.length === 1 || e.key === "Backspace") {
     var idx = e.target.selectionStart;
     var prevSymbol = e.target.value.slice(idx - 1, idx);
@@ -506,9 +510,9 @@ u("textarea#text").on("keyup", function (e) {
   }
 });
 
-u("#mentioned-list-content").on("mousemove", function (e) {
+u("#mentioned-list-content").on("mousemove", function(e) {
   var target = e.target;
-  u(".user-list__user").nodes.forEach(function (item) {
+  u(".user-list__user").nodes.forEach(function(item) {
     item.classList.remove("selected");
   });
   if (target.classList.contains("user-list__user")) {
@@ -516,7 +520,7 @@ u("#mentioned-list-content").on("mousemove", function (e) {
   }
 });
 
-u("#mentioned-list").on("click", function (e) {
+u("#mentioned-list").on("click", function(e) {
   var value = u("textarea#text").first().value;
 
   u("textarea#text").first().value =
@@ -531,39 +535,39 @@ u("#mentioned-list").on("click", function (e) {
 var maxTaskWait = (1000 * 60 * 10); // ~10mins TODO: Make this configurable
 
 function pollForTask(taskURL, delay, maxDelay, timeout, errorCallback, successCallback) {
-    Twix.ajax({
-        type: "GET",
-        url: taskURL,
-        error: function (statusCode, statusText) {
-          errorCallback({
-            error: statusCode + " " + statusText
-          })
-        },
-        success: function (data) {
-            switch (data.state) {
-                case "pending":
-                case "running":
-                    if (Date.now() < timeout) {
-                        if (delay < maxDelay) {
-                            delay = delay * 2;
-                        }
-                        setTimeout(function () {
-                            pollForTask(taskURL, delay, maxDelay, timeout, errorCallback, successCallback);
-                        }, delay);
-                        return;
-                    }
-                    break;
-                case "complete":
-                    successCallback(data);
-                    break;
-                default:
-                    errorCallback(data);
+  Twix.ajax({
+    type: "GET",
+    url: taskURL,
+    error: function(statusCode, statusText) {
+      errorCallback({
+        error: statusCode + " " + statusText
+      })
+    },
+    success: function(data) {
+      switch (data.state) {
+        case "pending":
+        case "running":
+          if (Date.now() < timeout) {
+            if (delay < maxDelay) {
+              delay = delay * 2;
             }
-        },
-    });
+            setTimeout(function() {
+              pollForTask(taskURL, delay, maxDelay, timeout, errorCallback, successCallback);
+            }, delay);
+            return;
+          }
+          break;
+        case "complete":
+          successCallback(data);
+          break;
+        default:
+          errorCallback(data);
+      }
+    },
+  });
 }
 
-u("#uploadImage").on("change", function (e) {
+u("#uploadImage").on("change", function(e) {
   u("#uploadImageButton").removeClass("icss-camera");
   u("#uploadImageButton").addClass("icss-spinner icss-pulse");
   u("#uploadImageForm").data("tooltip", "Uploading...");
@@ -573,7 +577,7 @@ u("#uploadImage").on("change", function (e) {
     type: "POST",
     url: u("#imageUploadForm").attr("action"),
     data: new FormData(u("#imageUploadForm").first()),
-    success: function (data) {
+    success: function(data) {
       var el = u("textarea#text");
       var text = document.getElementById("text");
 
@@ -582,15 +586,15 @@ u("#uploadImage").on("change", function (e) {
         1000,
         30000,
         Date.now() + maxTaskWait,
-        function (errorData) {
-      u("#uploadImageButton").removeClass("icss-spinner icss-pulse");
-      u("#uploadImageButton").addClass("icss-camera");
-      alert(
-        "An error occurred uploading your image: " +
-          errorData.error
-      )
+        function(errorData) {
+          u("#uploadImageButton").removeClass("icss-spinner icss-pulse");
+          u("#uploadImageButton").addClass("icss-camera");
+          alert(
+            "An error occurred uploading your image: " +
+            errorData.error
+          )
         },
-        function (successData) {
+        function(successData) {
           text.value += " ![](" + successData.data.mediaURI + ") ";
           el.scroll();
           text.focus();
@@ -604,20 +608,20 @@ u("#uploadImage").on("change", function (e) {
         }
       );
     },
-    error: function (statusCode, statusText) {
+    error: function(statusCode, statusText) {
       u("#uploadImageButton").removeClass("icss-spinner icss-pulse");
       u("#uploadImageButton").addClass("icss-camera");
       alert(
         "An error occurred uploading your image: " +
-          statusCode +
-          " " +
-          statusText
+        statusCode +
+        " " +
+        statusText
       );
     },
   });
 });
 
-u("#uploadAudio").on("change", function (e) {
+u("#uploadAudio").on("change", function(e) {
   u("#uploadAudioButton").removeClass("icss-microphone");
   u("#uploadAudioButton").addClass("icss-spinner icss-pulse");
   u("#uploadAudioForm").data("tooltip", "Uploading...");
@@ -627,7 +631,7 @@ u("#uploadAudio").on("change", function (e) {
     type: "POST",
     url: u("#audioUploadForm").attr("action"),
     data: new FormData(u("#audioUploadForm").first()),
-    success: function (data) {
+    success: function(data) {
       var el = u("textarea#text");
       var text = document.getElementById("text");
 
@@ -636,15 +640,15 @@ u("#uploadAudio").on("change", function (e) {
         1000,
         30000,
         Date.now() + maxTaskWait,
-        function (errorData) {
-      u("#uploadAudioButton").removeClass("icss-spinner icss-pulse");
-      u("#uploadAudioButton").addClass("icss-microphone");
-      alert(
-        "An error occurred uploading your audio: " +
-          errorData.error
-      )
+        function(errorData) {
+          u("#uploadAudioButton").removeClass("icss-spinner icss-pulse");
+          u("#uploadAudioButton").addClass("icss-microphone");
+          alert(
+            "An error occurred uploading your audio: " +
+            errorData.error
+          )
         },
-        function (successData) {
+        function(successData) {
           text.value += " ![](" + successData.data.mediaURI + ") ";
           el.scroll();
           text.focus();
@@ -658,20 +662,20 @@ u("#uploadAudio").on("change", function (e) {
         }
       );
     },
-    error: function (statusCode, statusText) {
+    error: function(statusCode, statusText) {
       u("#uploadAudioButton").removeClass("icss-spinner icss-pulse");
       u("#uploadAudioButton").addClass("icss-microphone");
       alert(
         "An error occurred uploading your audio: " +
-          statusCode +
-          " " +
-          statusText
+        statusCode +
+        " " +
+        statusText
       );
     },
   });
 });
 
-u("#uploadVideo").on("change", function (e) {
+u("#uploadVideo").on("change", function(e) {
   u("#uploadVideoButton").removeClass("icss-video-camera");
   u("#uploadVideoButton").addClass("icss-spinner icss-pulse");
   u("#uploadVideoForm").data("tooltip", "Uploading...");
@@ -681,7 +685,7 @@ u("#uploadVideo").on("change", function (e) {
     type: "POST",
     url: u("#videoUploadForm").attr("action"),
     data: new FormData(u("#videoUploadForm").first()),
-    success: function (data) {
+    success: function(data) {
       var el = u("textarea#text");
       var text = document.getElementById("text");
 
@@ -690,15 +694,15 @@ u("#uploadVideo").on("change", function (e) {
         1000,
         30000,
         Date.now() + maxTaskWait,
-        function (errorData) {
-      u("#uploadVideoButton").removeClass("icss-spinner icss-pulse");
-      u("#uploadVideoButton").addClass("icss-video-camera");
-      alert(
-        "An error occurred uploading your video: " +
-          errorData.error
-      )
+        function(errorData) {
+          u("#uploadVideoButton").removeClass("icss-spinner icss-pulse");
+          u("#uploadVideoButton").addClass("icss-video-camera");
+          alert(
+            "An error occurred uploading your video: " +
+            errorData.error
+          )
         },
-        function (successData) {
+        function(successData) {
           text.value += " ![](" + successData.data.mediaURI + ") ";
           el.scroll();
           text.focus();
@@ -712,21 +716,21 @@ u("#uploadVideo").on("change", function (e) {
         }
       );
     },
-    error: function (statusCode, statusText) {
+    error: function(statusCode, statusText) {
       u("#uploadVideoButton").removeClass("icss-spinner icss-pulse");
       u("#uploadVideoButton").addClass("icss-video-camera");
       alert(
         "An error occurred uploading your video: " +
-          statusCode +
-          " " +
-          statusText
+        statusCode +
+        " " +
+        statusText
       );
     },
   });
 });
 
 u("#register > button").first().disabled = true;
-u("#register #agree").on("change", function (e) {
+u("#register #agree").on("change", function(e) {
   if (u(e.target).first().checked) {
     u("#register > button").first().disabled = false;
   } else {
@@ -734,7 +738,7 @@ u("#register #agree").on("change", function (e) {
   }
 });
 
-u("#burgerMenu").on("click", function (e) {
+u("#burgerMenu").on("click", function(e) {
   e.preventDefault();
 
   if (u("#mainNav").hasClass("responsive")) {
@@ -744,7 +748,7 @@ u("#burgerMenu").on("click", function (e) {
   }
 });
 
-u("body").on("keydown", function (e) {
+u("body").on("keydown", function(e) {
   if (u("#mentioned-list").first()) {
     if (u("#mentioned-list").first().classList.contains("show")) {
       if (e.key === "Escape") {
@@ -759,7 +763,7 @@ u("body").on("keydown", function (e) {
       ) {
         e.preventDefault();
 
-        var selectedIdx = u(".user-list__user").nodes.findIndex(function (
+        var selectedIdx = u(".user-list__user").nodes.findIndex(function(
           item
         ) {
           return item.classList.contains("selected");
@@ -770,20 +774,20 @@ u("body").on("keydown", function (e) {
 
         if (e.key === "ArrowDown" || e.key === "Down") {
           nextIdx =
-            selectedIdx + 1 === u(".user-list__user").length
-              ? 0
-              : selectedIdx + 1;
+            selectedIdx + 1 === u(".user-list__user").length ?
+            0 :
+            selectedIdx + 1;
         } else if (e.key === "ArrowUp" || e.key === "Up") {
           nextIdx =
-            selectedIdx - 1 < 0
-              ? u(".user-list__user").length - 1
-              : selectedIdx - 1;
+            selectedIdx - 1 < 0 ?
+            u(".user-list__user").length - 1 :
+            selectedIdx - 1;
         }
 
         scrollOffset =
           u(".user-list__user").first().clientHeight * (nextIdx - 2);
 
-        u(".user-list__user").nodes.forEach(function (item, index) {
+        u(".user-list__user").nodes.forEach(function(item, index) {
           item.classList.remove("selected");
           if (index === nextIdx) {
             u("#mentioned-list-content").first().scrollTop =
@@ -796,7 +800,7 @@ u("body").on("keydown", function (e) {
       if (e.key === "Tab" || e.key === "Enter") {
         e.preventDefault();
 
-        var selectedNodeIdx = u(".user-list__user").nodes.findIndex(function (
+        var selectedNodeIdx = u(".user-list__user").nodes.findIndex(function(
           item
         ) {
           return item.classList.contains("selected");
@@ -846,7 +850,7 @@ if (
   window.scrollTo(0, Number(localStorage.getItem("prevOffset")));
 }
 
-window.onbeforeunload = function () {
+window.onbeforeunload = function() {
   localStorage.setItem(
     "prevOffset",
     localStorage.getItem("currentOffset") || String(window.scrollY)
@@ -854,7 +858,7 @@ window.onbeforeunload = function () {
   localStorage.setItem("currentOffset", String(window.scrollY));
 };
 
-window.onload =  function () {
+window.onload = function() {
   var text = localStorage.getItem('text');
   if (text) {
     insertText(u("textarea#text"), text);

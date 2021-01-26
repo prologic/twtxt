@@ -1,49 +1,63 @@
 {{define "content"}}
-  <article class="container-fluid">
-    <hgroup>
-      <h2 class="u-author h-card">
-        <a href="/user/{{ $.BlogPost.Author }}" class="u-url">
-          <img class="avatar u-photo" src="/user/{{ $.BlogPost.Author }}/avatar" alt="" />
+<article class="container-fluid">
+  <hgroup>
+    <h2 class="u-author h-card">
+      <a href="/user/{{ $.BlogPost.Author }}" class="u-url">
+        <img class="avatar u-photo" src="/user/{{ $.BlogPost.Author }}/avatar" alt="" />
         <span class="p-name">{{ $.BlogPost.Author }}</span>
-        </a>
-      </h2>
-      <h3><a href="{{ $.BlogPost.URL $.BaseURL }}">{{ $.BlogPost.Title }}</a></h3>
-    </hgroup>
-    {{ .Content }}
-    <footer>
-      Published
-      <a class="u-url" href="{{ $.BlogPost.URL $.BaseURL }}">
-        <time class="dt-published" datetime="{{ $.BlogPost.Published | date "2006-01-02T15:04:05Z07:00" }}">
-          {{ dateInZone ($.BlogPost.Published | formatForDateTime) $.BlogPost.Published $.User.DisplayDatesInTimezone }}
-        </time>
       </a>
-      &nbsp;({{ $.BlogPost.Published | time }})
-      <hr />
-      {{ if and $.Authenticated (eq $.User.Username $.BlogPost.Author) }}
-        <nav>
-          <ul>
-            <li><a href="{{ $.BlogPost.URL $.BaseURL }}/edit"><i class="icss-edit"></i>Edit</a></li>
-            <li>&nbsp;</li>
-            <li><a href="{{ $.BlogPost.URL $.BaseURL }}/delete"><i class="icss-x"></i>Delete</a></li>
-          </ul>
-        </nav>
-      {{ end }}
-    </footer>
-  </article>
-  <div class="container">
-    <hgroup>
-      <h2>Comments:</h2>
-      <h3>Recent tws in reply to this post.</h3>
-    </hgroup>
-    {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" $.Twts) }}
-    {{ if .Authenticated }}
-      <hgroup>
-        <h2>Have your say!</h2>
-        <h3>Post your twt here and add to the discussion!</h3>
-      </hgroup>
-      {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" false "CSRFToken" $.CSRFToken) }}
+    </h2>
+    <h3><a href="{{ $.BlogPost.URL $.BaseURL }}">{{ $.BlogPost.Title }}</a></h3>
+  </hgroup>
+  {{ .Content }}
+  <footer>
+    {{ if $.BlogPost.Draft }}
+    Created (<i>draft</i>)
+    <a class="u-url" href="{{ $.BlogPost.URL $.BaseURL }}">
+      <time class="dt-start" datetime="{{ $.BlogPost.Created | date "2006-01-02T15:04:05Z07:00" }}">
+        {{ dateInZone ($.BlogPost.Created | formatForDateTime) $.BlogPost.Created $.User.DisplayDatesInTimezone }}
+      </time>
+    </a>
+    &nbsp;({{ $.BlogPost.Created | time }})
     {{ else }}
-      <small>You must be <a href="/login">Logged in</a> to comment.</small>
+    Published
+    <a class="u-url" href="{{ $.BlogPost.URL $.BaseURL }}">
+      <time class="dt-published" datetime="{{ $.BlogPost.Published | date "2006-01-02T15:04:05Z07:00" }}">
+        {{ dateInZone ($.BlogPost.Published | formatForDateTime) $.BlogPost.Published $.User.DisplayDatesInTimezone }}
+      </time>
+    </a>
+    &nbsp;({{ $.BlogPost.Published | time }})
     {{ end }}
-  </div>
+    <hr />
+    {{ if and $.Authenticated (eq $.User.Username $.BlogPost.Author) }}
+    <nav>
+      <ul>
+        {{ if $.BlogPost.Draft }}
+        <li><a href="{{ $.BlogPost.URL $.BaseURL }}/publish" onclick="return confirm('Are you sure you want to publish this blog post? This cannot be undone!');"><i class="icss-print"></i>Publish</a></li>
+        <li>&nbsp;</li>
+        {{ end  }}
+        <li><a href="{{ $.BlogPost.URL $.BaseURL }}/edit"><i class="icss-edit"></i>Edit</a></li>
+        <li>&nbsp;</li>
+        <li><a href="{{ $.BlogPost.URL $.BaseURL }}/delete" onclick="return confirm('Are you sure you want to delete this blog post? This cannot be undone!');"><i class="icss-x"></i>Delete</a></li>
+      </ul>
+    </nav>
+    {{ end }}
+  </footer>
+</article>
+<div class="container">
+  <hgroup>
+    <h2>Comments:</h2>
+    <h3>Recent tws in reply to this post.</h3>
+  </hgroup>
+  {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" $.Twts) }}
+  {{ if .Authenticated }}
+  <hgroup>
+    <h2>Have your say!</h2>
+    <h3>Post your twt here and add to the discussion!</h3>
+  </hgroup>
+  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" false "CSRFToken" $.CSRFToken) }}
+  {{ else }}
+  <small>You must be <a href="/login">Logged in</a> to comment.</small>
+  {{ end }}
+</div>
 {{ end }}

@@ -1,253 +1,257 @@
 {{ define "post" }}
-  {{ if $.Authenticated }}
-    <nav class="toolbar-nav">
-      <ul>
-        <li><a id="bBtn" href="#" data-tooltip="Bold"><i class="icss-text-bold"></i></a></li>
-        <li><a id="iBtn" href="#" data-tooltip="Italic"><i class="icss-text-italic"></i></a></li>
-        <li><a id="cBtn" href="#" data-tooltip="Code"><i class="icss-text-width"></i></a></li>
-        <li><a id="sBtn" href="#" data-tooltip="Strikethrough"><i class="icss-x"></i></a></li>
-        <li><a id="usrBtn" href="#" data-tooltip="Mention"><i class="icss-user-circle"></i></a></li>
-        <li><a id="lnkBtn" href="#" data-tooltip="Link"><i class="icss-link"></i></a></li>
-        <li><a id="imgBtn" href="#" data-tooltip="Image"><i class="icss-image"></i></a></li>
-        {{ with $.BlogPost }}
-        {{ else }}
-          <li><a id="writeBtn" href="#" data-tooltip="Open blog post editor"><i class="icss-quill-pen"></i></a></li>
-        {{ end }}
-        <li class="toolbar-form-button">
-          <form id="imageUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload image">
-            <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-            <label for="uploadImage">
-              <i id="uploadImageButton" class="icss-camera"></i>
-            </label>
-            <input id="uploadImage" class="invisible width-none" type="file" accept="image/*" name="media_file" />
-          </form>
-        </li>
-        <li class="toolbar-form-button">
-          <form id="audioUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload audio">
-            <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-            <label for="uploadAudio">
-              <i id="uploadAudioButton" class="icss-microphone"></i>
-            </label>
-            <input id="uploadAudio" class="invisible width-none" type="file" accept="audio/*" name="media_file" />
-          </form>
-        </li>
-        <li class="toolbar-form-button">
-          <form id="videoUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload video">
-            <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-            <label for="uploadVideo">
-              <i id="uploadVideoButton" class="icss-video-camera"></i>
-            </label>
-            <input id="uploadVideo" class="invisible width-none" type="file" accept="video/*" name="media_file" />
-          </form>
-        </li>
-      </ul>
-    </nav>
-    <form id="form" action="{{ with $.BlogPost }}/blog{{ else }}/post{{ end }}" method="POST">
-      <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-      {{ with $.BlogPost }}
-        <input type="hidden" id="replaceBlog" name="hash" value="{{ $.BlogPost.Hash }}" />
-      {{ else }}
-        <input type="hidden" id="replaceTwt" name="hash" value="" />
-        <input type="hidden" id="replyTo" name="reply" value="{{ $.Reply }}" />
-        <input type="hidden" id="title" name="title" placeholder="Title" value="" />
-      {{ end }}
-      <div class="textarea-container">
-        {{ with $.BlogPost }}
-          <textarea id="text" name="text" rows=24 autofocus required>{{ $.BlogPost.Content }}</textarea>
-        {{ else }}
-          <textarea id="text" name="text" placeholder="{{ $.TwtPrompt }}" rows=3 maxlength={{ $.MaxTwtLength }} {{ if $.AutoFocus }}autofocus{{ end }} required></textarea>
-        {{ end }}
-          <div id="mentioned-list" class="users-list">
-            <div id="mentioned-list-content" class="mentioned-list-content">
-            </div>
-          </div>
-      </div>
-      <div class="grid">
-        <div>
-          {{ with $.BlogPost }}
-          {{ else }}
-            <select id="postas" class="postas" name="postas">
-              <option value="{{ $.User.Username }}" selected>Post as {{ $.User.Username }}</option>
-              {{ range $index, $feed := $.User.Feeds }}
-                <option value="{{ $feed }}">{{ $feed }}</option>
-              {{ end }}
-            </select>
-          {{ end }}
-          <button id="post" type="submit">
-            {{ with $.BlogPost }}
-              <i class="icss-print"></i>
-              Publish
-            {{ else }}
-              <i class="icss-paper-plane"></i>
-              Post
-            {{ end }}
-          </button>
-        </div>
-      </div>
-    </form>
+{{ if $.Authenticated }}
+<nav class="toolbar-nav">
+  <ul>
+    <li><a id="bBtn" href="#" data-tooltip="Bold"><i class="icss-text-bold"></i></a></li>
+    <li><a id="iBtn" href="#" data-tooltip="Italic"><i class="icss-text-italic"></i></a></li>
+    <li><a id="cBtn" href="#" data-tooltip="Code"><i class="icss-text-width"></i></a></li>
+    <li><a id="sBtn" href="#" data-tooltip="Strikethrough"><i class="icss-x"></i></a></li>
+    <li><a id="usrBtn" href="#" data-tooltip="Mention"><i class="icss-user-circle"></i></a></li>
+    <li><a id="lnkBtn" href="#" data-tooltip="Link"><i class="icss-link"></i></a></li>
+    <li><a id="imgBtn" href="#" data-tooltip="Image"><i class="icss-image"></i></a></li>
+    {{ with $.BlogPost }}
+    {{ else }}
+    <li><a id="writeBtn" href="#" data-tooltip="Open blog post editor"><i class="icss-quill-pen"></i></a></li>
+    {{ end }}
+    <li class="toolbar-form-button">
+      <form id="imageUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload image">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+        <label for="uploadImage">
+          <i id="uploadImageButton" class="icss-camera"></i>
+        </label>
+        <input id="uploadImage" class="invisible width-none" type="file" accept="image/*" name="media_file" />
+      </form>
+    </li>
+    <li class="toolbar-form-button">
+      <form id="audioUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload audio">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+        <label for="uploadAudio">
+          <i id="uploadAudioButton" class="icss-microphone"></i>
+        </label>
+        <input id="uploadAudio" class="invisible width-none" type="file" accept="audio/*" name="media_file" />
+      </form>
+    </li>
+    <li class="toolbar-form-button">
+      <form id="videoUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload video">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+        <label for="uploadVideo">
+          <i id="uploadVideoButton" class="icss-video-camera"></i>
+        </label>
+        <input id="uploadVideo" class="invisible width-none" type="file" accept="video/*" name="media_file" />
+      </form>
+    </li>
+  </ul>
+</nav>
+<form id="form" action="{{ with $.BlogPost }}/blog{{ else }}/post{{ end }}" method="POST">
+  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+  {{ with $.BlogPost }}
+  <input type="hidden" id="replaceBlog" name="hash" value="{{ $.BlogPost.Hash }}" />
+  {{ else }}
+  <input type="hidden" id="replaceTwt" name="hash" value="" />
+  <input type="hidden" id="replyTo" name="reply" value="{{ $.Reply }}" />
+  <input type="hidden" id="title" name="title" placeholder="Title" value="" />
   {{ end }}
+  <div class="textarea-container">
+    {{ with $.BlogPost }}
+    <textarea id="text" name="text" rows=24 autofocus required>{{ $.BlogPost.Content }}</textarea>
+    {{ else }}
+    <textarea id="text" name="text" placeholder="{{ $.TwtPrompt }}" rows=3 maxlength={{ $.MaxTwtLength }} {{ if $.AutoFocus }}autofocus{{ end }} required></textarea>
+    {{ end }}
+    <div id="mentioned-list" class="users-list">
+      <div id="mentioned-list-content" class="mentioned-list-content">
+      </div>
+    </div>
+  </div>
+  <div class="grid">
+    <div>
+      {{ with $.BlogPost }}
+      {{ else }}
+      <select id="postas" class="postas" name="postas">
+        <option value="{{ $.User.Username }}" selected>Post as {{ $.User.Username }}</option>
+        {{ range $index, $feed := $.User.Feeds }}
+        <option value="{{ $feed }}">{{ $feed }}</option>
+        {{ end }}
+      </select>
+      {{ end }}
+      <button id="post" type="submit">
+        {{ with $.BlogPost }}
+        <i class="icss-print"></i>
+        Save
+        {{ else }}
+        <i class="icss-paper-plane"></i>
+        Post
+        {{ end }}
+      </button>
+    </div>
+  </div>
+</form>
+{{ end }}
 {{ end }}
 
 {{ define "twt" }}
-  <article id="{{ $.Twt.Hash }}" class="h-entry">
-    <div class="u-author h-card">
-      <div>
-        {{ if $.User.Is $.Twt.Twter.URL }}
-          <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
-            <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" alt="" />
-          </a>
+<article id="{{ $.Twt.Hash }}" class="h-entry">
+  <div class="u-author h-card">
+    <div>
+      {{ if $.User.Is $.Twt.Twter.URL }}
+      <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
+        <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" alt="" />
+      </a>
+      {{ else }}
+      {{ if isLocalURL $.Twt.Twter.URL }}
+      <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
+        <img class="avatar u-photo" src="/user/{{ $.Twt.Twter.Nick }}/avatar" alt="" />
         {{ else }}
-          {{ if isLocalURL $.Twt.Twter.URL }}
-            <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
-              <img class="avatar u-photo" src="/user/{{ $.Twt.Twter.Nick }}/avatar" alt="" />
+        <a href="/external?uri={{ $.Twt.Twter.URL }}&nick={{ $.Twt.Twter.Nick }}" class="u-url">
+          {{ if $.Twt.Twter.Avatar }}
+          <img class="avatar u-photo" src="{{ $.Twt.Twter.Avatar }}" alt="" />
           {{ else }}
-            <a href="/external?uri={{ $.Twt.Twter.URL }}&nick={{ $.Twt.Twter.Nick }}" class="u-url">
-              {{ if $.Twt.Twter.Avatar }}
-                <img class="avatar u-photo" src="{{ $.Twt.Twter.Avatar }}" alt="" />
-              {{ else }}
-                <i class="icss-rss" style="font-size:3em"></i>
-              {{ end }}
+          <i class="icss-rss" style="font-size:3em"></i>
           {{ end }}
-          </a>
-        {{ end }}
-      </div>
-      <div class="author">
-        {{ if $.User.Is $.Twt.Twter.URL }}
-          <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="p-name">me</a>
-        {{ else }}
-          {{ if isLocalURL $.Twt.Twter.URL }}
-            <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="p-name">{{ $.Twt.Twter.Nick }}</a>
-          {{ else }}
-            <a href="/external?uri={{ $.Twt.Twter.URL }}&nick={{ $.Twt.Twter.Nick }}" class="p-name">
-              {{ $.Twt.Twter.Nick }}
-              <span class="p-org">@{{ $.Twt.Twter.URL | hostnameFromURL }}</span>
-            </a>
           {{ end }}
+        </a>
         {{ end }}
-        <div class="publish-time">
-          <a class="u-url" href="/twt/{{ $.Twt.Hash }}">
-            <time class="dt-published" datetime="{{ $.Twt.Created | date "2006-01-02T15:04:05Z07:00" }}">
-              {{ dateInZone ($.Twt.Created | formatForDateTime) $.Twt.Created $.User.DisplayDatesInTimezone }}
-            </time>
-          </a>
-          <span> &nbsp;({{ $.Twt.Created | time }})</span>
-        </div>
+    </div>
+    <div class="author">
+      {{ if $.User.Is $.Twt.Twter.URL }}
+      <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="p-name">me</a>
+      {{ else }}
+      {{ if isLocalURL $.Twt.Twter.URL }}
+      <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="p-name">{{ $.Twt.Twter.Nick }}</a>
+      {{ else }}
+      <a href="/external?uri={{ $.Twt.Twter.URL }}&nick={{ $.Twt.Twter.Nick }}" class="p-name">
+        {{ $.Twt.Twter.Nick }}
+        <span class="p-org">@{{ $.Twt.Twter.URL | hostnameFromURL }}</span>
+      </a>
+      {{ end }}
+      {{ end }}
+      <div class="publish-time">
+        <a class="u-url" href="/twt/{{ $.Twt.Hash }}">
+          <time class="dt-published" datetime="{{ $.Twt.Created | date "2006-01-02T15:04:05Z07:00" }}">
+            {{ dateInZone ($.Twt.Created | formatForDateTime) $.Twt.Created $.User.DisplayDatesInTimezone }}
+          </time>
+        </a>
+        <span> &nbsp;({{ $.Twt.Created | time }})</span>
       </div>
     </div>
-    <div class="p-summary">
-      {{ $.Twt.Text | formatTwt }}
-    </div>
-    <hr />
-    <nav>
-      <ul>
-        {{ if $.Authenticated }}
-          {{ if eq $.LastTwt.Hash $.Twt.Hash }}
-            <li><a class="edit" href="#" data-hash="{{ $.Twt.Hash }}" data-text="{{ $.Twt.Text | unparseTwt }}"><i class="icss-edit"></i>Edit</a></li>
-            <li>&nbsp;</li>
-            <li><a class="delete" href="#" data-hash="{{ $.Twt.Hash }}"><i class="icss-x"></i>Delete</a></li>
-            <li>&nbsp;</li>
-          {{ end }}
-          <li><a class="reply" href="#" data-reply="{{ $.User.Reply $.Twt }}"><i class="icss-arrow-left"></i>Reply</a></li>
-          <li>&nbsp;</li>
-        {{ end }}
-        {{ with urlForBlog $.Twt }}
-          <li><a class="blog" href="{{ urlForBlog $.Twt }}"><i class="icss-quill-pen"></i>Blog</a></li>
-          <li>&nbsp;</li>
-        {{ end }}
-        {{ with urlForConv $.Twt }}
-          <li><a class="conv" href="{{ urlForConv $.Twt }}"><i class="icss-comment"></i>Conversation</a></li>
-          <li>&nbsp;</li>
-        {{ end }}
-      </ul>
-    </nav>
-  </article>
+  </div>
+  <div class="p-summary">
+    {{ $.Twt.Text | formatTwt }}
+  </div>
+  <hr />
+  <nav>
+    <ul>
+      {{ if $.Authenticated }}
+      {{ if eq $.LastTwt.Hash $.Twt.Hash }}
+      <li><a class="edit" href="#" data-hash="{{ $.Twt.Hash }}" data-text="{{ $.Twt.Text | unparseTwt }}"><i class="icss-edit"></i>Edit</a></li>
+      <li>&nbsp;</li>
+      <li><a class="delete" href="#" data-hash="{{ $.Twt.Hash }}"><i class="icss-x"></i>Delete</a></li>
+      <li>&nbsp;</li>
+      {{ end }}
+      <li><a class="reply" href="#" data-reply="{{ $.User.Reply $.Twt }}"><i class="icss-arrow-left"></i>Reply</a></li>
+      <li>&nbsp;</li>
+      {{ end }}
+      {{ with urlForBlog $.Twt }}
+      <li><a class="blog" href="{{ urlForBlog $.Twt }}"><i class="icss-quill-pen"></i>Blog</a></li>
+      <li>&nbsp;</li>
+      {{ end }}
+      {{ with urlForConv $.Twt }}
+      <li><a class="conv" href="{{ urlForConv $.Twt }}"><i class="icss-comment"></i>Conversation</a></li>
+      <li>&nbsp;</li>
+      {{ end }}
+    </ul>
+  </nav>
+</article>
 {{ end }}
 
 {{ define "feed" }}
-  <div class="grid h-feed">
-    <div>
-      {{ template "pager" $.Pager }}
-      {{ range $idx, $twt := $.Twts }}
-        {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" $twt) }}
-      {{ else }}
-        <small><i>There are no twts yet... come back later!</i></small>
-      {{ end }}
-      {{ template "pager" $.Pager }}
-    </div>
+<div class="grid h-feed">
+  <div>
+    {{ template "pager" $.Pager }}
+    {{ range $idx, $twt := $.Twts }}
+    {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" $twt) }}
+    {{ else }}
+    <small><i>There are no twts yet... come back later!</i></small>
+    {{ end }}
+    {{ template "pager" $.Pager }}
   </div>
+</div>
 {{ end }}
 
 {{ define "blogposts" }}
-  <div class="grid h-feed">
-    <div>
-      {{ if $.BlogPosts }}
-        {{ template "pager" $.Pager }}
-        <ul>
-          {{ range $idx, $blogPost := $.BlogPosts }}
-            <li>
-              <a class="u-url" href="{{ $blogPost.URL ($.BaseURL) }}">
-                {{ $blogPost.Title }}
-                <time class="dt-published" datetime="{{ $blogPost.Published | date "2006-01-02" }}">
-                  {{ dateInZone "Mon, Jan 2 2006" $blogPost.Published $.User.DisplayDatesInTimezone }}
-                </time>
-              </a>
-              &nbsp;({{ $blogPost.Published | time }})
-              {{ if eq $.User.Username $blogPost.Author }}
-                &nbsp;
-                [<a href="{{ $blogPost.URL $.BaseURL }}/edit">Edit</a>]
-                &nbsp;
-                [<a href="{{ $blogPost.URL $.BaseURL }}/delete">Delete</a>]
-              {{ end }}
-            </li>
-          {{ end }}
-        </ul>
-        {{ template "pager" $.Pager }}
-      {{ else }}
-        <small><i>No twt blogs found! Come back later!</i></small>
+<div class="grid h-feed">
+  <div>
+    {{ if $.BlogPosts }}
+    {{ template "pager" $.Pager }}
+    <ul>
+      {{ range $idx, $blogPost := $.BlogPosts }}
+      <li>
+        <a class="u-url" href="{{ $blogPost.URL ($.BaseURL) }}">
+          {{ $blogPost.Title }}
+          <time class="dt-published" datetime="{{ $blogPost.Published | date "2006-01-02" }}">
+            {{ dateInZone "Mon, Jan 2 2006" $blogPost.Published $.User.DisplayDatesInTimezone }}
+          </time>
+        </a>
+        &nbsp;({{ $blogPost.Published | time }})
+        {{ if eq $.User.Username $blogPost.Author }}
+        {{ if $blogPost.Draft }}
+        &nbsp;
+        [<a href="{{ $blogPost.URL $.BaseURL }}/publish" onclick="return confirm('Are you sure you want to publish this blog post? This cannot be undone!');">Publish</a>]
+        {{ end }}
+        &nbsp;
+        [<a href="{{ $blogPost.URL $.BaseURL }}/edit">Edit</a>]
+        &nbsp;
+        [<a href="{{ $blogPost.URL $.BaseURL }}/delete" onclick="return confirm('Are you sure you want to delete this blog post? This cannot be undone!');">Delete</a>]
+        {{ end }}
+      </li>
       {{ end }}
-    </div>
+    </ul>
+    {{ template "pager" $.Pager }}
+    {{ else }}
+    <small><i>No twt blogs found! Come back later!</i></small>
+    {{ end }}
   </div>
+</div>
 {{ end }}
 
 {{ define "pager" }}
-  {{ if .HasPages }}
-    <nav class="pagination-nav">
-      <ul>
-        <li>
-          {{ if .HasPrev }}
-            <a href="?p={{ .PrevPage }}">Prev</a>
-          {{ else }}
-            <a href="#" data-tooltip="No previous page">Prev</a>
-          {{ end }}
-        </li>
-      </ul>
-      <ul>
-        <li><small>Page {{ .Page }}/{{ .PageNums }} of {{ .Nums }} Twts</small></li>
-      </ul>
-      <ul>
-        <li>
-          {{ if .HasNext }}
-            <a href="?p={{ .NextPage }}">Next</a>
-          {{ else }}
-            <a href="#" data-tooltip="No next page">Next</a>
-          {{ end }}
-        </li>
-      </ul>
-    </nav>
-  {{ end }}
+{{ if .HasPages }}
+<nav class="pagination-nav">
+  <ul>
+    <li>
+      {{ if .HasPrev }}
+      <a href="?p={{ .PrevPage }}">Prev</a>
+      {{ else }}
+      <a href="#" data-tooltip="No previous page">Prev</a>
+      {{ end }}
+    </li>
+  </ul>
+  <ul>
+    <li><small>Page {{ .Page }}/{{ .PageNums }} of {{ .Nums }} Twts</small></li>
+  </ul>
+  <ul>
+    <li>
+      {{ if .HasNext }}
+      <a href="?p={{ .NextPage }}">Next</a>
+      {{ else }}
+      <a href="#" data-tooltip="No next page">Next</a>
+      {{ end }}
+    </li>
+  </ul>
+</nav>
+{{ end }}
 {{ end }}
 
 {{ define "profileLinks" }}
-  <ul>
-    {{ if $.ShowConfig }}
-      <li><a target="_blank" href="/user/{{ $.Profile.Username }}/config.yaml">Config&nbsp;<i class="icss-gear"></i></a></li>
-    {{ end }}
-    <li><a href="{{ $.Profile.BlogsURL }}">Blogs&nbsp;<i class="icss-quill-pen"></i></a></li>
-    <li><a target="_blank" href="{{ $.Profile.URL }}">Twtxt&nbsp;<i class="icss-link"></i></a></li>
-    <li><a target="_blank" href="{{ $.Profile.URL | trimSuffix "/twtxt.txt" }}/atom.xml">Atom&nbsp;<i class="icss-rss"></i></a></li>
-    <li><a href="/user/{{ $.Profile.Username }}/followers">Followers: {{ $.Profile.Followers | len }}</a></li>
-    {{ if eq $.Profile.Type "User" }}
-      <li><a href="/user/{{ $.Profile.Username }}/following">Following: {{ $.Profile.Following | len }}</a></li>
-    {{ end }}
-  </ul>
+<ul>
+  {{ if $.ShowConfig }}
+  <li><a target="_blank" href="/user/{{ $.Profile.Username }}/config.yaml">Config&nbsp;<i class="icss-gear"></i></a></li>
+  {{ end }}
+  <li><a href="{{ $.Profile.BlogsURL }}">Blogs&nbsp;<i class="icss-quill-pen"></i></a></li>
+  <li><a target="_blank" href="{{ $.Profile.URL }}">Twtxt&nbsp;<i class="icss-link"></i></a></li>
+  <li><a target="_blank" href="{{ $.Profile.URL | trimSuffix "/twtxt.txt" }}/atom.xml">Atom&nbsp;<i class="icss-rss"></i></a></li>
+  <li><a href="/user/{{ $.Profile.Username }}/followers">Followers: {{ $.Profile.Followers | len }}</a></li>
+  {{ if eq $.Profile.Type "User" }}
+  <li><a href="/user/{{ $.Profile.Username }}/following">Following: {{ $.Profile.Following | len }}</a></li>
+  {{ end }}
+</ul>
 {{ end }}

@@ -497,12 +497,13 @@ func (s *Server) initRoutes() {
 	s.router.POST("/messages/send", s.am.MustAuth(s.SendMessageHandler()))
 	s.router.POST("/messages/delete", s.am.MustAuth(s.DeleteMessagesHandler()))
 
-	s.router.POST("/blog", s.am.MustAuth(s.PublishBlogHandler()))
-	s.router.GET("/blogs/:author", s.BlogsHandler())
-	s.router.GET("/blog/:author/:year/:month/:date/:slug", s.BlogHandler())
-	s.router.HEAD("/blog/:author/:year/:month/:date/:slug", s.BlogHandler())
+	s.router.POST("/blog", s.am.MustAuth(s.CreateOrUpdateBlogHandler()))
+	s.router.GET("/blogs/:author", s.ListBlogsHandler())
+	s.router.GET("/blog/:author/:year/:month/:date/:slug", s.ViewBlogHandler())
+	s.router.HEAD("/blog/:author/:year/:month/:date/:slug", s.ViewBlogHandler())
 	s.router.GET("/blog/:author/:year/:month/:date/:slug/edit", s.EditBlogHandler())
 	s.router.GET("/blog/:author/:year/:month/:date/:slug/delete", s.DeleteBlogHandler())
+	s.router.GET("/blog/:author/:year/:month/:date/:slug/publish", s.PublishBlogHandler())
 
 	// Redirect old URIs (twtxt <= v0.0.8) of the form /u/<nick> -> /user/<nick>/twtxt.txt
 	// TODO: Remove this after v1

@@ -881,7 +881,9 @@ func (twt Twt) FormatText(mode types.TwtTextFormat, opts types.FmtOpts) string {
 							twt.mentions[i].domain = u.Hostname()
 						}
 					}
-					twt.mentions[i].target = opts.ExternalURL(twt.mentions[i].name, twt.mentions[i].target)
+					if twt.mentions[i].target != "" {
+						twt.mentions[i].target = opts.ExternalURL(twt.mentions[i].name, twt.mentions[i].target)
+					}
 				}
 			}
 		}

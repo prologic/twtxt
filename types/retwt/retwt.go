@@ -166,10 +166,22 @@ func (twt reTwt) MarkdownText() string {
 	// we assume FmtOpts is always null for markdown.
 	return formatMentionsAndTags(nil, twt.text, types.MarkdownFmt)
 }
+func (twt reTwt) Format(state fmt.State, c rune) {
+	if state.Flag('+') {
+		fmt.Fprint(state, twt.Created().Format(time.RFC3339))
+		state.Write([]byte("\t"))
+	}
+
+	switch c {
+	default:
+		_, _ = state.Write([]byte(twt.text))
+	case 'H', 'M': // html
+		_, _ = state.Write([]byte(twt.MarkdownText()))
+	}
+}
 func (twt reTwt) FormatTwt() string {
 	return twt.String()
 }
-
 func (twt reTwt) FormatText(textFmt types.TwtTextFormat, fmtOpts types.FmtOpts) string {
 	text := strings.ReplaceAll(twt.text, "\u2028", "\n")
 	return formatMentionsAndTags(fmtOpts, text, textFmt)
@@ -472,17 +484,6 @@ func ExpandMentions(opts types.FmtOpts, lookup types.FeedLookup, text string) st
 				mentionedNick, mentionedDomain, mentionedNick,
 			)
 		}
-
-		// for followedNick, followedURL := range user.Following {
-		// 	if mentionedNick == followedNick {
-		// 		return fmt.Sprintf("@<%s %s>", followedNick, followedURL)
-		// 	}
-		// }
-
-		// username := NormalizeUsername(mentionedNick)
-		// if db.HasUser(username) || db.HasFeed(username) {
-		// 	return fmt.Sprintf("@<%s %s>", username, URLForUser(conf, username))
-		// }
 
 		if lookup != nil {
 			twter := lookup.FeedLookup(mentionedNick)

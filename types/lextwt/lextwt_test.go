@@ -2,6 +2,7 @@ package lextwt_test
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/url"
 	"strings"
@@ -325,8 +326,9 @@ func testParseTag(t *testing.T, expect, elem *lextwt.Tag) {
 	is.Equal(expect.Target(), elem.Target())
 
 	url, err := url.Parse(expect.Target())
-	is.Equal(err, elem.Err())
-	is.Equal(url, elem.URL())
+	eURL, eErr := elem.URL()
+	is.Equal(err, eErr)
+	is.Equal(url, eURL)
 }
 
 type subjectTestCase struct {
@@ -574,7 +576,7 @@ func TestParseTwt(t *testing.T) {
 	}
 
 	for i, tt := range tests {
-		t.Logf("TestParseTwt %d\n%v", i, tt.twt.String())
+		t.Logf("TestParseTwt %d\n% v", i, tt.twt)
 
 		r := strings.NewReader(tt.lit)
 		lexer := lextwt.NewLexer(r)
@@ -606,7 +608,7 @@ func testParseTwt(t *testing.T, expect, elem types.Twt) {
 	is := is.New(t)
 
 	is.Equal(expect.Twter(), elem.Twter())
-	is.Equal(expect.FormatTwt(), elem.FormatTwt())
+	is.Equal(fmt.Sprintf("%+L", expect), fmt.Sprintf("%+L", elem))
 
 	{
 		m := elem.Subject()

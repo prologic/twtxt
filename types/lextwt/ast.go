@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/url"
 	"strings"
 	"time"
@@ -25,18 +26,22 @@ type Elem interface {
 	Clone() Elem     // clone element.
 }
 type ElemHTML interface {
-	FormatHTML() string
+	FormatHTML(io.Writer)
 
 	Elem
 }
 type ElemMarkdown interface {
-	Markdown() string // format to markdown.
+	FormatMarkdown(io.Writer) // format to markdown.
 
 	Elem
 }
-
 type ElemText interface {
-	FormatText() string // format to write to disk.
+	FormatText(io.Writer) // format to write to disk.
+
+	Elem
+}
+type ElemCompact interface {
+	FormatCompact(io.Writer)
 
 	Elem
 }
@@ -181,21 +186,18 @@ type Mention struct {
 }
 
 var _ Elem = (*Mention)(nil)
+var _ ElemCompact = (*Mention)(nil)
+var _ ElemText = (*Mention)(nil)
+var _ ElemMarkdown = (*Mention)(nil)
+var _ ElemHTML = (*Mention)(nil)
 var _ types.TwtMention = (*Mention)(nil)
 
 func NewMention(name, target string) *Mention {
 	m := &Mention{name: name, target: target}
 
-	switch {
-	case name != "" && target == "":
-		m.lit = fmt.Sprintf("@%s", name)
-
-	case name != "" && target != "":
-		m.lit = fmt.Sprintf("@<%s %s>", name, target)
-
-	case name == "" && target != "":
-		m.lit = fmt.Sprintf("@<%s>", target)
-	}
+	buf := &strings.Builder{}
+	m.FormatText(buf)
+	m.lit = buf.String()
 
 	if sp := strings.SplitN(name, "@", 2); len(sp) == 2 {
 		m.name = sp[0]
@@ -221,7 +223,7 @@ func (n *Mention) Clone() Elem {
 func (n *Mention) IsNil() bool        { return n == nil }
 func (n *Mention) Twter() types.Twter { return types.Twter{Nick: n.name, URL: n.target} }
 func (n *Mention) Literal() string    { return n.lit }
-func (n *Mention) String() string     { return n.FormatText() }
+func (n *Mention) String() string     { return n.lit }
 func (n *Mention) Name() string       { return n.name }
 func (n *Mention) Domain() string {
 	if url := n.URL(); n.domain == "" && url != nil {
@@ -241,50 +243,69 @@ func (n *Mention) Err() error {
 	n.URL()
 	return n.err
 }
-func (n *Mention) FormatText() string {
-	if n.name == "" && n.target != "" {
-		return fmt.Sprintf("@<%s>", n.target)
+func (n *Mention) FormatCompact(out io.Writer) {
+	line := ""
+
+	switch {
+	default:
+		line = fmt.Sprintf("@%s", n.name)
+
+	case n.name == "" && n.target != "":
+		line = fmt.Sprintf("@<%s>", n.target)
 	}
 
-	nick := n.name
-
-	// if n.domain != "" {
-	// 	nick += "@" + n.domain
-	// }
-
-	if n.target == "" {
-		return fmt.Sprintf("@%s", nick)
-	}
-
-	return fmt.Sprintf("@<%s %s>", nick, n.target)
+	_, _ = fmt.Fprint(out, line)
 }
-func (n *Mention) Markdown() string {
-	nick := n.name
+func (n *Mention) FormatText(out io.Writer) {
+	line := ""
 
-	if n.domain != "" {
-		nick += "@" + n.domain
+	switch {
+	case n.name != "" && n.target == "":
+		line = fmt.Sprintf("@%s", n.name)
+
+	case n.name == "" && n.target != "":
+		line = fmt.Sprintf("@<%s>", n.target)
+
+	case n.name != "" && n.target != "":
+		line = fmt.Sprintf("@<%s %s>", n.name, n.target)
 	}
 
-	if n.target == "" {
-		return fmt.Sprintf("@%s", nick)
-	}
-
-	return fmt.Sprintf("[@%s](%s#%s)", nick, n.target, n.name)
+	_, _ = fmt.Fprint(out, line)
 }
-func (n *Mention) FormatHTML() string {
+func (n *Mention) FormatMarkdown(out io.Writer) {
+	line := ""
+
+	switch {
+	case n.name != "" && n.target == "":
+		line = fmt.Sprintf("@%s", n.name)
+
+	case n.name == "" && n.target != "":
+		line = fmt.Sprintf("<%s>", n.target)
+
+	case n.name != "" && n.target != "":
+		line = fmt.Sprintf("[@%s](%s#%s)", n.name, n.target, n.name)
+	}
+
+	_, _ = fmt.Fprint(out, line)
+}
+func (n *Mention) FormatHTML(out io.Writer) {
 	if n.target == "" {
-		nick := n.name
+		_, _ = fmt.Fprintf(out, "@%s", n.name)
+
 		if n.domain != "" {
-			nick += "@" + n.domain
+			_, _ = fmt.Fprintf(out, "<em>@%s</em>", n.name)
 		}
-		return fmt.Sprintf("@%s", nick)
+
+		return
 	}
+
+	_, _ = fmt.Fprintf(out, `<a href="%s">@%s`, n.target, n.name)
 
 	if n.domain != "" {
-		return fmt.Sprintf(`<a href="%s">@%s<em>@%s</em></a>`, n.target, n.name, n.domain)
+		_, _ = fmt.Fprintf(out, `<em>@%s</em>`, n.domain)
 	}
 
-	return fmt.Sprintf(`<a href="%s">@%s</a>`, n.target, n.name)
+	_, _ = fmt.Fprint(out, `</a>`)
 }
 
 type Tag struct {
@@ -297,11 +318,18 @@ type Tag struct {
 }
 
 var _ Elem = (*Tag)(nil)
+var _ ElemText = (*Tag)(nil)
+var _ ElemHTML = (*Tag)(nil)
+var _ ElemMarkdown = (*Tag)(nil)
+var _ ElemCompact = (*Tag)(nil)
 var _ types.TwtTag = (*Tag)(nil)
 
 func NewTag(tag, target string) *Tag {
 	m := &Tag{tag: tag, target: target}
-	m.lit = m.FormatText()
+
+	buf := &strings.Builder{}
+	m.FormatText(buf)
+	m.lit = buf.String()
 
 	return m
 }
@@ -318,50 +346,52 @@ func (n *Tag) CloneTag() *Tag {
 }
 func (n *Tag) IsNil() bool     { return n == nil }
 func (n *Tag) Literal() string { return n.lit }
-func (n *Tag) String() string  { return n.FormatText() }
+func (n *Tag) String() string  { return n.lit }
 func (n *Tag) Text() string    { return n.tag }
 func (n *Tag) Target() string  { return n.target }
-func (n *Tag) SetTarget(target string) {
-	if !n.IsNil() {
-		n.target, n.url, n.err = target, nil, nil
-	}
-}
-func (n *Tag) Err() error { return n.err }
-func (n *Tag) URL() *url.URL {
+func (n *Tag) URL() (*url.URL, error) {
 	if n.url == nil && n.err == nil {
 		n.url, n.err = url.Parse(n.target)
 	}
-	return n.url
+	return n.url, n.err
 }
-func (n *Tag) FormatText() string {
+func (n *Tag) FormatCompact(out io.Writer) {
+	_, _ = out.Write([]byte("#" + n.tag))
+}
+func (n *Tag) FormatText(out io.Writer) {
 	if n.target == "" {
-		return fmt.Sprintf("#%s", n.tag)
+		n.FormatCompact(out)
+		return
 	}
 
 	if n.tag == "" {
-		return fmt.Sprintf("#<%s>", n.target)
+		_, _ = fmt.Fprintf(out, "#<%s>", n.target)
+		return
 	}
 
-	return fmt.Sprintf("#<%s %s>", n.tag, n.target)
+	_, _ = fmt.Fprintf(out, "#<%s %s>", n.tag, n.target)
 }
-func (n *Tag) Markdown() string {
+func (n *Tag) FormatMarkdown(out io.Writer) {
 	if n.target == "" {
-		return fmt.Sprintf("#%s", n.tag)
+		n.FormatCompact(out)
+		return
 	}
 
 	if n.tag == "" {
-		url := n.URL()
-		return fmt.Sprintf("[%s%s](%s)", url.Hostname(), url.Path, n.target)
+		url, _ := n.URL()
+		_, _ = fmt.Fprintf(out, "[%s%s](%s)", url.Hostname(), url.Path, n.target)
+		return
 	}
 
-	return fmt.Sprintf("[#%s](%s)", n.tag, n.target)
+	_, _ = fmt.Fprintf(out, "[#%s](%s)", n.tag, n.target)
 }
-func (n *Tag) FormatHTML() string {
+func (n *Tag) FormatHTML(out io.Writer) {
 	if n.target == "" {
-		return fmt.Sprintf("#%s", n.tag)
+		n.FormatCompact(out)
+		return
 	}
 
-	return fmt.Sprintf(`<a href="%s">#%s</a>`, n.target, n.tag)
+	_, _ = fmt.Fprintf(out, `<a href="%s">#%s</a>`, n.target, n.tag)
 }
 
 type Subject struct {
@@ -370,6 +400,9 @@ type Subject struct {
 }
 
 var _ Elem = (*Subject)(nil)
+var _ ElemText = (*Subject)(nil)
+var _ ElemMarkdown = (*Subject)(nil)
+var _ ElemHTML = (*Subject)(nil)
 
 func NewSubject(text string) *Subject           { return &Subject{subject: text} }
 func NewSubjectTag(tag, target string) *Subject { return &Subject{tag: NewTag(tag, target)} }
@@ -397,29 +430,43 @@ func (n *Subject) Text() string {
 	return n.tag.Literal()
 }
 func (n *Subject) Tag() types.TwtTag { return n.tag }
-func (n *Subject) FormatText() string {
+func (n *Subject) FormatText(out io.Writer) {
+	_, _ = out.Write([]byte("("))
+
 	if n.tag == nil {
-		return fmt.Sprintf("(%s)", n.subject)
+		_, _ = out.Write([]byte(n.subject))
+	} else {
+		n.tag.FormatCompact(out)
 	}
-	return fmt.Sprintf("(%s)", n.tag.Literal())
+
+	_, _ = out.Write([]byte(")"))
+}
+func (n *Subject) FormatMarkdown(out io.Writer) {
+	_, _ = out.Write([]byte("("))
+
+	if n.tag == nil {
+		_, _ = out.Write([]byte(n.subject))
+	} else {
+		n.tag.FormatMarkdown(out)
+	}
+
+	_, _ = out.Write([]byte(")"))
+}
+func (n *Subject) FormatHTML(out io.Writer) {
+	_, _ = out.Write([]byte("("))
+
+	if n.tag == nil {
+		_, _ = out.Write([]byte(n.subject))
+	} else {
+		n.tag.FormatHTML(out)
+	}
+
+	_, _ = out.Write([]byte(")"))
 }
 func (n *Subject) String() string {
-	if n.tag == nil {
-		return fmt.Sprintf("(%s)", n.subject)
-	}
-	return fmt.Sprintf("(#%s)", n.tag.Text())
-}
-func (n *Subject) Markdown() string {
-	if n.tag == nil {
-		return fmt.Sprintf("(%s)", n.subject)
-	}
-	return fmt.Sprintf("(%s)", n.tag.Markdown())
-}
-func (n *Subject) FormatHTML() string {
-	if n.tag == nil {
-		return fmt.Sprintf("(%s)", n.subject)
-	}
-	return fmt.Sprintf("(%s)", n.tag.FormatHTML())
+	buf := &strings.Builder{}
+	n.FormatText(buf)
+	return buf.String()
 }
 
 type Text struct {
@@ -435,22 +482,22 @@ func (n *Text) Clone() Elem {
 	}
 	return &Text{n.lit}
 }
-func (n *Text) IsNil() bool        { return n == nil }
-func (n *Text) Literal() string    { return n.lit }
-func (n *Text) String() string     { return n.Literal() }
-func (n *Text) FormatText() string { return n.Literal() }
-func (n *Text) Markdown() string   { return n.Literal() }
+func (n *Text) IsNil() bool     { return n == nil }
+func (n *Text) Literal() string { return n.lit }
+func (n *Text) String() string  { return n.lit }
 
 type lineSeparator struct{}
 
+var _ Elem = &lineSeparator{}
+var _ ElemText = &lineSeparator{}
+
 var LineSeparator Elem = &lineSeparator{}
 
-func (n *lineSeparator) Clone() Elem        { return LineSeparator }
-func (n *lineSeparator) IsNil() bool        { return false }
-func (n *lineSeparator) Literal() string    { return "\u2028" }
-func (n *lineSeparator) String() string     { return "\n" }
-func (n *lineSeparator) FormatText() string { return "\n" }
-func (n *lineSeparator) Markdown() string   { return "\n" }
+func (n *lineSeparator) Clone() Elem              { return LineSeparator }
+func (n *lineSeparator) IsNil() bool              { return false }
+func (n *lineSeparator) Literal() string          { return "\u2028" }
+func (n *lineSeparator) String() string           { return "\n" }
+func (n *lineSeparator) FormatText(out io.Writer) { _, _ = out.Write([]byte("\n")) }
 
 type Link struct {
 	linkType LinkType
@@ -491,9 +538,6 @@ func (n *Link) Literal() string {
 		return fmt.Sprintf("[%s](%s)", n.text, n.target)
 	}
 }
-func (n *Link) FormatText() string { return n.Literal() }
-func (n *Link) Markdown() string   { return n.Literal() }
-
 func (n *Link) String() string {
 	return n.Literal()
 }
@@ -531,8 +575,7 @@ func (n *Code) Literal() string {
 	}
 	return fmt.Sprintf("`%s`", n.lit)
 }
-func (n *Code) FormatText() string { return n.Literal() }
-func (n *Code) Markdown() string   { return n.String() }
+func (n *Code) FormatMarkdown(out io.Writer) { _, _ = out.Write([]byte(n.String())) }
 
 // String replaces line separator with newlines
 func (n *Code) String() string {
@@ -647,7 +690,7 @@ func (twt *Twt) Text() string {
 	for _, s := range twt.msg {
 		switch s := s.(type) {
 		case ElemText:
-			b.WriteString(s.FormatText())
+			s.FormatText(&b)
 		default:
 			b.WriteString(s.Literal())
 		}
@@ -741,23 +784,73 @@ func DecodeJSON(data []byte) (types.Twt, error) {
 
 	return twt, nil
 }
-func (twt Twt) FormatTwt() string {
-	var b strings.Builder
-	b.WriteString(twt.dt.Literal())
-	b.WriteRune('\t')
-	for _, s := range twt.msg {
-		if s == nil || s.IsNil() {
-			continue
+func (twt Twt) Format(state fmt.State, c rune) {
+	if state.Flag('+') {
+		fmt.Fprint(state, twt.dt.Literal())
+		state.Write([]byte("\t"))
+	}
+
+	switch c {
+	case 'H': // html
+		for _, elem := range twt.msg {
+			switch elem := elem.(type) {
+			case ElemHTML:
+				elem.FormatHTML(state)
+			case ElemMarkdown:
+				elem.FormatMarkdown(state)
+			case ElemText:
+				elem.FormatText(state)
+			default:
+				state.Write([]byte(elem.Literal()))
+			}
 		}
-		switch s := s.(type) {
-		case ElemText:
-			b.WriteString(s.FormatText())
-		default:
-			b.WriteString(s.Literal())
+
+	case 'T': // twtxt
+		for _, elem := range twt.msg {
+			switch elem := elem.(type) {
+			case ElemText:
+				elem.FormatText(state)
+			default:
+				state.Write([]byte(elem.Literal()))
+			}
+		}
+
+	case 'M': // markdown
+		for _, elem := range twt.msg {
+			switch elem := elem.(type) {
+			case ElemMarkdown:
+				elem.FormatMarkdown(state)
+			case ElemText:
+				elem.FormatText(state)
+			default:
+				state.Write([]byte(elem.Literal()))
+			}
+		}
+
+	case 'L': // literal
+		for _, elem := range twt.msg {
+			state.Write([]byte(elem.Literal()))
+		}
+
+	case 'C': // compact
+		for _, elem := range twt.msg {
+			switch elem := elem.(type) {
+			case ElemCompact:
+				elem.FormatCompact(state)
+			default:
+				state.Write([]byte(elem.Literal()))
+			}
+		}
+
+	default:
+		for _, elem := range twt.msg {
+			state.Write([]byte(elem.Literal()))
 		}
 	}
-	b.WriteRune('\n')
-	return b.String()
+}
+
+func (twt Twt) FormatTwt() string {
+	return fmt.Sprintf("%+L\n", twt)
 }
 func (twt Twt) FormatText(mode types.TwtTextFormat, opts types.FmtOpts) string {
 	twt = *twt.CloneTwt()
@@ -795,48 +888,15 @@ func (twt Twt) FormatText(mode types.TwtTextFormat, opts types.FmtOpts) string {
 	}
 
 	switch mode {
-	case types.TextFmt:
-		var b strings.Builder
-		for _, s := range twt.msg {
-			switch s := s.(type) {
-			case ElemText:
-				b.WriteString(s.FormatText())
-			default:
-				b.WriteString(s.Literal())
-			}
-		}
-		return b.String()
-	case types.MarkdownFmt:
-		var b strings.Builder
-		for _, s := range twt.msg {
-			switch s := s.(type) {
-			case ElemMarkdown:
-				b.WriteString(s.Markdown())
-			case ElemText:
-				b.WriteString(s.FormatText())
-			default:
-				b.WriteString(s.Literal())
-			}
-		}
-		return b.String()
 	case types.HTMLFmt:
-		var b strings.Builder
-		for _, s := range twt.msg {
-			switch s := s.(type) {
-			case ElemHTML:
-				b.WriteString(s.FormatHTML())
-			case ElemMarkdown:
-				b.WriteString(s.Markdown())
-			case ElemText:
-				b.WriteString(s.FormatText())
-			default:
-				b.WriteString(s.Literal())
-			}
-		}
-		return b.String()
-
+		return fmt.Sprintf("%H", twt)
+	case types.TextFmt:
+		return fmt.Sprintf("%T", twt)
+	case types.MarkdownFmt:
+		return fmt.Sprintf("%M", twt)
+	default:
+		return fmt.Sprintf("%L", twt)
 	}
-	return twt.Literal()
 }
 func (twt *Twt) ExpandLinks(opts types.FmtOpts, lookup types.FeedLookup) {
 	for i, tag := range twt.tags {

@@ -1,3 +1,4 @@
+-include environ.inc
 .PHONY: deps dev build install image release test clean
 
 CGO_ENABLED=0

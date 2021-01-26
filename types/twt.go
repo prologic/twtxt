@@ -72,7 +72,6 @@ type Twt interface {
 
 	Twter() Twter
 	Created() time.Time
-	Text() string
 
 	Hash() string
 	Subject() Subject
@@ -81,10 +80,10 @@ type Twt interface {
 	Tags() TagList
 
 	ExpandLinks(FmtOpts, FeedLookup)
-	FormatTwt() string
+	// TODO: remove FormatText and add func to update links for UI
 	FormatText(TwtTextFormat, FmtOpts) string
 
-	fmt.Stringer
+	fmt.Formatter
 }
 
 type TwtMention interface {
@@ -288,6 +287,7 @@ func (nilTwt) Tags() TagList         { return nil }
 func (nilTwt) Links() LinkList       { return nil }
 
 func (nilTwt) ExpandLinks(FmtOpts, FeedLookup)          {}
+func (nilTwt) Format(state fmt.State, c rune)           {}
 func (nilTwt) FormatTwt() string                        { return "" }
 func (nilTwt) FormatText(TwtTextFormat, FmtOpts) string { return "" }
 

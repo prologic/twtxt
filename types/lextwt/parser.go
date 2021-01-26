@@ -526,7 +526,7 @@ func (p *parser) ParseSubject() *Subject {
 	// form: (text)
 	if !p.curTokenIs(TokRPAREN) {
 		p.push()
-		subject.subject = p.ParseText().String()
+		subject.subject = p.ParseText().Literal()
 		p.pop()
 
 		if !p.curTokenIs(TokRPAREN) {

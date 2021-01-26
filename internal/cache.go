@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/rcrowley/go-metrics"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/jointwt/twtxt"
@@ -317,7 +318,9 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 				cache.mu.Unlock()
 			case http.StatusNotModified: // 304
 				cache.mu.RLock()
-				twts = cache.Twts[feed.URL].Twts
+				if _, ok := cache.Twts[feed.URL]; ok {
+					twts = cache.Twts[feed.URL].Twts
+				}
 				cache.mu.RUnlock()
 			}
 

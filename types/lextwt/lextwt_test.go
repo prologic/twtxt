@@ -36,7 +36,7 @@ func testLexerRunes(t *testing.T, lexer Lexer, values []rune) {
 	is := is.New(t)
 
 	for i, r := range values {
-		// t.Logf("%d of %d - %v %v", i, len(values), string(lexer.Rune()), string(r))
+		t.Logf("%d of %d - %v %v", i, len(values), string(lexer.Rune()), string(r))
 		is.Equal(lexer.Rune(), r) // parsed == value
 		if i < len(values)-1 {
 			is.True(lexer.NextRune())
@@ -47,7 +47,7 @@ func testLexerRunes(t *testing.T, lexer Lexer, values []rune) {
 }
 
 func TestLexerTokens(t *testing.T) {
-	r := strings.NewReader("# comment\n2016-02-03T23:05:00Z	@<example http://example.org/twtxt.txt>\u2028welcome to twtxt!\n2020-11-13T16:13:22+01:00	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<pdrsg2q https://twtxt.net/search?tag=pdrsg2q>) Thanks! [link](index.html) ![](img.png)`` ```hi```gopher://example.com")
+	r := strings.NewReader("# comment\n2016-02-03T23:05:00Z	@<example http://example.org/twtxt.txt>\u2028welcome to twtxt!\n2020-11-13T16:13:22+01:00	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<pdrsg2q https://twtxt.net/search?tag=pdrsg2q>) Thanks! [link](index.html) ![](img.png)`` ```hi```gopher://example.com \\")
 	values := []lextwt.Token{
 		{lextwt.TokHASH, []rune("#")},
 		{lextwt.TokSPACE, []rune(" ")},
@@ -140,6 +140,8 @@ func TestLexerTokens(t *testing.T) {
 		{lextwt.TokSTRING, []rune("gopher")},
 		{lextwt.TokSCHEME, []rune("://")},
 		{lextwt.TokSTRING, []rune("example.com")},
+		{lextwt.TokSPACE, []rune(" ")},
+		{lextwt.TokBSLASH, []rune("\\")},
 	}
 	lexer := lextwt.NewLexer(r)
 	testLexerTokens(t, lexer, values)
@@ -178,6 +180,21 @@ func testLexerTokens(t *testing.T, lexer Lexer, values []lextwt.Token) {
 	}
 	lexer.NextTok()
 	is.Equal(lexer.GetTok(), lextwt.Token{Type: lextwt.TokEOF, Literal: []rune{-1}})
+}
+
+func TestLexerBuffer(t *testing.T) {
+	r := strings.NewReader(strings.Repeat(" ", 4094) + "🤔")
+	lexer := lextwt.NewLexer(r)
+	space := lextwt.Token{lextwt.TokSPACE, []rune(strings.Repeat(" ", 4094))}
+	think := lextwt.Token{lextwt.TokSTRING, []rune("🤔")}
+
+	is := is.New(t)
+
+	lexer.NextTok()
+	is.Equal(lexer.GetTok(), space) // parsed == value
+
+	lexer.NextTok()
+	is.Equal(lexer.GetTok(), think) // parsed == value
 }
 
 type dateTestCase struct {

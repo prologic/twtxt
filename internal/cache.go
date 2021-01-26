@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
-	"github.com/rcrowley/go-metrics"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/jointwt/twtxt"

@@ -1158,11 +1158,21 @@ func (ua TwtxtUserAgent) IsPublicURL() bool {
 	}
 
 	if len(ips) == 0 {
-		log.Warn("error User-Agent lookup failed or has no resolable IP")
+		log.Warn("error User-Agent lookup failed or has no resolvable IP")
 		return false
 	}
 
 	ip := ips[0]
+
+	// 0.0.0.0 or ::
+	if ip.IsUnspecified() {
+		return false
+	}
+
+	// Link-local / Loopback
+	if ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
+		return false
+	}
 
 	return !ipip.IsPrivate(ip)
 }

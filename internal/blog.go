@@ -72,9 +72,15 @@ func GetBlogPostsByAuthor(conf *Config, author string) (BlogPosts, error) {
 		if !info.IsDir() && filepath.Ext(info.Name()) == ".md" {
 			blogPost, err := BlogPostFromFile(conf, path)
 			if err != nil {
-				log.WithError(err).Errorf("error loading blog post %s", path)
-				return err
+				log.WithError(err).Errorf("error constructing blog post %s", path)
+				return fmt.Errorf("error constructing blog post %s: %w", blogPost, err)
 			}
+
+			if err := blogPost.Load(conf); err != nil {
+				log.WithError(err).Error("error loading blog post")
+				return fmt.Errorf("error loading blog post  %s: %w", blogPost, err)
+			}
+
 			blogPosts = append(blogPosts, blogPost)
 		}
 		return nil
@@ -105,9 +111,15 @@ func GetAllBlogPosts(conf *Config) (BlogPosts, error) {
 		if !info.IsDir() && filepath.Ext(info.Name()) == ".md" {
 			blogPost, err := BlogPostFromFile(conf, path)
 			if err != nil {
-				log.WithError(err).Errorf("error loading blog post %s", path)
-				return err
+				log.WithError(err).Errorf("error constructing blog post %s", path)
+				return fmt.Errorf("error constructing blog post %s: %w", blogPost, err)
 			}
+
+			if err := blogPost.Load(conf); err != nil {
+				log.WithError(err).Error("error loading blog post")
+				return fmt.Errorf("error loading blog post  %s: %w", blogPost, err)
+			}
+
 			blogPosts = append(blogPosts, blogPost)
 		}
 		return nil
@@ -131,8 +143,6 @@ func NewBlogPost(author, title string) *BlogPost {
 
 		Title: title,
 		Slug:  slug.Make(title),
-
-		PublishedAt: time.Now(),
 
 		data: &bytes.Buffer{},
 	}
@@ -176,14 +186,10 @@ func BlogPostFromFile(conf *Config, fn string) (*BlogPost, error) {
 		data: &bytes.Buffer{},
 	}
 
-	if err := b.LoadMetadata(conf); err != nil {
-		return nil, err
-	}
-
 	return b, nil
 }
 
-func BlogPostFromParams(conf *Config, p httprouter.Params) (*BlogPost, error) {
+func BlogPostFromParams(conf *Config, p httprouter.Params) *BlogPost {
 	author := p.ByName("author")
 	year := SafeParseInt(p.ByName("year"), 1970)
 	month := SafeParseInt(p.ByName("month"), 1)
@@ -201,17 +207,7 @@ func BlogPostFromParams(conf *Config, p httprouter.Params) (*BlogPost, error) {
 		data: &bytes.Buffer{},
 	}
 
-	if err := b.LoadMetadata(conf); err != nil {
-		log.WithError(err).Errorf("error loading metdata for blog post %s", b)
-		return nil, err
-	}
-
-	if err := b.Load(conf); err != nil {
-		log.WithError(err).Errorf("error loading content for blog post %s", b)
-		return nil, err
-	}
-
-	return b, nil
+	return b
 }
 
 func (b *BlogPost) Created() time.Time {
@@ -224,10 +220,11 @@ func (b *BlogPost) Modified() time.Time {
 }
 
 func (b *BlogPost) Published() time.Time {
-	if b.PublishedAt.IsZero() {
-		return b.Created()
-	}
 	return b.PublishedAt
+}
+
+func (b *BlogPost) Draft() bool {
+	return b.PublishedAt.IsZero()
 }
 
 func (b *BlogPost) Filename(ext string) string {
@@ -266,7 +263,7 @@ func (b *BlogPost) Bytes() []byte {
 	return b.data.Bytes()
 }
 
-func (b *BlogPost) LoadMetadata(conf *Config) error {
+func (b *BlogPost) loadMetadata(conf *Config) error {
 	fn := filepath.Join(conf.Data, blogsDir, b.Filename(".json"))
 	metadata, err := ioutil.ReadFile(fn)
 	if err != nil {
@@ -280,7 +277,7 @@ func (b *BlogPost) LoadMetadata(conf *Config) error {
 	return nil
 }
 
-func (b *BlogPost) Load(conf *Config) error {
+func (b *BlogPost) loadContent(conf *Config) error {
 	fn := filepath.Join(conf.Data, blogsDir, b.Filename(".md"))
 
 	stat, err := os.Stat(fn)
@@ -298,6 +295,40 @@ func (b *BlogPost) Load(conf *Config) error {
 	b.data.Write(data)
 
 	return nil
+}
+
+func (b *BlogPost) Load(conf *Config) error {
+	if err := b.loadMetadata(conf); err != nil {
+		log.WithError(err).Errorf("error loading metdata for blog post %s", b)
+		return fmt.Errorf("error loading metdata for blog %s: %w", b, err)
+	}
+
+	if err := b.loadContent(conf); err != nil {
+		log.WithError(err).Errorf("error loading content for blog post %s", b)
+		return fmt.Errorf("error loading content for blog %s: %w", b, err)
+	}
+
+	return nil
+}
+
+func (b *BlogPost) Delete(conf *Config) error {
+	fn := filepath.Join(conf.Data, blogsDir, b.Filename(".json"))
+	if err := os.Remove(fn); err != nil {
+		log.WithError(err).Error("error removing metdata for blog")
+		return fmt.Errorf("error removing metadata for blog %s: %w", b, err)
+	}
+
+	fn = filepath.Join(conf.Data, blogsDir, b.Filename(".md"))
+	if err := os.Remove(fn); err != nil {
+		log.WithError(err).Error("error removing content for blog")
+		return fmt.Errorf("error removing content for blog %s: %w", b, err)
+	}
+
+	return nil
+}
+
+func (b *BlogPost) Publish() {
+	b.PublishedAt = time.Now()
 }
 
 func (b *BlogPost) Save(conf *Config) error {

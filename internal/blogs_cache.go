@@ -116,6 +116,21 @@ func (cache *BlogsCache) Add(blogPost *BlogPost) {
 	cache.mu.Unlock()
 }
 
+// Delete ...
+func (cache *BlogsCache) Delete(hash string) {
+	cache.mu.Lock()
+	delete(cache.Blogs, hash)
+	cache.mu.Unlock()
+}
+
+// Has ...
+func (cache *BlogsCache) Has(hash string) bool {
+	cache.mu.RLock()
+	_, ok := cache.Blogs[hash]
+	cache.mu.RUnlock()
+	return ok
+}
+
 // Get ...
 func (cache *BlogsCache) Get(hash string) (*BlogPost, bool) {
 	cache.mu.RLock()

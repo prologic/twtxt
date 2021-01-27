@@ -1,5 +1,5 @@
 ---
-title: Twtxt.net Abuse Ppolicy and Community Guidelines
+title: Twtxt.net Abuse Policy and Community Guidelines
 ---
 
 # Abuse Policy

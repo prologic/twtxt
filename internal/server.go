@@ -497,12 +497,13 @@ func (s *Server) initRoutes() {
 	s.router.POST("/messages/send", s.am.MustAuth(s.SendMessageHandler()))
 	s.router.POST("/messages/delete", s.am.MustAuth(s.DeleteMessagesHandler()))
 
-	s.router.POST("/blog", s.am.MustAuth(s.PublishBlogHandler()))
-	s.router.GET("/blogs/:author", s.BlogsHandler())
-	s.router.GET("/blog/:author/:year/:month/:date/:slug", s.BlogHandler())
-	s.router.HEAD("/blog/:author/:year/:month/:date/:slug", s.BlogHandler())
+	s.router.POST("/blog", s.am.MustAuth(s.CreateOrUpdateBlogHandler()))
+	s.router.GET("/blogs/:author", s.ListBlogsHandler())
+	s.router.GET("/blog/:author/:year/:month/:date/:slug", s.ViewBlogHandler())
+	s.router.HEAD("/blog/:author/:year/:month/:date/:slug", s.ViewBlogHandler())
 	s.router.GET("/blog/:author/:year/:month/:date/:slug/edit", s.EditBlogHandler())
 	s.router.GET("/blog/:author/:year/:month/:date/:slug/delete", s.DeleteBlogHandler())
+	s.router.GET("/blog/:author/:year/:month/:date/:slug/publish", s.PublishBlogHandler())
 
 	// Redirect old URIs (twtxt <= v0.0.8) of the form /u/<nick> -> /user/<nick>/twtxt.txt
 	// TODO: Remove this after v1
@@ -515,10 +516,10 @@ func (s *Server) initRoutes() {
 	s.router.HEAD("/user/:nick/avatar.png", s.OldAvatarHandler())
 
 	if s.config.OpenProfiles {
-		s.router.GET("/user/:nick", s.ProfileHandler())
+		s.router.GET("/user/:nick/", s.ProfileHandler())
 		s.router.GET("/user/:nick/config.yaml", s.UserConfigHandler())
 	} else {
-		s.router.GET("/user/:nick", s.am.MustAuth(s.ProfileHandler()))
+		s.router.GET("/user/:nick/", s.am.MustAuth(s.ProfileHandler()))
 		s.router.GET("/user/:nick/config.yaml", s.am.MustAuth(s.UserConfigHandler()))
 	}
 	s.router.GET("/user/:nick/avatar", s.AvatarHandler())
@@ -637,6 +638,11 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 			log.WithError(err).Error("error merging pod settings")
 			return nil, err
 		}
+	}
+
+	if err := config.Validate(); err != nil {
+		log.WithError(err).Error("error validating config")
+		return nil, fmt.Errorf("error validating config: %w", err)
 	}
 
 	blogs, err := LoadBlogsCache(config.Data)

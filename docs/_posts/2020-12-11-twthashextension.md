@@ -86,7 +86,7 @@ This section shows reference implementations of this algorithm.
 
 ### Go
 
-```
+```go
 payload := twt.Twter.URL + "\n" + twt.Created.Format(time.RFC3339) + "\n" + twt.Text
 sum := blake2b.Sum256([]byte(payload))
 encoding := base32.StdEncoding.WithPadding(base32.NoPadding)
@@ -96,10 +96,37 @@ hash = hash[len(hash)-7:]
 
 ### Python 3
 
-```
+```python
 created = twt.created.isoformat().replace("+00:00", "Z")
 payload = "%s\n%s\n%s" % (twt.twter.url, created, twt.text)
 sum256 = hashlib.blake2b(payload.encode("utf-8"), digest_size=32).digest()
 hash = base64.b32encode(sum256).decode("ascii").replace("=", "").lower()[-7:]
 ```
 
+### Node.js
+
+```javascript
+const b32encode = require('base32-encode');
+const blake2 = require('blake2');
+const { DateTime } = require('luxon');
+
+function base32(payload) {
+  return b32encode(Buffer.from(payload), 'RFC3548', { padding: false });
+}
+
+function blake2b256(payload) {
+  return blake2.createHash('blake2b', { digestLength: 32 })
+    .update(Buffer.from(payload))
+    .digest();
+}
+
+function formatRFC3339(text) {
+  return DateTime.fromISO(text, { setZone: true, zone: 'utc' })
+    .toFormat("yyyy-MM-dd'T'HH:mm:ssZZ")
+    .replace(/\+00:00$/, 'Z');
+}
+
+const created = formatRFC3339(twt.created);
+const payload = [twt.twter.url, created, twt.content].join('\n');
+const hash = base32(blake2b256(payload)).toLowerCase().slice(-7);
+```

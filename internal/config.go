@@ -2,6 +2,7 @@ package internal
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net/url"
@@ -133,6 +134,28 @@ func (c *Config) WhitelistedDomain(domain string) (bool, bool) {
 func (c *Config) RandomTwtPrompt() string {
 	n := rand.Int() % len(c.TwtPrompts)
 	return c.TwtPrompts[n]
+}
+
+// Validate validates the configuration is valid which for the most part
+// just ensures that default secrets are actually configured correctly
+func (c *Config) Validate() error {
+	if c.Debug {
+		return nil
+	}
+
+	if c.CookieSecret == InvalidConfigValue {
+		return fmt.Errorf("error: COOKIE_SECRET is not configured!")
+	}
+
+	if c.MagicLinkSecret == InvalidConfigValue {
+		return fmt.Errorf("error: MAGICLINK_SECRET is not configured!")
+	}
+
+	if c.APISigningKey == InvalidConfigValue {
+		return fmt.Errorf("error: API_SIGNING_KEY is not configured!")
+	}
+
+	return nil
 }
 
 // LoadSettings loads pod settings from the given path

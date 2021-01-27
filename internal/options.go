@@ -7,6 +7,11 @@ import (
 )
 
 const (
+	// InvalidConfigValue is the constant value for invalid config values
+	// which must be changed for production configurations before successful
+	// startup
+	InvalidConfigValue = "INVALID CONFIG VALUE - PLEASE CHANGE THIS VALUE"
+
 	// DebugMode is the default debug mode
 	DefaultDebug = false
 
@@ -43,7 +48,7 @@ const (
 	DefaultRegisterMessage = ""
 
 	// DefaultCookieSecret is the server's default cookie secret
-	DefaultCookieSecret = "PLEASE_CHANGE_ME!!!"
+	DefaultCookieSecret = InvalidConfigValue
 
 	// DefaultTwtsPerPage is the server's default twts per page to display
 	DefaultTwtsPerPage = 50
@@ -77,7 +82,7 @@ const (
 	DefaultTranscoderTimeout = 10 * time.Minute // 10mins
 
 	// DefaultMagicLinkSecret is the jwt magic link secret
-	DefaultMagicLinkSecret = "PLEASE_CHANGE_ME!!!"
+	DefaultMagicLinkSecret = InvalidConfigValue
 
 	// Default Messaging settings
 	DefaultSMTPBind = "0.0.0.0:8025"
@@ -86,9 +91,9 @@ const (
 	// Default SMTP configuration
 	DefaultSMTPHost = "smtp.gmail.com"
 	DefaultSMTPPort = 587
-	DefaultSMTPUser = "PLEASE_CHANGE_ME!!!"
-	DefaultSMTPPass = "PLEASE_CHANGE_ME!!!"
-	DefaultSMTPFrom = "PLEASE_CHANGE_ME!!!"
+	DefaultSMTPUser = InvalidConfigValue
+	DefaultSMTPPass = InvalidConfigValue
+	DefaultSMTPFrom = InvalidConfigValue
 
 	// DefaultMaxFetchLimit is the maximum fetch fetch limit in bytes
 	DefaultMaxFetchLimit = 1 << 21 // ~2MB (or more than enough for a year)
@@ -97,7 +102,7 @@ const (
 	DefaultAPISessionTime = 240 * time.Hour // 10 days
 
 	// DefaultAPISigningKey is the default API JWT signing key for tokens
-	DefaultAPISigningKey = "PLEASE_CHANGE_ME!!!"
+	DefaultAPISigningKey = InvalidConfigValue
 )
 
 var (

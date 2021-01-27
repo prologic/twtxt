@@ -250,7 +250,12 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 
 			actualurl := res.Request.URL.String()
 			if actualurl != feed.URL {
-				log.WithError(err).Errorf("feed for %s changed from %s to %s", feed.Nick, feed.URL, actualurl)
+				log.WithError(err).Warnf("feed for %s changed from %s to %s", feed.Nick, feed.URL, actualurl)
+				cache.mu.Lock()
+				if cached, ok := cache.Twts[feed.URL]; ok {
+					cache.Twts[actualurl] = cached
+				}
+				cache.mu.Unlock()
 				feed.URL = actualurl
 			}
 
@@ -297,17 +302,21 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 					metrics.Counter("cache", "limited").Inc()
 				}
 
-				// Archive old twts
-				for _, twt := range old {
-					if !archive.Has(twt.Hash()) {
-						if err := archive.Archive(twt); err != nil {
-							log.WithError(err).Errorf("error archiving twt %s aborting", twt.Hash())
-							metrics.Counter("archive", "error").Inc()
-						} else {
-							metrics.Counter("archive", "size").Inc()
+				// Archive twts (opportunistically)
+				archiveTwts := func(twts []types.Twt) {
+					for _, twt := range twts {
+						if !archive.Has(twt.Hash()) {
+							if err := archive.Archive(twt); err != nil {
+								log.WithError(err).Errorf("error archiving twt %s aborting", twt.Hash())
+								metrics.Counter("archive", "error").Inc()
+							} else {
+								metrics.Counter("archive", "size").Inc()
+							}
 						}
 					}
 				}
+				archiveTwts(old)
+				archiveTwts(twts)
 
 				lastmodified := res.Header.Get("Last-Modified")
 				cache.mu.Lock()
@@ -319,7 +328,9 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 				cache.mu.Unlock()
 			case http.StatusNotModified: // 304
 				cache.mu.RLock()
-				twts = cache.Twts[feed.URL].Twts
+				if _, ok := cache.Twts[feed.URL]; ok {
+					twts = cache.Twts[feed.URL].Twts
+				}
 				cache.mu.RUnlock()
 			}
 

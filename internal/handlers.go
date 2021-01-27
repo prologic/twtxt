@@ -191,6 +191,8 @@ func (s *Server) UserConfigHandler() httprouter.Handle {
 // ProfileHandler ...
 func (s *Server) ProfileHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		log.Debugf("in ProfileHandler()...")
+
 		ctx := NewContext(s.config, s.db, r)
 
 		nick := NormalizeUsername(p.ByName("nick"))
@@ -201,7 +203,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 			return
 		}
 
-		nick = NormalizeUsername(nick)
+		log.Debugf("nick: %s", nick)
 
 		var profile types.Profile
 

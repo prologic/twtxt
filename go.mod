@@ -28,6 +28,7 @@ require (
 	github.com/emersion/go-message v0.14.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gabstv/merger v1.0.1
+	github.com/go-mail/mail v2.3.1+incompatible
 	github.com/goccy/go-yaml v1.8.4
 	github.com/gomarkdown/markdown v0.0.0-20201113031856-722100d81a8e
 	github.com/gorilla/feeds v1.1.1
@@ -61,6 +62,7 @@ require (
 	github.com/prologic/smtpd v0.0.0-20201215080427-fd3f94c87eb7
 	github.com/prometheus/client_golang v1.9.0 // indirect
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
+	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
 	github.com/renstrom/shortuuid v3.0.0+incompatible
 	github.com/rickb777/accept v0.0.0-20170318132422-d5183c44530d
 	github.com/robfig/cron v1.2.0
@@ -87,8 +89,8 @@ require (
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
-	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/ini.v1 v1.62.0 // indirect
+	gopkg.in/mail.v2 v2.3.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 	gorm.io/gorm v1.20.9 // indirect

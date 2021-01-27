@@ -7,8 +7,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/go-mail/mail"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/gomail.v2"
 )
 
 var (
@@ -109,14 +109,14 @@ func Indent(text, indent string) string {
 }
 
 func SendEmail(conf *Config, recipients []string, replyTo, subject string, body string) error {
-	m := gomail.NewMessage()
+	m := mail.NewMessage()
 	m.SetHeader("From", conf.SMTPFrom)
 	m.SetHeader("To", recipients...)
 	m.SetHeader("Reply-To", replyTo)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/plain", body)
 
-	d := gomail.NewDialer(conf.SMTPHost, conf.SMTPPort, conf.SMTPUser, conf.SMTPPass)
+	d := mail.NewDialer(conf.SMTPHost, conf.SMTPPort, conf.SMTPUser, conf.SMTPPass)
 
 	err := d.DialAndSend(m)
 	if err != nil {

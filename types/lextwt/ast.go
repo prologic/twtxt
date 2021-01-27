@@ -434,7 +434,11 @@ func (n *Subject) Text() string {
 func (n *Subject) Tag() types.TwtTag { return n.tag }
 func (n *Subject) Format(state fmt.State, r rune) {
 	_, _ = state.Write([]byte("("))
-	n.tag.Format(state, r)
+	if n.tag != nil {
+		n.tag.Format(state, r)
+	} else {
+		_, _ = state.Write([]byte(n.subject))
+	}
 	_, _ = state.Write([]byte(")"))
 }
 func (n *Subject) String() string {
@@ -835,7 +839,7 @@ func (twt Twt) FormatText(mode types.TwtTextFormat, opts types.FmtOpts) string {
 }
 func (twt *Twt) ExpandLinks(opts types.FmtOpts, lookup types.FeedLookup) {
 	for i, tag := range twt.tags {
-		if lookup != nil && tag.target == "" {
+		if opts != nil && tag.target == "" {
 			tag.target = opts.URLForTag(tag.tag)
 		}
 		twt.tags[i] = tag

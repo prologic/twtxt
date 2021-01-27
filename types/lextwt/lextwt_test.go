@@ -599,6 +599,7 @@ func TestParseTwt(t *testing.T) {
 
 		{
 			lit: `2021-01-18T20:45:57Z	#9c913a	Web UI for Picoblog: I'm thinking of something similar to [Saisho Edit](/saisho-edit). #picoblog`,
+			md: "[#9c913a](http://example.org/search?tag=9c913a)	Web UI for Picoblog: I'm thinking of something similar to [Saisho Edit](/saisho-edit). [#picoblog](http://example.org/search?tag=picoblog)",
 			twt: lextwt.NewTwt(
 				twter,
 				lextwt.NewDateTime(parseTime("2021-01-18T20:45:57Z"), "2021-01-18T20:45:57Z"),

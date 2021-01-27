@@ -612,7 +612,7 @@ func TestParseTwt(t *testing.T) {
 	}
 	fmtOpts := mockFmtOpts{"http://example.org"}
 	for i, tt := range tests {
-		t.Logf("TestParseTwt %d\n% v", i, tt.twt)
+		t.Logf("TestParseTwt %d\n%v", i, tt.twt)
 
 		r := strings.NewReader(tt.lit)
 		lexer := lextwt.NewLexer(r)
@@ -672,7 +672,6 @@ func testParseTwt(t *testing.T, expect, elem types.Twt) {
 	{
 		m := elem.Tags()
 		n := expect.Tags()
-		t.Log(n)
 
 		is.Equal(len(n), len(m))
 		for i := range m {

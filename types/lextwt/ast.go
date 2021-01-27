@@ -24,26 +24,8 @@ type Elem interface {
 	IsNil() bool     // A typed nil will fail `elem == nil` We need to unbox to test.
 	Literal() string // value as read from input.
 	Clone() Elem     // clone element.
-}
-type ElemHTML interface {
-	FormatHTML(io.Writer)
 
-	Elem
-}
-type ElemMarkdown interface {
-	FormatMarkdown(io.Writer) // format to markdown.
-
-	Elem
-}
-type ElemText interface {
-	FormatText(io.Writer) // format to write to disk.
-
-	Elem
-}
-type ElemCompact interface {
-	FormatCompact(io.Writer)
-
-	Elem
+	fmt.Formatter
 }
 
 type Line interface {
@@ -186,10 +168,7 @@ type Mention struct {
 }
 
 var _ Elem = (*Mention)(nil)
-var _ ElemCompact = (*Mention)(nil)
-var _ ElemText = (*Mention)(nil)
-var _ ElemMarkdown = (*Mention)(nil)
-var _ ElemHTML = (*Mention)(nil)
+var _ fmt.Formatter = (*Mention)(nil)
 var _ types.TwtMention = (*Mention)(nil)
 
 func NewMention(name, target string) *Mention {
@@ -242,6 +221,20 @@ func (n *Mention) URL() *url.URL {
 func (n *Mention) Err() error {
 	n.URL()
 	return n.err
+}
+func (n *Mention) Format(state fmt.State, r rune) {
+	switch r {
+	case 'c':
+		n.FormatCompact(state)
+	case 'h':
+		n.FormatHTML(state)
+	case 't':
+		n.FormatText(state)
+	case 'm':
+		n.FormatMarkdown(state)
+	default:
+		n.FormatText(state)
+	}
 }
 func (n *Mention) FormatCompact(out io.Writer) {
 	line := ""
@@ -318,10 +311,7 @@ type Tag struct {
 }
 
 var _ Elem = (*Tag)(nil)
-var _ ElemText = (*Tag)(nil)
-var _ ElemHTML = (*Tag)(nil)
-var _ ElemMarkdown = (*Tag)(nil)
-var _ ElemCompact = (*Tag)(nil)
+var _ fmt.Formatter = (*Tag)(nil)
 var _ types.TwtTag = (*Tag)(nil)
 
 func NewTag(tag, target string) *Tag {
@@ -354,6 +344,20 @@ func (n *Tag) URL() (*url.URL, error) {
 		n.url, n.err = url.Parse(n.target)
 	}
 	return n.url, n.err
+}
+func (n *Tag) Format(state fmt.State, r rune) {
+	switch r {
+	case 'c':
+		n.FormatCompact(state)
+	case 'h':
+		n.FormatHTML(state)
+	case 't':
+		n.FormatText(state)
+	case 'm':
+		n.FormatMarkdown(state)
+	default:
+		n.FormatText(state)
+	}
 }
 func (n *Tag) FormatCompact(out io.Writer) {
 	_, _ = out.Write([]byte("#" + n.tag))
@@ -400,9 +404,7 @@ type Subject struct {
 }
 
 var _ Elem = (*Subject)(nil)
-var _ ElemText = (*Subject)(nil)
-var _ ElemMarkdown = (*Subject)(nil)
-var _ ElemHTML = (*Subject)(nil)
+var _ fmt.Formatter = (*Subject)(nil)
 
 func NewSubject(text string) *Subject           { return &Subject{subject: text} }
 func NewSubjectTag(tag, target string) *Subject { return &Subject{tag: NewTag(tag, target)} }
@@ -430,43 +432,13 @@ func (n *Subject) Text() string {
 	return n.tag.Literal()
 }
 func (n *Subject) Tag() types.TwtTag { return n.tag }
-func (n *Subject) FormatText(out io.Writer) {
-	_, _ = out.Write([]byte("("))
-
-	if n.tag == nil {
-		_, _ = out.Write([]byte(n.subject))
-	} else {
-		n.tag.FormatCompact(out)
-	}
-
-	_, _ = out.Write([]byte(")"))
-}
-func (n *Subject) FormatMarkdown(out io.Writer) {
-	_, _ = out.Write([]byte("("))
-
-	if n.tag == nil {
-		_, _ = out.Write([]byte(n.subject))
-	} else {
-		n.tag.FormatMarkdown(out)
-	}
-
-	_, _ = out.Write([]byte(")"))
-}
-func (n *Subject) FormatHTML(out io.Writer) {
-	_, _ = out.Write([]byte("("))
-
-	if n.tag == nil {
-		_, _ = out.Write([]byte(n.subject))
-	} else {
-		n.tag.FormatHTML(out)
-	}
-
-	_, _ = out.Write([]byte(")"))
+func (n *Subject) Format(state fmt.State, r rune) {
+	_, _ = state.Write([]byte("("))
+	n.tag.Format(state, r)
+	_, _ = state.Write([]byte(")"))
 }
 func (n *Subject) String() string {
-	buf := &strings.Builder{}
-	n.FormatText(buf)
-	return buf.String()
+	return fmt.Sprintf("%c", n)
 }
 
 type Text struct {
@@ -485,19 +457,28 @@ func (n *Text) Clone() Elem {
 func (n *Text) IsNil() bool     { return n == nil }
 func (n *Text) Literal() string { return n.lit }
 func (n *Text) String() string  { return n.lit }
+func (n *Text) Format(state fmt.State, r rune) {
+	_, _ = state.Write([]byte(n.lit))
+}
 
 type lineSeparator struct{}
 
 var _ Elem = &lineSeparator{}
-var _ ElemText = &lineSeparator{}
+var _ fmt.Formatter = &lineSeparator{}
 
 var LineSeparator Elem = &lineSeparator{}
 
-func (n *lineSeparator) Clone() Elem              { return LineSeparator }
-func (n *lineSeparator) IsNil() bool              { return false }
-func (n *lineSeparator) Literal() string          { return "\u2028" }
-func (n *lineSeparator) String() string           { return "\n" }
-func (n *lineSeparator) FormatText(out io.Writer) { _, _ = out.Write([]byte("\n")) }
+func (n *lineSeparator) Clone() Elem     { return LineSeparator }
+func (n *lineSeparator) IsNil() bool     { return false }
+func (n *lineSeparator) Literal() string { return "\u2028" }
+func (n *lineSeparator) String() string  { return "\n" }
+func (n *lineSeparator) Format(state fmt.State, r rune) {
+	if r == 'l' {
+		_, _ = state.Write([]byte("\u2028"))
+		return
+	}
+	_, _ = state.Write([]byte("\n"))
+}
 
 type Link struct {
 	linkType LinkType
@@ -538,6 +519,9 @@ func (n *Link) Literal() string {
 		return fmt.Sprintf("[%s](%s)", n.text, n.target)
 	}
 }
+func (n *Link) Format(state fmt.State, r rune) {
+	_, _ = state.Write([]byte(n.Literal()))
+}
 func (n *Link) String() string {
 	return n.Literal()
 }
@@ -575,6 +559,14 @@ func (n *Code) Literal() string {
 	}
 	return fmt.Sprintf("`%s`", n.lit)
 }
+func (n *Code) Format(state fmt.State, r rune) {
+	if r == 'l' {
+		_, _ = state.Write([]byte(n.Literal()))
+		return
+	}
+	_, _ = state.Write([]byte(n.String()))
+}
+
 func (n *Code) FormatMarkdown(out io.Writer) { _, _ = out.Write([]byte(n.String())) }
 
 // String replaces line separator with newlines
@@ -688,12 +680,7 @@ func (twt Twt) CloneTwt() *Twt {
 func (twt *Twt) Text() string {
 	var b strings.Builder
 	for _, s := range twt.msg {
-		switch s := s.(type) {
-		case ElemText:
-			s.FormatText(&b)
-		default:
-			b.WriteString(s.Literal())
-		}
+		fmt.Fprintf(&b, "%t", s)
 	}
 	return b.String()
 }
@@ -754,7 +741,7 @@ func (twt Twt) MarshalJSON() ([]byte, error) {
 		// Dynamic Fields
 		Hash:    twt.Hash(),
 		Tags:    tags.Tags(),
-		Subject: twt.Subject().String(),
+		Subject: fmt.Sprintf("%c", twt.Subject()),
 	})
 }
 func DecodeJSON(data []byte) (types.Twt, error) {
@@ -790,62 +777,8 @@ func (twt Twt) Format(state fmt.State, c rune) {
 		state.Write([]byte("\t"))
 	}
 
-	switch c {
-	case 'h': // html
-		for _, elem := range twt.msg {
-			switch elem := elem.(type) {
-			case ElemHTML:
-				elem.FormatHTML(state)
-			case ElemMarkdown:
-				elem.FormatMarkdown(state)
-			case ElemText:
-				elem.FormatText(state)
-			default:
-				state.Write([]byte(elem.Literal()))
-			}
-		}
-
-	case 't': // twtxt
-		for _, elem := range twt.msg {
-			switch elem := elem.(type) {
-			case ElemText:
-				elem.FormatText(state)
-			default:
-				state.Write([]byte(elem.Literal()))
-			}
-		}
-
-	case 'm': // markdown
-		for _, elem := range twt.msg {
-			switch elem := elem.(type) {
-			case ElemMarkdown:
-				elem.FormatMarkdown(state)
-			case ElemText:
-				elem.FormatText(state)
-			default:
-				state.Write([]byte(elem.Literal()))
-			}
-		}
-
-	case 'l': // literal
-		for _, elem := range twt.msg {
-			state.Write([]byte(elem.Literal()))
-		}
-
-	case 'c': // compact
-		for _, elem := range twt.msg {
-			switch elem := elem.(type) {
-			case ElemCompact:
-				elem.FormatCompact(state)
-			default:
-				state.Write([]byte(elem.Literal()))
-			}
-		}
-
-	default:
-		for _, elem := range twt.msg {
-			state.Write([]byte(elem.Literal()))
-		}
+	for _, elem := range twt.msg {
+		elem.Format(state, c)
 	}
 }
 
@@ -902,14 +835,14 @@ func (twt Twt) FormatText(mode types.TwtTextFormat, opts types.FmtOpts) string {
 }
 func (twt *Twt) ExpandLinks(opts types.FmtOpts, lookup types.FeedLookup) {
 	for i, tag := range twt.tags {
-		if tag.target == "" {
+		if lookup != nil && tag.target == "" {
 			tag.target = opts.URLForTag(tag.tag)
 		}
 		twt.tags[i] = tag
 	}
 
 	for i, m := range twt.mentions {
-		if m.target == "" && lookup != nil {
+		if lookup != nil && m.target == "" {
 			twter := lookup.FeedLookup(m.name)
 			m.name = twter.Nick
 			if sp := strings.SplitN(twter.Nick, "@", 2); len(sp) == 2 {

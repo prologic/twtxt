@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/Masterminds/sprig"
@@ -43,6 +44,13 @@ func NewTemplateManager(conf *Config, blogs *BlogsCache, cache *Cache) (*Templat
 	funcMap["prettyURL"] = PrettyURL
 	funcMap["isLocalURL"] = IsLocalURLFactory(conf)
 	funcMap["formatTwt"] = FormatTwtFactory(conf)
+	funcMap["formatTwtText"] = func() func(text string) template.HTML {
+		fn := FormatTwtFactory(conf)
+		return func(text string) template.HTML {
+			twt := types.MakeTwt(types.Twter{}, time.Time{}, text)
+			return fn(twt)
+		}
+	}
 	funcMap["unparseTwt"] = UnparseTwtFactory(conf)
 	funcMap["formatForDateTime"] = FormatForDateTime
 	funcMap["urlForBlog"] = URLForBlogFactory(conf, blogs)

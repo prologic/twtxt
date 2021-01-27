@@ -80,6 +80,8 @@ type Twt interface {
 	Tags() TagList
 
 	ExpandLinks(FmtOpts, FeedLookup)
+	// ReplaceLinks(FmtOpts)
+
 	// TODO: remove FormatText and add func to update links for UI
 	FormatText(TwtTextFormat, FmtOpts) string
 

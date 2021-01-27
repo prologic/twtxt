@@ -854,7 +854,7 @@ func (twt Twt) FormatTwt() string {
 }
 func (twt Twt) FormatText(mode types.TwtTextFormat, opts types.FmtOpts) string {
 	twt = *twt.CloneTwt()
-
+	twt.ExpandLinks(opts, nil)
 	if opts != nil {
 		for i := range twt.tags {
 			switch mode {

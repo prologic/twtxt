@@ -468,8 +468,11 @@ func testParseLink(t *testing.T, expect, elem *lextwt.Link) {
 }
 
 type twtTestCase struct {
-	lit string
-	twt types.Twt
+	lit  string
+	text string
+	md   string
+	html string
+	twt  types.Twt
 }
 
 func TestParseTwt(t *testing.T) {
@@ -480,6 +483,9 @@ func TestParseTwt(t *testing.T) {
 	tests := []twtTestCase{
 		{
 			lit: "2016-02-03T23:03:00+00:00	@<example http://example.org/twtxt.txt>\u2028welcome to twtxt!\n",
+			text: "@example\nwelcome to twtxt!",
+			md:   "[@example](http://example.org#example)\nwelcome to twtxt!",
+			html: `<a href="http://example.org">@example<em>@example.org</em></a>` + "\nwelcome to twtxt!",
 			twt: lextwt.NewTwt(
 				twter,
 				lextwt.NewDateTime(parseTime("2016-02-03T23:03:00+00:00"), "2016-02-03T23:03:00+00:00"),
@@ -604,7 +610,7 @@ func TestParseTwt(t *testing.T) {
 			),
 		},
 	}
-
+	fmtOpts := mockFmtOpts{"http://example.org"}
 	for i, tt := range tests {
 		t.Logf("TestParseTwt %d\n% v", i, tt.twt)
 
@@ -619,14 +625,21 @@ func TestParseTwt(t *testing.T) {
 		is.True(rt != nil)
 
 		if twt != nil && rt != nil {
-			is.Equal(twt.FormatText(types.MarkdownFmt, nil), rt.FormatText(types.MarkdownFmt, nil))
-			is.Equal(twt.FormatText(types.HTMLFmt, nil), rt.FormatText(types.HTMLFmt, nil))
 			is.Equal(twt.Hash(), rt.Hash())
 		}
 
 		is.True(twt != nil)
 		if twt != nil {
 			testParseTwt(t, tt.twt, twt)
+		}
+		if tt.text != "" {
+			is.Equal(twt.FormatText(types.TextFmt, fmtOpts), tt.text)
+		}
+		if tt.md != "" {
+			is.Equal(twt.FormatText(types.MarkdownFmt, fmtOpts), tt.md)
+		}
+		if tt.html != "" {
+			is.Equal(twt.FormatText(types.HTMLFmt, fmtOpts), tt.html)
 		}
 	}
 }
@@ -885,8 +898,7 @@ type testExpandLinksCase struct {
 func TestExpandLinks(t *testing.T) {
 	twter := types.Twter{Nick: "example", URL: "http://example.com/example.txt"}
 	conf := mockFmtOpts{
-		localURL:   func() *url.URL { url, _ := url.Parse("http://example.com"); return url },
-		isLocalURL: func(s string) bool { return strings.HasPrefix("http://example.com", s) },
+		localURL: "http://example.com",
 	}
 
 	tests := []testExpandLinksCase{
@@ -912,20 +924,40 @@ func TestExpandLinks(t *testing.T) {
 }
 
 type mockFmtOpts struct {
-	localURL    func() *url.URL
-	isLocalURL  func(string) bool
-	userURL     func(string) string
-	externalURL func(string, string) string
-	urlForTag   func(string) string
-	urlForUser  func(string) string
+	localURL string
 }
 
-func (m mockFmtOpts) LocalURL() *url.URL                  { return m.localURL() }
-func (m mockFmtOpts) IsLocalURL(s string) bool            { return m.isLocalURL(s) }
-func (m mockFmtOpts) UserURL(s string) string             { return m.userURL(s) }
-func (m mockFmtOpts) ExternalURL(nick, uri string) string { return m.externalURL(nick, uri) }
-func (m mockFmtOpts) URLForTag(tag string) string         { return m.urlForTag(tag) }
-func (m mockFmtOpts) URLForUser(user string) string       { return m.urlForUser(user) }
+func (m mockFmtOpts) LocalURL() *url.URL { u, _ := url.Parse(m.localURL); return u }
+func (m mockFmtOpts) IsLocalURL(url string) bool {
+	return strings.HasPrefix(url, m.localURL)
+}
+func (m mockFmtOpts) UserURL(url string) string {
+	if strings.HasSuffix(url, "/twtxt.txt") {
+		return strings.TrimSuffix(url, "/twtxt.txt")
+	}
+	return url
+}
+func (m mockFmtOpts) ExternalURL(nick, uri string) string {
+	return fmt.Sprintf(
+		"%s/external?uri=%s&nick=%s",
+		strings.TrimSuffix(m.localURL, "/"),
+		uri, nick,
+	)
+}
+func (m mockFmtOpts) URLForTag(tag string) string {
+	return fmt.Sprintf(
+		"%s/search?tag=%s",
+		strings.TrimSuffix(m.localURL, "/"),
+		tag,
+	)
+}
+func (m mockFmtOpts) URLForUser(username string) string {
+	return fmt.Sprintf(
+		"%s/user/%s/twtxt.txt",
+		strings.TrimSuffix(m.localURL, "/"),
+		username,
+	)
+}
 
 // func TestSomethingWeird(t *testing.T) {
 // 	is := is.New(t)

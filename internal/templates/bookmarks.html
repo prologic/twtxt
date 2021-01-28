@@ -1,0 +1,31 @@
+{{define "content"}}
+<article class="grid">
+  <div>
+    <hgroup>
+      <h2>Bookmarks</h2>
+      <h3>
+        {{ if $.User.Is .Profile.URL }}
+        List of twts you have bookmarked
+        {{ else }}
+        List of twts <b>{{ .Profile.Username }}</b> has bookmarked
+        {{ end }}
+      </h3>
+    </hgroup>
+    {{ if .Profile.Bookmarks }}
+    <ol>
+      {{ range $Hash, $Title := .Profile.Bookmarks }}
+      <li><a href="/twt/{{ $Hash }}">{{ with $Title }}{{ $Title }}{{ else }}#{{ $Hash }}{{ end }}</a></li>
+      {{ end }}
+    </ol>
+    {{ else }}
+    <small>
+      {{ if $.User.Is .Profile.URL }}
+      You havee not bookmarked any twts!
+      {{ else }}
+      <b>{{ .Profile.Username }}</b> has not bookmarked any twts.</i>
+      {{ end }}
+    </small>
+    {{ end }}
+  </div>
+</article>
+{{ end }}

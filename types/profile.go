@@ -19,6 +19,7 @@ type Profile struct {
 	// `true` if user/feed follows the User viewing the Profile.
 	FollowedBy bool
 
+	Bookmarks map[string]string
 	Followers map[string]string
 	Following map[string]string
 }

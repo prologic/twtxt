@@ -52,6 +52,7 @@ type User struct {
 	DisplayDatesInTimezone     string `default:"UTC"`
 	IsFollowersPubliclyVisible bool   `default:"true"`
 	IsFollowingPubliclyVisible bool   `default:"true"`
+	IsBookmarksPubliclyVisible bool   `default:"true"`
 
 	Feeds  []string `default:"[]"`
 	Tokens []string `default:"[]"`
@@ -59,6 +60,7 @@ type User struct {
 	SMTPToken string `default:""`
 	POP3Token string `default:""`
 
+	Bookmarks map[string]string `default:"{}"`
 	Followers map[string]string `default:"{}"`
 	Following map[string]string `default:"{}"`
 	Muted     map[string]string `default:"{}"`
@@ -242,6 +244,9 @@ func LoadUser(data []byte) (user *User, err error) {
 		user.POP3Token = GenerateRandomToken()
 	}
 
+	if user.Bookmarks == nil {
+		user.Bookmarks = make(map[string]string)
+	}
 	if user.Followers == nil {
 		user.Followers = make(map[string]string)
 	}
@@ -373,6 +378,19 @@ func (u *User) Is(url string) bool {
 	return u.URL == NormalizeURL(url)
 }
 
+func (u *User) Bookmark(hash string) {
+	if _, ok := u.Bookmarks[hash]; !ok {
+		u.Bookmarks[hash] = ""
+	} else {
+		delete(u.Bookmarks, hash)
+	}
+}
+
+func (u *User) Bookmarked(hash string) bool {
+	_, ok := u.Bookmarks[hash]
+	return ok
+}
+
 func (u *User) AddFollower(nick, url string) {
 	url = NormalizeURL(url)
 	u.Followers[nick] = url
@@ -479,6 +497,7 @@ func (u *User) Profile(baseURL string, viewer *User) types.Profile {
 
 		Followers: u.Followers,
 		Following: u.Following,
+		Bookmarks: u.Bookmarks,
 	}
 }
 

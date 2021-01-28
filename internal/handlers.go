@@ -136,6 +136,7 @@ func (s *Server) UserConfigHandler() httprouter.Handle {
 		var (
 			url       string
 			following map[string]string
+			bookmarks map[string]string
 		)
 
 		if s.db.HasUser(nick) {
@@ -148,6 +149,9 @@ func (s *Server) UserConfigHandler() httprouter.Handle {
 			url = user.URL
 			if ctx.Authenticated || user.IsFollowingPubliclyVisible {
 				following = user.Following
+			}
+			if ctx.Authenticated || user.IsBookmarksPubliclyVisible {
+				bookmarks = user.Bookmarks
 			}
 		} else if s.db.HasFeed(nick) {
 			feed, err := s.db.GetFeed(nick)
@@ -166,10 +170,12 @@ func (s *Server) UserConfigHandler() httprouter.Handle {
 			Nick      string            `json:"nick"`
 			URL       string            `json:"url"`
 			Following map[string]string `json:"following"`
+			Bookmarks map[string]string `json:"bookmarks"`
 		}{
 			Nick:      nick,
 			URL:       url,
 			Following: following,
+			Bookmarks: bookmarks,
 		}
 
 		data, err := yaml.Marshal(config)
@@ -1427,6 +1433,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		displayDatesInTimezone := r.FormValue("displayDatesInTimezone")
 		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
 		isFollowingPubliclyVisible := r.FormValue("isFollowingPubliclyVisible") == "on"
+		isBookmarksPubliclyVisible := r.FormValue("isBookmarksPubliclyVisible") == "on"
 
 		avatarFile, _, err := r.FormFile("avatar_file")
 		if err != nil && err != http.ErrMissingFile {
@@ -1479,6 +1486,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		user.DisplayDatesInTimezone = displayDatesInTimezone
 		user.IsFollowersPubliclyVisible = isFollowersPubliclyVisible
 		user.IsFollowingPubliclyVisible = isFollowingPubliclyVisible
+		user.IsBookmarksPubliclyVisible = isBookmarksPubliclyVisible
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
 			ctx.Error = true

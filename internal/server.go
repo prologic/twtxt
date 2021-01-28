@@ -481,6 +481,9 @@ func (s *Server) initRoutes() {
 	s.router.HEAD("/twt/:hash", s.PermalinkHandler())
 	s.router.GET("/twt/:hash", s.PermalinkHandler())
 
+	s.router.GET("/bookmark/:hash", s.BookmarkHandler())
+	s.router.POST("/bookmark/:hash", s.BookmarkHandler())
+
 	s.router.HEAD("/conv/:hash", s.ConversationHandler())
 	s.router.GET("/conv/:hash", s.ConversationHandler())
 
@@ -528,6 +531,7 @@ func (s *Server) initRoutes() {
 	s.router.GET("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/followers", s.FollowersHandler())
 	s.router.GET("/user/:nick/following", s.FollowingHandler())
+	s.router.GET("/user/:nick/bookmarks", s.BookmarksHandler())
 
 	s.router.GET("/pod/avatar", s.PodAvatarHandler())
 

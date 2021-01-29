@@ -131,6 +131,13 @@
           </time>
         </a>
         <span> &nbsp;({{ $.Twt.Created | time }})</span>
+        {{ if $.Authenticated }}
+        <span> &nbsp;
+          <a class="bookmark" href="/bookmark/{{ $.Twt.Hash }}" data-tooltip="{{ if $.User.Bookmarked $.Twt.Hash }}Remove Twt Bookmark{{ else }}Bookmark Twt{{ end }}">
+            <i class="icss-{{ if $.User.Bookmarked $.Twt.Hash }}heart{{ else }}heart-o{{ end }}"></i>
+          </a>
+        </span>
+        {{ end }}
       </div>
     </div>
   </div>
@@ -253,6 +260,7 @@
   <li><a href="/user/{{ $.Profile.Username }}/followers">Followers: {{ $.Profile.Followers | len }}</a></li>
   {{ if eq $.Profile.Type "User" }}
   <li><a href="/user/{{ $.Profile.Username }}/following">Following: {{ $.Profile.Following | len }}</a></li>
+  <li><a href="/user/{{ $.Profile.Username }}/bookmarks">Bookmarks: {{ $.Profile.Bookmarks | len }}</a></li>
   {{ end }}
 </ul>
 {{ end }}

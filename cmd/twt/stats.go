@@ -10,75 +10,79 @@ import (
 	"strings"
 
 	"github.com/prologic/go-gopher"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
 	"github.com/jointwt/twtxt/types"
 	"github.com/jointwt/twtxt/types/lextwt"
 )
 
-func main() {
-	if len(os.Args) == 0 {
-		fmt.Println("Usage: stats <url>")
-		os.Exit(1)
-	}
+// statsCmd represents the stats command
+var statsCmd = &cobra.Command{
+	Use:     "stats [flags] <url|file>",
+	Aliases: []string{},
+	Short:   "Parses and performs statistical analytis on a Twtxt feed given a URL or local file",
+	Long:    `...`,
+	Args:    cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		runStats(args)
+	},
+}
 
-	url, err := url.Parse(os.Args[1])
+func init() {
+	RootCmd.AddCommand(statsCmd)
+}
+
+func runStats(args []string) {
+	url, err := url.Parse(args[0])
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
+		log.WithError(err).Error("error parsing url")
+		os.Exit(2)
 	}
 
-	fmt.Println("Reading: ", url)
+	log.Debugf("Reading: %s", url)
 
 	switch url.Scheme {
 	case "", "file":
 		f, err := os.Open(url.Path)
 		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			os.Exit(1)
+			log.WithError(err).Error("error reading file feed")
+			os.Exit(2)
 		}
-
 		defer f.Close()
 
-		run(f)
-
+		doStats(f)
 	case "http", "https":
 		f, err := http.Get(url.String())
 		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			os.Exit(1)
+			log.WithError(err).Error("error reading HTTP feed")
+			os.Exit(2)
 		}
-
 		defer f.Body.Close()
 
-		run(f.Body)
-
+		doStats(f.Body)
 	case "gopher":
 		res, err := gopher.Get(url.String())
 		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			os.Exit(1)
-		}
-		if res.Body == nil {
-			fmt.Printf("Error: body is empty %v", res.Type)
-			os.Exit(1)
+			log.WithError(err).Error("error reading Gopher feed")
+			os.Exit(2)
 		}
 		defer res.Body.Close()
 
-		run(res.Body)
-
+		doStats(res.Body)
 	}
 }
 
-func run(r io.Reader) {
-	fmt.Println("Parsing file...")
+func doStats(r io.Reader) {
+	log.Debug("Parsing file...")
 
 	twt, err := lextwt.ParseFile(r, types.NilTwt.Twter())
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
+		log.WithError(err).Error("error parsing feed")
+		os.Exit(2)
 	}
+	log.Debug("Complete!")
 
-	fmt.Println("Complete!")
 	fmt.Println(twt.Info())
 
 	twter := twt.Twter()
@@ -118,11 +122,6 @@ func run(r io.Reader) {
 		links = append(links, stat{count, link})
 	}
 	fmt.Println(links)
-
-	for _, twt := range twt.Twts() {
-		fmt.Print(twt.(*lextwt.Twt).FilePos(), "\t", twt)
-	}
-
 }
 
 func daysOfWeek(twts types.Twts) stats {

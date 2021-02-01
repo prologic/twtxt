@@ -1198,3 +1198,20 @@ i.icss-heart-o:after {
   border: .065em solid currentColor;
   border-left: 0;
 }
+
+i.icss-circle {
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  margin: 0;
+}
+
+
+i.icss-circle-o {
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  background-color: transparent;
+  border: .1em solid currentColor;
+  margin: 0;
+}

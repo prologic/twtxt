@@ -1,0 +1,51 @@
+# Build
+FROM golang:alpine
+
+RUN apk add --no-cache -U build-base git make ffmpeg-dev
+
+RUN mkdir -p /src
+
+WORKDIR /src
+
+# Copy Makefile
+COPY Makefile ./
+
+# Copy go.mod and go.sum and install and cache dependencies
+COPY go.mod .
+COPY go.sum .
+
+# Install deps
+RUN make deps
+RUN go mod download
+
+# Copy static assets
+COPY ./internal/static/css/* ./internal/static/css/
+COPY ./internal/static/img/* ./internal/static/img/
+COPY ./internal/static/js/* ./internal/static/js/
+
+# Copy pages
+COPY ./internal/pages/* ./internal/pages/
+
+# Copy templates
+COPY ./internal/templates/* ./internal/templates/
+
+# Copy sources
+COPY *.go ./
+COPY ./internal/*.go ./internal/
+COPY ./internal/auth/*.go ./internal/auth/
+COPY ./internal/session/*.go ./internal/session/
+COPY ./internal/passwords/*.go ./internal/passwords/
+COPY ./internal/webmention/*.go ./internal/webmention/
+COPY ./types/*.go ./types/
+COPY ./types/retwt/*.go ./types/retwt/
+COPY ./cmd/twtd/*.go ./cmd/twtd/
+
+# Build server binary
+RUN make server DEBUG=1
+
+VOLUME /src/data
+
+# force cgo resolver
+ENV GODEBUG=netdns=cgo
+
+CMD ["./twtd", "-D", "-O", "-R"]

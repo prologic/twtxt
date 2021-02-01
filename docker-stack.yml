@@ -1,0 +1,21 @@
+---
+version: "3.8"
+
+services:
+  twtxt:
+    image: jointwt/twtxt:latest
+    command: -d /data -s bitcask:///data/twtxt.db
+    ports:
+      - "8000:8000/tcp"
+    environment:
+      - BASE_URL=http://127.0.0.1:8000
+      - OPEN_PROFILES=true
+      - OPEN_REGISTRATIONS=true
+      - API_SIGNING_KEY=supersecretchangeme
+      - COOKIE_SECRET=supersecretchangeme
+      - MAGICLINK_SECRET=supersecretchangeme
+    volumes:
+      - twtxt:/data
+
+volumes:
+  twtxt:

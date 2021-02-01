@@ -3,14 +3,11 @@ version: "3.8"
 
 services:
   twtxt:
-    build: .
-    image: jointwt/twtxt:latest
-    command: -d /data -s bitcask:///data/twtxt.db -u http://127.0.0.1:8000
-    environment:
-      - OPEN_PROFILES=true
-      - OPEN_REGISTRATIONS=true
-      - COOKIE_SECRET=supersecretchange me
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     ports:
       - "8000:8000/tcp"
     volumes:
-      - ./data:/data
+      - ./data:/src/data
+      - ./internal:/src/internal

@@ -39,7 +39,7 @@ const (
 	DefaultMetaDescription = "📕 twtxt is a Self-Hosted, Twitter™-like Decentralised microBlogging platform. No ads, no tracking, your content, your data!"
 
 	// DefaultTheme is the default theme to use ('light' or 'dark')
-	DefaultTheme = "dark"
+	DefaultTheme = "auto"
 
 	// DefaultOpenRegistrations is the default for open user registrations
 	DefaultOpenRegistrations = false

@@ -134,7 +134,7 @@
         {{ if $.Authenticated }}
         <span> &nbsp;
           <a class="bookmark" href="/bookmark/{{ $.Twt.Hash }}" data-tooltip="{{ if $.User.Bookmarked $.Twt.Hash }}Remove Twt Bookmark{{ else }}Bookmark Twt{{ end }}">
-            <i class="icss-{{ if $.User.Bookmarked $.Twt.Hash }}heart{{ else }}heart-o{{ end }}"></i>
+            <i class="icss-{{ if $.User.Bookmarked $.Twt.Hash }}circle{{ else }}circle-o{{ end }}"></i>
           </a>
         </span>
         {{ end }}

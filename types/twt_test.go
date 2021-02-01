@@ -15,7 +15,7 @@ import (
 
 // BenchmarkLextwt-16    	      21	  49342715 ns/op	 6567316 B/op	  178333 allocs/op
 func BenchmarkAll(b *testing.B) {
-	f, err := os.Open("../prologic.txt")
+	f, err := os.Open("../bench-twtxt.txt")
 	if err != nil {
 		fmt.Println(err)
 		b.FailNow()
@@ -53,7 +53,7 @@ func BenchmarkAll(b *testing.B) {
 
 // BenchmarkLextwtParse-16    	      26	  44508742 ns/op	 5450748 B/op	  130290 allocs/op
 func BenchmarkParse(b *testing.B) {
-	f, err := os.Open("../prologic.txt")
+	f, err := os.Open("../bench-twtxt.txt")
 	if err != nil {
 		fmt.Println(err)
 		b.FailNow()
@@ -83,9 +83,8 @@ func BenchmarkParse(b *testing.B) {
 	}
 }
 
-
 func BenchmarkOutput(b *testing.B) {
-	f, err := os.Open("../prologic.txt")
+	f, err := os.Open("../bench-twtxt.txt")
 	if err != nil {
 		fmt.Println(err)
 		b.FailNow()

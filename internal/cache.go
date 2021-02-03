@@ -195,37 +195,22 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 
 			if followers != nil {
 				feedFollowers := followers[feed]
+				var userAgent string
 				if len(feedFollowers) == 1 {
-					headers.Set(
-						"User-Agent",
-						fmt.Sprintf(
-							"twtxt/%s (+%s; @%s)",
-							twtxt.FullVersion(),
-							URLForUser(conf, feedFollowers[0]), feedFollowers[0],
-						),
+					userAgent = fmt.Sprintf(
+						"twtxt/%s (+%s; @%s)",
+						twtxt.FullVersion(),
+						URLForUser(conf, feedFollowers[0]), feedFollowers[0],
 					)
 				} else {
-					var followersString string
-
-					if len(feedFollowers) > 5 {
-						followersString = fmt.Sprintf(
-							"%s and %d more... %s",
-							strings.Join(feedFollowers[:5], " "),
-							(len(feedFollowers) - 5), URLForWhoFollows(conf.BaseURL, feed),
-						)
-					} else {
-						followersString = strings.Join(feedFollowers, " ")
-					}
-
-					headers.Set(
-						"User-Agent",
-						fmt.Sprintf(
-							"twtxt/%s (Pod: %s Followers: %s Support: %s)",
-							twtxt.FullVersion(), conf.Name,
-							followersString, URLForPage(conf.BaseURL, "support"),
-						),
+					userAgent = fmt.Sprintf(
+						"twtxt/%s (~%s; contact=%s)",
+						twtxt.FullVersion(),
+						URLForWhoFollows(conf.BaseURL, feed, len(feedFollowers)),
+						URLForPage(conf.BaseURL, "support"),
 					)
 				}
+				headers.Set("User-Agent", userAgent)
 			}
 
 			cache.mu.RLock()

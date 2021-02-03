@@ -13,16 +13,13 @@ func init() {
 	tokenCache = NewTTLCache(1 * time.Hour)
 }
 
-func GenerateToken() string {
-	t := token.New()
-	ts := t.Encode()
-
+func GenerateToken(feedurl string) string {
+	t := token.New().Encode()
 	for {
-		if tokenCache.Get(ts) == 0 {
-			tokenCache.Set(ts, 1)
-			return ts
+		if tokenCache.GetString(t) == "" {
+			tokenCache.SetString(t, feedurl)
+			return t
 		}
-		t = token.New()
-		ts = t.Encode()
+		t = token.New().Encode()
 	}
 }

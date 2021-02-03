@@ -20,14 +20,11 @@ func (s *Server) WhoFollowsHandler() httprouter.Handle {
 			ctype = "json"
 		}
 
-		uri := r.URL.Query().Get("uri")
-		nick := r.URL.Query().Get("nick")
 		token := r.URL.Query().Get("token")
-
-		if uri == "" {
+		if token == "" {
 			if ctype == "html" {
 				ctx.Error = true
-				ctx.Message = "No URI supplied"
+				ctx.Message = "No token supplied"
 				s.render("error", w, ctx)
 			} else {
 				http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -35,19 +32,14 @@ func (s *Server) WhoFollowsHandler() httprouter.Handle {
 			return
 		}
 
-		if nick == "" {
-			log.Warn("no nick given to whoFollows request")
-			nick = "unknown"
-		}
-
-		if !ctx.Authenticated && tokenCache.Get(token) == 0 {
-			log.Warn("unauthenticated or invalid token for whoFollows request")
+		uri := tokenCache.GetString(token)
+		if uri == "" {
 			if ctype == "html" {
 				ctx.Error = true
-				ctx.Message = "You are not authorized to view this resource"
-				s.render("401", w, ctx)
+				ctx.Message = "Token expired or invalid"
+				s.render("error", w, ctx)
 			} else {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				http.Error(w, "Token Not Found", http.StatusNotFound)
 			}
 			return
 		}
@@ -67,6 +59,7 @@ func (s *Server) WhoFollowsHandler() httprouter.Handle {
 			return
 		}
 
+		nick := ""
 		for _, user := range users {
 			if !user.IsFollowersPubliclyVisible && !ctx.User.Is(user.URL) {
 				continue
@@ -74,7 +67,18 @@ func (s *Server) WhoFollowsHandler() httprouter.Handle {
 
 			if user.Follows(uri) {
 				followers[user.Username] = user.URL
+				if nick == "" {
+					for n, url := range user.Following {
+						if url == uri {
+							nick = n
+							break
+						}
+					}
+				}
 			}
+		}
+		if nick == "" {
+			nick = "unknown"
 		}
 
 		ctx.Profile = types.Profile{

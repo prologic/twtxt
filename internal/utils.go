@@ -1409,13 +1409,15 @@ func URLForTask(baseURL, uuid string) string {
 	)
 }
 
-func URLForWhoFollows(baseURL string, feed types.Feed) string {
-	token := GenerateToken()
-
+func URLForWhoFollows(baseURL string, feed types.Feed, feedFollowers int) string {
 	return fmt.Sprintf(
-		"%s/whoFollows?uri=%s&nick=%s&token=%s",
+		"%s/whoFollows?followers=%d&token=%s",
 		strings.TrimSuffix(baseURL, "/"),
-		feed.URL, feed.Nick, token,
+		// Include the number of followers, so feed owners can use this as a vague
+		// indicator to avoid refetching our Who Follows Resource if the number did
+		// not change since they last checked their followers.
+		feedFollowers,
+		GenerateToken(feed.URL),
 	)
 }
 

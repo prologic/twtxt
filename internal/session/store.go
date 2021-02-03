@@ -11,7 +11,7 @@ import (
 const DefaultSessionDuration = time.Hour
 
 var (
-	ErrSessionNotFound = errors.New("sessin not found or expired")
+	ErrSessionNotFound = errors.New("session not found or expired")
 	ErrSessionExpired  = errors.New("session expired")
 )
 

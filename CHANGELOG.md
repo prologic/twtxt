@@ -191,7 +191,7 @@
 * Fix profile template and profile type to show followers correctly with correct link
 * Fix Profile.Type setting when calling .Profile() on models
 * Fix a few misisng trimSuffix calls in some tempaltes
-* Fix sessino persistence and increase default session timeout to 10days ([#49](https://github.com/prologic/twtxt/issues/49))
+* Fix session persistence and increase default session timeout to 10days ([#49](https://github.com/prologic/twtxt/issues/49))
 * Fix session unmarshalling caused by 150690c
 * Fix the mess that is User/Feed URL vs. TwtURL ([#47](https://github.com/prologic/twtxt/issues/47))
 * Fix user registration to disallow existing users and feeds

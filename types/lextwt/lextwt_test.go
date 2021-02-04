@@ -610,6 +610,16 @@ func TestParseTwt(t *testing.T) {
 				lextwt.NewTag("picoblog", ""),
 			),
 		},
+
+		{
+			lit: `2021-02-04T12:54:21Z	https://fosstodon.org/@/105673078150704477`,
+			md: "https://fosstodon.org/@/105673078150704477",
+			twt: lextwt.NewTwt(
+				twter,
+				lextwt.NewDateTime(parseTime("2021-02-04T12:54:21Z"), "2021-02-04T12:54:21Z"),
+				lextwt.NewLink("", "https://fosstodon.org/@/105673078150704477", lextwt.LinkNaked),
+			),
+		},
 	}
 	fmtOpts := mockFmtOpts{"http://example.org"}
 	for i, tt := range tests {
@@ -811,6 +821,7 @@ func TestParseFile(t *testing.T) {
 # follows = xuu@txt.sour.is https://txt.sour.is/users/xuu.txt
 
 2016-02-03T23:05:00Z	@<example http://example.org/twtxt.txt>` + "\u2028" + `welcome to twtxt!
+2020-12-02T01:04:00Z	This is an OpenPGP proof that connects my OpenPGP key to this Twtxt account. See https://key.sour.is/id/me@sour.is for more.  [Verifying my OpenPGP key: openpgp4fpr:20AE2F310A74EA7CEC3AE69F8B3B0604F164E04F]
 2020-11-13T16:13:22+01:00	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<pdrsg2q https://twtxt.net/search?tag=pdrsg2q>) Thanks!
 `),
 			out: lextwt.NewTwtFile(
@@ -831,6 +842,17 @@ func TestParseFile(t *testing.T) {
 						lextwt.LineSeparator,
 						lextwt.NewText("welcome to twtxt"),
 						lextwt.NewText("!"),
+					),
+
+					lextwt.NewTwt(
+						twter,
+						lextwt.NewDateTime(parseTime("2020-12-02T01:04:00Z"), "2020-12-02T01:04:00Z"),
+						lextwt.NewText("This is an OpenPGP proof that connects my OpenPGP key to this Twtxt account. See "),
+						lextwt.NewLink("", "https://key.sour.is/id/me@sour.is", lextwt.LinkNaked),
+						lextwt.NewText(" for more."),
+						lextwt.LineSeparator,
+						lextwt.LineSeparator,
+						lextwt.NewText("[Verifying my OpenPGP key: openpgp4fpr:20AE2F310A74EA7CEC3AE69F8B3B0604F164E04F]"),
 					),
 
 					lextwt.NewTwt(

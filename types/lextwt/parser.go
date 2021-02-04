@@ -546,12 +546,20 @@ func (p *parser) ParseSubject() *Subject {
 // Forms parsed:
 //   combination of string and space tokens.
 func (p *parser) ParseText() *Text {
-	p.append(p.curTok.Literal...)
-	p.next()
+	// Ensure we arnt at the end of line.
+	if !p.curTokenIs(TokNL, TokEOF) {
+		p.append(p.curTok.Literal...)
+		p.next()
+	}
 
 	for p.curTokenIs(TokSTRING, TokSPACE) ||
 		// We don't want to parse an email address or link accidentally as a mention or tag. So check if it is preceded with a space.
 		(p.curTokenIs(TokHASH, TokAT, TokLT, TokLPAREN) && (len(p.lit) == 0 || !unicode.IsSpace(p.lit[len(p.lit)-1]))) {
+
+		// If end of line break out.
+		if p.curTokenIs(TokNL, TokEOF) {
+			break
+		}
 
 		// if it looks like a link break out.
 		if p.curTokenIs(TokSTRING) && p.peekTokenIs(TokSCHEME) {
@@ -653,7 +661,7 @@ func (p *parser) ParseLink() *Link {
 		p.append(p.curTok.Literal...) // text
 		p.next()
 
-		for !p.curTokenIs(TokRBRACK, TokLBRACK, TokRPAREN, TokLPAREN, TokEOF) {
+		for !p.curTokenIs(TokRBRACK, TokLBRACK, TokRPAREN, TokLPAREN, TokNL, TokEOF) {
 			p.append(p.curTok.Literal...) // text
 			p.next()
 

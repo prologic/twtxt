@@ -26,11 +26,11 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 	parser.SetTwter(twter)
 
 	for !parser.IsEOF() {
-		elem := parser.ParseLine()
+		line := parser.ParseLine()
 
 		nLines++
 
-		switch e := elem.(type) {
+		switch e := line.(type) {
 		case *Comment:
 			f.comments = append(f.comments, e)
 		case *Twt:

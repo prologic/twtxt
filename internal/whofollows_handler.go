@@ -68,12 +68,7 @@ func (s *Server) WhoFollowsHandler() httprouter.Handle {
 			if user.Follows(uri) {
 				followers[user.Username] = user.URL
 				if nick == "" {
-					for n, url := range user.Following {
-						if url == uri {
-							nick = n
-							break
-						}
-					}
+					nick = user.sources[uri]
 				}
 			}
 		}

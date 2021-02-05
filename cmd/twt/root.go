@@ -52,14 +52,14 @@ func init() {
 		"config file (default: $HOME/.twt.yaml)",
 	)
 
-	lexparse := RootCmd.PersistentFlags().BoolP(
+	RootCmd.PersistentFlags().BoolP(
 		"debug", "d", false,
 		"Enable debug logging",
 	)
 
-	RootCmd.PersistentFlags().BoolP(
-		"lex-parse", "e", false,
-		"Enable experimental parser",
+	parser := RootCmd.PersistentFlags().StringP(
+		"parser", "P", "lextwt",
+		"Set active parse engine [lextwt, retwt]",
 	)
 
 	RootCmd.PersistentFlags().StringP(
@@ -83,10 +83,14 @@ func init() {
 
 	// I have no idea how to work with cobra :)
 	// put this someplace to run on startup.
-	if *lexparse {
+	switch *parser {
+	case "lextwt":
 		lextwt.DefaultTwtManager()
-	} else {
+	case "retwt":
 		retwt.DefaultTwtManager()
+	default:
+		log.Errorf("unknown parse engine: %s", *parser)
+		os.Exit(1)
 	}
 
 }

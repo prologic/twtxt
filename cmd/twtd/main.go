@@ -21,10 +21,9 @@ import (
 )
 
 var (
-	bind     string
-	debug    bool
-	lexParse bool
-	version  bool
+	bind    string
+	debug   bool
+	version bool
 
 	// Basic options
 	name        string
@@ -33,6 +32,7 @@ var (
 	store       string
 	theme       string
 	baseURL     string
+	parser      string
 
 	// Pod Oeprator
 	adminUser  string
@@ -80,7 +80,7 @@ var (
 
 func init() {
 	flag.BoolVarP(&debug, "debug", "D", false, "enable debug logging")
-	flag.BoolVarP(&lexParse, "enable-feature-lextwt", "", false, "enable experimental parser")
+	flag.StringVarP(&parser, "parser", "P", "lextwt", "set active parsing engine")
 	flag.StringVarP(&bind, "bind", "b", "0.0.0.0:8000", "[int]:<port> to bind to")
 	flag.BoolVarP(&version, "version", "v", false, "display version information")
 
@@ -235,11 +235,14 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 	}
 
-	if lexParse {
-		fmt.Println("Enable Lextwt Parser!")
+	switch parser {
+	case "lextwt":
 		lextwt.DefaultTwtManager()
-	} else {
+	case "retwt":
 		retwt.DefaultTwtManager()
+	default:
+		fmt.Printf("unknown parsing engine: %s", parser)
+		os.Exit(0)
 	}
 
 	svr, err := internal.NewServer(bind,
@@ -253,6 +256,7 @@ func main() {
 		internal.WithStore(store),
 		internal.WithTheme(theme),
 		internal.WithBaseURL(baseURL),
+		internal.WithParser(parser),
 
 		// Pod Oeprator
 		internal.WithAdminUser(adminUser),

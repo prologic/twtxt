@@ -173,9 +173,9 @@ func WithDebug(debug bool) Option {
 }
 
 // WithFeatureLextwtEnabled sets the debug mode lfag
-func WithFeatureLextwtEnabled(debug bool) Option {
+func WithParser(parser string) Option {
 	return func(cfg *Config) error {
-		cfg.FeatureLextwtEnabled = debug
+		cfg.Parser = parser
 		return nil
 	}
 }

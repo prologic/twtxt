@@ -34,8 +34,8 @@ type Settings struct {
 
 // Config contains the server configuration parameters
 type Config struct {
-	Debug                bool
-	FeatureLextwtEnabled bool
+	Debug  bool
+	Parser string
 
 	Data              string
 	Name              string

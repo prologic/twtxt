@@ -48,7 +48,6 @@ func (s *Server) ListMessagesHandler() httprouter.Handle {
 		ctx.Pager = &pager
 
 		s.render("messages", w, ctx)
-		return
 	}
 }
 
@@ -92,7 +91,6 @@ func (s *Server) SendMessageHandler() httprouter.Handle {
 		ctx.Error = false
 		ctx.Message = "Messages successfully sent"
 		s.render("error", w, ctx)
-		return
 	}
 }
 
@@ -136,7 +134,6 @@ func (s *Server) DeleteMessagesHandler() httprouter.Handle {
 		ctx.Error = false
 		ctx.Message = "Selected messages successfully deleted!"
 		s.render("error", w, ctx)
-		return
 	}
 }
 
@@ -168,6 +165,5 @@ func (s *Server) ViewMessageHandler() httprouter.Handle {
 		ctx.Title = fmt.Sprintf("Private Message from %s: %s", msg.From, msg.Subject)
 		ctx.Messages = Messages{msg}
 		s.render("message", w, ctx)
-		return
 	}
 }

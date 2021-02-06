@@ -38,6 +38,7 @@ COPY ./internal/passwords/*.go ./internal/passwords/
 COPY ./internal/webmention/*.go ./internal/webmention/
 COPY ./types/*.go ./types/
 COPY ./types/retwt/*.go ./types/retwt/
+COPY ./types/lextwt/*.go ./types/lextwt/
 COPY ./cmd/twtd/*.go ./cmd/twtd/
 
 # Version/Commit (there there is no .git in Docker build context)

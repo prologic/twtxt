@@ -36,7 +36,7 @@ func PrintFolloweeRaw(nick, url string) {
 }
 
 func PrintTwt(twt types.Twt, now time.Time) {
-	text := FormatTwt(twt.Text())
+	text := FormatTwt(fmt.Sprintf("%t", twt))
 
 	nick := green(twt.Twter().Nick)
 	// TODO: Show mentions
@@ -50,8 +50,8 @@ func PrintTwt(twt types.Twt, now time.Time) {
 }
 
 func PrintTwtRaw(twt types.Twt) {
-	fmt.Printf("%s\t%s\t%s",
+	fmt.Printf("%s\t%s\t%t\n",
 		twt.Twter().URL,
 		twt.Created().Format(time.RFC3339),
-		twt.Text())
+		twt)
 }

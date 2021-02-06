@@ -130,7 +130,7 @@ var (
 
 func GenerateRandomToken() string {
 	b := make([]byte, 16)
-	rand.Read(b)
+	_, _ = rand.Read(b)
 	return fmt.Sprintf("%x", b)
 }
 
@@ -1103,7 +1103,8 @@ func ValidateFeed(conf *Config, nick, url string) error {
 
 	limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
 	twter := types.Twter{Nick: nick, URL: url}
-	_, _, err = types.ParseFile(limitedReader, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
+	log.Debugf("utils: parsing %s for %s", url, twter)
+	_, err = types.ParseFile(limitedReader, twter)
 	if err != nil {
 		return err
 	}
@@ -1205,9 +1206,10 @@ func NormalizeURL(url string) string {
 	if url == "" {
 		return ""
 	}
+
 	u, err := urlx.Parse(url)
 	if err != nil {
-		log.WithError(err).Errorf("error parsing url %s", url)
+		log.WithError(err).Errorf("NormalizeURL: error parsing url %s", url)
 		return ""
 	}
 	if u.Scheme == "http" && strings.HasSuffix(u.Host, ":80") {
@@ -1332,7 +1334,7 @@ func URLForExternalAvatar(conf *Config, uri string) string {
 
 func URLForBlogFactory(conf *Config, blogs *BlogsCache) func(twt types.Twt) string {
 	return func(twt types.Twt) string {
-		subject := twt.Subject()
+		subject := twt.Subject().String()
 		if subject == "" {
 			return ""
 		}
@@ -1362,7 +1364,7 @@ func URLForBlogFactory(conf *Config, blogs *BlogsCache) func(twt types.Twt) stri
 
 func URLForConvFactory(conf *Config, cache *Cache) func(twt types.Twt) string {
 	return func(twt types.Twt) string {
-		subject := twt.Subject()
+		subject := twt.Subject().String()
 		if subject == "" {
 			return ""
 		}
@@ -1625,15 +1627,15 @@ func FormatForDateTime(t time.Time) string {
 }
 
 // FormatTwtFactory formats a twt into a valid HTML snippet
-func FormatTwtFactory(conf *Config) func(text string) template.HTML {
-	return func(text string) template.HTML {
+func FormatTwtFactory(conf *Config) func(twt types.Twt) template.HTML {
+	return func(twt types.Twt) template.HTML {
 		renderHookProcessURLs := func(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
 			// Ensure only whitelisted ![](url) images
 			image, ok := node.(*ast.Image)
 			if ok && entering {
 				u, err := url.Parse(string(image.Destination))
 				if err != nil {
-					log.WithError(err).Warn("error parsing url")
+					log.WithError(err).Warn("TwtFactory: error parsing url")
 					return ast.GoToNext, false
 				}
 
@@ -1683,11 +1685,6 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 			return ast.GoToNext, false
 		}
 
-		// Replace  `LS: Line Separator, U+2028` with `\n` so the Markdown
-		// renderer can interpreter newlines as `<br />` and `<p>`.
-		text = strings.ReplaceAll(text, "\u2028", "\n")
-		// Replace simple '#just-tag' entrys with local link
-		text = ExpandTag(conf, text)
 		extensions := parser.CommonExtensions | parser.HardLineBreak | parser.NoEmptyLineBeforeBlock
 		mdParser := parser.NewWithExtensions(extensions)
 
@@ -1699,8 +1696,10 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 		}
 		renderer := html.NewRenderer(opts)
 
-		md := []byte(FormatMentionsAndTags(conf, text, HTMLFmt))
+		twt.ExpandLinks(conf, nil)
+		md := []byte(twt.FormatText(types.HTMLFmt, conf))
 		maybeUnsafeHTML := markdown.ToHTML(md, mdParser, renderer)
+
 		p := bluemonday.UGCPolicy()
 		p.AllowAttrs("id", "controls").OnElements("audio")
 		p.AllowAttrs("id", "controls", "playsinline", "preload", "poster").OnElements("video")
@@ -1761,16 +1760,6 @@ func FormatMentionsAndTags(conf *Config, text string, format TwtTextFormat) stri
 	})
 }
 
-// FormatMentionsAndTagsForSubject turns `@<nick URL>` into `@nick`
-func FormatMentionsAndTagsForSubject(text string) string {
-	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
-	return re.ReplaceAllStringFunc(text, func(match string) string {
-		parts := re.FindStringSubmatch(match)
-		prefix, nick := parts[1], parts[2]
-		return fmt.Sprintf(`%s%s`, prefix, nick)
-	})
-}
-
 // FormatRequest generates ascii representation of a request
 func FormatRequest(r *http.Request) string {
 	return fmt.Sprintf(
@@ -1806,4 +1795,21 @@ func GetMediaNamesFromText(text string) []string {
 	}
 
 	return mediaNames
+}
+
+func NewFeedLookup(conf *Config, db Store, user *User) types.FeedLookup {
+	return types.FeedLookupFn(func(nick string) *types.Twter {
+		for followedNick, followedURL := range user.Following {
+			if nick == followedNick {
+				return &types.Twter{Nick: followedNick, URL: followedURL}
+			}
+		}
+
+		username := NormalizeUsername(nick)
+		if db.HasUser(username) || db.HasFeed(username) {
+			return &types.Twter{Nick: username, URL: URLForUser(conf, username)}
+		}
+
+		return &types.Twter{Nick: nick}
+	})
 }

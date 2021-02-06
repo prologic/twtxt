@@ -1,3 +1,4 @@
+-include environ.inc
 .PHONY: deps dev build install image release test clean
 
 CGO_ENABLED=0
@@ -11,9 +12,9 @@ deps:
 	@go get -u github.com/tdewolff/minify/v2/cmd/...
 
 dev : DEBUG=1
-dev : build 
+dev : build
 	@./twt -v
-	@./twtd -D -O -R
+	./twtd -D -O -R $(FLAGS)
 
 cli:
 	@go build -tags "netgo static_build" -installsuffix netgo \
@@ -63,6 +64,12 @@ release:
 
 test:
 	@go test -v -cover -race ./...
+
+bench: bench-twtxt.txt
+	go test -race -benchtime=1x -cpu 16 -benchmem -bench "^(Benchmark)" github.com/jointwt/twtxt/types
+
+bench-twtxt.txt:
+	curl -s https://twtxt.net/user/prologic/twtxt.txt > $@
 
 clean:
 	@git clean -f -d -X

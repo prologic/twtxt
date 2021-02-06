@@ -41,13 +41,12 @@ require (
 	github.com/jinzhu/gorm v1.9.16 // indirect
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/justinas/nosurf v1.1.1
-	github.com/kr/pretty v0.2.0 // indirect
 	github.com/lithammer/shortuuid/v3 v3.0.5
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/marcinwyszynski/popart v0.0.0-20160216095024-f601a19c2970
 	github.com/marksalpeter/sugar v0.0.0-20160713164314-a69afe358ea8 // indirect
 	github.com/marksalpeter/token/v2 v2.0.0
-	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
+	github.com/matryer/is v1.4.0
 	github.com/microcosm-cc/bluemonday v1.0.4
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
@@ -56,19 +55,18 @@ require (
 	github.com/nullrocks/identicon v0.0.0-20180626043057-7875f45b0022
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pelletier/go-toml v1.8.1 // indirect
-	github.com/prologic/bitcask v0.3.10
+	github.com/prologic/bitcask v0.3.9
+	github.com/prologic/go-gopher v0.0.0-20201022213256-724979970b3f
 	github.com/prologic/observe v0.0.0-20181231082615-747b185a0928
 	github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987
 	github.com/prologic/smtpd v0.0.0-20201215080427-fd3f94c87eb7
 	github.com/prometheus/client_golang v1.9.0 // indirect
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
-	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
 	github.com/renstrom/shortuuid v3.0.0+incompatible
 	github.com/rickb777/accept v0.0.0-20170318132422-d5183c44530d
 	github.com/robfig/cron v1.2.0
 	github.com/securisec/go-keywords v0.0.0-20200619134240-769e7273f2ed
 	github.com/sirupsen/logrus v1.7.0
-	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/afero v1.5.1 // indirect
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5

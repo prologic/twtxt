@@ -16,6 +16,7 @@ import (
 
 	"github.com/jointwt/twtxt"
 	"github.com/jointwt/twtxt/internal"
+	"github.com/jointwt/twtxt/types/lextwt"
 	"github.com/jointwt/twtxt/types/retwt"
 )
 
@@ -31,6 +32,7 @@ var (
 	store       string
 	theme       string
 	baseURL     string
+	parser      string
 
 	// Pod Oeprator
 	adminUser  string
@@ -78,6 +80,7 @@ var (
 
 func init() {
 	flag.BoolVarP(&debug, "debug", "D", false, "enable debug logging")
+	flag.StringVarP(&parser, "parser", "P", internal.DefaultParser, "set active parsing engine")
 	flag.StringVarP(&bind, "bind", "b", "0.0.0.0:8000", "[int]:<port> to bind to")
 	flag.BoolVarP(&version, "version", "v", false, "display version information")
 
@@ -232,7 +235,15 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 	}
 
-	retwt.DefaultTwtManager()
+	switch parser {
+	case "lextwt":
+		lextwt.DefaultTwtManager()
+	case "retwt":
+		retwt.DefaultTwtManager()
+	default:
+		log.Errorf("unknown parsing engine: %s", parser)
+		os.Exit(2)
+	}
 
 	svr, err := internal.NewServer(bind,
 		// Debug mode
@@ -245,6 +256,7 @@ func main() {
 		internal.WithStore(store),
 		internal.WithTheme(theme),
 		internal.WithBaseURL(baseURL),
+		internal.WithParser(parser),
 
 		// Pod Oeprator
 		internal.WithAdminUser(adminUser),

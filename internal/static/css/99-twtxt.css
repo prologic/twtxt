@@ -303,6 +303,17 @@ article .p-summary blockquote {
   position: relative;
 }
 
+/* Twt Hash */
+article .p-summary a em, em.twt-hash {
+  color: darkgray;
+  font-weight: 100;
+  color: var(--muted-text);
+}
+em.twt-hash {
+  float: right;
+  font-size: small;
+}
+
 /* Footer Style */
 footer{
   border-top: 1px solid var(--primary);

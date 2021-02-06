@@ -384,6 +384,7 @@ func (s *Server) CreateOrUpdateBlogHandler() httprouter.Handle {
 		// Cleanup the text and convert DOS line ending \r\n to UNIX \n
 		text = strings.TrimSpace(text)
 		text = strings.ReplaceAll(text, "\r\n", "\n")
+		text = strings.ReplaceAll(text, "\n", "\u2028")
 
 		if text == "" {
 			ctx.Error = true
@@ -393,8 +394,9 @@ func (s *Server) CreateOrUpdateBlogHandler() httprouter.Handle {
 		}
 
 		// Expand Mentions and Tags
-		text = ExpandTag(s.config, ExpandMentions(s.config, s.db, ctx.User, text))
-		text = FormatMentionsAndTags(s.config, text, MarkdownFmt)
+		twt := types.MakeTwt(types.NilTwt.Twter(), time.Time{}, text)
+		twt.ExpandLinks(s.config, NewFeedLookup(s.config, s.db, ctx.User))
+		text = twt.FormatText(types.MarkdownFmt, s.config)
 
 		hash := r.FormValue("hash")
 		if hash != "" {

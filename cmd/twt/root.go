@@ -12,6 +12,9 @@ import (
 
 	"github.com/jointwt/twtxt"
 	"github.com/jointwt/twtxt/client"
+	"github.com/jointwt/twtxt/internal"
+	"github.com/jointwt/twtxt/types/lextwt"
+	"github.com/jointwt/twtxt/types/retwt"
 )
 
 var configFile string
@@ -55,6 +58,11 @@ func init() {
 		"Enable debug logging",
 	)
 
+	parser := RootCmd.PersistentFlags().StringP(
+		"parser", "P", internal.DefaultParser,
+		"Set active parse engine [lextwt, retwt]",
+	)
+
 	RootCmd.PersistentFlags().StringP(
 		"uri", "u", client.DefaultURI,
 		"twt API endpoint URI to connect to",
@@ -73,6 +81,19 @@ func init() {
 
 	viper.BindPFlag("debug", RootCmd.PersistentFlags().Lookup("debug"))
 	viper.SetDefault("debug", false)
+
+	// I have no idea how to work with cobra :)
+	// put this someplace to run on startup.
+	switch *parser {
+	case "lextwt":
+		lextwt.DefaultTwtManager()
+	case "retwt":
+		retwt.DefaultTwtManager()
+	default:
+		log.Errorf("unknown parse engine: %s", *parser)
+		os.Exit(1)
+	}
+
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -102,7 +123,7 @@ func initConfig() {
 		if err := viper.ReadInConfig(); err != nil {
 			log.WithError(err).Warn("error loading config file")
 		} else {
-			log.Infof("Using config file: %s", viper.ConfigFileUsed())
+			log.Debugf("Using config file: %s", viper.ConfigFileUsed())
 		}
 	}
 

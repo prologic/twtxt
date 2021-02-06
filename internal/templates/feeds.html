@@ -1,126 +1,151 @@
 {{define "content"}}
-  <article id="create" class="grid">
-    <div>
-      <hgroup>
+<article id="create">
+    <hgroup>
         <h2>Create Feed</h2>
         <h3>Create a new local feed on this pod</h3>
-        <p>
-          Create your  own feed or topic of interest you want to share
-          with others. This allows you to "post as" this new feed and
-          create a series of twts (<i>posts</i>) about a "thing".
-        </p>
-      </hgroup>
-      <form action="/feed" method="POST">
+    </hgroup>
+    <p>
+        Create your  own feed or topic of interest you want to share
+        with others. This allows you to "post as" this new feed and
+        create a series of twts (<i>posts</i>) about a "thing".
+    </p>
+    <form action="/feed" method="POST">
         <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
         <input type="text" name="name" placeholder="Name of your feed" aria-label="Username" autofocus required />
         <button type="submit" class="primary">Create</button>
-      </form>
-    </div>
-  </article>
-  <article id="myfeeds" class="grid">
-    <div>
-      <hgroup>
+    </form>
+</article>
+<article id="myfeeds">
+    <hgroup>
         <h2>My Feeds</h2>
         <h3>Here are all your feeds that you can view or manage</h3>
-      </hgroup>
-      {{ if .User.Feeds }}
-        <ul>
-          {{ range .Feeds }}
-            {{ if $.User.OwnsFeed .Name }}
-              <li>
-                <a href="{{ .URL | trimSuffix "/twtxt.txt" }}">{{ .Name }}</a>
-                &nbsp;
-                {{ if $.User.Follows .URL }}
-                  [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
-                {{ else }}
-                  [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
-                {{ end }}
-
-                [<a href="/feed/{{ .Name  }}/manage">Manage</a>]
-              </li>
-            {{ end }}
-          {{ end }}
-        </ul>
-      {{ else }}
-        <p><small>You do not have any feeds. <a href="#create">Create</a>one?</small></p>
-      {{ end }}
-    </div>
-  </article>
-  <article id="localfeeds" class="grid">
-    <div>
-      <hgroup>
-        <h2>Local Feeds</h2>
-        <h3>Local feeds available on this pod</h3>
-        <p>
-          Here is a list of local feeds available that you can subscribe to
-          and follow. These are feeds created by users on {{ .InstanceName }}
-          that are effectively "special interest", "topic" or "group" whereby
-          users posts interesting things as <i>that</i> feed as a sort of
-          "Persona".
-        </p>
-      </hgroup>
-      <ul>
+    </hgroup>
+    <div class="grid">
+        {{ if .User.Feeds }}
         {{ range .Feeds }}
-          {{ if not ($.User.OwnsFeed .Name) }}
-            <li>
-              <a href="{{ .URL | trimSuffix "/twtxt.txt" }}">{{ .Name }}</a>
-              &nbsp;
-              {{ if $.User.Follows .URL }}
-                [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
-              {{ else }}
-                [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
-              {{ end }}
-            </li>
-          {{ end }}
+        <div>
+            {{ if $.User.OwnsFeed .Name }}
+            <div class="u-author h-card">
+                <div>
+                    <a href="{{ .URL | trimSuffix "/twtxt.txt" }}" class="u-url">
+                        <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" alt="" />
+                    </a>
+                </div>
+                <div class="author">
+                    <a href="{{ .URL | trimSuffix "/twtxt.txt" }}" class="p-name">{{ .Name }}</a>
+                </div>
+            </div>
+            {{ if .Description }}
+            <div class="p-summary">
+                {{ .Description }}
+            </div>
+            {{ end }}
+            <nav>
+                <ul>
+                    {{ if $.User.Follows .URL }}
+                    <li><a href="/unfollow?nick={{ .Name  }}"><i class="icss-minus" aria-hidden="true"></i> Unfollow</a></li>
+                    {{ else }}
+                    <li><a href="/follow?nick={{ .Name  }}&url={{ .URL }}"><i class="icss-plus" aria-hidden="true"></i> Follow</a></li>
+                    {{ end }}
+                    <li><a href="/feed/{{ .Name  }}/manage">Manage</a></li>
+                </ul>
+            </nav>
+        </div>
         {{ end }}
-      </ul>
+        {{ end }}
     </div>
-  </article>
-  <article id="externalfeeds" class="grid">
-    <div>
-      <hgroup>
+    {{ else }}
+    <p><small>You do not have any feeds. <a href="#create">Create</a> one?</small></p>
+    {{ end }}
+</article>
+<article id="localfeeds">
+    <hgroup>
+    <h2>Local Feeds</h2>
+    <h3>Local feeds available on this pod</h3>
+    </hgroup>
+    <p>
+        Here is a list of local feeds available that you can subscribe to
+        and follow. These are feeds created by users on {{ .InstanceName }}
+        that are effectively "special interest", "topic" or "group" whereby
+        users posts interesting things as <i>that</i> feed as a sort of
+        "Persona".
+    </p>
+    <div class="grid">
+        {{ range .Feeds }}
+        {{ if not ($.User.OwnsFeed .Name) }}
+        <div>
+            <div class="u-author h-card">
+                <div>
+                    <a href="{{ .URL | trimSuffix "/twtxt.txt" }}" class="u-url">
+                        <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" alt="" />
+                    </a>
+                </div>
+                <div class="author">
+                    <a href="{{ .URL | trimSuffix "/twtxt.txt" }}" class="p-name">{{ .Name }}</a>
+                </div>
+            </div>
+            {{ if .Description }}
+            <div class="p-summary">
+                {{ .Description }}
+            </div>
+            {{ end }}
+            <nav>
+                <ul>
+                    {{ if $.User.Follows .URL }}
+                    <li><a href="/unfollow?nick={{ .Name  }}"><i class="icss-minus" aria-hidden="true"></i> Unfollow</a></li>
+                    {{ else }}
+                    <li><a href="/follow?nick={{ .Name  }}&url={{ .URL }}"><i class="icss-plus" aria-hidden="true"></i> Follow</a></li>
+                    {{ end }}
+                </ul>
+            </nav>
+        </div>
+        {{ end }}
+        {{ end }}
+    </div>
+</article>
+<article id="externalfeeds">
+    <hgroup>
         <h2>External Feeds</h2>
         <h3>External feeds from news sources and exteral users</h3>
-        <p>
-          Here is a list of external feeds available that you can subscribe
-          to and follow. These sources of feeds are externally sourced and
-          configured by the operator of {{ .InstanceName }}. By default
-          <a href="https://twtxt.net">twtxt.net</a> sources feeds from the
-          following sources:
-          <ul>
+    </hgroup>
+    <p>
+        Here is a list of external feeds available that you can subscribe
+        to and follow. These sources of feeds are externally sourced and
+        configured by the operator of {{ .InstanceName }}. By default
+        <a href="https://twtxt.net">twtxt.net</a> sources feeds from the
+        following sources:
+        <ul>
             <li><a href="https://feeds.twtxt.net">feeds.twtxt.net</a> an RSS/Atom to twtxt feed aggregator</li>
-            <li><a href="https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-bots.txt">we-are-bots</a>a directory of twtxt bots (<i>automated feeds</i>)</li>
-            <li><a href="https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-twtxt.txt">we-are-twtxt</a>a directory of twtxt users (<i>this is managed by users voluntarily adding themselves to this list</i>)</li>
-          </ul>
-        </p>
-        <p>
-          If you want to add a new external feed source:
-          <ul>
-            <li>First make sure it has a valid RSS or Atom feed.(<i><a href="https://en.wikipedia.org/wiki/Atom_(Web_standard)">What's this?</a></i>)</li>
+            <li><a href="https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-bots.txt">we-are-bots</a> a directory of twtxt bots (<i>automated feeds</i>)</li>
+            <li><a href="https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-twtxt.txt">we-are-twtxt</a> a directory of twtxt users (<i>this is managed by users voluntarily adding themselves to this list</i>)</li>
+        </ul>
+    </p>
+    <p>
+        If you want to add a new external feed source:
+        <ul>
+            <li>First make sure it has a valid RSS or Atom feed (<i><a href="https://en.wikipedia.org/wiki/Atom_(Web_standard)">What's this?</a></i>).</li>
             <li>Visit <a href="https://feeds.twtxt.net">feeds.twtxt.net</a> and give the feed a name and enter the RSS/Atom URL and hit Submit</li>
-          </ul>
-          In a few minutes the newly added external feed will show up in
-          <a href="https://twtxt.net/feeds">/feeds</a> here on {{ .InstanceName }}.
-        </p>
-      </hgroup>
-      {{ range $Source, $Feeds := .FeedSources }}
-        <details>
-          <summary>{{ $Source | prettyURL }}</summary>
-          <ul>
+        </ul>
+        In a few minutes the newly added external feed will show up in
+        <a href="https://twtxt.net/feeds">/feeds</a> here on {{ .InstanceName }}.
+    </p>
+    {{ range $Source, $Feeds := .FeedSources }}
+    <details>
+        <summary>{{ $Source | prettyURL }}</summary>
+        <ul>
             {{ range $Feeds }}
-              <li>
+            <li>
                 <a href="/external?uri={{ .URL }}&nick={{ .Name  }}">{{ .Name }}</a>
                 &nbsp;
                 {{ if $.User.Follows .URL }}
-                  [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
+                [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
                 {{ else }}
-                  [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
+                [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
                 {{ end }}
-              </li>
+            </li>
             {{ end }}
-          </ul>
-        </details>
-      {{ end}}
-    </div>
-  </article>
+        </ul>
+    </details>
+    {{ end}}
+</article>
 {{end}}

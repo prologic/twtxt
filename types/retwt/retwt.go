@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 
@@ -21,10 +20,6 @@ import (
 func init() {
 	gob.Register(&reTwt{})
 }
-
-const (
-	TwtHashLength = 7
-)
 
 var (
 	tagsRe    = regexp.MustCompile(`#([-\w]+)`)
@@ -40,23 +35,27 @@ type reTwt struct {
 	created time.Time
 
 	hash     string
-	mentions []types.Mention
-	tags     []types.Tag
-
-	fmtOpts types.FmtOpts
+	mentions []types.TwtMention
+	tags     []types.TwtTag
 }
 
 var _ types.Twt = (*reTwt)(nil)
 var _ gob.GobEncoder = (*reTwt)(nil)
 var _ gob.GobDecoder = (*reTwt)(nil)
+var _ fmt.Formatter = (*reTwt)(nil)
 
-func (twt *reTwt) GobEncode() ([]byte, error) {
+func (twt reTwt) Links() types.LinkList { return nil }
+func (twt reTwt) GobEncode() ([]byte, error) {
 	enc := struct {
 		Twter   types.Twter `json:"twter"`
 		Text    string      `json:"text"`
 		Created time.Time   `json:"created"`
 		Hash    string      `json:"hash"`
 	}{twt.twter, twt.text, twt.created, twt.hash}
+
+	if twt.text == "" {
+		return nil, fmt.Errorf("empty twt: %v", twt)
+	}
 	return json.Marshal(enc)
 }
 func (twt *reTwt) GobDecode(data []byte) error {
@@ -76,12 +75,15 @@ func (twt *reTwt) GobDecode(data []byte) error {
 	return err
 }
 
-func (twt *reTwt) String() string {
-	return fmt.Sprintf("%v\t%v", twt.created.Format(time.RFC3339), twt.text)
+func (twt reTwt) String() string {
+	return fmt.Sprintf("%v\t%v\n", twt.created.Format(time.RFC3339), twt.text)
 }
 
 func NewReTwt(twter types.Twter, text string, created time.Time) *reTwt {
 	return &reTwt{twter: twter, text: text, created: created}
+}
+func (twt reTwt) Clone() types.Twt {
+	return &reTwt{twter: twt.twter, text: twt.text, created: twt.created}
 }
 
 func DecodeJSON(data []byte) (types.Twt, error) {
@@ -124,17 +126,12 @@ func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
 	return
 }
 
-func ParseFile(r io.Reader, twter types.Twter, ttl time.Duration, N int) (types.Twts, types.Twts, error) {
+func ParseFile(r io.Reader, twter types.Twter) (*retwtFile, error) {
 	scanner := bufio.NewScanner(r)
 
-	var (
-		twts types.Twts
-		old  types.Twts
-	)
-
-	oldTime := time.Now().Add(-ttl)
-
 	nLines, nErrors := 0, 0
+
+	f := &retwtFile{twter: twter}
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -145,49 +142,59 @@ func ParseFile(r io.Reader, twter types.Twter, ttl time.Duration, N int) (types.
 			nErrors++
 			continue
 		}
+
 		if twt.IsZero() {
 			continue
 		}
 
-		if ttl > 0 && twt.Created().Before(oldTime) {
-			old = append(old, twt)
-		} else {
-			twts = append(twts, twt)
-		}
+		f.twts = append(f.twts, twt)
 	}
 	if err := scanner.Err(); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if (nLines+nErrors > 0) && nLines == nErrors {
 		log.Warnf("erroneous feed dtected (nLines + nErrors > 0 && nLines == nErrors): %d/%d", nLines, nErrors)
-		return nil, nil, ErrInvalidFeed
+		return nil, ErrInvalidFeed
 	}
 
-	// Sort by CreatedAt timestamp
-	sort.Sort(twts)
-	sort.Sort(old)
+	return f, nil
+}
 
-	// Further limit by Max Cache Items
-	if N > 0 && len(twts) > N {
-		if N > len(twts) {
-			N = len(twts)
-		}
-		twts = twts[:N]
-		old = append(old, twts[N:]...)
+func (twt reTwt) Twter() types.Twter { return twt.twter }
+func (twt reTwt) Text() string       { return twt.text }
+func (twt reTwt) MarkdownText() string {
+	// we assume FmtOpts is always null for markdown.
+	return formatMentionsAndTags(nil, twt.text, types.MarkdownFmt)
+}
+func (twt reTwt) Format(state fmt.State, c rune) {
+	if state.Flag('+') {
+		fmt.Fprint(state, twt.Created().Format(time.RFC3339))
+		state.Write([]byte("\t"))
 	}
-
-	return twts, old, nil
+	switch c {
+	default:
+		_, _ = state.Write([]byte(twt.text))
+	case 'h', 'm': // html
+		_, _ = state.Write([]byte(twt.MarkdownText()))
+	}
+}
+func (twt reTwt) FormatTwt() string {
+	return twt.String()
+}
+func (twt reTwt) FormatText(textFmt types.TwtTextFormat, fmtOpts types.FmtOpts) string {
+	twt.ExpandLinks(fmtOpts, nil)
+	text := strings.ReplaceAll(twt.text, "\u2028", "\n")
+	text = formatMentionsAndTags(fmtOpts, text, textFmt)
+	return text
+}
+func (twt *reTwt) ExpandLinks(opts types.FmtOpts, lookup types.FeedLookup) {
+	twt.text = ExpandTag(opts, twt.text)
+	twt.text = ExpandMentions(opts, lookup, twt.text)
 }
 
-func (twt *reTwt) Twter() types.Twter { return twt.twter }
-func (twt *reTwt) Text() string       { return twt.text }
-func (twt *reTwt) MarkdownText() string {
-	return formatMentionsAndTags(twt.fmtOpts, twt.text, types.MarkdownFmt)
-}
-func (twt *reTwt) SetFmtOpts(opts types.FmtOpts) { twt.fmtOpts = opts }
-func (twt *reTwt) Created() time.Time            { return twt.created }
-func (twt *reTwt) MarshalJSON() ([]byte, error) {
+func (twt reTwt) Created() time.Time { return twt.created }
+func (twt reTwt) MarshalJSON() ([]byte, error) {
 	var tags types.TagList = twt.Tags()
 	return json.Marshal(struct {
 		Twter        types.Twter `json:"twter"`
@@ -208,26 +215,23 @@ func (twt *reTwt) MarshalJSON() ([]byte, error) {
 		// Dynamic Fields
 		Hash:    twt.Hash(),
 		Tags:    tags.Tags(),
-		Subject: twt.Subject(),
+		Subject: twt.Subject().String(),
 	})
 }
 
 // Mentions ...
-func (twt *reTwt) Mentions() types.MentionList {
-	if twt == nil {
-		return nil
-	}
+func (twt reTwt) Mentions() types.MentionList {
 	if twt.mentions != nil {
 		return twt.mentions
 	}
 
-	seen := make(map[types.Twter]struct{})
+	seen := make(map[string]struct{})
 	matches := uriMentionsRe.FindAllStringSubmatch(twt.text, -1)
 	for _, match := range matches {
 		twter := types.Twter{Nick: match[1], URL: match[2]}
-		if _, ok := seen[twter]; !ok {
+		if _, ok := seen[twter.URL]; !ok {
 			twt.mentions = append(twt.mentions, &reMention{twter})
-			seen[twter] = struct{}{}
+			seen[twter.URL] = struct{}{}
 		}
 	}
 
@@ -235,10 +239,7 @@ func (twt *reTwt) Mentions() types.MentionList {
 }
 
 // Tags ...
-func (twt *reTwt) Tags() types.TagList {
-	if twt == nil {
-		return nil
-	}
+func (twt reTwt) Tags() types.TagList {
 	if twt.tags != nil {
 		return twt.tags
 	}
@@ -260,24 +261,24 @@ func (twt *reTwt) Tags() types.TagList {
 }
 
 // Subject ...
-func (twt *reTwt) Subject() string {
+func (twt reTwt) Subject() types.Subject {
 	match := subjectRe.FindStringSubmatch(twt.text)
 	if match != nil {
 		matchingSubject := match[2]
 		matchedURITags := uriTagsRe.FindAllStringSubmatch(matchingSubject, -1)
 		if matchedURITags != nil {
 			// Re-add the (#xxx) back as the output
-			return fmt.Sprintf("(#%s)", matchedURITags[0][1])
+			return reSubject(fmt.Sprintf("(#%s)", matchedURITags[0][1]))
 		}
-		return matchingSubject
+		return reSubject(matchingSubject)
 	}
 
 	// By default the subject is the Twt's Hash being replied to.
-	return fmt.Sprintf("(#%s)", twt.Hash())
+	return reSubject(fmt.Sprintf("(#%s)", twt.Hash()))
 }
 
 // Hash ...
-func (twt *reTwt) Hash() string {
+func (twt reTwt) Hash() string {
 	if twt.hash != "" {
 		return twt.hash
 	}
@@ -288,12 +289,12 @@ func (twt *reTwt) Hash() string {
 	// Base32 is URL-safe, unlike Base64, and shorter than hex.
 	encoding := base32.StdEncoding.WithPadding(base32.NoPadding)
 	hash := strings.ToLower(encoding.EncodeToString(sum[:]))
-	twt.hash = hash[len(hash)-TwtHashLength:]
+	twt.hash = hash[len(hash)-types.TwtHashLength:]
 
 	return twt.hash
 }
 
-func (twt *reTwt) IsZero() bool {
+func (twt reTwt) IsZero() bool {
 	return twt.Twter().IsZero() && twt.Created().IsZero() && twt.Text() == ""
 }
 
@@ -301,7 +302,7 @@ type reMention struct {
 	twter types.Twter
 }
 
-var _ types.Mention = (*reMention)(nil)
+var _ types.TwtMention = (*reMention)(nil)
 
 func (m *reMention) Twter() types.Twter { return m.twter }
 
@@ -309,7 +310,7 @@ type reTag struct {
 	tag string
 }
 
-var _ types.Tag = (*reTag)(nil)
+var _ types.TwtTag = (*reTag)(nil)
 
 func (t *reTag) Tag() string {
 	if t == nil {
@@ -318,19 +319,33 @@ func (t *reTag) Tag() string {
 	return t.tag
 }
 
+func (t *reTag) Text() string {
+	sp := strings.Fields(t.tag)
+
+	return sp[0]
+}
+func (t *reTag) Target() string {
+	sp := strings.Fields(t.tag)
+	if len(sp) > 1 {
+		return sp[1]
+	}
+	return ""
+}
+
 // FormatMentionsAndTags turns `@<nick URL>` into `<a href="URL">@nick</a>`
 // and `#<tag URL>` into `<a href="URL">#tag</a>` and a `!<hash URL>`
 // into a `<a href="URL">!hash</a>`.
 func formatMentionsAndTags(opts types.FmtOpts, text string, format types.TwtTextFormat) string {
 	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
+
 		parts := re.FindStringSubmatch(match)
 		prefix, nick, url := parts[1], parts[2], parts[3]
 
 		if format == types.TextFmt {
 			switch prefix {
 			case "@":
-				if opts.IsLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
+				if opts != nil && opts.IsLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
 					return fmt.Sprintf("%s@%s", nick, opts.LocalURL().Hostname())
 				}
 				return fmt.Sprintf("@%s", nick)
@@ -342,10 +357,15 @@ func formatMentionsAndTags(opts types.FmtOpts, text string, format types.TwtText
 		if format == types.HTMLFmt {
 			switch prefix {
 			case "@":
-				if opts.IsLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
-					return fmt.Sprintf(`<a href="%s">@%s</a>`, opts.UserURL(url), nick)
+				if opts != nil {
+					if opts.IsLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
+						url = opts.UserURL(url)
+					} else {
+						url = opts.ExternalURL(nick, url)
+					}
 				}
-				return fmt.Sprintf(`<a href="%s">@%s</a>`, opts.ExternalURL(nick, url), nick)
+				return fmt.Sprintf(`<a href="%s">@%s</a>`, url, nick)
+
 			default:
 				return fmt.Sprintf(`<a href="%s">%s%s</a>`, url, prefix, nick)
 			}
@@ -360,6 +380,16 @@ func formatMentionsAndTags(opts types.FmtOpts, text string, format types.TwtText
 		default:
 			return fmt.Sprintf(`[%s%s](%s)`, prefix, nick, url)
 		}
+	})
+}
+
+// FormatMentionsAndTagsForSubject turns `@<nick URL>` into `@nick`
+func FormatMentionsAndTagsForSubject(text string) string {
+	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
+	return re.ReplaceAllStringFunc(text, func(match string) string {
+		parts := re.FindStringSubmatch(match)
+		prefix, nick := parts[1], parts[2]
+		return fmt.Sprintf(`%s%s`, prefix, nick)
 	})
 }
 
@@ -390,14 +420,93 @@ var (
 
 type retwtManager struct{}
 
-func (*retwtManager) DecodeJSON(b []byte) (types.Twt, error) { return DecodeJSON(b) }
-func (*retwtManager) ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
+func (retwtManager) DecodeJSON(b []byte) (types.Twt, error) { return DecodeJSON(b) }
+func (retwtManager) ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
 	return ParseLine(line, twter)
 }
-func (*retwtManager) ParseFile(r io.Reader, twter types.Twter, ttl time.Duration, N int) (types.Twts, types.Twts, error) {
-	return ParseFile(r, twter, ttl, N)
+func (retwtManager) ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
+	return ParseFile(r, twter)
+}
+func (retwtManager) MakeTwt(twter types.Twter, ts time.Time, text string) types.Twt {
+	return NewReTwt(twter, text, ts)
 }
 
 func DefaultTwtManager() {
 	types.SetTwtManager(&retwtManager{})
+}
+
+type retwtFile struct {
+	twter types.Twter
+	twts  types.Twts
+}
+
+var _ types.TwtFile = retwtFile{}
+
+func (r retwtFile) Twter() types.Twter { return r.twter }
+func (r retwtFile) Comment() string    { return "" }
+func (r retwtFile) Info() types.Info   { return nil }
+func (r retwtFile) Twts() types.Twts   { return r.twts }
+
+type reSubject string
+
+func (r reSubject) Tag() types.TwtTag {
+	s := string(r)
+	return &reTag{s[1 : len(s)-1]}
+
+}
+func (r reSubject) Text() string {
+	sp := strings.Fields(string(r))
+	if len(sp) > 1 {
+		return sp[1]
+	}
+	return ""
+}
+func (r reSubject) FormatText() string {
+	return FormatMentionsAndTagsForSubject(string(r))
+}
+func (r reSubject) String() string {
+	return string(r)
+}
+
+// ExpandMentions turns "@nick" into "@<nick URL>" if we're following the user or feed
+// or if they exist on the local pod. Also turns @user@domain into
+// @<user URL> as a convenient way to mention users across pods.
+func ExpandMentions(opts types.FmtOpts, lookup types.FeedLookup, text string) string {
+	re := regexp.MustCompile(`@([a-zA-Z0-9][a-zA-Z0-9_-]+)(?:@)?((?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9]\.)|(?:[0-9]+/[0-9]{2})\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?)?`)
+	return re.ReplaceAllStringFunc(text, func(match string) string {
+		parts := re.FindStringSubmatch(match)
+		mentionedNick := parts[1]
+		mentionedDomain := parts[2]
+
+		if mentionedNick != "" && mentionedDomain != "" {
+			// TODO: Validate the remote end for a valid Twtxt pod?
+			// XXX: Should we always assume https:// ?
+			return fmt.Sprintf(
+				"@<%s https://%s/user/%s/twtxt.txt>",
+				mentionedNick, mentionedDomain, mentionedNick,
+			)
+		}
+
+		if lookup != nil {
+			twter := lookup.FeedLookup(mentionedNick)
+			return fmt.Sprintf("@<%s %s>", twter.Nick, twter.URL)
+		}
+
+		// Not expanding if we're not following, not a local user/feed
+		return match
+	})
+}
+
+// Turns #tag into "#<tag URL>"
+func ExpandTag(opts types.FmtOpts, text string) string {
+	// Sadly, Go's regular expressions don't support negative lookbehind, so we
+	// need to bake it differently into the regex with several choices.
+	re := regexp.MustCompile(`(^|\s|(^|[^\]])\()#([-\w]+)`)
+	return re.ReplaceAllStringFunc(text, func(match string) string {
+		parts := re.FindStringSubmatch(match)
+		prefix := parts[1]
+		tag := parts[3]
+
+		return fmt.Sprintf("%s#<%s %s>", prefix, tag, opts.URLForTag(tag))
+	})
 }

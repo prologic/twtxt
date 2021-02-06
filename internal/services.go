@@ -48,7 +48,7 @@ func splitEmailAddress(email string) (string, string) {
 
 func validMAC(fn func() hash.Hash, message, messageMAC, key []byte) bool {
 	mac := hmac.New(fn, key)
-	mac.Write(message)
+	_, _ = mac.Write(message)
 	expectedMAC := mac.Sum(nil)
 	return hmac.Equal(messageMAC, expectedMAC)
 }
@@ -94,7 +94,7 @@ func (m *mboxHandler) AuthenticateAPOP(username, hexdigest string) error {
 }
 
 func (m *mboxHandler) DeleteMessages(numbers []uint64) error {
-	strNums := make([]string, len(numbers), len(numbers))
+	strNums := make([]string, len(numbers))
 	for i, number := range numbers {
 		strNums[i] = fmt.Sprintf("%d", number)
 	}

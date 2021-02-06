@@ -9,10 +9,12 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/Masterminds/sprig"
 	humanize "github.com/dustin/go-humanize"
+	"github.com/jointwt/twtxt/types"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -23,6 +25,7 @@ const (
 	baseName         = "base"
 )
 
+var _ = templatesPath // dead code?
 type TemplateManager struct {
 	sync.RWMutex
 
@@ -41,11 +44,19 @@ func NewTemplateManager(conf *Config, blogs *BlogsCache, cache *Cache) (*Templat
 	funcMap["prettyURL"] = PrettyURL
 	funcMap["isLocalURL"] = IsLocalURLFactory(conf)
 	funcMap["formatTwt"] = FormatTwtFactory(conf)
+	funcMap["formatTwtText"] = func() func(text string) template.HTML {
+		fn := FormatTwtFactory(conf)
+		return func(text string) template.HTML {
+			twt := types.MakeTwt(types.Twter{}, time.Time{}, text)
+			return fn(twt)
+		}
+	}
 	funcMap["unparseTwt"] = UnparseTwtFactory(conf)
 	funcMap["formatForDateTime"] = FormatForDateTime
 	funcMap["urlForBlog"] = URLForBlogFactory(conf, blogs)
 	funcMap["urlForConv"] = URLForConvFactory(conf, cache)
 	funcMap["isAdminUser"] = IsAdminUserFactory(conf)
+	funcMap["twtType"] = func(twt types.Twt) string { return fmt.Sprintf("%T", twt) }
 
 	m := &TemplateManager{debug: conf.Debug, templates: templates, funcMap: funcMap}
 

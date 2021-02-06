@@ -809,6 +809,8 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("serving metrics endpoint at %s/metrics", server.config.BaseURL)
 
 	// Log interesting configuration options
+	log.Infof("Debug: %t", server.config.Debug)
+	log.Infof("Parser: %s", server.config.Parser)
 	log.Infof("Instance Name: %s", server.config.Name)
 	log.Infof("Base URL: %s", server.config.BaseURL)
 	log.Infof("Admin User: %s", server.config.AdminUser)

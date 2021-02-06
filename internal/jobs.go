@@ -208,7 +208,7 @@ func (job *UpdateFeedsJob) Run() {
 
 	log.Info("updated feed cache")
 
-	log.Info("syncing feed cache")
+	log.Info("syncing feed cache ", len(job.cache.Twts))
 
 	if err := job.cache.Store(job.conf.Data); err != nil {
 		log.WithError(err).Warn("error saving feed cache")

@@ -12,7 +12,6 @@ import (
 
 	"github.com/jointwt/twtxt"
 	"github.com/jointwt/twtxt/client"
-	"github.com/jointwt/twtxt/internal"
 	"github.com/jointwt/twtxt/types/lextwt"
 	"github.com/jointwt/twtxt/types/retwt"
 )
@@ -59,7 +58,7 @@ func init() {
 	)
 
 	parser := RootCmd.PersistentFlags().StringP(
-		"parser", "P", internal.DefaultParser,
+		"parser", "P", "lextwt",
 		"Set active parse engine [lextwt, retwt]",
 	)
 

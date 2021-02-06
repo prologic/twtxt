@@ -257,7 +257,7 @@ func (job *CreateAdminFeedsJob) Run() {
 	log.Infof("creating feeds for adminUser: %s", job.conf.AdminUser)
 
 	if !job.db.HasUser(job.conf.AdminUser) {
-		log.Warn("no adminUser account matching %s", job.conf.AdminUser)
+		log.Warnf("no adminUser account matching %s", job.conf.AdminUser)
 		return
 	}
 

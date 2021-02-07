@@ -172,7 +172,7 @@ func (job *UpdateFeedsJob) Run() {
 	log.Infof("updating feeds for %d users and  %d feeds", len(users), len(feeds))
 
 	sources := make(types.Feeds)
-	followers := make(map[types.Feed][]string)
+	publicFollowers := make(map[types.Feed][]string)
 
 	// Ensure all specialUsername feeds are in the cache
 	for _, username := range specialUsernames {
@@ -192,12 +192,14 @@ func (job *UpdateFeedsJob) Run() {
 	for _, user := range users {
 		for feed := range user.Sources() {
 			sources[feed] = true
-			followers[feed] = append(followers[feed], user.Username)
+			if user.IsFollowingPubliclyVisible {
+				publicFollowers[feed] = append(publicFollowers[feed], user.Username)
+			}
 		}
 	}
 
 	log.Infof("updating %d sources", len(sources))
-	job.cache.FetchTwts(job.conf, job.archive, sources, followers)
+	job.cache.FetchTwts(job.conf, job.archive, sources, publicFollowers)
 
 	log.Infof("warming cache with local twts for %s", job.conf.BaseURL)
 	job.cache.GetByPrefix(job.conf.BaseURL, true)

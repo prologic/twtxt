@@ -163,7 +163,7 @@ func LoadCache(path string) (*Cache, error) {
 const maxfetchers = 50
 
 // FetchTwts ...
-func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds, followers map[types.Feed][]string) {
+func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds, publicFollowers map[types.Feed][]string) {
 	stime := time.Now()
 	defer func() {
 		metrics.Gauge(
@@ -197,24 +197,29 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 
 			headers := make(http.Header)
 
-			if followers != nil {
-				feedFollowers := followers[feed]
-				var userAgent string
-				if len(feedFollowers) == 1 {
-					userAgent = fmt.Sprintf(
-						"twtxt/%s (+%s; @%s)",
-						twtxt.FullVersion(),
-						URLForUser(conf, feedFollowers[0]), feedFollowers[0],
-					)
-				} else {
-					userAgent = fmt.Sprintf(
-						"twtxt/%s (~%s; contact=%s)",
-						twtxt.FullVersion(),
-						URLForWhoFollows(conf.BaseURL, feed, len(feedFollowers)),
-						URLForPage(conf.BaseURL, "support"),
-					)
+			if publicFollowers != nil {
+				feedFollowers := publicFollowers[feed]
+
+				// if no users are publicly following this feed, we rely on the
+				// default User-Agent set in the `Request(…)` down below
+				if len(feedFollowers) > 0 {
+					var userAgent string
+					if len(feedFollowers) == 1 {
+						userAgent = fmt.Sprintf(
+							"twtxt/%s (+%s; @%s)",
+							twtxt.FullVersion(),
+							URLForUser(conf, feedFollowers[0]), feedFollowers[0],
+						)
+					} else {
+						userAgent = fmt.Sprintf(
+							"twtxt/%s (~%s; contact=%s)",
+							twtxt.FullVersion(),
+							URLForWhoFollows(conf.BaseURL, feed, len(feedFollowers)),
+							URLForPage(conf.BaseURL, "support"),
+						)
+					}
+					headers.Set("User-Agent", userAgent)
 				}
-				headers.Set("User-Agent", userAgent)
 			}
 
 			cache.mu.RLock()

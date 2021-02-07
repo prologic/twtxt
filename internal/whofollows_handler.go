@@ -61,7 +61,7 @@ func (s *Server) WhoFollowsHandler() httprouter.Handle {
 
 		nick := ""
 		for _, user := range users {
-			if !user.IsFollowersPubliclyVisible && !ctx.User.Is(user.URL) {
+			if !user.IsFollowingPubliclyVisible && !ctx.User.Is(user.URL) {
 				continue
 			}
 

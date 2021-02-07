@@ -324,6 +324,10 @@ func (f *Feed) Profile(baseURL string, viewer *User) types.Profile {
 		Muted:      muted,
 
 		Followers: f.Followers,
+
+		ShowBookmarks: false, // feeds don't have bookmarks
+		ShowFollowers: true,  // feeds can't control this
+		ShowFollowing: false, // feeds can't follow others
 	}
 }
 
@@ -466,18 +470,27 @@ func (u *User) Sources() types.Feeds {
 
 func (u *User) Profile(baseURL string, viewer *User) types.Profile {
 	var (
-		follows    bool
-		followedBy bool
-		muted      bool
+		follows       bool
+		followedBy    bool
+		muted         bool
+		showBookmarks bool
+		showFollowers bool
+		showFollowing bool
 	)
 
 	if viewer != nil {
 		if viewer.Is(u.URL) {
 			follows = true
 			followedBy = true
+			showBookmarks = true
+			showFollowers = true
+			showFollowing = true
 		} else {
 			follows = viewer.Follows(u.URL)
 			followedBy = viewer.FollowedBy(u.URL)
+			showBookmarks = u.IsBookmarksPubliclyVisible
+			showFollowers = u.IsFollowersPubliclyVisible
+			showFollowing = u.IsFollowingPubliclyVisible
 		}
 
 		muted = viewer.HasMuted(u.URL)
@@ -498,6 +511,10 @@ func (u *User) Profile(baseURL string, viewer *User) types.Profile {
 		Followers: u.Followers,
 		Following: u.Following,
 		Bookmarks: u.Bookmarks,
+
+		ShowBookmarks: showBookmarks,
+		ShowFollowers: showFollowers,
+		ShowFollowing: showFollowing,
 	}
 }
 

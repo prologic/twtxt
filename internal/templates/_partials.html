@@ -257,9 +257,13 @@
   <li><a href="{{ $.Profile.BlogsURL }}">Blogs&nbsp;<i class="icss-quill-pen"></i></a></li>
   <li><a target="_blank" href="{{ $.Profile.URL }}">Twtxt&nbsp;<i class="icss-link"></i></a></li>
   <li><a target="_blank" href="{{ $.Profile.URL | trimSuffix "/twtxt.txt" }}/atom.xml">Atom&nbsp;<i class="icss-rss"></i></a></li>
+  {{ if $.Profile.ShowFollowers }}
   <li><a href="/user/{{ $.Profile.Username }}/followers">Followers: {{ $.Profile.Followers | len }}</a></li>
-  {{ if eq $.Profile.Type "User" }}
+  {{ end }}
+  {{ if $.Profile.ShowFollowing }}
   <li><a href="/user/{{ $.Profile.Username }}/following">Following: {{ $.Profile.Following | len }}</a></li>
+  {{ end }}
+  {{ if $.Profile.ShowBookmarks }}
   <li><a href="/user/{{ $.Profile.Username }}/bookmarks">Bookmarks: {{ $.Profile.Bookmarks | len }}</a></li>
   {{ end }}
 </ul>

@@ -22,6 +22,12 @@ type Profile struct {
 	Bookmarks map[string]string
 	Followers map[string]string
 	Following map[string]string
+
+	// `true` if the User viewing the Profile has permissions to show the
+	// bookmarks/followers/followings of this user/feed
+	ShowBookmarks bool
+	ShowFollowers bool
+	ShowFollowing bool
 }
 
 type Link struct {

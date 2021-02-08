@@ -437,9 +437,6 @@ footer .footer-menu a:last-child::after{
     min-width: 60px;
     min-height: 60px;
   }
-  .u-author.h-card>div a{
-    display: block;
-  }
   .u-author.h-card>div img.avatar{
     width: 60px;
     height: 60px;

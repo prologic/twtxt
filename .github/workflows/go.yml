@@ -10,7 +10,7 @@ jobs:
     name: Build and Test
     strategy:
       matrix:
-        go-version: [1.14.x]
+        go-version: [1.16.x]
         platform: [ubuntu-latest, macos-latest]
         include:
           - platform: ubuntu-latest

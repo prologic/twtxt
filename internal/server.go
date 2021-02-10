@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"embed"
 	"errors"
 	"fmt"
 	"net/http"
@@ -13,7 +14,6 @@ import (
 	"syscall"
 	"time"
 
-	rice "github.com/GeertJohan/go.rice"
 	"github.com/NYTimes/gziphandler"
 	"github.com/andyleap/microformats"
 	humanize "github.com/dustin/go-humanize"
@@ -34,6 +34,15 @@ import (
 var (
 	metrics     *observe.Metrics
 	webmentions *webmention.WebMention
+
+	//go:embed static/css
+	staticCSS embed.FS
+
+	//go:embed static/js
+	staticJS embed.FS
+
+	//go:embed static/img
+	staticIMG embed.FS
 )
 
 func init() {
@@ -453,12 +462,9 @@ func (s *Server) initRoutes() {
 		s.router.ServeFiles("/img/*filepath", http.Dir("./internal/static/img"))
 		s.router.ServeFiles("/js/*filepath", http.Dir("./internal/static/js"))
 	} else {
-		cssBox := rice.MustFindBox("static/css").HTTPBox()
-		imgBox := rice.MustFindBox("static/img").HTTPBox()
-		jsBox := rice.MustFindBox("static/js").HTTPBox()
-		s.router.ServeFilesWithCacheControl("/css/:commit/*filepath", cssBox)
-		s.router.ServeFilesWithCacheControl("/img/:commit/*filepath", imgBox)
-		s.router.ServeFilesWithCacheControl("/js/:commit/*filepath", jsBox)
+		s.router.ServeFilesWithCacheControl("/css/:commit/*filepath", staticCSS)
+		s.router.ServeFilesWithCacheControl("/img/:commit/*filepath", staticIMG)
+		s.router.ServeFilesWithCacheControl("/js/:commit/*filepath", staticJS)
 	}
 
 	s.router.NotFound = http.HandlerFunc(s.NotFoundHandler)

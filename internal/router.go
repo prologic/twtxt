@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"io/fs"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -136,12 +137,12 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 // ServeFilesWithCacheControl ...
-func (r *Router) ServeFilesWithCacheControl(path string, root http.FileSystem) {
+func (r *Router) ServeFilesWithCacheControl(path string, root fs.FS) {
 	if len(path) < 10 || path[len(path)-10:] != "/*filepath" {
 		panic("path must end with /*filepath in path '" + path + "'")
 	}
 
-	fileServer := http.FileServer(root)
+	fileServer := http.FileServer(http.FS(root))
 
 	r.GET(path, func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		w.Header().Set("Vary", "Accept-Encoding")

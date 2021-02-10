@@ -1,9 +1,8 @@
 module github.com/jointwt/twtxt
 
-go 1.14
+go 1.16
 
 require (
-	github.com/GeertJohan/go.rice v1.0.2
 	github.com/Masterminds/goutils v1.1.0 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible
@@ -18,7 +17,6 @@ require (
 	github.com/chai2010/webp v1.1.0
 	github.com/creasty/defaults v1.5.1
 	github.com/cyphar/filepath-securejoin v0.2.2
-	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/disintegration/gift v1.2.1
 	github.com/disintegration/imageorient v0.0.0-20180920195336-8147d86e83ec

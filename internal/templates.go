@@ -2,16 +2,16 @@ package internal
 
 import (
 	"bytes"
+	"embed"
 	"fmt"
 	"html/template"
 	"io"
-	"os"
+	"io/fs"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
-	rice "github.com/GeertJohan/go.rice"
 	"github.com/Masterminds/sprig"
 	humanize "github.com/dustin/go-humanize"
 	"github.com/jointwt/twtxt/types"
@@ -19,13 +19,14 @@ import (
 )
 
 const (
-	templatesPath    = "templates"
-	baseTemplate     = "base.html"
-	partialsTemplate = "_partials.html"
+	baseTemplate     = "templates/base.html"
+	partialsTemplate = "templates/_partials.html"
 	baseName         = "base"
 )
 
-var _ = templatesPath // dead code?
+//go:embed templates/*.html
+var templates embed.FS
+
 type TemplateManager struct {
 	sync.RWMutex
 
@@ -72,20 +73,14 @@ func (m *TemplateManager) LoadTemplates() error {
 	m.Lock()
 	defer m.Unlock()
 
-	box, err := rice.FindBox("templates")
-	if err != nil {
-		log.WithError(err).Errorf("error finding templates")
-		return fmt.Errorf("error finding templates: %w", err)
-	}
-
-	err = box.Walk("", func(path string, info os.FileInfo, err error) error {
+	err := fs.WalkDir(templates, "templates", func(path string, info fs.DirEntry, err error) error {
 		if err != nil {
-			log.WithError(err).Error("error talking templates")
+			log.WithError(err).Error("error walking templates")
 			return fmt.Errorf("error walking templates: %w", err)
 		}
 
 		fname := info.Name()
-		if !info.IsDir() && fname != baseTemplate {
+		if !info.IsDir() && path != baseTemplate {
 			// Skip _partials.html and also editor swap files, to improve the development
 			// cycle. Editors often add suffixes to their swap files, e.g "~" or ".swp"
 			// (Vim) and those files are not parsable as templates, causing panics.
@@ -97,9 +92,23 @@ func (m *TemplateManager) LoadTemplates() error {
 			t := template.New(name).Option("missingkey=zero")
 			t.Funcs(m.funcMap)
 
-			template.Must(t.Parse(box.MustString(fname)))
-			template.Must(t.Parse(box.MustString(partialsTemplate)))
-			template.Must(t.Parse(box.MustString(baseTemplate)))
+			if f, err := templates.ReadFile(path); err == nil {
+				template.Must(t.Parse(string(f)))
+			} else {
+				return err
+			}
+
+			if f, err := templates.ReadFile(partialsTemplate); err == nil {
+				template.Must(t.Parse(string(f)))
+			} else {
+				return err
+			}
+
+			if f, err := templates.ReadFile(baseTemplate); err == nil {
+				template.Must(t.Parse(string(f)))
+			} else {
+				return err
+			}
 
 			m.templates[name] = t
 		}
@@ -109,7 +118,6 @@ func (m *TemplateManager) LoadTemplates() error {
 		log.WithError(err).Error("error loading templates")
 		return fmt.Errorf("error loading templates: %w", err)
 	}
-
 	return nil
 }
 

@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,7 +17,6 @@ import (
 	"strings"
 	"time"
 
-	rice "github.com/GeertJohan/go.rice"
 	"github.com/chai2010/webp"
 	securejoin "github.com/cyphar/filepath-securejoin"
 	"github.com/dgrijalva/jwt-go"
@@ -48,6 +48,9 @@ var (
 	ErrFeedImposter = errors.New("error: imposter detected, you do not own this feed")
 )
 
+//go:embed pages/*.md
+var pages embed.FS
+
 func (s *Server) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Accept") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
@@ -67,8 +70,14 @@ type FrontMatter struct {
 
 // PageHandler ...
 func (s *Server) PageHandler(name string) httprouter.Handle {
-	box := rice.MustFindBox("pages")
-	mdTpl := box.MustString(fmt.Sprintf("%s.md", name))
+
+	var mdTpl string
+	if b, err := pages.ReadFile(fmt.Sprintf("pages/%s.md", name)); err == nil {
+		mdTpl = string(b)
+	} else {
+		log.WithError(err).Errorf("error finding page %s", name)
+		panic(err)
+	}
 
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)

@@ -1132,86 +1132,49 @@ i.icss-floppy:after {
   left: .2em;
 }
 
-i.icss-heart {
-  width: .5em;
-  height: .5em;
-  background: currentColor;
-  border: .065em solid currentColor;
-  border-top: 0;
-  border-right: 0;
-  transform: rotate(-45deg);
-  margin: .3em .25em .2em;
-}
-
-.icss-stack i.icss-heart {
-  transform: translate(-.5em, -.5em) rotate(-45deg);
-}
-
-i.icss-heart:before {
-  width: .5em;
-  height: .28em;
-  top: -.22em;
-  left: -.063em;
-  background: currentColor;
-  border-radius: .5em .5em 0 0;
-}
-
-i.icss-heart:after {
-  width: .28em;
-  height: .5em;
-  top: 0em;
-  left: .37em;
-  border-radius: 0 .5em .5em 0;
-  background: currentColor;
-}
-
-i.icss-heart-o {
-  width: .5em;
-  height: .5em;
-  background: transparent;
-  border-left: solid .065em currentColor;
-  border-bottom: solid .065em currentColor;
-  transform: rotate(-45deg);
-  margin: .3em .25em .2em;
-}
-
-.icss-stack i.icss-heart-o {
-  transform: translate(-.5em, -.5em) rotate(-45deg);
-}
-
-i.icss-heart-o:before {
-  width: .5em;
-  height: .28em;
-  top: -.22em;
-  left: -.063em;
-  border-radius: .5em .5em 0 0;
-  border: .065em solid currentColor;
-  border-bottom: 0;
-}
-
-i.icss-heart-o:after {
-  width: .28em;
-  height: .5em;
-  top: 0em;
-  left: .37em;
-  border-radius: 0 .5em .5em 0;
-  border: .065em solid currentColor;
-  border-left: 0;
-}
-
-i.icss-circle {
+i.icss-bookmark {
   width: 1em;
   height: 1em;
-  border-radius: 50%;
-  margin: 0;
-}
-
-
-i.icss-circle-o {
-  width: 1em;
-  height: 1em;
-  border-radius: 50%;
   background-color: transparent;
-  border: .1em solid currentColor;
   margin: 0;
+}
+
+i.icss-bookmark:before {
+  width: .5em;
+  height: .8em;
+  transform: translate(-50%, -50%);
+  border: .25em solid currentColor;
+  border-color: currentColor currentColor transparent currentColor;
+  border-radius: .03em;
+  top: 50%;
+  left: 50%;
+}
+
+i.icss-bookmark-o {
+  width: 1em;
+  height: 1em;
+  background-color: transparent;
+  margin: 0;
+}
+
+i.icss-bookmark-o:before {
+  width: .5em;
+  height: .8em;
+  transform: translate(-50%, -50%);
+  border: .07em solid currentColor;
+  border-color: currentColor currentColor transparent currentColor;
+  border-radius: .03em;
+  top: 50%;
+  left: 50%;
+}
+
+i.icss-bookmark-o:after {
+  width: .41em;
+  height: .41em;
+  box-shadow: inset -.07em .07em currentColor;
+  border-color: currentColor currentColor transparent transparent;
+  border-radius: .1em .03em;
+  transform: translateX(-50%) rotate(-45deg);
+  top: .64em;
+  left: 50%;
 }

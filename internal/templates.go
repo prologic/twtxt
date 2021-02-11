@@ -51,7 +51,7 @@ func NewTemplateManager(conf *Config, blogs *BlogsCache, cache *Cache) (*Templat
 			twt := types.MakeTwt(types.Twter{}, time.Time{}, text)
 			return fn(twt)
 		}
-	}
+	}()
 	funcMap["unparseTwt"] = UnparseTwtFactory(conf)
 	funcMap["formatForDateTime"] = FormatForDateTime
 	funcMap["urlForBlog"] = URLForBlogFactory(conf, blogs)

@@ -314,10 +314,11 @@ func (f *Feed) Profile(baseURL string, viewer *User) types.Profile {
 	return types.Profile{
 		Type: "Feed",
 
-		Username: f.Name,
-		Tagline:  f.Description,
-		URL:      f.URL,
-		BlogsURL: URLForBlogs(baseURL, f.Name),
+		Username:  f.Name,
+		Tagline:   f.Description,
+		URL:       f.URL,
+		BlogsURL:  URLForBlogs(baseURL, f.Name),
+		AvatarURL: URLForAvatar(baseURL, f.Name),
 
 		Follows:    follows,
 		FollowedBy: followedBy,
@@ -499,10 +500,11 @@ func (u *User) Profile(baseURL string, viewer *User) types.Profile {
 	return types.Profile{
 		Type: "User",
 
-		Username: u.Username,
-		Tagline:  u.Tagline,
-		URL:      u.URL,
-		BlogsURL: URLForBlogs(baseURL, u.Username),
+		Username:  u.Username,
+		Tagline:   u.Tagline,
+		URL:       u.URL,
+		BlogsURL:  URLForBlogs(baseURL, u.Username),
+		AvatarURL: URLForAvatar(baseURL, u.Username),
 
 		Follows:    follows,
 		FollowedBy: followedBy,

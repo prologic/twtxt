@@ -1308,10 +1308,10 @@ func URLForUser(conf *Config, username string) string {
 	)
 }
 
-func URLForAvatar(baseURL string, username string) string {
+func URLForAvatar(conf *Config, username string) string {
 	return fmt.Sprintf(
 		"%s/user/%s/avatar",
-		strings.TrimSuffix(baseURL, "/"),
+		strings.TrimSuffix(conf.BaseURL, "/"),
 		username,
 	)
 }

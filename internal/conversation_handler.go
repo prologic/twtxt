@@ -60,7 +60,7 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 		twter := twt.Twter()
 		if isLocal(twter.URL) {
 			who = fmt.Sprintf("%s@%s", twter.Nick, s.config.LocalURL().Hostname())
-			image = URLForAvatar(s.config.BaseURL, twter.Nick)
+			image = URLForAvatar(s.config, twter.Nick)
 		} else {
 			who = fmt.Sprintf("@<%s %s>", twter.Nick, twter.URL)
 			image = URLForExternalAvatar(s.config, twter.URL)

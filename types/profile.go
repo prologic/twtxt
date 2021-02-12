@@ -4,12 +4,11 @@ package types
 type Profile struct {
 	Type string
 
-	Username  string
-	Tagline   string
-	URL       string
-	TwtURL    string
-	BlogsURL  string
-	AvatarURL string
+	Username string
+	Tagline  string
+	URL      string
+	TwtURL   string
+	BlogsURL string
 
 	// `true` if the User viewing the Profile has muted this user/feed
 	Muted bool

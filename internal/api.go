@@ -124,6 +124,7 @@ func (a *API) CreateToken(user *User, r *http.Request) (*Token, error) {
 	return tkn, nil
 }
 
+
 func (a *API) jwtKeyFunc(token *jwt.Token) (interface{}, error) {
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 		return nil, fmt.Errorf("There was an error")
@@ -1063,7 +1064,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 
 		profileResponse.Twter = types.Twter{
 			Nick:   profile.Username,
-			Avatar: URLForAvatar(a.config.BaseURL, profile.Username),
+			Avatar: URLForAvatar(a.config, profile.Username),
 			URL:    URLForUser(a.config, profile.Username),
 		}
 

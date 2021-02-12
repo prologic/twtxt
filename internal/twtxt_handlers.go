@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,7 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const twtxtTemplate = `# Twtxt is an open, distributed microblogging platform that
+const defaultPreambleTemplate = `# Twtxt is an open, distributed microblogging platform that
 # uses human-readable text files, common transport protocols,
 # and free software.
 #
@@ -144,7 +145,21 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 			log.WithError(err).Warnf("unable to load user or feed profile for %s", nick)
 		}
 
-		preamble, err := RenderString(twtxtTemplate, ctx)
+		var preampleTemplate string
+
+		preampleCustomTemplateFn := filepath.Join(s.config.Data, feedsDir, fmt.Sprintf("%s.tpl", nick))
+		if FileExists(preampleCustomTemplateFn) {
+			if data, err := ioutil.ReadFile(preampleCustomTemplateFn); err == nil {
+				preampleTemplate = string(data)
+			} else {
+				log.WithError(err).Warnf("error loading custom preamble template for %s")
+				preampleTemplate = defaultPreambleTemplate
+			}
+		} else {
+			preampleTemplate = defaultPreambleTemplate
+		}
+
+		preamble, err := RenderString(preampleTemplate, ctx)
 		if err != nil {
 			log.WithError(err).Warn("error rendering twtxt preamble")
 		}

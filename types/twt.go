@@ -95,6 +95,14 @@ type TwtMention interface {
 
 type MentionList []TwtMention
 
+func (ml MentionList) Mentions() []string {
+	lis := make([]string, len(ml))
+	for i := range ml {
+		lis[i] = fmt.Sprintf("%l", ml[i])
+	}
+	return lis
+}
+
 type TwtTag interface {
 	Text() string
 	Target() string
@@ -119,6 +127,14 @@ type TwtLink interface {
 }
 
 type LinkList []TwtLink
+
+func (l LinkList) Links() []string {
+	lis := make([]string, len(l))
+	for i := range l {
+		lis[i] = fmt.Sprintf("%l", l[i])
+	}
+	return lis
+}
 
 type Subject interface {
 	Text() string

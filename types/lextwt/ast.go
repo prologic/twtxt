@@ -586,7 +586,7 @@ type Twt struct {
 	links    []*Link
 	hash     string
 	subject  *Subject
-	twter    types.Twter
+	twter    *types.Twter
 	pos      int
 }
 
@@ -594,7 +594,7 @@ var _ Line = (*Twt)(nil)
 var _ types.Twt = (*Twt)(nil)
 
 func NewTwt(twter types.Twter, dt *DateTime, elems ...Elem) *Twt {
-	twt := &Twt{twter: twter, dt: dt, msg: make([]Elem, 0, len(elems))}
+	twt := &Twt{twter: &twter, dt: dt, msg: make([]Elem, 0, len(elems))}
 
 	for _, elem := range elems {
 		twt.append(elem)
@@ -679,7 +679,7 @@ func (twt Twt) CloneTwt() *Twt {
 	for i := range twt.msg {
 		msg[i] = twt.msg[i].Clone()
 	}
-	return NewTwt(twt.twter, twt.dt, msg...)
+	return NewTwt(*twt.twter, twt.dt, msg...)
 }
 func (twt *Twt) Text() string {
 	var b strings.Builder
@@ -725,7 +725,7 @@ func (twt *Twt) GobDecode(data []byte) error {
 	return nil
 }
 func (twt Twt) MarshalJSON() ([]byte, error) {
-	var tags types.TagList = twt.Tags()
+	tags := twt.Tags()
 	return json.Marshal(struct {
 		Twter        types.Twter `json:"twter"`
 		Text         string      `json:"text"`
@@ -733,9 +733,11 @@ func (twt Twt) MarshalJSON() ([]byte, error) {
 		MarkdownText string      `json:"markdownText"`
 
 		// Dynamic Fields
-		Hash    string   `json:"hash"`
-		Tags    []string `json:"tags"`
-		Subject string   `json:"subject"`
+		Hash     string   `json:"hash"`
+		Tags     []string `json:"tags"`
+		Subject  string   `json:"subject"`
+		Mentions []string `json:"mentions"`
+		Links    []string `json:"links"`
 	}{
 		Twter:        twt.Twter(),
 		Text:         twt.Text(),
@@ -743,9 +745,11 @@ func (twt Twt) MarshalJSON() ([]byte, error) {
 		MarkdownText: twt.FormatText(types.MarkdownFmt, nil),
 
 		// Dynamic Fields
-		Hash:    twt.Hash(),
-		Tags:    tags.Tags(),
-		Subject: fmt.Sprintf("%c", twt.Subject()),
+		Hash:     twt.Hash(),
+		Tags:     tags.Tags(),
+		Subject:  fmt.Sprintf("%c", twt.Subject()),
+		Mentions: twt.Mentions().Mentions(),
+		Links:    twt.Links().Links(),
 	})
 }
 func DecodeJSON(data []byte) (types.Twt, error) {
@@ -882,7 +886,12 @@ func (twt Twt) Links() types.LinkList {
 	}
 	return lis
 }
-func (twt Twt) Twter() types.Twter { return twt.twter }
+func (twt Twt) Twter() types.Twter {
+	if twt.twter == nil {
+		return types.Twter{}
+	}
+	return *twt.twter
+}
 func (twt Twt) Hash() string {
 	if twt.hash != "" {
 		return twt.hash

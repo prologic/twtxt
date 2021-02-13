@@ -19,7 +19,7 @@ type parser struct {
 	nextTok Token
 	nextPos int
 
-	twter types.Twter
+	twter *types.Twter
 
 	lit   []rune
 	frame []int
@@ -44,7 +44,7 @@ func NewParser(l *lexer) *parser {
 	return p
 }
 
-func (p *parser) SetTwter(twter types.Twter) {
+func (p *parser) SetTwter(twter *types.Twter) {
 	p.twter = twter
 }
 

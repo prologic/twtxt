@@ -628,7 +628,7 @@ func TestParseTwt(t *testing.T) {
 		r := strings.NewReader(tt.lit)
 		lexer := lextwt.NewLexer(r)
 		parser := lextwt.NewParser(lexer)
-		parser.SetTwter(twter)
+		parser.SetTwter(&twter)
 		twt := parser.ParseTwt()
 
 		rt, err := retwt.ParseLine(strings.TrimRight(tt.lit, "\n"), twter)
@@ -812,11 +812,13 @@ func TestParseFile(t *testing.T) {
 	is := is.New(t)
 
 	twter := types.Twter{Nick: "example", URL: "https://example.com/twtxt.txt"}
+	override := types.Twter{Nick: "override", URL: "https://example.com/twtxt.txt"}
+
 	tests := []fileTestCase{
 		{
 			twter: twter,
 			in: strings.NewReader(`# My Twtxt!
-# nick = example
+# nick = override
 # url = https://example.com/twtxt.txt
 # follows = xuu@txt.sour.is https://txt.sour.is/users/xuu.txt
 
@@ -825,18 +827,18 @@ func TestParseFile(t *testing.T) {
 2020-11-13T16:13:22+01:00	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<pdrsg2q https://twtxt.net/search?tag=pdrsg2q>) Thanks!
 `),
 			out: lextwt.NewTwtFile(
-				twter,
+				override,
 
 				lextwt.Comments{
 					lextwt.NewComment("# My Twtxt!"),
-					lextwt.NewCommentValue("# nick = example", "nick", "example"),
+					lextwt.NewCommentValue("# nick = override", "nick", "override"),
 					lextwt.NewCommentValue("# url = https://example.com/twtxt.txt", "url", "https://example.com/twtxt.txt"),
 					lextwt.NewCommentValue("# follows = xuu@txt.sour.is https://txt.sour.is/users/xuu.txt", "follows", "xuu@txt.sour.is https://txt.sour.is/users/xuu.txt"),
 				},
 
 				[]types.Twt{
 					lextwt.NewTwt(
-						twter,
+						override,
 						lextwt.NewDateTime(parseTime("2016-02-03T23:05:00Z"), "2016-02-03T23:05:00Z"),
 						lextwt.NewMention("example", "http://example.org/twtxt.txt"),
 						lextwt.LineSeparator,
@@ -845,7 +847,7 @@ func TestParseFile(t *testing.T) {
 					),
 
 					lextwt.NewTwt(
-						twter,
+						override,
 						lextwt.NewDateTime(parseTime("2020-12-02T01:04:00Z"), "2020-12-02T01:04:00Z"),
 						lextwt.NewText("This is an OpenPGP proof that connects my OpenPGP key to this Twtxt account. See "),
 						lextwt.NewLink("", "https://key.sour.is/id/me@sour.is", lextwt.LinkNaked),
@@ -856,7 +858,7 @@ func TestParseFile(t *testing.T) {
 					),
 
 					lextwt.NewTwt(
-						twter,
+						override,
 						lextwt.NewDateTime(parseTime("2020-11-13T16:13:22+01:00"), "2020-11-13T16:13:22+01:00"),
 						lextwt.NewMention("prologic", "https://twtxt.net/user/prologic/twtxt.txt"),
 						lextwt.NewText(" "),
@@ -875,7 +877,7 @@ func TestParseFile(t *testing.T) {
 		is.True(err == nil)
 		is.True(f != nil)
 
-		is.Equal(tt.twter, f.Twter())
+		is.Equal(override, f.Twter())
 
 		{
 			lis := f.Info().GetAll("")

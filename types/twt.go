@@ -98,7 +98,7 @@ type MentionList []TwtMention
 func (ml MentionList) Mentions() []string {
 	lis := make([]string, len(ml))
 	for i := range ml {
-		lis[i] = fmt.Sprintf("%l", ml[i])
+		lis[i] = fmt.Sprint(ml[i])
 	}
 	return lis
 }
@@ -131,7 +131,7 @@ type LinkList []TwtLink
 func (l LinkList) Links() []string {
 	lis := make([]string, len(l))
 	for i := range l {
-		lis[i] = fmt.Sprintf("%l", l[i])
+		lis[i] = fmt.Sprint(l[i])
 	}
 	return lis
 }

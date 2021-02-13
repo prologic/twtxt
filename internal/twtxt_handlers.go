@@ -179,7 +179,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 			preampleTemplate = defaultPreambleTemplate
 		}
 
-		preamble, err := RenderString(preampleTemplate, ctx)
+		preamble, err := RenderPlainText(preampleTemplate, ctx)
 		if err != nil {
 			log.WithError(err).Warn("error rendering twtxt preamble")
 		}

@@ -30,7 +30,7 @@ func (s *Server) RobotsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		text, err := RenderString(robotsTpl, ctx)
+		text, err := RenderPlainText(robotsTpl, ctx)
 		if err != nil {
 			log.WithError(err).Errorf("error rendering robots.txt")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)

@@ -72,7 +72,7 @@ func (s *Server) PageHandler(name string) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		md, err := RenderString(mdTpl, ctx)
+		md, err := RenderHTML(mdTpl, ctx)
 		if err != nil {
 			log.WithError(err).Errorf("error rendering page %s", name)
 			ctx.Error = true

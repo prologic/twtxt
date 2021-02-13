@@ -1375,7 +1375,7 @@ func URLForBlogFactory(conf *Config, blogs *BlogsCache) func(twt types.Twt) stri
 	}
 }
 
-func URLForConvFactory(conf *Config, cache *Cache) func(twt types.Twt) string {
+func URLForConvFactory(conf *Config, cache *Cache, archive Archiver) func(twt types.Twt) string {
 	return func(twt types.Twt) string {
 		subject := twt.Subject().String()
 		if subject == "" {
@@ -1396,7 +1396,7 @@ func URLForConvFactory(conf *Config, cache *Cache) func(twt types.Twt) string {
 			}
 		}
 
-		if _, ok := cache.Lookup(hash); !ok {
+		if _, ok := cache.Lookup(hash); !ok && !archive.Has(hash) {
 			return ""
 		}
 

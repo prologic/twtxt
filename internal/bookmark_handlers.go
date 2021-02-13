@@ -55,7 +55,7 @@ func (s *Server) BookmarkHandler() httprouter.Handle {
 		if r.Header.Get("Accept") == "application/json" {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"success": true}`))
+			_,_=w.Write([]byte(`{"success": true}`))
 			return
 		}
 

@@ -23,6 +23,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	text_template "text/template"
 	"time"
 
 	// Blank import so we can handle image/jpeg
@@ -380,9 +381,21 @@ func RunCmd(timeout time.Duration, command string, args ...string) error {
 	return nil
 }
 
-// RenderString ...
-func RenderString(tpl string, ctx *Context) (string, error) {
+// RenderHTML ...
+func RenderHTML(tpl string, ctx *Context) (string, error) {
 	t := template.Must(template.New("tpl").Parse(tpl))
+	buf := bytes.NewBuffer([]byte{})
+	err := t.Execute(buf, ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
+}
+
+// RenderPlainText ...
+func RenderPlainText(tpl string, ctx *Context) (string, error) {
+	t := text_template.Must(text_template.New("tpl").Parse(tpl))
 	buf := bytes.NewBuffer([]byte{})
 	err := t.Execute(buf, ctx)
 	if err != nil {

@@ -3,6 +3,7 @@ package types_test
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"github.com/jointwt/twtxt/types"
 	"github.com/jointwt/twtxt/types/lextwt"
 	"github.com/jointwt/twtxt/types/retwt"
+	"github.com/matryer/is"
 )
 
 // BenchmarkLextwt-16    	      21	  49342715 ns/op	 6567316 B/op	  178333 allocs/op
@@ -211,4 +213,58 @@ func (m mockFmtOpts) URLForUser(username string) string {
 }
 func (m mockFmtOpts) FeedLookup(s string) *types.Twter {
 	return &types.Twter{Nick: s, URL: fmt.Sprintf("https://example.com/users/%s/twtxt.txt", s)}
+}
+
+type preambleTestCase struct {
+	in string
+	preamble string
+	drain string
+}
+
+func TestPreambleFeed(t *testing.T) {
+	tests := []preambleTestCase{
+		{
+			in: "# testing\n\n2020-...",
+			preamble: "# testing",
+			drain: "\n\n2020-...",
+		},
+
+		{
+			in: "# testing\nmulti\nlines\n\n2020-...",
+			preamble: "# testing\nmulti\nlines",
+			drain: "\n\n2020-...",
+		},
+
+		{
+			in: "2020-...NO PREAMBLE",
+			preamble: "",
+			drain: "2020-...NO PREAMBLE",
+		},
+
+		{
+			in: "#onlyonen\n2020-...OOPS ALL PREAMBLE",
+			preamble: "#onlyonen\n2020-...OOPS ALL PREAMBLE",
+			drain: "",
+		},
+
+
+		{
+			in: "#onlypreamble\n",
+			preamble: "#onlypreamble\n",
+			drain: "",
+		},
+
+	}
+
+	is := is.New(t)
+
+	for _, tt := range tests {
+		pf, err := types.ReadPreambleFeed(strings.NewReader(tt.in))
+
+		is.NoErr(err)
+		is.Equal(pf.Preamble(), tt.preamble)
+		drain, err := ioutil.ReadAll(pf)
+		is.NoErr(err)
+		is.Equal(tt.drain, string(drain))
+	}
 }

@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bytes"
 	"encoding/gob"
 	"encoding/json"
 	"errors"
@@ -394,4 +395,75 @@ func (fn FeedLookupFn) FeedLookup(s string) *Twter { return fn(s) }
 
 func NormalizeUsername(username string) string {
 	return strings.TrimSpace(strings.ToLower(username))
+}
+
+type PreambleFeed struct {
+	r   io.Reader
+	buf *bytes.Buffer
+	pre *strings.Builder
+}
+
+func (p *PreambleFeed) Preamble() string {
+	return p.pre.String()
+}
+func (p *PreambleFeed) Read(b []byte) (n int, err error) {
+	i := 0
+	if p.buf.Len() > 0 {
+		i, err = p.buf.Read(b)
+		if err != nil && err != io.EOF {
+			return i, err
+		}
+
+		if err != nil && err == io.EOF {
+			err = nil
+		}
+
+		if err != nil {
+			return i, err
+		}
+	}
+
+	ri, err := p.r.Read(b[i:])
+
+	return ri + i, err
+}
+func ReadPreambleFeed(r io.Reader) (*PreambleFeed, error) {
+	p := &PreambleFeed{r: r, buf: &bytes.Buffer{}, pre: &strings.Builder{}}
+	b := make([]byte, 4096)
+
+	i, err := r.Read(b)
+	if err != nil {
+		return nil, err
+	}
+	if i > 0 && b[0] != '#' {
+		p.buf.Write(b[:i])
+		return p, nil
+	}
+
+	eof := false
+	for !eof {
+		pos := bytes.Index(b[:i], []byte{'\n', '\n'})
+		if pos > -1 {
+			p.pre.Write(b[:pos])
+			p.buf.Write(b[pos:i])
+			break
+		}
+
+		_, err = p.pre.Write(b[:i])
+		if err != nil {
+			return nil, err
+		}
+
+		i, err = r.Read(b)
+		if err != nil {
+			if err == io.EOF {
+				eof = true
+				continue
+			}
+
+			return nil, err
+		}
+	}
+
+	return p, nil
 }

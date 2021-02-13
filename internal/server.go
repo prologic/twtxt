@@ -690,7 +690,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		return nil, err
 	}
 
-	tmplman, err := NewTemplateManager(config, blogs, cache)
+	tmplman, err := NewTemplateManager(config, blogs, cache, archive)
 	if err != nil {
 		log.WithError(err).Error("error creating template manager")
 		return nil, err

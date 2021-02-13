@@ -769,7 +769,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 		switch postas {
 		case "", user.Username:
 			if hash != "" && lastTwt.Hash() == hash {
-				twt, err = AppendTwt(s.config, s.db, user, text, lastTwt.Created)
+				twt, err = AppendTwt(s.config, s.db, user, text, lastTwt.Created())
 			} else {
 				twt, err = AppendTwt(s.config, s.db, user, text)
 			}

@@ -45,7 +45,7 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 	}
 
 	if v, ok := f.Info().GetN("nick", 0); ok {
-		log.Warnf("override nick %s with %s", f.twter.Nick, v.Value())
+		log.Debugf("override nick %s with %s", f.twter.Nick, v.Value())
 		f.twter.Nick = v.Value()
 	}
 

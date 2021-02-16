@@ -620,6 +620,17 @@ func TestParseTwt(t *testing.T) {
 				lextwt.NewLink("", "https://fosstodon.org/@/105673078150704477", lextwt.LinkNaked),
 			),
 		},
+
+		{
+			lit: `2021-02-04T12:54:21Z	@stats.`,
+			md: "@stats.",
+			twt: lextwt.NewTwt(
+				twter,
+				lextwt.NewDateTime(parseTime("2021-02-04T12:54:21Z"), "2021-02-04T12:54:21Z"),
+				lextwt.NewMention("stats", ""),
+				lextwt.NewText("."),
+			),
+		},
 	}
 	fmtOpts := mockFmtOpts{"http://example.org"}
 	for i, tt := range tests {

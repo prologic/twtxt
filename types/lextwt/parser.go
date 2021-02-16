@@ -348,10 +348,14 @@ func (p *parser) ParseMention() *Mention {
 			p.append(p.curTok.Literal...)
 			p.next()
 
-			m.domain = string(p.curTok.Literal)
-
-			p.append(p.curTok.Literal...)
-			p.next()
+			p.push()
+			p.append(p.curTok.Literal...) // domain text
+			for !p.nextTokenIs(TokGT, TokRPAREN, TokSPACE, TokEOF) {
+				p.next()
+				p.append(p.curTok.Literal...) // domain text
+			}
+			m.domain = p.Literal()
+			p.pop()
 		}
 
 		m.lit = p.Literal()
@@ -387,10 +391,15 @@ func (p *parser) ParseMention() *Mention {
 			p.append(p.curTok.Literal...) // @
 			p.next()
 
-			m.domain = string(p.curTok.Literal)
+			p.push()
+			p.append(p.curTok.Literal...) // domain text
+			for !p.nextTokenIs(TokGT, TokRPAREN, TokSPACE, TokEOF) {
+				p.next()
+				p.append(p.curTok.Literal...) // domain text
+			}
+			m.domain = p.Literal()
+			p.pop()
 
-			p.append(p.curTok.Literal...)
-			p.next()
 			if !p.curTokenIs(TokSPACE) {
 				return nil
 			}

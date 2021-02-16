@@ -17,13 +17,13 @@ func DefaultTwtManager() {
 // ParseFile and return time & count limited twts + comments
 func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 
-	f := &lextwtFile{twter: twter}
+	f := &lextwtFile{twter: &twter}
 
 	nLines, nErrors := 0, 0
 
 	lexer := NewLexer(r)
 	parser := NewParser(lexer)
-	parser.SetTwter(twter)
+	parser.SetTwter(&twter)
 
 	for !parser.IsEOF() {
 		line := parser.ParseLine()
@@ -45,6 +45,7 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 	}
 
 	if v, ok := f.Info().GetN("nick", 0); ok {
+		log.Debugf("override nick %s with %s", f.twter.Nick, v.Value())
 		f.twter.Nick = v.Value()
 	}
 
@@ -66,7 +67,7 @@ func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
 	r := strings.NewReader(line)
 	lexer := NewLexer(r)
 	parser := NewParser(lexer)
-	parser.SetTwter(twter)
+	parser.SetTwter(&twter)
 
 	twt = parser.ParseTwt()
 
@@ -102,7 +103,7 @@ func (*lextwtManager) MakeTwt(twter types.Twter, ts time.Time, text string) type
 }
 
 type lextwtFile struct {
-	twter    types.Twter
+	twter    *types.Twter
 	twts     types.Twts
 	comments Comments
 }
@@ -110,8 +111,8 @@ type lextwtFile struct {
 var _ types.TwtFile = (*lextwtFile)(nil)
 
 func NewTwtFile(twter types.Twter, comments Comments, twts types.Twts) *lextwtFile {
-	return &lextwtFile{twter, twts, comments}
+	return &lextwtFile{&twter, twts, comments}
 }
-func (r *lextwtFile) Twter() types.Twter { return r.twter }
+func (r *lextwtFile) Twter() types.Twter { return *r.twter }
 func (r *lextwtFile) Info() types.Info   { return r.comments }
 func (r *lextwtFile) Twts() types.Twts   { return r.twts }

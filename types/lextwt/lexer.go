@@ -279,6 +279,9 @@ func (l *lexer) NextTok() bool {
 			l.loadScheme()
 			return true
 		default:
+			if l.loadIdentifier() {
+				return true
+			}
 			l.loadString(" @#!:`<>()[]\u2028\n\t")
 			return true
 		}
@@ -415,6 +418,23 @@ func (l *lexer) loadString(notaccept string) {
 		l.Literal = append(l.Literal, l.rune)
 		l.readRune()
 	}
+}
+func (l *lexer) loadIdentifier() bool {
+	// If the prior is a mention/tag/wiki modifier try to parse an identifier.
+	if !(l.last == '@' || l.last == '!' || l.last == '#') {
+		return false
+	}
+
+	if !(unicode.IsLetter(l.rune) || unicode.IsNumber(l.rune)) {
+		return false
+	}
+
+	l.Token = TokSTRING
+	for (unicode.IsLetter(l.rune) || unicode.IsNumber(l.rune)) {
+		l.Literal = append(l.Literal, l.rune)
+		l.readRune()
+	}
+	return true
 }
 func (l *lexer) loadScheme() {
 	l.Token = TokSTRING

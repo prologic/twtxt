@@ -447,9 +447,13 @@ func ReadPreambleFeed(r io.Reader) (*PreambleFeed, error) {
 	p := &PreambleFeed{r: r, buf: &bytes.Buffer{}, pre: &strings.Builder{}}
 	b := make([]byte, 4096)
 
-	i, err := r.Read(b)
+	i, err := r.Read(b[:1])
 	if err != nil {
-		return nil, err
+		if err == io.EOF {
+			return p, nil
+		}
+
+		return p, err
 	}
 	if i > 0 && b[0] != '#' {
 		p.buf.Write(b[:i])
@@ -477,7 +481,7 @@ func ReadPreambleFeed(r io.Reader) (*PreambleFeed, error) {
 				continue
 			}
 
-			return nil, err
+			return p, err
 		}
 	}
 

@@ -254,6 +254,23 @@ func TestPreambleFeed(t *testing.T) {
 			drain: "",
 		},
 
+		{
+			in: "",
+			preamble: "",
+			drain: "",
+		},
+
+		{
+			in: "X",
+			preamble: "",
+			drain: "X",
+		},
+
+		{
+			in: "#",
+			preamble: "#",
+			drain: "",
+		},
 	}
 
 	is := is.New(t)

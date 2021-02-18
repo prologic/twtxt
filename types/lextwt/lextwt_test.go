@@ -997,15 +997,28 @@ func (m mockFmtOpts) URLForUser(username string) string {
 // func TestSomethingWeird(t *testing.T) {
 // 	is := is.New(t)
 // 	twter := types.Twter{Nick: "prologic", URL: "https://twtxt.net/user/prologic/twtxt.txt"}
-// 	res, _ := http.Get("https://twtxt.net/user/prologic/twtxt.txt")
-// 	twt, err := lextwt.ParseFile(res.Body, twter)
+// 	res, err := http.Get("https://twtxt.net/user/prologic/twtxt.txt")
+
+// 	is.NoErr(err)
+// 	defer res.Body.Close()
+
+// 	b, _ := ioutil.ReadAll(res.Body)
+
+// 	retwt, err := retwt.ParseFile(bytes.NewReader(b), twter)
 // 	is.NoErr(err)
 
-// 	for _, tt := range twt.Twts() {
-// 		s := tt.(*lextwt.Twt).LiteralText()
-// 		if strings.HasPrefix(s, "Alligator") {
-// 			t.Log(s)
-// 		}
+// 	letwt, err := lextwt.ParseFile(bytes.NewReader(b), twter)
+// 	is.NoErr(err)
+
+// 	Rtwts := retwt.Twts()
+// 	Ltwts := letwt.Twts()
+
+// 	t.Logf("R TWTS: %d, L Twts: %d", len(Rtwts), len(Ltwts))
+
+// 	for i := range Rtwts {
+// 		t.Log(i)
+// 		is.Equal(fmt.Sprint(Rtwts[i]), fmt.Sprint(Ltwts[i]))
 // 	}
+
 // 	is.True(false)
 // }

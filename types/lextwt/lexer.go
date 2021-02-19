@@ -439,12 +439,12 @@ func (l *lexer) loadIdentifier() bool {
 		return false
 	}
 
-	if !(unicode.IsLetter(l.rune) || unicode.IsNumber(l.rune)) {
+	if !(l.rune == '_' || l.rune == '-' || unicode.IsLetter(l.rune) || unicode.IsNumber(l.rune)) {
 		return false
 	}
 
 	l.Token = TokSTRING
-	for unicode.IsLetter(l.rune) || unicode.IsNumber(l.rune) {
+	for l.rune == '_' || l.rune == '-' || unicode.IsLetter(l.rune) || unicode.IsNumber(l.rune) {
 		l.Literal = append(l.Literal, l.rune)
 		l.readRune()
 	}

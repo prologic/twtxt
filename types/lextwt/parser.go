@@ -535,7 +535,12 @@ func (p *parser) ParseSubject() *Subject {
 	// form: (text)
 	if !p.curTokenIs(TokRPAREN) {
 		p.push()
-		subject.subject = p.ParseText().Literal()
+		p.append(p.curTok.Literal...) // subject text
+			for !p.nextTokenIs(TokGT, TokRPAREN, TokEOF) {
+				p.next()
+				p.append(p.curTok.Literal...) // subject text
+			}
+		subject.subject = p.Literal()
 		p.pop()
 
 		if !p.curTokenIs(TokRPAREN) {

@@ -35,6 +35,22 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 			f.comments = append(f.comments, e)
 		case *Twt:
 			f.twts = append(f.twts, e)
+
+			// If the twt has an override twter add to authors.
+			if e.twter.URL != f.twter.URL {
+				found := false
+				for i := range f.twters {
+					if f.twters[i].URL == e.twter.URL {
+						found = true
+						// de-dup the elements twter with the file one.
+						e.twter = f.twters[i]
+					}
+				}
+				// only add to authors if not seen before.
+				if !found {
+					f.twters = append(f.twters, e.twter)
+				}
+			}
 		}
 	}
 	nErrors = len(parser.Errs())
@@ -104,6 +120,7 @@ func (*lextwtManager) MakeTwt(twter types.Twter, ts time.Time, text string) type
 
 type lextwtFile struct {
 	twter    *types.Twter
+	twters   []*types.Twter
 	twts     types.Twts
 	comments Comments
 }
@@ -111,8 +128,9 @@ type lextwtFile struct {
 var _ types.TwtFile = (*lextwtFile)(nil)
 
 func NewTwtFile(twter types.Twter, comments Comments, twts types.Twts) *lextwtFile {
-	return &lextwtFile{&twter, twts, comments}
+	return &lextwtFile{&twter, []*types.Twter{&twter}, twts, comments}
 }
-func (r *lextwtFile) Twter() types.Twter { return *r.twter }
-func (r *lextwtFile) Info() types.Info   { return r.comments }
-func (r *lextwtFile) Twts() types.Twts   { return r.twts }
+func (r *lextwtFile) Twter() types.Twter      { return *r.twter }
+func (r *lextwtFile) Authors() []*types.Twter { return r.twters }
+func (r *lextwtFile) Info() types.Info        { return r.comments }
+func (r *lextwtFile) Twts() types.Twts        { return r.twts }

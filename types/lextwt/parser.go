@@ -535,7 +535,12 @@ func (p *parser) ParseSubject() *Subject {
 	// form: (text)
 	if !p.curTokenIs(TokRPAREN) {
 		p.push()
-		subject.subject = p.ParseText().Literal()
+		p.append(p.curTok.Literal...) // subject text
+			for !p.nextTokenIs(TokGT, TokRPAREN, TokEOF) {
+				p.next()
+				p.append(p.curTok.Literal...) // subject text
+			}
+		subject.subject = p.Literal()
 		p.pop()
 
 		if !p.curTokenIs(TokRPAREN) {
@@ -749,18 +754,11 @@ func (p *parser) ParseCode() *Code {
 	p.append(p.curTok.Literal...) // )
 
 	lit := p.Literal()
-	if len(lit) >= 6 && lit[:3] == "```" && lit[len(lit)-3:] == "```" {
-		code.codeType = CodeBlock
-		code.lit = string(lit[3 : len(lit)-3])
-
-		p.next()
-
-		return code
-	}
-
 	code.codeType = CodeInline
-	code.lit = string(lit[1 : len(lit)-1])
-
+	if len(lit) > 3 && lit[:3] == "```" {
+		code.codeType = CodeBlock
+	}
+	code.lit = strings.Trim(lit, "`")
 	p.next()
 
 	return code

@@ -464,6 +464,9 @@ func (n *Text) String() string  { return n.lit }
 func (n *Text) Format(state fmt.State, r rune) {
 	_, _ = state.Write([]byte(n.lit))
 }
+func (n *Text) IsSpace() bool {
+	return strings.TrimSpace(n.lit) == ""
+}
 
 type lineSeparator struct{}
 
@@ -579,22 +582,28 @@ func (n *Code) String() string {
 }
 
 type Twt struct {
-	dt       *DateTime
-	msg      []Elem
-	mentions []*Mention
-	tags     []*Tag
-	links    []*Link
-	hash     string
-	subject  *Subject
-	twter    *types.Twter
-	pos      int
+	dt         *DateTime
+	msg        []Elem
+	mentions   []*Mention
+	tags       []*Tag
+	links      []*Link
+	hash       string
+	subject    *Subject
+	twter      *types.Twter
+	pos        int
+	hasSubject bool
+	isProxy    bool
 }
 
 var _ Line = (*Twt)(nil)
 var _ types.Twt = (*Twt)(nil)
 
 func NewTwt(twter types.Twter, dt *DateTime, elems ...Elem) *Twt {
-	twt := &Twt{twter: &twter, dt: dt, msg: make([]Elem, 0, len(elems))}
+	twt := &Twt{
+		twter:      &twter,
+		dt:         dt,
+		msg:        make([]Elem, 0, len(elems)),
+	}
 
 	for _, elem := range elems {
 		twt.append(elem)
@@ -628,10 +637,24 @@ func (twt *Twt) append(elem Elem) {
 
 	twt.msg = append(twt.msg, elem)
 
-	if subject, ok := elem.(*Subject); ok {
-		if twt.subject == nil {
-			twt.subject = subject
+	// Look for subject if not found and msg's before are only space or mention.
+	if !twt.hasSubject {
+		switch elem := elem.(type) {
+		case *Subject:
+			twt.subject = elem
+			twt.hasSubject = true
+
+		case *Mention:
+		case *Text:
+			if !elem.IsSpace() {
+				twt.hasSubject = true
+			}
+		default:
+			twt.hasSubject = true
 		}
+	}
+
+	if subject, ok := elem.(*Subject); ok {
 		if subject.tag != nil {
 			twt.tags = append(twt.tags, subject.tag)
 		}
@@ -647,6 +670,16 @@ func (twt *Twt) append(elem Elem) {
 
 	if link, ok := elem.(*Link); ok {
 		twt.links = append(twt.links, link)
+	}
+
+	// If the first two  elements are mention and tab move it into twter.
+	if text, ok := elem.(*Text); ok && strings.HasPrefix(text.lit, "\t") && len(twt.msg) == 2 {
+		if m, ok := twt.msg[0].(*Mention); ok {
+			text.lit = text.lit[1:]
+			twt.msg = twt.msg[1:]
+			twt.twter = &types.Twter{Nick: m.Name(), URL: m.Target()}
+			twt.isProxy = true
+		}
 	}
 }
 func (twt *Twt) IsNil() bool   { return twt == nil }
@@ -780,8 +813,12 @@ func DecodeJSON(data []byte) (types.Twt, error) {
 	return twt, nil
 }
 func (twt Twt) Format(state fmt.State, c rune) {
-	if state.Flag('+') {
+	if state.Flag('+') || state.Flag('#') {
 		fmt.Fprint(state, twt.dt.Literal())
+		state.Write([]byte("\t"))
+	}
+	if state.Flag('#') || twt.isProxy {
+		fmt.Fprint(state, NewMention(twt.twter.Nick, twt.twter.URL))
 		state.Write([]byte("\t"))
 	}
 

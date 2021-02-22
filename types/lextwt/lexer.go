@@ -344,12 +344,25 @@ func (l *lexer) GetTok() Token {
 }
 
 func (l *lexer) readBuf() {
-	size, err := l.r.Read(l.buf[l.pos:])
-	if err != nil && size == 0 {
-		l.size = 0
-		return
+	pos := l.pos
+	for l.size < len(l.buf) {
+		// Calling read doesnt always fill the buffer. Additional calls are needed
+		// until the buffer is full or an EOF is returned.
+
+		size, err := l.r.Read(l.buf[pos:])
+
+		if err != nil && err != io.EOF {
+			l.size = 0
+			return
+		}
+
+		l.size += size
+		pos += size
+
+		if err == io.EOF {
+			return
+		}
 	}
-	l.size += size
 }
 
 func (l *lexer) readRune() {
@@ -368,7 +381,7 @@ func (l *lexer) readRune() {
 		return
 	}
 
-	// if not enough bytes left shift and fill.
+	// if not enough bytes left for full rune shift and fill.
 	var size int
 	if !utf8.FullRune(l.buf[l.pos:l.size]) {
 		copy(l.buf[:], l.buf[l.pos:l.size])
@@ -377,6 +390,7 @@ func (l *lexer) readRune() {
 		l.readBuf()
 		l.pos = 0
 	}
+	// If the new buffer is still a partial rune, EOF
 	if !utf8.FullRune(l.buf[l.pos:l.size]) {
 		l.rune = EOF
 		return
@@ -425,12 +439,12 @@ func (l *lexer) loadIdentifier() bool {
 		return false
 	}
 
-	if !(unicode.IsLetter(l.rune) || unicode.IsNumber(l.rune)) {
+	if !(l.rune == '_' || l.rune == '-' || unicode.IsLetter(l.rune) || unicode.IsNumber(l.rune)) {
 		return false
 	}
 
 	l.Token = TokSTRING
-	for (unicode.IsLetter(l.rune) || unicode.IsNumber(l.rune)) {
+	for l.rune == '_' || l.rune == '-' || unicode.IsLetter(l.rune) || unicode.IsNumber(l.rune) {
 		l.Literal = append(l.Literal, l.rune)
 		l.readRune()
 	}
@@ -467,27 +481,27 @@ func (l *lexer) loadCode() {
 		l.readRune()
 	}
 
-	for !(l.rune == '`' || l.rune == 0 || l.rune == EOF || l.rune == '\n') {
+	for !(l.rune == 0 || l.rune == EOF || l.rune == '\n') {
 		l.Literal = append(l.Literal, l.rune)
 		l.readRune()
 
-		if block && l.rune == '`' {
+		if l.rune == '`' {
 			l.Literal = append(l.Literal, l.rune)
 			l.readRune()
-			if l.rune == '`' {
+
+			if block && l.rune == '`' {
 				l.Literal = append(l.Literal, l.rune)
 				l.readRune()
 				if l.rune == '`' {
 					l.Literal = append(l.Literal, l.rune)
 					l.readRune()
-					return
+
 				}
 			}
+
+			return
 		}
 	}
-
-	l.Literal = append(l.Literal, l.rune)
-	l.readRune()
 }
 
 func (l *lexer) loadSpace() {

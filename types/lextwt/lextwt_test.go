@@ -468,11 +468,14 @@ func testParseLink(t *testing.T, expect, elem *lextwt.Link) {
 }
 
 type twtTestCase struct {
-	lit  string
-	text string
-	md   string
-	html string
-	twt  types.Twt
+	lit       string
+	text      string
+	md        string
+	html      string
+	twt       types.Twt
+	subject   string
+	twter     *types.Twter
+	skipRetwt bool
 }
 
 func TestParseTwt(t *testing.T) {
@@ -510,6 +513,7 @@ func TestParseTwt(t *testing.T) {
 		},
 		{
 			lit: "2020-12-25T16:57:57Z	@<hirad https://twtxt.net/user/hirad/twtxt.txt> (#<hrqg53a https://twtxt.net/search?tag=hrqg53a>) @<prologic https://twtxt.net/user/prologic/twtxt.txt> make this a blog post plz  And I forgot, [Try It Online Again!](https://tio.run/#jVVbb5tIFH7nV5zgB8DGYJxU7br2Q1IpVausFWXbhxUhCMO4RgszdGbIRZv97d4zYAy2Y7fIRnP5znfuh@JFrhgdr9c9WElZiInrFhGPsxcZPZPMkWW@yLgTs9wtmJDuh/ejD@/eexfn3h9uSiXhBSf4Hi4ZH3rDlA6Lik/TemduKbi7SKlL6CNsjnvgDaAjh2u4ba5uK73wTSkGF74STnK1pTaMR94FIm7SmNCYQCrg0ye4@nv41yVcOCMEX1/egOec4@rz/Dt8vr15PNfSvGBcgngR2pKzHGKWZSSWKaMCNncJ@VkSTRM2iARm9da0bPj3P01LyBIYJUVWClMgdgZz3FoTDfBJl0AZcnNZ7zdnGaEm6nMi/uPRgrMZjNtr9RQcnQf9u4h@kAnoMIAG7Y8C3OngL9OMgGSwIECeSVxKkgT6DokSIc@pND2r1U0LNJAVHf2@F9hgcKMF8)",
+			subject: "(#hrqg53a)",
 			twt: lextwt.NewTwt(
 				twter,
 				lextwt.NewDateTime(parseTime("2020-12-25T16:57:57Z"), "2020-12-25T16:57:57Z"),
@@ -528,6 +532,7 @@ func TestParseTwt(t *testing.T) {
 
 		{
 			lit: "2020-12-04T21:43:43Z	@<prologic https://twtxt.net/user/prologic/twtxt.txt> (#<63dtg5a https://txt.sour.is/search?tag=63dtg5a>) Web Key Directory: a way to self host your public key. instead of using a central system like pgp.mit.net or OpenPGP.org you have your key on a server you own.   it takes an email@address.com hashes the part before the @ and turns it into `[openpgpkey.]address.com/.well-known/openpgpkey[/address.com]/<hash>`",
+			subject: "(#63dtg5a)",
 			twt: lextwt.NewTwt(
 				twter,
 				lextwt.NewDateTime(parseTime("2020-12-04T21:43:43Z"), "2020-12-04T21:43:43Z"),
@@ -583,6 +588,7 @@ func TestParseTwt(t *testing.T) {
 
 		{
 			lit: `2021-01-24T02:19:54Z	(#ezmdswq) @<lyse https://lyse.isobeef.org/twtxt.txt> (#ezmdswq) Looks good for me!  ![](https://txt.sour.is/media/353DzAXLDCv43GofSMw6SL)`,
+			subject: "(#ezmdswq)",
 			twt: lextwt.NewTwt(
 				twter,
 				lextwt.NewDateTime(parseTime("2021-01-24T02:19:54Z"), "2021-01-24T02:19:54Z"),
@@ -631,6 +637,39 @@ func TestParseTwt(t *testing.T) {
 				lextwt.NewText("."),
 			),
 		},
+
+		{
+			lit: `2021-02-04T12:54:21Z	a twt witn (not a) subject`,
+			subject: "(#czirbha)",
+			twt: lextwt.NewTwt(
+				twter,
+				lextwt.NewDateTime(parseTime("2021-02-04T12:54:21Z"), "2021-02-04T12:54:21Z"),
+				lextwt.NewText("a twt witn "),
+				lextwt.NewSubject("not a"),
+				lextwt.NewText(" subject"),
+			),
+		},
+
+		{
+			lit: `2021-02-04T12:54:21Z	@<other http://example.com/other.txt>	example`,
+			twter:     &types.Twter{Nick: "other", URL: "http://example.com/other.txt"},
+			skipRetwt: true,
+			twt: lextwt.NewTwt(
+				types.Twter{Nick: "other", URL: "http://example.com/other.txt"},
+				lextwt.NewDateTime(parseTime("2021-02-04T12:54:21Z"), "2021-02-04T12:54:21Z"),
+				lextwt.NewMention("other", "http://example.com/other.txt"),
+				lextwt.NewText("\texample"),
+			),
+		},
+
+		{
+			lit: `2021-02-18T00:44:45Z	(_just kidding!_)`,
+			twt: lextwt.NewTwt(
+				twter,
+				lextwt.NewDateTime(parseTime("2021-02-18T00:44:45Z"), "2021-02-18T00:44:45Z"),
+				lextwt.NewSubject("_just kidding!_"),
+			),
+		},
 	}
 	fmtOpts := mockFmtOpts{"http://example.org"}
 	for i, tt := range tests {
@@ -642,12 +681,14 @@ func TestParseTwt(t *testing.T) {
 		parser.SetTwter(&twter)
 		twt := parser.ParseTwt()
 
-		rt, err := retwt.ParseLine(strings.TrimRight(tt.lit, "\n"), twter)
-		is.NoErr(err)
-		is.True(rt != nil)
+		if !tt.skipRetwt {
+			rt, err := retwt.ParseLine(strings.TrimRight(tt.lit, "\n"), twter)
+			is.NoErr(err)
+			is.True(rt != nil)
 
-		if twt != nil && rt != nil {
-			is.Equal(twt.Hash(), rt.Hash())
+			if twt != nil && rt != nil {
+				is.Equal(twt.Hash(), rt.Hash())
+			}
 		}
 
 		is.True(twt != nil)
@@ -662,6 +703,13 @@ func TestParseTwt(t *testing.T) {
 		}
 		if tt.html != "" {
 			is.Equal(twt.FormatText(types.HTMLFmt, fmtOpts), tt.html)
+		}
+		if tt.subject != "" {
+			is.Equal(fmt.Sprintf("%c", twt.Subject()), tt.subject)
+		}
+		if tt.twter != nil {
+			is.Equal(twt.Twter().Nick, tt.twter.Nick)
+			is.Equal(twt.Twter().URL, tt.twter.URL)
 		}
 	}
 }
@@ -997,15 +1045,28 @@ func (m mockFmtOpts) URLForUser(username string) string {
 // func TestSomethingWeird(t *testing.T) {
 // 	is := is.New(t)
 // 	twter := types.Twter{Nick: "prologic", URL: "https://twtxt.net/user/prologic/twtxt.txt"}
-// 	res, _ := http.Get("https://twtxt.net/user/prologic/twtxt.txt")
-// 	twt, err := lextwt.ParseFile(res.Body, twter)
+// 	res, err := http.Get("https://twtxt.net/user/prologic/twtxt.txt")
+
+// 	is.NoErr(err)
+// 	defer res.Body.Close()
+
+// 	b, _ := ioutil.ReadAll(res.Body)
+
+// 	retwt, err := retwt.ParseFile(bytes.NewReader(b), twter)
 // 	is.NoErr(err)
 
-// 	for _, tt := range twt.Twts() {
-// 		s := tt.(*lextwt.Twt).LiteralText()
-// 		if strings.HasPrefix(s, "Alligator") {
-// 			t.Log(s)
-// 		}
+// 	letwt, err := lextwt.ParseFile(bytes.NewReader(b), twter)
+// 	is.NoErr(err)
+
+// 	Rtwts := retwt.Twts()
+// 	Ltwts := letwt.Twts()
+
+// 	t.Logf("R TWTS: %d, L Twts: %d", len(Rtwts), len(Ltwts))
+
+// 	for i := range Rtwts {
+// 		t.Log(i)
+// 		is.Equal(fmt.Sprint(Rtwts[i]), fmt.Sprint(Ltwts[i]))
 // 	}
+
 // 	is.True(false)
 // }

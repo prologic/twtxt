@@ -1011,7 +1011,7 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.User.Follow(name, URLForUser(s.config, name))
+		ctx.User.Follow(name, URLForUser(s.config.BaseURL, name))
 
 		if err := s.db.SetUser(ctx.Username, ctx.User); err != nil {
 			ctx.Error = true
@@ -1025,8 +1025,8 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			twtxtBot,
 			fmt.Sprintf(
 				"FEED: @<%s %s> from @<%s %s>",
-				name, URLForUser(s.config, name),
-				ctx.User.Username, URLForUser(s.config, ctx.User.Username),
+				name, URLForUser(s.config.BaseURL, name),
+				ctx.User.Username, URLForUser(s.config.BaseURL, ctx.User.Username),
 			),
 		); err != nil {
 			log.WithError(err).Warnf("error appending special FOLLOW post")
@@ -1232,7 +1232,7 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 		user.Username = username
 		user.Password = hash
 		user.Recovery = recoveryHash
-		user.URL = URLForUser(s.config, username)
+		user.URL = URLForUser(s.config.BaseURL, username)
 		user.CreatedAt = time.Now()
 
 		if err := s.db.SetUser(username, user); err != nil {

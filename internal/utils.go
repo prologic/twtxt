@@ -1313,10 +1313,10 @@ func URLForTwt(baseURL, hash string) string {
 	)
 }
 
-func URLForUser(conf *Config, username string) string {
+func URLForUser(baseURL, username string) string {
 	return fmt.Sprintf(
 		"%s/user/%s/twtxt.txt",
-		strings.TrimSuffix(conf.BaseURL, "/"),
+		strings.TrimSuffix(baseURL, "/"),
 		username,
 	)
 }
@@ -1820,7 +1820,7 @@ func NewFeedLookup(conf *Config, db Store, user *User) types.FeedLookup {
 
 		username := NormalizeUsername(nick)
 		if db.HasUser(username) || db.HasFeed(username) {
-			return &types.Twter{Nick: username, URL: URLForUser(conf, username)}
+			return &types.Twter{Nick: username, URL: URLForUser(conf.BaseURL, username)}
 		}
 
 		return &types.Twter{Nick: nick}

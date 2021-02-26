@@ -170,7 +170,7 @@ func GetAllTwts(conf *Config, name string) (types.Twts, error) {
 
 	twter := types.Twter{
 		Nick: name,
-		URL:  URLForUser(conf, name),
+		URL:  URLForUser(conf.BaseURL, name),
 	}
 	fn := filepath.Join(p, name)
 	f, err := os.Open(fn)

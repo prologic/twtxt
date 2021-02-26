@@ -82,7 +82,7 @@ func (s *Server) ViewBlogHandler() httprouter.Handle {
 
 		html := markdown.ToHTML(blogPost.Bytes(), mdParser, renderer)
 
-		who := fmt.Sprintf("%s %s", blogPost.Author, URLForUser(s.config, blogPost.Author))
+		who := fmt.Sprintf("%s %s", blogPost.Author, URLForUser(s.config.BaseURL, blogPost.Author))
 		when := blogPost.Created().Format(time.RFC3339)
 
 		var (
@@ -121,19 +121,19 @@ func (s *Server) ViewBlogHandler() httprouter.Handle {
 			Keywords:    strings.Join(ks, ", "),
 		}
 		ctx.Links = append(ctx.Links, types.Link{
-			Href: fmt.Sprintf("%s/webmention", UserURL(URLForUser(s.config, blogPost.Author))),
+			Href: fmt.Sprintf("%s/webmention", UserURL(URLForUser(s.config.BaseURL, blogPost.Author))),
 			Rel:  "webmention",
 		})
 		ctx.Alternatives = append(ctx.Alternatives, types.Alternatives{
 			types.Alternative{
 				Type:  "text/plain",
 				Title: fmt.Sprintf("%s's Twtxt Feed", blogPost.Author),
-				URL:   URLForUser(s.config, blogPost.Author),
+				URL:   URLForUser(s.config.BaseURL, blogPost.Author),
 			},
 			types.Alternative{
 				Type:  "application/atom+xml",
 				Title: fmt.Sprintf("%s's Atom Feed", blogPost.Author),
-				URL:   fmt.Sprintf("%s/atom.xml", UserURL(URLForUser(s.config, blogPost.Author))),
+				URL:   fmt.Sprintf("%s/atom.xml", UserURL(URLForUser(s.config.BaseURL, blogPost.Author))),
 			},
 		}...)
 

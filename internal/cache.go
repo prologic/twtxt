@@ -208,7 +208,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 						userAgent = fmt.Sprintf(
 							"twtxt/%s (+%s; @%s)",
 							twtxt.FullVersion(),
-							URLForUser(conf, feedFollowers[0]), feedFollowers[0],
+							URLForUser(conf.BaseURL, feedFollowers[0]), feedFollowers[0],
 						)
 					} else {
 						userAgent = fmt.Sprintf(
@@ -263,7 +263,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 
 				twter := types.Twter{Nick: feed.Nick}
 				if strings.HasPrefix(feed.URL, conf.BaseURL) {
-					twter.URL = URLForUser(conf, feed.Nick)
+					twter.URL = URLForUser(conf.BaseURL, feed.Nick)
 					twter.Avatar = URLForAvatar(conf.BaseURL, feed.Nick)
 				} else {
 					twter.URL = feed.URL

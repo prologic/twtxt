@@ -180,7 +180,7 @@ func (s *Server) AddUserHandler() httprouter.Handle {
 		user.Username = username
 		user.Recovery = recoveryHash
 		user.Password = hash
-		user.URL = URLForUser(s.config, username)
+		user.URL = URLForUser(s.config.BaseURL, username)
 		user.CreatedAt = time.Now()
 
 		if err := s.db.SetUser(username, user); err != nil {

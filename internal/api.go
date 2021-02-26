@@ -265,7 +265,7 @@ func (a *API) RegisterEndpoint() httprouter.Handle {
 			Username:  username,
 			Password:  hash,
 			Recovery:  recoveryHash,
-			URL:       URLForUser(a.config, username),
+			URL:       URLForUser(a.config.BaseURL, username),
 			CreatedAt: time.Now(),
 		}
 
@@ -626,8 +626,8 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 					twtxtBot,
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						followee.Username, URLForUser(a.config, followee.Username),
-						user.Username, URLForUser(a.config, user.Username),
+						followee.Username, URLForUser(a.config.BaseURL, followee.Username),
+						user.Username, URLForUser(a.config.BaseURL, user.Username),
 						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
@@ -654,8 +654,8 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 					twtxtBot,
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						feed.Name, URLForUser(a.config, feed.Name),
-						user.Username, URLForUser(a.config, user.Username),
+						feed.Name, URLForUser(a.config.BaseURL, feed.Name),
+						user.Username, URLForUser(a.config.BaseURL, user.Username),
 						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
@@ -728,8 +728,8 @@ func (a *API) UnfollowEndpoint() httprouter.Handle {
 					twtxtBot,
 					fmt.Sprintf(
 						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						followee.Username, URLForUser(a.config, followee.Username),
-						user.Username, URLForUser(a.config, user.Username),
+						followee.Username, URLForUser(a.config.BaseURL, followee.Username),
+						user.Username, URLForUser(a.config.BaseURL, user.Username),
 						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
@@ -1064,7 +1064,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 		profileResponse.Twter = types.Twter{
 			Nick:   profile.Username,
 			Avatar: URLForAvatar(a.config.BaseURL, profile.Username),
-			URL:    URLForUser(a.config, profile.Username),
+			URL:    URLForUser(a.config.BaseURL, profile.Username),
 		}
 
 		data, err := json.Marshal(profileResponse)

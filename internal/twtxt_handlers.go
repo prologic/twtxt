@@ -109,7 +109,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 						twtxtBot,
 						fmt.Sprintf(
 							"FOLLOW: @<%s %s> from @<%s %s> using %s",
-							nick, URLForUser(s.config, nick),
+							nick, URLForUser(s.config.BaseURL, nick),
 							followerClient.Nick, followerClient.URL,
 							followerClient.Client,
 						),

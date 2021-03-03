@@ -864,6 +864,7 @@ func TestParseText(t *testing.T) {
 type fileTestCase struct {
 	in    io.Reader
 	twter types.Twter
+	override *types.Twter
 	out   types.TwtFile
 }
 
@@ -876,6 +877,7 @@ func TestParseFile(t *testing.T) {
 	tests := []fileTestCase{
 		{
 			twter: twter,
+			override: &override,
 			in: strings.NewReader(`# My Twtxt!
 # nick = override
 # url = https://example.com/twtxt.txt
@@ -928,6 +930,15 @@ func TestParseFile(t *testing.T) {
 				},
 			),
 		},
+		{
+			twter: twter,
+			in: strings.NewReader(`2016-02-03`),
+			out: lextwt.NewTwtFile(
+				twter,
+				nil,
+				[]types.Twt{},
+			),
+		},
 	}
 	for i, tt := range tests {
 		t.Logf("ParseFile %d", i)
@@ -936,7 +947,9 @@ func TestParseFile(t *testing.T) {
 		is.True(err == nil)
 		is.True(f != nil)
 
-		is.Equal(override, f.Twter())
+		if tt.override != nil {
+			is.Equal(*tt.override, f.Twter())
+		}
 
 		{
 			lis := f.Info().GetAll("")

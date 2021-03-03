@@ -34,6 +34,12 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 		case *Comment:
 			f.comments = append(f.comments, e)
 		case *Twt:
+			if e.IsNil() {
+				log.Errorf("invalid feed or bad line parsing %#v", twter)
+				nErrors++
+				continue
+			}
+
 			f.twts = append(f.twts, e)
 
 			// If the twt has an override twter add to authors.
@@ -53,11 +59,11 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 			}
 		}
 	}
-	nErrors = len(parser.Errs())
+	nErrors += len(parser.Errs())
 
-	if (nLines+nErrors > 0) && nLines == nErrors {
+	if nErrors >= nLines {
 		log.Warnf("erroneous feed dtected (nLines + nErrors > 0 && nLines == nErrors): %d/%d", nLines, nErrors)
-		// return nil, ErrParseElm
+		return nil, ErrParseElm
 	}
 
 	if v, ok := f.Info().GetN("nick", 0); ok {

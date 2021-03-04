@@ -473,7 +473,7 @@ func (s *Server) initRoutes() {
 			log.Fatal("error getting SubFS for static/js")
 		}
 
-		imgFS, err := fs.Sub(staticJS, "static/img")
+		imgFS, err := fs.Sub(staticIMG, "static/img")
 		if err != nil {
 			log.Fatal("error getting SubFS for static/img")
 		}

@@ -130,11 +130,6 @@ gmake
 ```
 
 
-__NOTE___: It is important you follow these steps and don't just simply attempt
-           `go get ...` this project as that will not work ([#30](https://github.com/jointwt/twtxt/issues/30)) due to the
-           need to package templates and static assets which we use the
-           [go.rice](https://github.com/GeertJohan/go.rice) tool for.
-
 ## Usage
 
 ### Command-line Client

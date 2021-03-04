@@ -19,5 +19,3 @@ Dockerfile
 /data/media/*
 /data/avatars/*
 /data/feedsources
-
-/internal/rice-box.go

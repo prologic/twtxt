@@ -5,6 +5,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"net/url"
 	"os"
@@ -462,9 +463,24 @@ func (s *Server) initRoutes() {
 		s.router.ServeFiles("/img/*filepath", http.Dir("./internal/static/img"))
 		s.router.ServeFiles("/js/*filepath", http.Dir("./internal/static/js"))
 	} else {
-		s.router.ServeFilesWithCacheControl("/css/:commit/*filepath", staticCSS)
-		s.router.ServeFilesWithCacheControl("/img/:commit/*filepath", staticIMG)
-		s.router.ServeFilesWithCacheControl("/js/:commit/*filepath", staticJS)
+		cssFS, err := fs.Sub(staticCSS, "static/css")
+		if err != nil {
+			log.Fatal("error getting SubFS for static/css")
+		}
+
+		jsFS, err := fs.Sub(staticJS, "static/js")
+		if err != nil {
+			log.Fatal("error getting SubFS for static/js")
+		}
+
+		imgFS, err := fs.Sub(staticJS, "static/img")
+		if err != nil {
+			log.Fatal("error getting SubFS for static/img")
+		}
+
+		s.router.ServeFilesWithCacheControl("/css/:commit/*filepath", cssFS)
+		s.router.ServeFilesWithCacheControl("/img/:commit/*filepath", imgFS)
+		s.router.ServeFilesWithCacheControl("/js/:commit/*filepath", jsFS)
 	}
 
 	s.router.NotFound = http.HandlerFunc(s.NotFoundHandler)

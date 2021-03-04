@@ -129,13 +129,12 @@ func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
 func ParseFile(r io.Reader, twter types.Twter) (*retwtFile, error) {
 	scanner := bufio.NewScanner(r)
 
-	nLines, nErrors := 0, 0
+	nTwts, nErrors := 0, 0
 
 	f := &retwtFile{twter: twter}
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		nLines++
 
 		twt, err := ParseLine(line, twter)
 		if err != nil {
@@ -147,14 +146,15 @@ func ParseFile(r io.Reader, twter types.Twter) (*retwtFile, error) {
 			continue
 		}
 
+		nTwts++
 		f.twts = append(f.twts, twt)
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
 
-	if (nLines+nErrors > 0) && nLines == nErrors {
-		log.Warnf("erroneous feed dtected (nLines + nErrors > 0 && nLines == nErrors): %d/%d", nLines, nErrors)
+	if nTwts == 0 && nErrors > 0 {
+		log.Warnf("erroneous feed dtected (%d twts parsed %d errors)", nTwts, nErrors)
 		return nil, types.ErrInvalidFeed
 	}
 

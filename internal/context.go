@@ -142,7 +142,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 
 		ctx.Twter = types.Twter{
 			Nick: user.Username,
-			URL:  URLForUser(conf, user.Username),
+			URL:  URLForUser(conf.BaseURL, user.Username),
 		}
 
 		ctx.User = user

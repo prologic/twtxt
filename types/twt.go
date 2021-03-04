@@ -340,7 +340,10 @@ func (nilManager) MakeTwt(twter Twter, ts time.Time, text string) Twt {
 	panic("twt managernot configured")
 }
 
-var ErrNotImplemented = errors.New("not implemented")
+var (
+	ErrNotImplemented = errors.New("not implemented")
+	ErrInvalidFeed    = errors.New("error: erroneous feed detected")
+)
 
 var twtManager TwtManager = &nilManager{}
 

@@ -87,8 +87,8 @@ func (s *Server) FollowHandler() httprouter.Handle {
 					twtxtBot,
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						followee.Username, URLForUser(s.config, followee.Username),
-						user.Username, URLForUser(s.config, user.Username),
+						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
+						user.Username, URLForUser(s.config.BaseURL, user.Username),
 						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
@@ -119,8 +119,8 @@ func (s *Server) FollowHandler() httprouter.Handle {
 					twtxtBot,
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						feed.Name, URLForUser(s.config, feed.Name),
-						user.Username, URLForUser(s.config, user.Username),
+						feed.Name, URLForUser(s.config.BaseURL, feed.Name),
+						user.Username, URLForUser(s.config.BaseURL, user.Username),
 						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {
@@ -252,8 +252,8 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 					twtxtBot,
 					fmt.Sprintf(
 						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						followee.Username, URLForUser(s.config, followee.Username),
-						user.Username, URLForUser(s.config, user.Username),
+						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
+						user.Username, URLForUser(s.config.BaseURL, user.Username),
 						"twtxt", twtxt.FullVersion(),
 					),
 				); err != nil {

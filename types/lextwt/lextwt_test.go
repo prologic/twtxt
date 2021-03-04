@@ -862,9 +862,11 @@ func TestParseText(t *testing.T) {
 }
 
 type fileTestCase struct {
-	in    io.Reader
-	twter types.Twter
-	out   types.TwtFile
+	in       io.Reader
+	twter    types.Twter
+	override *types.Twter
+	out      types.TwtFile
+	err      error
 }
 
 func TestParseFile(t *testing.T) {
@@ -875,7 +877,8 @@ func TestParseFile(t *testing.T) {
 
 	tests := []fileTestCase{
 		{
-			twter: twter,
+			twter:    twter,
+			override: &override,
 			in: strings.NewReader(`# My Twtxt!
 # nick = override
 # url = https://example.com/twtxt.txt
@@ -928,15 +931,33 @@ func TestParseFile(t *testing.T) {
 				},
 			),
 		},
+		{
+			twter: twter,
+			in:    strings.NewReader(`2016-02-03`),
+			out: lextwt.NewTwtFile(
+				twter,
+				nil,
+				[]types.Twt{},
+			),
+			err: types.ErrInvalidFeed,
+		},
 	}
 	for i, tt := range tests {
 		t.Logf("ParseFile %d", i)
 
 		f, err := lextwt.ParseFile(tt.in, tt.twter)
+		if tt.err != nil {
+			is.True(err == tt.err)
+			is.True(f == nil)
+			continue
+		}
+
 		is.True(err == nil)
 		is.True(f != nil)
 
-		is.Equal(override, f.Twter())
+		if tt.override != nil {
+			is.Equal(*tt.override, f.Twter())
+		}
 
 		{
 			lis := f.Info().GetAll("")

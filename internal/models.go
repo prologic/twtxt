@@ -133,7 +133,7 @@ func CreateFeed(conf *Config, db Store, user *User, name string, force bool) err
 
 	feed := NewFeed()
 	feed.Name = name
-	feed.URL = URLForUser(conf, name)
+	feed.URL = URLForUser(conf.BaseURL, name)
 	feed.Followers = followers
 	feed.CreatedAt = time.Now()
 
@@ -502,7 +502,7 @@ func (u *User) Profile(baseURL string, viewer *User) types.Profile {
 
 		Username:  u.Username,
 		Tagline:   u.Tagline,
-		URL:       u.URL,
+		URL:       URLForUser(baseURL, u.Username),
 		BlogsURL:  URLForBlogs(baseURL, u.Username),
 		AvatarURL: URLForAvatar(baseURL, u.Username),
 

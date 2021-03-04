@@ -176,12 +176,12 @@ func (job *UpdateFeedsJob) Run() {
 
 	// Ensure all specialUsername feeds are in the cache
 	for _, username := range specialUsernames {
-		sources[types.Feed{Nick: username, URL: URLForUser(job.conf, username)}] = true
+		sources[types.Feed{Nick: username, URL: URLForUser(job.conf.BaseURL, username)}] = true
 	}
 
 	// Ensure all twtxtBots feeds are in the cache
 	for _, bot := range twtxtBots {
-		sources[types.Feed{Nick: bot, URL: URLForUser(job.conf, bot)}] = true
+		sources[types.Feed{Nick: bot, URL: URLForUser(job.conf.BaseURL, bot)}] = true
 	}
 
 	for _, feed := range feeds {

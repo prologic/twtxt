@@ -63,7 +63,7 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 
 	if nErrors >= nLines {
 		log.Warnf("erroneous feed dtected (nLines + nErrors > 0 && nLines == nErrors): %d/%d", nLines, nErrors)
-		return nil, ErrParseElm
+		return nil, types.ErrInvalidFeed
 	}
 
 	if v, ok := f.Info().GetN("nick", 0); ok {

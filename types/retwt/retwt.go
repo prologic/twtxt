@@ -155,7 +155,7 @@ func ParseFile(r io.Reader, twter types.Twter) (*retwtFile, error) {
 
 	if (nLines+nErrors > 0) && nLines == nErrors {
 		log.Warnf("erroneous feed dtected (nLines + nErrors > 0 && nLines == nErrors): %d/%d", nLines, nErrors)
-		return nil, ErrInvalidFeed
+		return nil, types.ErrInvalidFeed
 	}
 
 	return f, nil
@@ -415,7 +415,6 @@ func ParseTime(timestr string) (tm time.Time, err error) {
 
 var (
 	ErrInvalidTwtLine = errors.New("error: invalid twt line parsed")
-	ErrInvalidFeed    = errors.New("error: erroneous feed detected")
 )
 
 type retwtManager struct{}

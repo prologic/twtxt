@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/jointwt/twtxt/types"
+	log "github.com/sirupsen/logrus"
 )
 
 func DefaultTwtManager() {
@@ -19,7 +19,7 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 
 	f := &lextwtFile{twter: &twter}
 
-	nLines, nErrors := 0, 0
+	nTwts, nErrors := 0, 0
 
 	lexer := NewLexer(r)
 	parser := NewParser(lexer)
@@ -27,8 +27,6 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 
 	for !parser.IsEOF() {
 		line := parser.ParseLine()
-
-		nLines++
 
 		switch e := line.(type) {
 		case *Comment:
@@ -40,6 +38,7 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 				continue
 			}
 
+			nTwts++
 			f.twts = append(f.twts, e)
 
 			// If the twt has an override twter add to authors.
@@ -61,8 +60,8 @@ func ParseFile(r io.Reader, twter types.Twter) (types.TwtFile, error) {
 	}
 	nErrors += len(parser.Errs())
 
-	if nErrors >= nLines {
-		log.Warnf("erroneous feed dtected (nLines + nErrors > 0 && nLines == nErrors): %d/%d", nLines, nErrors)
+	if nTwts == 0 && nErrors > 0 {
+		log.Warnf("erroneous feed dtected (%d twts parsed %d errors)", nTwts, nErrors)
 		return nil, types.ErrInvalidFeed
 	}
 

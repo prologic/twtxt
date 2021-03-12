@@ -26,7 +26,8 @@ timeline is presented to the user.
 ## Format
 
 Each twt's hash is calculated using its author, timestamp and contents. The
-author feed URL, RFC 3339 formatted timestamp and twt text are joined with line
+author feed URL (see below, it is not necessarily identical to the URL which is
+being retrieved), RFC 3339 formatted timestamp and twt text are joined with line
 feeds:
 
 ```
@@ -38,6 +39,29 @@ feeds:
 This UTF-8 encoded string is Blake2b hashed with 256 bits and Base32 encoded
 without padding. After converting to lower case the last seven characters make
 up the twt hash.
+
+### Choosing the feed URL
+
+This addresses setups where the same feed is served over multiple protocols
+(HTTP, HTTPS, Gopher, ...).
+
+Feeds can include metadata at the beginning. This includes one or more `url`
+fields:
+
+```
+# nick = cathy
+# url  = https://cathy.example.com/twtxt.txt
+# url  = http://cathy.example.com/twtxt.txt
+# url  = gopher://cathy.example.com/0/twtxt.txt
+2020-10-11T10:40:48+02:00	hello world
+...
+```
+
+If `url` fields are present, the first one must be used for hashing. If none are
+present, then the URL which was used to retrieve the feed must be used.
+
+Users are advised to not change the first one of their `url`s. If they move
+their feed to a new URL, they should add this new URL as a new `url` field.
 
 ### Timestamp Format
 

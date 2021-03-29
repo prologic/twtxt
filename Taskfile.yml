@@ -27,6 +27,7 @@ tasks:
     cmds:
       - echo "开始构建{{.TwtdExe}}..."
       - go build -v -o dist/{{.TwtdSvc}}/{{.TwtdExe}} -ldflags "-w -X {{.Module}}.Version={{.Version}} -X {{.Module}}.Commit={{.Commit}}" cmd/{{.TwtdSvc}}/main.go
+      - cp -Rpfv ./internal/langs/*.toml ./dist/{{.TwtdSvc}}/langs/
       - echo "构建{{.TwtdExe}}完成"
     generates:
       - './dist/twtd/{{.TwtdExe}}'

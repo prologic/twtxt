@@ -1,0 +1,16 @@
+RegisterTitle = "注册"
+RegisterSummary = "在{{.InstanceName}}上创建并注册一个新的社交帐户"
+RegisterFormUsername = "用户名"
+RegisterFormPassword = "密码"
+RegisterFormEmail = "电子邮件"
+RegisterFormEmailSummary = "注意：我们实际上并不存储此信息！如果您忘记或丢失电子邮件帐户信息，我们将无法恢复您的帐户！"
+
+[MyUnreadEmails]
+description = "The number of unread emails I have"
+one = "I have {{.PluralCount}} unread email."
+other = "I have {{.PluralCount}} unread emails."
+
+[PersonUnreadEmails]
+description = "The number of unread emails a person has"
+one = "{{.Name}} has {{.UnreadEmailCount}} unread email."
+other = "{{.Name}} has {{.UnreadEmailCount}} unread emails."

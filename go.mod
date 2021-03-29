@@ -39,6 +39,7 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/justinas/nosurf v1.1.1
 	github.com/kr/pretty v0.2.0 // indirect
+	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/lithammer/shortuuid/v3 v3.0.5
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/marcinwyszynski/popart v0.0.0-20160216095024-f601a19c2970
@@ -51,6 +52,9 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.4.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
+	github.com/naoina/go-stringutil v0.1.0 // indirect
+	github.com/naoina/toml v0.1.1
+	github.com/nicksnyder/go-i18n/v2 v2.1.2 // indirect
 	github.com/nullrocks/identicon v0.0.0-20180626043057-7875f45b0022
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pelletier/go-toml v1.8.1 // indirect
@@ -86,6 +90,7 @@ require (
 	golang.org/x/net v0.0.0-20201224014010-6772e930b67b
 	golang.org/x/sys v0.0.0-20201223074533-0d417f636930 // indirect
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
+	golang.org/x/text v0.3.5
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect

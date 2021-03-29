@@ -97,6 +97,9 @@ type Server struct {
 
 	// Passwords
 	pm passwords.Passwords
+
+	// Translator
+	tr *Translator
 }
 
 func (s *Server) render(name string, w http.ResponseWriter, ctx *Context) {
@@ -712,7 +715,10 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		return nil, err
 	}
 
-	tmplman, err := NewTemplateManager(config, blogs, cache, archive)
+	// translator
+	translator := NewTranslator()
+
+	tmplman, err := NewTemplateManager(config, translator, blogs, cache, archive)
 	if err != nil {
 		log.WithError(err).Error("error creating template manager")
 		return nil, err
@@ -804,6 +810,9 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 		// Password Manager
 		pm: pm,
+
+		// Translator
+		tr: translator,
 	}
 
 	if err := server.setupCronJobs(); err != nil {

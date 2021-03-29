@@ -48,6 +48,7 @@ type User struct {
 	CreatedAt time.Time
 
 	Theme                      string `default:"auto"`
+	Lang                       string `default:"en"` // 增加语言设置
 	Recovery                   string `default:"auto"`
 	DisplayDatesInTimezone     string `default:"UTC"`
 	IsFollowersPubliclyVisible bool   `default:"true"`

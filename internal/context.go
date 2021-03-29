@@ -53,10 +53,12 @@ type Context struct {
 	Authenticated bool
 	IsAdmin       bool
 
-	Error   bool
-	Message string
-	Theme   string
-	Commit  string
+	Error       bool
+	Message     string
+	Lang        string // 默认语言
+	AcceptLangs string // 接受的语言列表
+	Theme       string
+	Commit      string
 
 	Page    string
 	Content template.HTML
@@ -89,6 +91,7 @@ type Context struct {
 }
 
 func NewContext(conf *Config, db Store, req *http.Request) *Context {
+	// context
 	ctx := &Context{
 		Debug: conf.Debug,
 
@@ -103,8 +106,10 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		OpenProfiles:     conf.OpenProfiles,
 		LastTwt:          types.NilTwt,
 
-		Commit: twtxt.Commit,
-		Theme:  conf.Theme,
+		Commit:      twtxt.Commit,
+		Theme:       conf.Theme,
+		Lang:        conf.Lang,
+		AcceptLangs: req.Header.Get("Accept-Language"),
 
 		Timezones: timezones.AllZones,
 
@@ -172,6 +177,11 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	default:
 		// Default to the configured theme
 		ctx.Theme = conf.Theme
+	}
+	// Set user language
+	lang := strings.ToLower(ctx.User.Lang)
+	if lang != "" {
+		ctx.Lang = lang
 	}
 
 	return ctx

@@ -44,6 +44,7 @@ type Config struct {
 	Description       string
 	Store             string
 	Theme             string
+	Lang              string
 	BaseURL           string
 	AdminUser         string
 	AdminName         string

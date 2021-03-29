@@ -1,0 +1,16 @@
+RegisterTitle = "Sign up"
+RegisterSummary = "Create and register a new Twt.social account on {{ .InstanceName }}"
+RegisterFormUsername = "Username"
+RegisterFormPassword = "Password"
+RegisterFormEmail = "Email address"
+RegisterFormEmailSummary = "NOTE:We DO NOT actually store this! If you forget or lose access to your Email account provided here, it will be impossible to recovery your Twt.social account!"
+
+[MyUnreadEmails]
+description = "The number of unread emails I have"
+one = "I have {{.PluralCount}} unread email."
+other = "I have {{.PluralCount}} unread emails."
+
+[PersonUnreadEmails]
+description = "The number of unread emails a person has"
+one = "{{.Name}} has {{.UnreadEmailCount}} unread email."
+other = "{{.Name}} has {{.UnreadEmailCount}} unread emails."

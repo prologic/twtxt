@@ -31,6 +31,7 @@ var (
 	data        string
 	store       string
 	theme       string
+	lang        string
 	baseURL     string
 	parser      string
 
@@ -90,6 +91,7 @@ func init() {
 	flag.StringVarP(&data, "data", "d", internal.DefaultData, "data directory")
 	flag.StringVarP(&store, "store", "s", internal.DefaultStore, "store to use")
 	flag.StringVarP(&theme, "theme", "t", internal.DefaultTheme, "set the default theme")
+	flag.StringVarP(&lang, "lang", "l", internal.DefaultLang, "set the default language")
 	flag.StringVarP(&baseURL, "base-url", "u", internal.DefaultBaseURL, "base url to use")
 
 	// Pod Oeprator

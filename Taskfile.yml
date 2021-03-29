@@ -1,0 +1,68 @@
+# https://taskfile.dev
+
+version: '3'
+
+output: 'prefixed'
+
+vars:
+  # 站点服务
+  TwtdSvc: twtd 
+  TwtdExe: twtd{{exeExt}} 
+
+tasks:
+  default:
+    cmds:
+      - task -l
+    silent: true
+
+  twtd:
+    desc: 运行TWT服务
+    cmds:
+      - task: run-twtd 
+
+
+  build-twtd:
+    desc: 构建TWT服务
+    deps: [twtd-css,twtd-js]
+    cmds:
+      - echo "开始构建{{.TwtdExe}}..."
+      - go build -v -o dist/{{.TwtdSvc}}/{{.TwtdExe}} -ldflags "-w -X {{.Module}}.Version={{.Version}} -X {{.Module}}.Commit={{.Commit}}" cmd/{{.TwtdSvc}}/main.go
+      - echo "构建{{.TwtdExe}}完成"
+    generates:
+      - './dist/twtd/{{.TwtdExe}}'
+    sources: 
+      - '**/*.go'
+    method: none
+    vars:
+      Commit:
+        sh: git rev-parse --short HEAD
+      Version:
+        sh: git describe --abbrev=0
+      Module:
+        sh: go list
+    silent: false
+
+  run-twtd:
+    cmds:
+      -  ./twtd --cookie-secret abc --magiclink-secret abc --api-signing-key abc -R --debug=false
+    dir: ./dist/twtd
+    deps: [build-twtd]
+    desc: 运行TWT服务
+    silent: false
+
+  twtd-css:
+    cmds:
+      - minify -b -o ./internal/static/css/twtxt.min.css ./internal/static/css/[0-9]*-*.css	
+    sources:
+      - internal/css/**/*.css
+    generates:
+      - internal/static/css/twtxt.min.css
+
+  twtd-js:
+    cmds:
+      - minify -b -o ./internal/static/js/twtxt.min.js ./internal/static/js/[0-9]*-*.js		
+    sources:
+      - internal/js/**/*.js
+    generates:
+      - internal/static/js/twtxt.min.js
+

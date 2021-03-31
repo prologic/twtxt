@@ -60,7 +60,7 @@ other = "关于我们"
 
 [MenuAbuse]
 hash = "sha1-411d6ee2454b2cd4eada9d338861ed000fc07b6e"
-other = "举报"
+other = "滥用政策"
 
 [MenuAtom]
 hash = "sha1-41dded417052424bdcf3c39f6c8664147fae6806"
@@ -148,7 +148,7 @@ other = "用户名"
 
 [RegisterGuidelines]
 hash = "sha1-09f2d7efb99d67b64c2193d184c5bc760bc8c412"
-other = "我同意遵守 <a href='/abuse'>社区准则</a>."
+other = "我同意遵守 <a href='/abuse'>社区准则及相关政策</a>."
 
 [RegisterHowToContent]
 hash = "sha1-0d58603b0b6a7a7d38c0ea9d73a9c54f68f76535"

@@ -2,21 +2,16 @@
   <article class="grid">
     <div>
       <hgroup>
-        <h2>Follow</h2>
-        <h3>Follow a new user or feed</h3>
+          <h2>{{tr . "FollowTitle"}}</h2>
+          <h3>{{tr . "FollowSummary"}}</h3>
       </hgroup>
       <form action="/follow" method="POST">
         <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-        <input type="nick" name="nick" placeholder="Nickname for the feed" aria-label="Username" autocomplete="nickname" autofocus required>
-        <input type="url" name="url" placeholder="URL of the feed" aria-label="URL" autocomplete="url" required>
-        <button type="submit" class="primary">Follow</button>
+        <input type="nick" name="nick" placeholder="{{tr . "FollowFormNickname"}}" aria-label="Username" autocomplete="nickname" autofocus required>
+        <input type="url" name="url" placeholder="{{tr . "FollowFormURL"}}" aria-label="URL" autocomplete="url" required>
+        <button type="submit" class="primary">{{tr . "FollowFormFollow"}}</button>
         <p>
-          Need to import a list of feeds from another client?
-          Use the <a href="/import">/import</a> feature.
-          You can also find other users on this {{ .InstanceName }} instance
-          on the <a href="/discover">/discover</a> page (<i>assuming they have posted</i>)
-          or discover other sources of external feeds to follow on the
-          <a href="/feeds">/feeds</a> page.
+        {{(tr . "FollowHowToContent" (dict "InstanceName" $.InstanceName))|html}}
         </p>
       </form>
     </div>

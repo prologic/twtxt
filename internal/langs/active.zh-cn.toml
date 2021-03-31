@@ -58,6 +58,30 @@ other = "当前实例禁止注册, 请联系管理员."
 hash = "sha1-7f2f6a15cf8da2b27e5a4af47b58e7ad71c0b3d9"
 other = "错误"
 
+[FollowFormFollow]
+hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"
+other = "关注"
+
+[FollowFormNickname]
+hash = "sha1-a13b2d85f9a867e6b997e106d7d78903f8201691"
+other = "昵称"
+
+[FollowFormURL]
+hash = "sha1-83f5eadf29e2d9a3510644c2e565df6964447a0d"
+other = "URL"
+
+[FollowHowToContent]
+hash = "sha1-28d94b74e71b2b65f4299219080260f2b556fa95"
+other = "需要从另一个客户端导入提要列表吗？使用<a href=\"/import\">导入</a>功能。您还可以在/ <a href=\"/discover\">发现</a>页面上的{{.InstanceName}}实例上找到其他用户（假设他们已发布），或在<a href=\"/feeds\">订阅</a>页面上找到其他外部feed的来源。"
+
+[FollowSummary]
+hash = "sha1-663405cfecbcf8daebd116d839113aac7cb00f7d"
+other = "关注用户或订阅"
+
+[FollowTitle]
+hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"
+other = "关注"
+
 [ForgottenPasswordContent]
 hash = "sha1-122216d4af117201b618588c4a2969c8ee9a1c16"
 other = "如果您忘记了密码, 只要您记住注册时使用的用户名和电子邮件地址并保留对电子邮件的访问权限，就可以请求<a href=\"/resetPassword\">重置密码</a>(<i>我们 <b>从不</b> 存储您的邮件地址!</i>)."

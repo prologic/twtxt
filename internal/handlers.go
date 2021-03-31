@@ -703,6 +703,8 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 
 		ctx := NewContext(s.config, s.db, r)
 
+		log.Infof("conext.lang=%s", ctx.Lang)
+		log.Infof("user.lang=%s", ctx.User.Lang)
 		var twts types.Twts
 
 		if !ctx.Authenticated {

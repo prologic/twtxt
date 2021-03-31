@@ -89,7 +89,7 @@ func (s *Server) SendMessageHandler() httprouter.Handle {
 		s.msgs.Inc(recipient)
 
 		ctx.Error = false
-		ctx.Message = "Messages successfully sent"
+		ctx.Message = s.tr(ctx, "MsgMessagesSuccessfullySent")
 		s.render("error", w, ctx)
 	}
 }

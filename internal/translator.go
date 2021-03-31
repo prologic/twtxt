@@ -15,8 +15,8 @@ func NewTranslator() *Translator {
 	bundle := i18n.NewBundle(language.English)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 	// No need to load active.en.toml since we are providing default translations.
-	bundle.MustLoadMessageFile("./langs/active.en.toml")
-	bundle.MustLoadMessageFile("./langs/active.zh-cn.toml")
+	bundle.MustLoadMessageFile("./internal/langs/active.en.toml")
+	bundle.MustLoadMessageFile("./internal/langs/active.zh-cn.toml")
 	// bundle.LoadMessageFile("./langs/active.zh-tw.toml")
 	return &Translator{
 		Bundle: bundle,

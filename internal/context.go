@@ -55,8 +55,8 @@ type Context struct {
 
 	Error       bool
 	Message     string
-	Lang        string // 默认语言
-	AcceptLangs string // 接受的语言列表
+	Lang        string // language
+	AcceptLangs string // accept languages
 	Theme       string
 	Commit      string
 
@@ -180,7 +180,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	}
 	// Set user language
 	lang := strings.ToLower(ctx.User.Lang)
-	if lang != "" {
+	if lang != "" && lang != "auto" {
 		ctx.Lang = lang
 	}
 

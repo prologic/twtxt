@@ -25,23 +25,23 @@
       <div class="p-summary">
         {{ $Msg.Text | formatTwtText }}
       </div>
-      <input type="submit" name="delete" value="Delete Message">
+      <input type="submit" name="delete" value="{{tr . "MessageFormDelete"}}">
     </form>
     <hgroup>
-      <h2>Compose Reply</h2>
+        <h2>{{tr . "ComposeMessageReplyTitle"}}</h2>
     </hgroup>
     <form id="compose" action="/messages/send" method="POST">
       <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
       <input type="hidden" name="recipient" value="{{ $Msg.User }}">
       <input type="hidden" name="subject" value="{{ $Msg.Subject }}">
       <div class="textarea-container">
-        <textarea id="body" name="body" placeholder="Your reply" rows=3 maxlength={{ $.MaxTwtLength }} required></textarea>
+          <textarea id="body" name="body" placeholder="{{tr . "ComposeMessageReplyFormBody"}}" rows=3 maxlength={{ $.MaxTwtLength }} required></textarea>
       </div>
       <div class="grid">
         <div>
           <button id="send" type="submit">
             <i class="icss-paper-plane"></i>
-            Send
+            {{tr . "ComposeMessageReplyFormSend"}}
           </button>
         </div>
       </div>

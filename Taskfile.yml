@@ -5,7 +5,6 @@ version: '3'
 output: 'prefixed'
 
 vars:
-  # 站点服务
   TwtdSvc: twtd 
   TwtdExe: twtd{{exeExt}} 
 
@@ -16,21 +15,20 @@ tasks:
     silent: true
 
   twtd:
-    desc: 运行TWT服务
+    desc: run twtd service
     cmds:
       - task: run-twtd 
 
 
   build-twtd:
-    desc: 构建TWT服务
-    deps: [twtd-css,twtd-js,merge]
+    desc: build twtd service
+    deps: [twtd-css,twtd-js,tr-merge]
     cmds:
-      - echo "开始构建{{.TwtdExe}}..."
-      - go build -v -o dist/{{.TwtdSvc}}/{{.TwtdExe}} -ldflags "-w -X {{.Module}}.Version={{.Version}} -X {{.Module}}.Commit={{.Commit}}" cmd/{{.TwtdSvc}}/main.go
-      - task: twtd-files
-      - echo "构建{{.TwtdExe}}完成"
+      - echo "{{.TwtdExe}} building..."
+      - go build -v -o {{.TwtdExe}} -ldflags "-w -X {{.Module}}.Version={{.Version}} -X {{.Module}}.Commit={{.Commit}}" cmd/{{.TwtdSvc}}/main.go
+      - echo "{{.TwtdExe}} built."
     generates:
-      - './dist/twtd/{{.TwtdExe}}'
+      - '{{.TwtdExe}}'
     sources: 
       - '**/*.go'
     method: none
@@ -43,29 +41,11 @@ tasks:
         sh: go list
     silent: false
 
-  twtd-files:
-    desc: copy static|langs files for debug
-    cmds:
-      - task: twtd-static
-      - task: twtd-langs
-
-  twtd-static:
-    desc: copy static files for debug
-    cmds:
-      - cp -Rpfv ./internal/static ./dist/{{.TwtdSvc}}/internal/
-
-  twtd-langs:
-    desc: copy languages files for debug
-    deps: [twtd-css,twtd-js,merge]
-    cmds:
-      - cp -Rpfv ./internal/langs/*.toml ./dist/{{.TwtdSvc}}/langs/
-
   run-twtd:
     cmds:
-      -  ./twtd --cookie-secret abc --magiclink-secret abc --api-signing-key abc -R --debug=true
-    dir: ./dist/twtd
+      -  ./twtd --cookie-secret abc --magiclink-secret abc --api-signing-key abc -R --debug
     deps: [build-twtd]
-    desc: 运行TWT服务
+    desc: run twtd service
     silent: false
 
   twtd-css:
@@ -90,7 +70,7 @@ tasks:
       - goi18n merge active.*.toml 
     desc: goi18n create
 
-  merge:
+  tr-merge:
     dir: internal/langs
     cmds:
       - goi18n merge active.*.toml translate.*.toml

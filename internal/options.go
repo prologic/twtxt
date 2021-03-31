@@ -49,7 +49,7 @@ const (
 	DefaultTheme = "auto"
 
 	// DefaultLang is the default language to use ('en' or 'zh-CN')
-	DefaultLang = "en"
+	DefaultLang = "auto"
 
 	// DefaultOpenRegistrations is the default for open user registrations
 	DefaultOpenRegistrations = false

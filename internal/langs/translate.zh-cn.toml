@@ -1,7 +1,3 @@
-[ErrorTitle]
-hash = "sha1-7f2f6a15cf8da2b27e5a4af47b58e7ad71c0b3d9"
-other = "错误"
-
-[SuccessTitle]
-hash = "sha1-42a8f651d79fd005eeac0612df6442b983a01184"
-other = "成功"
+[MsgMessagesSuccessfullySent]
+hash = "sha1-03a2ed9b9721a9755729b829c7623cfa4a9c0586"
+other = "私信已成功发送"

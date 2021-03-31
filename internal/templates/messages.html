@@ -2,8 +2,8 @@
   <article class="grid">
     <div>
       <hgroup>
-        <h2>Private Messages</h2>
-        <h3>Your private messages</h3>
+          <h2>{{tr . "MessagesTitle"}}</h2>
+          <h3>{{tr . "MessagesSummary"}}</h3>
       </hgroup>
       <form id="delete" action="/messages/delete" method="POST">
         <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
@@ -11,15 +11,16 @@
           <thead>
             <tr>
               <th scope="col"><input id="delete_all" type="checkbox" name="delete_all" data-tooltip="Delete all"></th>
-              <th scope="col">From</th>
-              <th scope="col">Subject</th>
-              <th scope="col">Received</th>
-              <th scope="col">Status</th>
+              <th scope="col">{{tr . "MessageFrom"}}</th>
+              <th scope="col">{{tr . "MessageSubject"}}</th>
+              <th scope="col">{{tr . "MessageReceived"}}</th>
+              <th scope="col">{{tr . "MessageStatus"}}</th>
             </tr>
             <tr>
             {{ template "pager" $.Pager }}
           </thead>
           <tbody>
+            {{$ctx:=.}}
             {{ range .Messages }}
               <tr>
                 <th scope="row"><input type="checkbox" name="msgid" value="{{ .Id }}"></th>
@@ -32,28 +33,28 @@
                   </time>
                   <span>&nbsp;({{ .Sent | time }})</span>   
                 </td>
-                <td>{{ if eq .Status "RO" }}Read{{ else }}<strong>NEW</strong>{{ end }}</td>
+                <td>{{ if eq .Status "RO" }}{{tr $ctx "MessageStatusRead"}}{{ else }}<strong>{{tr $ctx "MessageStatusNew"}}</strong>{{ end }}</td>
               </tr>
             {{ end }}
           </tbody>
         </table>
-        <input type="submit" name="delete" value="Delete Selected">
+        <input type="submit" name="delete" value="{{tr . "MessagesFormDeleteSelected"}}">
       </form>
       <hgroup>
-        <h2>Compose Message</h2>
+          <h2>{{tr . "ComposeMessageTitle"}}</h2>
       </hgroup>
       <form id="compose" action="/messages/send" method="POST">
         <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-        <input id="recipient" name="recipient" placeholder="Username" required>
-        <input id="subject" name="subject" placeholder="Subject" required>
+        <input id="recipient" name="recipient" placeholder="{{tr . "ComposeMessageFormUsername"}}" required>
+        <input id="subject" name="subject" placeholder="{{tr . "ComposeMessageFormSubject"}}" required>
         <div class="textarea-container">
-          <textarea id="body" name="body" placeholder="Your message" rows=3 maxlength={{ $.MaxTwtLength }} required></textarea>
+            <textarea id="body" name="body" placeholder="{{tr . "ComposeMessageFormBody"}}" rows=3 maxlength={{ $.MaxTwtLength }} required></textarea>
         </div>
         <div class="grid">
           <div>
             <button id="send" type="submit">
               <i class="icss-paper-plane"></i>
-              Send
+              {{tr . "ComposeMessageFormSend"}}
             </button>
           </div>
         </div>

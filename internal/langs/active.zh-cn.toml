@@ -1,3 +1,35 @@
+[ComposeMessageFormBody]
+hash = "sha1-f190c98ece6a67328e369fcdfcf84eea73c94b7e"
+other = "私信内容"
+
+[ComposeMessageFormSend]
+hash = "sha1-9bc2575c3930437e80555f78757b783c842e8e66"
+other = "发送"
+
+[ComposeMessageFormSubject]
+hash = "sha1-8d183dbdcea3b29906090bd83fa6fa37923cc8ec"
+other = "主题"
+
+[ComposeMessageFormUsername]
+hash = "sha1-84c29015de33e5d22422382a372caba5c58f8c01"
+other = "用户名"
+
+[ComposeMessageReplyFormBody]
+hash = "sha1-bf9a79bf82a9b2c0ee324e18bfcc7f088e8cb34b"
+other = "私信内容"
+
+[ComposeMessageReplyFormSend]
+hash = "sha1-9bc2575c3930437e80555f78757b783c842e8e66"
+other = "发送"
+
+[ComposeMessageReplyTitle]
+hash = "sha1-ca6da7b9aa973b9dc68a0f8cb020d4369d5fafaa"
+other = "回信"
+
+[ComposeMessageTitle]
+hash = "sha1-7649c59ec35a7b5d82785e247c60b73c803b20eb"
+other = "写信"
+
 [Copyright]
 hash = "sha1-ed6768b21eb5e05d75dd18c9cb9ed38e56de94d6"
 other = "&copy; 2020 <a href='https://github.com/prologic' target='_blank'>James Mills</a>. 版权所有."
@@ -98,6 +130,50 @@ other = "隐私"
 hash = "sha1-f32d5a3b17e614297417cc279a7ec1cd02274d65"
 other = "支持"
 
+[MessageFormDelete]
+hash = "sha1-df39a3f9dbd02e0b603c545752a5cf0e767d8ea9"
+other = "删除"
+
+[MessageFrom]
+hash = "sha1-3f66052a107eaf9bae7cad0f61fb462f47ec2c47"
+other = "发件人"
+
+[MessageReceived]
+hash = "sha1-27548c4fc95d7c7fdabb7df9f94a1e05cc1d7cb7"
+other = "接收时间"
+
+[MessageStatus]
+hash = "sha1-bae7d5be70820ed56467bd9a63744e23b47bd711"
+other = "状态"
+
+[MessageStatusNew]
+hash = "sha1-66aabd91fc41cc4635aad94dc77d93a0e2eac67b"
+other = "新"
+
+[MessageStatusRead]
+hash = "sha1-852b438f91ad9eb2cdd84419a675a216d543c687"
+other = "已读"
+
+[MessageSubject]
+hash = "sha1-8d183dbdcea3b29906090bd83fa6fa37923cc8ec"
+other = "主题"
+
+[MessagesFormDeleteSelected]
+hash = "sha1-76bf56ab14044667c152353086e0cb89f31f6761"
+other = "删除选择"
+
+[MessagesSummary]
+hash = "sha1-3eeda6d403156e70ae89b84574cc731c15e0ba95"
+other = "您收到的私信列表"
+
+[MessagesTitle]
+hash = "sha1-e5204fc48e8ac1f01ba1f391a69aa88ba367d672"
+other = "私信"
+
+[MsgMessagesSuccessfullySent]
+hash = "sha1-03a2ed9b9721a9755729b829c7623cfa4a9c0586"
+other = "私信已成功发送"
+
 [NavDiscover]
 hash = "sha1-4827ea22716a74aaf8bbe499fc314bb93f73c65e"
 other = "发现"
@@ -124,7 +200,7 @@ other = "提及"
 
 [NavMessages]
 hash = "sha1-f1702b4686278becffc88baabe6f4b7a8355532c"
-other = "消息"
+other = "私信"
 
 [NavRegister]
 hash = "sha1-d672995a14650d0e018026b64f297663d8c71c8d"

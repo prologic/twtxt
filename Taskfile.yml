@@ -23,11 +23,11 @@ tasks:
 
   build-twtd:
     desc: 构建TWT服务
-    deps: [twtd-css,twtd-js]
+    deps: [twtd-css,twtd-js,merge]
     cmds:
       - echo "开始构建{{.TwtdExe}}..."
       - go build -v -o dist/{{.TwtdSvc}}/{{.TwtdExe}} -ldflags "-w -X {{.Module}}.Version={{.Version}} -X {{.Module}}.Commit={{.Commit}}" cmd/{{.TwtdSvc}}/main.go
-      - cp -Rpfv ./internal/langs/*.toml ./dist/{{.TwtdSvc}}/langs/
+      - task: twtd-files
       - echo "构建{{.TwtdExe}}完成"
     generates:
       - './dist/twtd/{{.TwtdExe}}'
@@ -43,9 +43,26 @@ tasks:
         sh: go list
     silent: false
 
+  twtd-files:
+    desc: copy static|langs files for debug
+    cmds:
+      - task: twtd-static
+      - task: twtd-langs
+
+  twtd-static:
+    desc: copy static files for debug
+    cmds:
+      - cp -Rpfv ./internal/static ./dist/{{.TwtdSvc}}/internal/
+
+  twtd-langs:
+    desc: copy languages files for debug
+    deps: [twtd-css,twtd-js,merge]
+    cmds:
+      - cp -Rpfv ./internal/langs/*.toml ./dist/{{.TwtdSvc}}/langs/
+
   run-twtd:
     cmds:
-      -  ./twtd --cookie-secret abc --magiclink-secret abc --api-signing-key abc -R --debug=false
+      -  ./twtd --cookie-secret abc --magiclink-secret abc --api-signing-key abc -R --debug=true
     dir: ./dist/twtd
     deps: [build-twtd]
     desc: 运行TWT服务
@@ -66,4 +83,16 @@ tasks:
       - internal/js/**/*.js
     generates:
       - internal/static/js/twtxt.min.js
+
+  tr:
+    dir: internal/langs
+    cmds:
+      - goi18n merge active.*.toml 
+    desc: goi18n create
+
+  merge:
+    dir: internal/langs
+    cmds:
+      - goi18n merge active.*.toml translate.*.toml
+    desc: goi18n merge
 

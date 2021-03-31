@@ -1,16 +1,115 @@
-RegisterTitle = "注册"
-RegisterSummary = "在{{.InstanceName}}上创建并注册一个新的社交帐户"
-RegisterFormUsername = "用户名"
-RegisterFormPassword = "密码"
-RegisterFormEmail = "电子邮件"
-RegisterFormEmailSummary = "注意：我们实际上并不存储此信息！如果您忘记或丢失电子邮件帐户信息，我们将无法恢复您的帐户！"
+[Copyright]
+hash = "sha1-ed6768b21eb5e05d75dd18c9cb9ed38e56de94d6"
+other = "&copy; 2020 <a href='https://github.com/prologic' target='_blank'>James Mills</a>. 版权所有."
 
-[MyUnreadEmails]
-description = "The number of unread emails I have"
-one = "I have {{.PluralCount}} unread email."
-other = "I have {{.PluralCount}} unread emails."
+[CopyrightCreator]
+hash = "sha1-e7946380febed70ea56d525f57b79799b220e087"
+other = "由 <a href='https://github.com/prologic' target='_blank'>James Mills</a> 创建"
 
-[PersonUnreadEmails]
-description = "The number of unread emails a person has"
-one = "{{.Name}} has {{.UnreadEmailCount}} unread email."
-other = "{{.Name}} has {{.UnreadEmailCount}} unread emails."
+[MenuAbout]
+hash = "sha1-6b21fb791ac05170893860c248401cd24a59b732"
+other = "关于我们"
+
+[MenuAbuse]
+hash = "sha1-411d6ee2454b2cd4eada9d338861ed000fc07b6e"
+other = "举报"
+
+[MenuAtom]
+hash = "sha1-41dded417052424bdcf3c39f6c8664147fae6806"
+other = "Atom"
+
+[MenuHelp]
+hash = "sha1-c47ae15370cfe1ed2781eedc1dc2547d12d9e972"
+other = "帮助"
+
+[MenuPrivacy]
+hash = "sha1-cf01481f626d5127ec7732fcbdb29504f08abefd"
+other = "隐私"
+
+[MenuSupport]
+hash = "sha1-f32d5a3b17e614297417cc279a7ec1cd02274d65"
+other = "支持"
+
+[NavDiscover]
+hash = "sha1-4827ea22716a74aaf8bbe499fc314bb93f73c65e"
+other = "发现"
+
+[NavFeeds]
+hash = "sha1-ffe8e99492ee9b850395d53f6c519938952fde0d"
+other = "订阅"
+
+[NavFollow]
+hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"
+other = "关注"
+
+[NavLogin]
+hash = "sha1-4e5a2893bdcc7d239c1db72e4c4ffbe4bea73174"
+other = "登录"
+
+[NavLogout]
+hash = "sha1-e43d612e11f1568f2373e719d4c4b08dcecdc7cc"
+other = "退出"
+
+[NavMentions]
+hash = "sha1-85e12bc6f2e56024e47cc826a14968247a52dc54"
+other = "提及"
+
+[NavMessages]
+hash = "sha1-f1702b4686278becffc88baabe6f4b7a8355532c"
+other = "消息"
+
+[NavRegister]
+hash = "sha1-d672995a14650d0e018026b64f297663d8c71c8d"
+other = "注册"
+
+[NavSettings]
+hash = "sha1-c7f73bb54d928922c3838bb789ee9fb8a5b1eb37"
+other = "设置"
+
+[NavTimeline]
+hash = "sha1-018514a3d58aa08353dd5e387ee29de45981c409"
+other = "动态"
+
+[RegisterFormEmail]
+hash = "sha1-c94d3175a6560565410511df2cebab9cda96027e"
+other = "电子邮件"
+
+[RegisterFormEmailSummary]
+hash = "sha1-a002997d17e931c8aa6c7b45ff19550706a116b5"
+other = "注意：我们实际上并不存储此信息！如果您忘记或丢失电子邮件帐户信息，我们将无法恢复您的帐户！"
+
+[RegisterFormLogin]
+hash = "sha1-8cc61755932c795b961af3625f92b8a3a9d7e5c3"
+other = "已有账号? <a href='/login'>/登录</a> "
+
+[RegisterFormPassword]
+hash = "sha1-8be3c943b1609fffbfc51aad666d0a04adf83c9d"
+other = "密码"
+
+[RegisterFormRegister]
+hash = "sha1-d672995a14650d0e018026b64f297663d8c71c8d"
+other = "注册"
+
+[RegisterFormUsername]
+hash = "sha1-84c29015de33e5d22422382a372caba5c58f8c01"
+other = "用户名"
+
+[RegisterGuidelines]
+hash = "sha1-09f2d7efb99d67b64c2193d184c5bc760bc8c412"
+other = "我同意遵守 <a href='/abuse'>社区准则</a>."
+
+[RegisterHowToContent]
+hash = "sha1-0d58603b0b6a7a7d38c0ea9d73a9c54f68f76535"
+other = "<p>\n你将在{{ .InstanceName }}创建一个新的<a href='https://twt.social' target='_blank'>Twt.social</a>\n\n</p>\n<p>\n在 {{ .InstanceName }} 注册一个账号, 遵守<a href='/abuse'>政策</a>中的社区准则.\n</p>\n<p>\n<ul>\n<li>选择一个用户名</li>\n<li>创建一个安全的密码</li>\n<li>提供电子邮件用于找回您的密码</li>\n</ul>\n</p>\n<p>\n选择任何你喜欢的用户 (<i>只要在 {{ .InstanceName }}可用</i>).\n</p>\n<p>\n请注意: 我们 <b>不储存</b> 电子邮件地址, 请记住您的电子邮件地址,  如果电子邮件地址丢失或忘记, 我们将不能恢复您的账号或帮您找回密码\n</p>"
+
+[RegisterHowToTitle]
+hash = "sha1-61b07a27c8f9b25d9065b26390b2884fb025586e"
+other = "如何创建账号"
+
+[RegisterSummary]
+hash = "sha1-87d65ce0904f254e39fbb671ccd7a58f79cfa18b"
+other = "在{{.InstanceName}}上创建并注册一个新的社交帐户"
+
+[RegisterTitle]
+hash = "sha1-0b81497c8589af2714a1ddbeb62b3a4be679c318"
+other = "注册"

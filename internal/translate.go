@@ -17,7 +17,7 @@ func NewTranslator() *Translator {
 	// No need to load active.en.toml since we are providing default translations.
 	bundle.MustLoadMessageFile("./langs/active.en.toml")
 	bundle.MustLoadMessageFile("./langs/active.zh-cn.toml")
-	// bundle.LoadMessageFileFS(langs.LocaleFS, "active.zh-cn.toml")
+	// bundle.LoadMessageFile("./langs/active.zh-tw.toml")
 	return &Translator{
 		Bundle: bundle,
 	}

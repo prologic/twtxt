@@ -59,6 +59,7 @@ func NewTemplateManager(conf *Config, translator *Translator, blogs *BlogsCache,
 	funcMap["isAdminUser"] = IsAdminUserFactory(conf)
 	funcMap["twtType"] = func(twt types.Twt) string { return fmt.Sprintf("%T", twt) }
 
+	funcMap["html"] = func(text string) template.HTML { return template.HTML(text) }
 	funcMap["tr"] = func(ctx *Context, msgid string, data ...interface{}) string {
 		return translator.Translate(ctx, msgid, data...)
 	}

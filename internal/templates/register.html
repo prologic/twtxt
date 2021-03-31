@@ -16,41 +16,19 @@
         <fieldset>
           <label>
             <input id="agree" type="checkbox" name="agree" role="switch">
-            I agree to abide by the <a href="/abuse">Community Guidelines</a>.
+            {{(tr . "RegisterGuidelines")|html}}
           </label>
         </fieldset>
-        <button type="submit" class="contrast">Register</button>
-        <p>Already have an account? <a href="/login">/login</a> instead.</p>
+        <button type="submit" class="contrast">{{tr . "RegisterFormRegister"}}</button>
+        <p></p>
+            {{(tr . "RegisterFormLogin")|html}}
       </form>
     </div>
     <div>
       <hgroup>
-        <h2>How to create an account</h2>
+          <h2>{{tr . "RegisterHowToTitle"}}</h2>
       </hgroup>
-      <p>
-        You are about to create a new <a href="https://twt.social" target="_blank">Twt.social</a>
-        account on {{ .InstanceName }}
-      </p>
-      <p>
-        By registering an account on {{ .InstanceName }} you agree to abide
-        by the Community Guidelines set out in the <a href="/abuse">Abuse Policy</a>.
-      </p>
-      <p>
-        <ul>
-          <li>Pick a username</li>
-          <li>Create a unique and secure password</li>
-          <li>Enter your email address in case you forget your password</li>
-        </ul>
-      </p>
-      <p>
-        Pick any username you like (<i>as long as it is available on {{ .InstanceName }}</i>).
-      </p>
-      <p>
-        Please note we <b>DO NOT</b> actually store your email address at all!
-        If you forget your email address or lose access to your email we are
-        really sorry but you will be unable to recover your account if you
-        forget your password.
-      </p>
+      {{(tr . "RegisterHowToContent" (dict "InstanceName" $.InstanceName))|html}}
     </div>
   </article>
 {{end}}

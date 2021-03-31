@@ -59,25 +59,25 @@
         <li>
           <a href="/">
             <i class="icss-chat"></i>
-            Timeline
+            {{tr . "NavTimeline"}}
           </a>
         </li>
         <li>
           <a href="/discover">
             <i class="icss-users"></i>
-            Discover
+            {{tr . "NavDiscover"}}
           </a>
         </li>
         <li>
           <a href="/mentions">
             <i class="icss-smiley"></i>
-            Mentions
+            {{tr . "NavMentions"}}
           </a>
         </li>
         <li>
           <a href="/feeds">
             <i class="icss-rss"></i>
-            Feeds
+            {{tr . "NavFeeds"}}
           </a>
         </li>
       {{ end }}
@@ -91,46 +91,46 @@
             {{ else }}
               <i class="icss-mail-box"></i>
             {{ end }}
-            Messages
+            {{tr . "NavMessages"}}
           </a>
         </li>
         <li>
           <a href="/follow">
             <i class="icss-plus"></i>
-            Follow
+            {{tr . "NavFollow"}}
           </a>
         </li>
         <li>
           <a class="secondary" href="/settings">
             <i class="icss-gear"></i>
-            Settings
+            {{tr . "NavSettings"}}
           </a>
         </li>
         <li>
           <a class="secondary" href="/logout">
             <i class="icss-exit"></i>
-            Logout
+            {{tr . "NavLogout"}}
           </a>
         </li>
       {{ else }}
         <li>
           <a href="/login">
             <i class="icss-key"></i>
-            Login
+            {{tr . "NavLogin"}}
           </a>
         </li>
         {{ if .RegisterDisabled }}
           <li>
             <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">
               <i class="icss-exclamation-circle" style="color:red;"></i>
-              Register
+              {{tr . "NavRegister"}}
             </a>
           </li>
         {{ else }}
           <li>
             <a href="/register">
               <i class="icss-smiley"></i>
-              Register
+              {{tr . "NavRegister"}}
             </a>
           </li>
         {{ end }}
@@ -143,17 +143,17 @@
   <footer class="container">
     <div class="footer-copyright"><a href="https://github.com/jointwt/twtxt" target="_blank">twtxt v{{ .SoftwareVersion }}</a>
         ·
-        Created with 💚 by <a href="https://github.com/prologic" target="_blank">James Mills</a>
+        {{(tr . "CopyrightCreator")|html}}
         ·
-        &copy; 2020 <a href="https://github.com/prologic" target="_blank">James Mills</a>. All rights reserved.
+        {{(tr . "Copyright")|html}}
     </div>
     <div class="footer-menu">
-      <a href="/about" target="_blank" class="menu-item">About</a>
-      <a href="/privacy" target="_blank" class="menu-item">Privacy</a>
-      <a href="/abuse" target="_blank" class="menu-item">Abuse</a>
-      <a href="/help" target="_blank" class="menu-item">Help</a>
-      <a href="/support" target="_blank" class="menu-item">Support</a>
-      <a href="/atom.xml" target="_blank">Atom&nbsp;<i class="icss-rss"></i></a>
+        <a href="/about" target="_blank" class="menu-item">{{tr . "MenuAbout"}}</a>
+      <a href="/privacy" target="_blank" class="menu-item">{{tr . "MenuPrivacy"}}</a>
+      <a href="/abuse" target="_blank" class="menu-item">{{tr . "MenuAbuse"}}</a>
+      <a href="/help" target="_blank" class="menu-item">{{tr . "MenuHelp"}}</a>
+      <a href="/support" target="_blank" class="menu-item">{{tr . "MenuSupport"}}</a>
+      <a href="/atom.xml" target="_blank">{{tr . "MenuAtom"}}&nbsp;<i class="icss-rss"></i></a>
     </div>
   </footer>
   {{ if $.Debug }}

@@ -2,8 +2,8 @@
 <article class="grid">
   <div>
     <hgroup>
-      <h2>Account settings</h2>
-      <h3>Update your account settings and password here</h3>
+        <h2>{{tr . "SettingsTitle"}}</h2>
+        <h3>{{tr . "SettingsSummary"}}</h3>
     </hgroup>
     <form action="/settings" enctype="multipart/form-data" method="POST">
       <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
@@ -12,14 +12,14 @@
           <hgroup>
             <h2>
               <img id="avatar" class="avatar" src="/user/{{ .User.Username }}/avatar" alt="avatar" />
-              <a href="/user/{{ .User.Username }}" data-tooltip="View profile">{{ .User.Username }}</a>
+              <a href="/user/{{ .User.Username }}" data-tooltip="{{tr . "SettingsFormViewProfile"}}">{{ .User.Username }}</a>
             </h2>
             <h3>
               <p><i>{{ .User.Tagline }}</i></p>
             </h3>
           </hgroup>
           <label for="avatar">
-            Change avatar
+            {{tr . "SettingsFormChangeAvatarTitle"}}
             <input id="avatar_upload" type="file" accept="image/png, image/jpeg" name="avatar_file" aria-label="Upload Avatar" />
           </label>
         </div>
@@ -30,26 +30,24 @@
       <div class="grid">
         <div>
           <label for="tagline">
-            Update tagline:
-            <input id="tagline" type="text" name="tagline" placeholder="A short description, catchphrase or slogan about yourself" aria-label="Tagline" value="{{ .User.Tagline }}" />
+            {{tr . "SettingsFormChangeTaglineTitle"}}
+            <input id="tagline" type="text" name="tagline" placeholder="{{tr . "SettingsFormChangeTagline"}}" aria-label="Tagline" value="{{ .User.Tagline }}" />
           </label>
         </div>
       </div>
       <div class="grid">
         <div>
           <label for="password">
-            Change password:
-            <input id="password" type="password" name="password" placeholder="Updated password" aria-label="Password" autocomplete="current-password">
+            {{tr . "SettingsFormChangePasswordTitle"}}
+            <input id="password" type="password" name="password" placeholder="{{tr . "SettingsFormChangePassword"}}" aria-label="Password" autocomplete="current-password">
           </label>
         </div>
         <div>
           <label for="email">
-            Change email:
-            <input id="email" type="email" name="email" placeholder="Updated email address" aria-label="Email">
+            {{tr . "SettingsFormChangeEmailTitle"}} 
+            <input id="email" type="email" name="email" placeholder="{{tr . "SettingsFormChangeEmail"}}" aria-label="Email">
             <small>
-              <b>NOTE:</b>We DO NOT actually store this! If you forget
-              or loose access to your Email account provided here, it will
-              be impossible to recovery your Twt.social account!
+              {{(tr . "SettingsFormChangeEmailSummary")|html}}
             </small>
           </label>
         </div>
@@ -57,7 +55,7 @@
       <div class="grid">
         <div>
           <label for="displayDatesInTimezone">
-            Display dates in timezone:
+            {{tr . "SettingsFormTimezoneTitle"}}
             <select id="displayDatesInTimezone" name="displayDatesInTimezone">
               {{ range .Timezones }}
               <option value="{{ .TzName }}" {{ if eq $.User.DisplayDatesInTimezone .TzName }}selected{{ end }}>{{ .NameWithOffset }}</option>
@@ -67,53 +65,53 @@
         </div>
         <div>
           <fieldset>
-            <legend>Privacy settings:</legend>
+              <legend>{{tr . "SettingsFormPrivacySettingsTitle"}}</legend>
             <label for="isBookmarksPubliclyVisible">
               <input id="isBookmarksPubliclyVisible" type="checkbox" name="isBookmarksPubliclyVisible" aria-label="Show bookmarks publicly" role="switch" {{ if .User.IsBookmarksPubliclyVisible }}checked{{ end }}>
-              Show my bookmarks publicly
+              {{tr . "SettingsFormPrivacySettingsShowBookmarks"}}
             </label>
             <label for="isFollowersPubliclyVisible">
               <input id="isFollowersPubliclyVisible" type="checkbox" name="isFollowersPubliclyVisible" aria-label="Show followers publicly" role="switch" {{ if .User.IsFollowersPubliclyVisible }}checked{{ end }}>
-              Show my followers publicly
+              {{tr . "SettingsFormPrivacySettingsShowFollowers"}}
             </label>
             <label for="isFollowingPubliclyVisible">
               <input id="isFollowingPubliclyVisible" type="checkbox" name="isFollowingPubliclyVisible" aria-label="Show user/feed followings publicly" role="switch" {{ if .User.IsFollowingPubliclyVisible }}checked{{ end }}>
-              Show my followings publicly
+              {{tr . "SettingsFormPrivacySettingsShowFollowings"}}
             </label>
           </fieldset>
         </div>
         <div>
           <fieldset id="theme">
-            <legend>Theme:</legend>
+              <legend>{{tr . "SettingsFormThemeTitle"}}</legend>
             <label for="theme-auto">
               <input type="radio" id="theme-auto" name="theme" value="auto" {{ if eq .User.Theme "auto" }}checked{{ end }}>
               <i class="icss-magic-wand"></i>
-              Auto
+              {{tr . "ThemeAuto"}}
             </label>
             <label for="theme-dark">
               <input type="radio" id="theme-dark" name="theme" value="dark" {{ if eq .User.Theme "dark" }}checked{{ end }}>
               <i class="icss-composite-darker"></i>
-              Dark
+              {{tr . "ThemeDark"}}
             </label>
             <label for="theme-light">
               <input type="radio" id="theme-light" name="theme" value="light" {{ if eq .User.Theme "light" }}checked{{ end }}>
               <i class="icss-composite-lighter"></i>
-              Light
+              {{tr . "ThemeLight"}}
             </label>
           </fieldset>
         </div>
       </div>
-      <button type="submit" class="primary">Update</button>
+      <button type="submit" class="primary">{{tr . "SettingsFormUpdate"}}</button>
     </form>
 
     <details>
-      <summary>API Tokens</summary>
+        <summary>{{tr . "SettingsAPITitle"}}</summary>
       <table>
         <thead>
-          <th>Client</th>
-          <th>Created</th>
-          <th>Expiry</th>
-          <th>Delete</th>
+            <th>{{tr . "SettingsAPIClient"}}</th>
+            <th>{{tr . "SettingsAPICreated"}}</th>
+            <th>{{tr . "SettingsAPIExpiry"}}</th>
+            <th>{{tr . "SettingsAPIDelete"}}</th>
         </thead>
         <tbody>
           {{range $val := .Tokens}}
@@ -136,17 +134,17 @@
     </details>
 
     <details>
-      <summary>Messaging Tokens</summary>
+        <summary>{{tr . "SettingsMessagingTitle"}}</summary>
       <div class="grid">
         <div>
           <label for="smtpToken">
-            SMTP Token:
+              {{tr . "SettingsMessagingSMTPTitle"}}
             <input value="{{ .User.SMTPToken }}" readonly />
           </label>
         </div>
         <div>
           <label for="pop3Token">
-            POP3 Token:
+            {{tr . "SettingsMessagingPOP3Title"}}
             <input value="{{ .User.POP3Token }}" readonly />
           </label>
         </div>
@@ -154,24 +152,23 @@
     </details>
 
     <details>
-      <summary>Delete account</summary>
+        <summary>{{tr . "SettingsDeleteAccountTitle"}}</summary>
       <p>
-        <b>WARNING:</b>&nbsp;This is permanent and cannot be undone!
-        (<i>There is no confirmation!</i>)
+      {{(tr . "SettingsDeleteAccountSummary")|html}}
       </p>
       <form action="/deleteFeeds" method="GET">
         <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-        <button type="submit" class="contrast">Delete</button>
+        <button type="submit" class="contrast">{{tr . "SettingsDeleteAccountFormDelete"}}</button>
       </form>
     </details>
 
     {{ if .IsAdmin }}
     <details>
-      <summary>Pod Management</summary>
+        <summary>{{tr . "SettingsPodManagementTitle"}}</summary>
       <p>
       <ul>
-        <li><a href="/manage/pod">Manage Pod</a></li>
-        <li><a href="/manage/users">Manage Users</a></li>
+          <li><a href="/manage/pod">{{tr . "ManagePodLinkTitle"}}</a></li>
+          <li><a href="/manage/users">{{tr . "ManageUsersLinkTitle"}}</a></li>
       </ul>
       </p>
     </details>

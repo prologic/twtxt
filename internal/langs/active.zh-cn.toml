@@ -170,6 +170,34 @@ other = "在{{.InstanceName}}上创建并注册一个新的社交帐户"
 hash = "sha1-0b81497c8589af2714a1ddbeb62b3a4be679c318"
 other = "注册"
 
+[ResetPasswordFormEmail]
+hash = "sha1-c94d3175a6560565410511df2cebab9cda96027e"
+other = "电子邮件"
+
+[ResetPasswordFormReset]
+hash = "sha1-3fb75e3bfe4de94eb5198656fa9de95352dab915"
+other = "重置密码"
+
+[ResetPasswordFormUsername]
+hash = "sha1-84c29015de33e5d22422382a372caba5c58f8c01"
+other = "用户名"
+
+[ResetPasswordHowToContent]
+hash = "sha1-76cf47fef180d4e68557d75ef348e2569c5d4b7d"
+other = " \n<p>\n使用左侧的表格来恢复您的帐户并重置密码。\n只需填写用于创建帐户的用户名和电子邮件地址即可。</p>\n<p>\n但是请注意，您必须在此处提供与最初创建帐户时相同的电子邮件地址。我们<b>不会</b>实际存储档案中的电子邮件地址，所以如果你没有访问或已经忘记了自己的电子邮件地址，那么你将无法恢复您的帐户。\n</p>"
+
+[ResetPasswordHowToTitle]
+hash = "sha1-8b19f439204c9f765b9d0ddc81459d9dff6e5a1b"
+other = "如何重置您的密码"
+
 [ResetPasswordLinkTitle]
 hash = "sha1-19dda05128bca657bda59fd4ada178cc349f00ec"
 other = "忘记密码"
+
+[ResetPasswordSummary]
+hash = "sha1-f4c4fc1a4556f29189ff762b92fc4107b48f900f"
+other = "填写下面表单重置您的密码"
+
+[ResetPasswordTitle]
+hash = "sha1-3fb75e3bfe4de94eb5198656fa9de95352dab915"
+other = "重置密码"

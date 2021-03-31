@@ -2,64 +2,46 @@
   <article class="grid">
     <div>
       <hgroup>
-        <h2>Sign in</h2>
-        <p>Login to your Twt.social account on {{ .InstanceName }}</p>
+          <h2>{{tr . "LoginTitle"}}</h2>
+          <p>{{tr . "LoginSummary" (dict "InstanceName" $.InstanceName)}}</p>
       </hgroup>
       <form action="/login" method="POST">
         <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-        <input type="text" name="username" placeholder="Username" aria-label="Username" autocomplete="nickname" autofocus required>
-        <input type="password" name="password" placeholder="Password" aria-label="Password" autocomplete="current-password" required>
+        <input type="text" name="username" placeholder="{{tr . "LoginFormUsername"}}" aria-label="Username" autocomplete="nickname" autofocus required>
+        <input type="password" name="password" placeholder="{{tr . "LoginFormPassword"}}" aria-label="Password" autocomplete="current-password" required>
         <fieldset>
           <label for="rememberme">
             <input type="checkbox" id="rememberme" name="rememberme">
-            Remember me?
+            {{tr . "LoginFormRemberMe"}}
           </label>
         </fieldset>
-        <button type="submit" class="contrast">Login</button>
+        <button type="submit" class="contrast">{{tr . "LoginFormLogin"}}</button>
         <p>
-          Don't have an account?
+        {{tr . "LoginNoAccountTitle"}}
           {{ if .RegisterDisabled }}
-            <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">/register</a>
+          <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}{{tr . "RegisterDisabledMessage"}}{{ end }}">{{tr . "RegisterLinkTitle"}}</a>
           {{ else }}
-            <a href="/register">/register</a>
+          <a href="/register">{{tr . "RegisterLinkTitle"}}</a>
           {{ end }}
-          instead.
+          {{tr . "Instead"}}
         </p>
         <p>
-          <a href="/resetPassword">Forgotten your password?</a>
+        <a href="/resetPassword">{{tr . "ResetPasswordLinkTitle"}}</a>
         </p>
       </form>
     </div>
     <div>
       <hgroup>
-        <h2>How to login to your account</h2>
+          <h2>{{tr . "LoginHowToTitle"}}</h2>
       </hgroup>
+      {{(tr . "LoginHowToContent" (dict "InstanceName" $.InstanceName))|html}}
+      {{ if .RegisterDisabled }}
       <p>
-        Login to your Twt.social account on {{ .InstanceName }} by filling in
-        the Username and Password you used when you created your account.
+      {{tr . "RegisterDisabledMessage"}}
       </p>
+      {{end}}
       <p>
-        Check the "Remember Me" box if you don't want to have to keep logging in
-        every few hours.
-      </p>
-      <p>
-        Don't have an account?
-        {{ if .RegisterDisabled }}
-          {{ with .RegisterDisabledMessage }}
-            {{ .RegisterDisabledMessage }}
-          {{ else }}
-            Open registrations are disabled on this pod.
-            Please contact the operator using the <a href="/support">/support</a> form.
-          {{ end }}
-        {{ else }}
-          You can create a new account on the <a href="/register">/register</a> form.
-        {{ end }}
-      </p>
-      <p>
-        If you have forgotten your password you can request a
-        <a href="/resetPassword">Password Reset</a> as long as you remember
-        your username and email address you signed up with and retain access to
-        your email (<i>We <b>NEVER</b> store your email address!</i>).
+      {{(tr . "ForgottenPasswordContent")|html}}
       </p>
     </div>
   </article>

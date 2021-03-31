@@ -6,6 +6,54 @@ other = "&copy; 2020 <a href='https://github.com/prologic' target='_blank'>James
 hash = "sha1-e7946380febed70ea56d525f57b79799b220e087"
 other = "由 <a href='https://github.com/prologic' target='_blank'>James Mills</a> 创建"
 
+[ForgottenPasswordContent]
+hash = "sha1-122216d4af117201b618588c4a2969c8ee9a1c16"
+other = "如果您忘记了密码, 只要您记住注册时使用的用户名和电子邮件地址并保留对电子邮件的访问权限，就可以请求<a href=\"/resetPassword\">重置密码</a>(<i>我们 <b>从不</b> 存储您的邮件地址!</i>)."
+
+[Instead]
+hash = "sha1-6568964b0e39083c6acb94093d9e6cd117dbe508"
+other = "."
+
+[LoginFormLogin]
+hash = "sha1-4e5a2893bdcc7d239c1db72e4c4ffbe4bea73174"
+other = "登录"
+
+[LoginFormPassword]
+hash = "sha1-8be3c943b1609fffbfc51aad666d0a04adf83c9d"
+other = "密码"
+
+[LoginFormRemberMe]
+hash = "sha1-06716884880fe454166b2b598e01544d1aefd999"
+other = "记住我?"
+
+[LoginFormUsername]
+hash = "sha1-84c29015de33e5d22422382a372caba5c58f8c01"
+other = "用户名"
+
+[LoginHowToContent]
+hash = "sha1-9afcf1df91de941735d380b6b91b01a0de6e771b"
+other = "      <p>\n填写在创建账号时使用的用户名和密码，登录{{.InstanceName}}.\n </p><p>\n 如果您不想每隔几个小时登录一次，请选中“记住我”复选框.</p><p>\n还没有账号?\n您可以点击<a href=\"/register\">注册</a>马上创建一个.</p>\n"
+
+[LoginHowToTitle]
+hash = "sha1-097f2ed883de33056433137a3d1ddc53da9931df"
+other = "如何登录"
+
+[LoginNoAccountSummary]
+hash = "sha1-f838dc11db151df79ee689f598453d38bbac6fe9"
+other = "还没有账号"
+
+[LoginNoAccountTitle]
+hash = "sha1-f838dc11db151df79ee689f598453d38bbac6fe9"
+other = "还没有账号"
+
+[LoginSummary]
+hash = "sha1-bab7c351f3af43d5f4c56baf11d65b4384a1ba86"
+other = "在 {{ .InstanceName }} 登录你的社交账号"
+
+[LoginTitle]
+hash = "sha1-ada2e9e96fa9ce85430225b412068b5b62b79800"
+other = "登录"
+
 [MenuAbout]
 hash = "sha1-6b21fb791ac05170893860c248401cd24a59b732"
 other = "关于我们"
@@ -70,6 +118,10 @@ other = "设置"
 hash = "sha1-018514a3d58aa08353dd5e387ee29de45981c409"
 other = "动态"
 
+[RegisterDisabledMessage]
+hash = "sha1-14d26e1e7754b30ed7402bbaf188baa629d8a79b"
+other = "当前实例禁止注册, 请联系管理员"
+
 [RegisterFormEmail]
 hash = "sha1-c94d3175a6560565410511df2cebab9cda96027e"
 other = "电子邮件"
@@ -106,6 +158,10 @@ other = "<p>\n你将在{{ .InstanceName }}创建一个新的<a href='https://twt
 hash = "sha1-61b07a27c8f9b25d9065b26390b2884fb025586e"
 other = "如何创建账号"
 
+[RegisterLinkTitle]
+hash = "sha1-5b402e3dfa8bfeaa6620b1ee5bf38fb965bcbe3c"
+other = "注册"
+
 [RegisterSummary]
 hash = "sha1-87d65ce0904f254e39fbb671ccd7a58f79cfa18b"
 other = "在{{.InstanceName}}上创建并注册一个新的社交帐户"
@@ -113,3 +169,7 @@ other = "在{{.InstanceName}}上创建并注册一个新的社交帐户"
 [RegisterTitle]
 hash = "sha1-0b81497c8589af2714a1ddbeb62b3a4be679c318"
 other = "注册"
+
+[ResetPasswordLinkTitle]
+hash = "sha1-19dda05128bca657bda59fd4ada178cc349f00ec"
+other = "忘记密码"

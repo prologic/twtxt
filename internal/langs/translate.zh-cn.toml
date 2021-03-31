@@ -1,3 +1,7 @@
-[ResetPasswordHowToContent]
-hash = "sha1-76cf47fef180d4e68557d75ef348e2569c5d4b7d"
-other = " \n<p>\n使用左侧的表格来恢复您的帐户并重置密码。\n只需填写用于创建帐户的用户名和电子邮件地址即可。</p>\n<p>\n但是请注意，您必须在此处提供与最初创建帐户时相同的电子邮件地址。我们<b>不会</b>实际存储档案中的电子邮件地址，所以如果你没有访问或已经忘记了自己的电子邮件地址，那么你将无法恢复您的帐户。\n</p>"
+[ErrorTitle]
+hash = "sha1-7f2f6a15cf8da2b27e5a4af47b58e7ad71c0b3d9"
+other = "错误"
+
+[SuccessTitle]
+hash = "sha1-42a8f651d79fd005eeac0612df6442b983a01184"
+other = "成功"

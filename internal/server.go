@@ -99,7 +99,7 @@ type Server struct {
 	pm passwords.Passwords
 
 	// Translator
-	tr *Translator
+	translator *Translator
 }
 
 func (s *Server) render(name string, w http.ResponseWriter, ctx *Context) {
@@ -812,7 +812,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		pm: pm,
 
 		// Translator
-		tr: translator,
+		translator: translator,
 	}
 
 	if err := server.setupCronJobs(); err != nil {
@@ -870,4 +870,8 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	go server.runStartupJobs()
 
 	return server, nil
+}
+
+func (s *Server) tr(ctx *Context, msgID string, data ...interface{}) string {
+	return s.translator.Translate(ctx, msgID, data...)
 }

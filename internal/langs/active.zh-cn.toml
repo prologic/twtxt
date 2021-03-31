@@ -6,6 +6,26 @@ other = "&copy; 2020 <a href='https://github.com/prologic' target='_blank'>James
 hash = "sha1-e7946380febed70ea56d525f57b79799b220e087"
 other = "由 <a href='https://github.com/prologic' target='_blank'>James Mills</a> 创建"
 
+[ErrorInvalidPassword]
+hash = "sha1-52b29810c7c76d469feec362b5c77ccb7531718b"
+other = "密码无效! 提示: 重新设置密码?"
+
+[ErrorInvalidUsername]
+hash = "sha1-c1d07ba7f57bf718dfb346b21773834cc34c7fcd"
+other = "用户名无效! 提示: 注册一个账号?"
+
+[ErrorMaxFailedLogins]
+hash = "sha1-dbebd52a4449b3d284699bd8f79dc7d55699e754"
+other = "太多次登录失败. 账号临时锁定, 请稍候重试."
+
+[ErrorRegisterDisabled]
+hash = "sha1-58ae30a9afd39e0111c2d0864b81bb12b799820e"
+other = "当前实例禁止注册, 请联系管理员."
+
+[ErrorTitle]
+hash = "sha1-7f2f6a15cf8da2b27e5a4af47b58e7ad71c0b3d9"
+other = "错误"
+
 [ForgottenPasswordContent]
 hash = "sha1-122216d4af117201b618588c4a2969c8ee9a1c16"
 other = "如果您忘记了密码, 只要您记住注册时使用的用户名和电子邮件地址并保留对电子邮件的访问权限，就可以请求<a href=\"/resetPassword\">重置密码</a>(<i>我们 <b>从不</b> 存储您的邮件地址!</i>)."
@@ -201,3 +221,7 @@ other = "填写下面表单重置您的密码"
 [ResetPasswordTitle]
 hash = "sha1-3fb75e3bfe4de94eb5198656fa9de95352dab915"
 other = "重置密码"
+
+[SuccessTitle]
+hash = "sha1-42a8f651d79fd005eeac0612df6442b983a01184"
+other = "成功"

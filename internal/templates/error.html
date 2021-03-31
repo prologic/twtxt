@@ -2,7 +2,7 @@
   <article class="grid">
     <div>
       <hgroup>
-        <h2>{{ if .Error }}Error{{ else }}Success {{ end }}</h2>
+          <h2>{{ if .Error }}{{tr . "ErrorTitle"}}{{ else }}{{tr . "SuccessTitle"}} {{ end }}</h2>
         <h3>{{ .Message }}</h3>
       </hgroup>
   </article>

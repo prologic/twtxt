@@ -1,19 +1,19 @@
-[FollowingFollowingUser]
-hash = "sha1-fbf827af5e0df2f2953a555ec1e874fb441aa425"
-other = "<b>{{ .Username }}</b> 关注列表"
+[BookmarksNoBookmarks]
+hash = "sha1-67d3ef16242b6011a62bccdf9dc15c2a999c5ed6"
+other = "还没有任何书签"
 
-[FollowingFollowingYou]
-hash = "sha1-a9c227473605df6d6e02aaa04582c2590e5a55b0"
-other = "您的关注列表"
+[BookmarksNoBookmarksSummary]
+hash = "sha1-efc43ea07cd5668c0c829258f87f2b33c8e29222"
+other = "还没有书签"
 
-[FollowingNoFollowing]
-hash = "sha1-5a97124f8ccf9c1a9c45a2ba262842bc995881c8"
-other = "还没有关注"
+[BookmarksTitle]
+hash = "sha1-ca3cddd25bd8f6bc4ce35a262e2e1398541ecf3d"
+other = "书签"
 
-[FollowingNoFollowingSummary]
-hash = "sha1-27f9e5536a24088d91b836b3173f51e6982eac0d"
-other = "您没有关注任何用户或Feed！ 在{{ .InstanceName }}上<a href=\"/follow\">关注</a>某人或在<a href=\"/discover\">发现</a>页找到感兴的用户或Feed。"
+[BookmarksUser]
+hash = "sha1-825ad45a9df6967dce6f317c2499387b590ebaf1"
+other = "<b>{{ .Username }}</b> 的书签"
 
-[FollowingTitle]
-hash = "sha1-90eeb100838048513e8d2290a6892e18077c24f6"
-other = "关注"
+[BookmarksYou]
+hash = "sha1-d266af92cbd1cf42a3ff8d2dbf46fa1924dc7de5"
+other = "您的书签"

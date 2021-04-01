@@ -2,12 +2,12 @@
 <article class="grid">
   <div>
     <hgroup>
-      <h2>Bookmarks</h2>
+        <h2>{{tr . "BookmarksTitle"}}</h2>
       <h3>
         {{ if $.User.Is .Profile.URL }}
-        List of twts you have bookmarked
+        {{tr . "BookmarksYou"}}
         {{ else }}
-        List of twts <b>{{ .Profile.Username }}</b> has bookmarked
+        {{(tr . "BookmarksUser" (dict "Username" .Profile.Username))|html}}
         {{ end }}
       </h3>
     </hgroup>
@@ -20,9 +20,9 @@
     {{ else }}
     <small>
       {{ if $.User.Is .Profile.URL }}
-      You have not bookmarked any twts!
+      {{tr . "BookmarksNoBookmarksSummary"}}
       {{ else }}
-      <b>{{ .Profile.Username }}</b> has not bookmarked any twts.</i>
+      <b>{{ .Profile.Username }}</b> {{tr . "BookmarksNoBookmarks"}}</i>
       {{ end }}
     </small>
     {{ end }}

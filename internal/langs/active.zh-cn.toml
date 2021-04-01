@@ -14,6 +14,26 @@ other = "我的博客"
 hash = "sha1-e3a6fe565c7f64204f2dd182dc8b8ca9fe725d99"
 other = "取消关注"
 
+[BookmarksNoBookmarks]
+hash = "sha1-67d3ef16242b6011a62bccdf9dc15c2a999c5ed6"
+other = "还没有任何书签"
+
+[BookmarksNoBookmarksSummary]
+hash = "sha1-efc43ea07cd5668c0c829258f87f2b33c8e29222"
+other = "还没有书签"
+
+[BookmarksTitle]
+hash = "sha1-ca3cddd25bd8f6bc4ce35a262e2e1398541ecf3d"
+other = "书签"
+
+[BookmarksUser]
+hash = "sha1-825ad45a9df6967dce6f317c2499387b590ebaf1"
+other = "<b>{{ .Username }}</b> 的书签"
+
+[BookmarksYou]
+hash = "sha1-d266af92cbd1cf42a3ff8d2dbf46fa1924dc7de5"
+other = "您的书签"
+
 [ComposeMessageFormBody]
 hash = "sha1-f190c98ece6a67328e369fcdfcf84eea73c94b7e"
 other = "私信内容"

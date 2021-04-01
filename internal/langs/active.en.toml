@@ -1,3 +1,8 @@
+BlogFeedManageLinkTitle = "Manage"
+BlogsFollowLinkTitle = "Follow"
+BlogsForUserLinkTitle = "Twt Blogs for {{ .Username }}"
+BlogsMyLinkTitle = "My Twt Blogs"
+BlogsUnfollowLinkTitle = "Unfollow"
 ComposeMessageFormBody = "Your message"
 ComposeMessageFormSend = "Send"
 ComposeMessageFormSubject = "Subject"

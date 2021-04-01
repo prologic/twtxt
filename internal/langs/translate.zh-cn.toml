@@ -1,3 +1,19 @@
-[RecentTwtsSummary]
-hash = "sha1-86f9404e41167e340565f72ea9d15be2d4de1cf5"
-other = "来自 {{ .Username }} 的最近推文"
+[BlogFeedManageLinkTitle]
+hash = "sha1-bf58d17e561b1b858e35f9202f811297dac2e9db"
+other = "管理"
+
+[BlogsFollowLinkTitle]
+hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"
+other = "关注"
+
+[BlogsForUserLinkTitle]
+hash = "sha1-61488fb76586945c474ad5574cf7856f94384656"
+other = "{{ .Username }} 的博客"
+
+[BlogsMyLinkTitle]
+hash = "sha1-90ae4fffc47a576c3e57b419e8adae295ae697f8"
+other = "我的博客"
+
+[BlogsUnfollowLinkTitle]
+hash = "sha1-e3a6fe565c7f64204f2dd182dc8b8ca9fe725d99"
+other = "取消关注"

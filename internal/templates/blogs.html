@@ -6,12 +6,12 @@
           {{ if $.User.Is .Profile.URL }}
             <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
               <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" alt="" />
-              <span class="p-name">My Twt Blogs</span>
+              <span class="p-name">{{tr . "BlogsMyLinkTitle"}}</span>
             </a>
           {{ else }}
             <a href="{{ .Profile.URL | trimSuffix "/twtxt.txt" }}" class="u-url p-name">
               <img class="avatar u-photo" src="/user/{{ $.Profile.Username }}/avatar" alt="" />
-              <span class="p-name">Twt Blogs for {{ .Profile.Username }}</span>
+              <span class="p-name">{{tr . "BlogsForUserLinkTitle" (dict "Username" .Profile.Username)}}</span>
             </a>
           {{ end }}
         </h2>
@@ -20,17 +20,17 @@
             {{ if $.User.Follows .Profile.URL }}
               <a href="/unfollow?nick={{ .Profile.Username  }}">
                 <i class="icss-minus"></i>
-                Unfollow
+                {{tr . "BlogsUnfollowLinkTitle"}}
               </a>
             {{ else }}
               <a href="/follow?nick={{ .Profile.Username  }}&url={{ .Profile.URL }}">
                 <i class="icss-plus"></i>
-                Follow
+                {{tr . "BlogsFollowLinkTitle"}}
               </a>
             {{ end }}
 
             {{ if $.User.OwnsFeed .Profile.Username }}
-              | <a href="/feed/{{ .Profile.Username  }}/manage">Manage</a>
+            | <a href="/feed/{{ .Profile.Username  }}/manage">{{tr . "BlogsFeedManageLinkTitle"}}</a>
             {{ end }}
           </h3>
         {{ end}}

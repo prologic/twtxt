@@ -1,27 +1,26 @@
 {{define "content"}}
 <article id="create">
     <hgroup>
-        <h2>Create Feed</h2>
-        <h3>Create a new local feed on this pod</h3>
+        <h2>{{tr . "FeedsTitle"}}</h2>
+        <h3>{{tr . "FeedsSummary"}}</h3>
     </hgroup>
     <p>
-        Create your  own feed or topic of interest you want to share
-        with others. This allows you to "post as" this new feed and
-        create a series of twts (<i>posts</i>) about a "thing".
+    {{(tr . "FeedsHowToContent")|html}}
     </p>
     <form action="/feed" method="POST">
         <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-        <input type="text" name="name" placeholder="Name of your feed" aria-label="Username" autofocus required />
-        <button type="submit" class="primary">Create</button>
+        <input type="text" name="name" placeholder="{{tr . "FeedsFormName"}}" aria-label="Username" autofocus required />
+        <button type="submit" class="primary">{{tr . "FeedsFormCreate"}}</button>
     </form>
 </article>
 <article id="myfeeds">
     <hgroup>
-        <h2>My Feeds</h2>
-        <h3>Here are all your feeds that you can view or manage</h3>
+        <h2>{{tr . "FeedsMyFeedsTitle"}}</h2>
+        <h3>{{tr . "FeedsMyFeedsSummary"}}</h3>
     </hgroup>
     <div class="grid">
         {{ if .User.Feeds }}
+        {{$ctx:=.}}
         {{ range .Feeds }}
         <div>
             {{ if $.User.OwnsFeed .Name }}
@@ -43,11 +42,11 @@
             <nav>
                 <ul>
                     {{ if $.User.Follows .URL }}
-                    <li><a href="/unfollow?nick={{ .Name  }}"><i class="icss-minus" aria-hidden="true"></i> Unfollow</a></li>
+                    <li><a href="/unfollow?nick={{ .Name  }}"><i class="icss-minus" aria-hidden="true"></i> {{tr $ctx "UnfollowLinkTitle"}}</a></li>
                     {{ else }}
-                    <li><a href="/follow?nick={{ .Name  }}&url={{ .URL }}"><i class="icss-plus" aria-hidden="true"></i> Follow</a></li>
+                    <li><a href="/follow?nick={{ .Name  }}&url={{ .URL }}"><i class="icss-plus" aria-hidden="true"></i> {{tr $ctx "FollowLinkTitle"}}</a></li>
                     {{ end }}
-                    <li><a href="/feed/{{ .Name  }}/manage">Manage</a></li>
+                    <li><a href="/feed/{{ .Name  }}/manage">{{tr $ctx "FeedManageLinkTitle"}}</a></li>
                 </ul>
             </nav>
         </div>
@@ -55,22 +54,19 @@
         {{ end }}
     </div>
     {{ else }}
-    <p><small>You do not have any feeds. <a href="#create">Create</a> one?</small></p>
+    <p><small>{{(tr . "FeedsNoFeedsSummary")|html}}</small></p>
     {{ end }}
 </article>
 <article id="localfeeds">
     <hgroup>
-    <h2>Local Feeds</h2>
-    <h3>Local feeds available on this pod</h3>
+    <h2>{{tr . "FeedsLocalFeedsTitle"}}</h2>
+    <h3>{{tr . "FeedsLocalFeedsSummary"}}</h3>
     </hgroup>
     <p>
-        Here is a list of local feeds available that you can subscribe to
-        and follow. These are feeds created by users on {{ .InstanceName }}
-        that are effectively "special interest", "topic" or "group" whereby
-        users posts interesting things as <i>that</i> feed as a sort of
-        "Persona".
+    {{(tr . "FeedsLocalFeedsContent" (dict "InstanceName" .InstanceName))|html}}
     </p>
     <div class="grid">
+        {{$ctx:=.}}
         {{ range .Feeds }}
         {{ if not ($.User.OwnsFeed .Name) }}
         <div>
@@ -92,9 +88,9 @@
             <nav>
                 <ul>
                     {{ if $.User.Follows .URL }}
-                    <li><a href="/unfollow?nick={{ .Name  }}"><i class="icss-minus" aria-hidden="true"></i> Unfollow</a></li>
+                    <li><a href="/unfollow?nick={{ .Name  }}"><i class="icss-minus" aria-hidden="true"></i> {{tr $ctx "UnfollowLinkTitle"}}</a></li>
                     {{ else }}
-                    <li><a href="/follow?nick={{ .Name  }}&url={{ .URL }}"><i class="icss-plus" aria-hidden="true"></i> Follow</a></li>
+                    <li><a href="/follow?nick={{ .Name  }}&url={{ .URL }}"><i class="icss-plus" aria-hidden="true"></i> {{tr $ctx "FollowLinkTitle"}}</a></li>
                     {{ end }}
                 </ul>
             </nav>
@@ -105,30 +101,11 @@
 </article>
 <article id="externalfeeds">
     <hgroup>
-        <h2>External Feeds</h2>
-        <h3>External feeds from news sources and exteral users</h3>
+        <h2>{{tr . "FeedsExternalFeedsTitle"}}</h2>
+        <h3>{{tr . "FeedsExternalFeedsSummary"}}</h3>
     </hgroup>
-    <p>
-        Here is a list of external feeds available that you can subscribe
-        to and follow. These sources of feeds are externally sourced and
-        configured by the operator of {{ .InstanceName }}. By default
-        <a href="https://twtxt.net">twtxt.net</a> sources feeds from the
-        following sources:
-        <ul>
-            <li><a href="https://feeds.twtxt.net">feeds.twtxt.net</a> an RSS/Atom to twtxt feed aggregator</li>
-            <li><a href="https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-bots.txt">we-are-bots</a> a directory of twtxt bots (<i>automated feeds</i>)</li>
-            <li><a href="https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-twtxt.txt">we-are-twtxt</a> a directory of twtxt users (<i>this is managed by users voluntarily adding themselves to this list</i>)</li>
-        </ul>
-    </p>
-    <p>
-        If you want to add a new external feed source:
-        <ul>
-            <li>First make sure it has a valid RSS or Atom feed (<i><a href="https://en.wikipedia.org/wiki/Atom_(Web_standard)">What's this?</a></i>).</li>
-            <li>Visit <a href="https://feeds.twtxt.net">feeds.twtxt.net</a> and give the feed a name and enter the RSS/Atom URL and hit Submit</li>
-        </ul>
-        In a few minutes the newly added external feed will show up in
-        <a href="https://twtxt.net/feeds">/feeds</a> here on {{ .InstanceName }}.
-    </p>
+    {{(tr . "FeedsExternalFeedsContent" (dict "InstanceName" .InstanceName))|html}}
+    {{$ctx:=.}}
     {{ range $Source, $Feeds := .FeedSources }}
     <details>
         <summary>{{ $Source | prettyURL }}</summary>
@@ -138,9 +115,9 @@
                 <a href="/external?uri={{ .URL }}&nick={{ .Name  }}">{{ .Name }}</a>
                 &nbsp;
                 {{ if $.User.Follows .URL }}
-                [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
+                [<a href="/unfollow?nick={{ .Name  }}">{{tr $ctx "UnfollowLinkTitle"}}</a>]
                 {{ else }}
-                [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
+                [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">{{tr $ctx "FollowLinkTitle"}}</a>]
                 {{ end }}
             </li>
             {{ end }}

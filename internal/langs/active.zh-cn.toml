@@ -98,6 +98,62 @@ other = "错误"
 hash = "sha1-bf58d17e561b1b858e35f9202f811297dac2e9db"
 other = "管理"
 
+[FeedsExternalFeedsContent]
+hash = "sha1-e643a20c31511b08a00bf83fefd065a26311254f"
+other = "<p>\n这是您可以订阅并关注的外部 Feed 列表。这些 Feed 源由 {{.InstanceName}} 运营商从外部获取和配置。默认情况下， <a href=\"https://twtxt.net\">twtxt.net</a> 来自以下来源：<ul>\n<li><a href=\"https://feeds.twtxt.net\">feeds.twtxt.net</a> RSS/Atom 到 twtxt feed 的聚合器</li>\n<li><a href=\"https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-bots.txt\">we-are-bots</a> twtxt机器人目录(<i>自动 Feeds</i>)</li>\n<li><a href=\"https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-twtxt.txt\">we-are-twtxt</a> twtxt用户目录(<i>由自愿将自己添加到此列表的用户管理</i>)</li>\n</ul>\n</p>\n<p>\n如果要添加新的外部 Feed：<ul>\n<li>首先，确保它是有效的RSS或Atom Feed(<i><a href=\"https://en.wikipedia.org/wiki/Atom_(Web_standard)\">有效Feed?</a></i>)。</li>\n<li>访问<a href=\"https://feeds.twtxt.net\">feeds.twtxt.net</a>并给 Feed 命名，然后输入RSS/Atom URL并点击 Add 提交。</li>\n</ul>\n几分钟后，新添加的外部 Feed 将显示在 {{ .InstanceName }} 实例 <a href=\"https://twtxt.net/feeds\">/feeds</a> 中。\n</p>"
+
+[FeedsExternalFeedsSummary]
+hash = "sha1-55c8dba827a4c56d82c9f2076cc2b31d5a99e726"
+other = "来自新闻和外部用户的 Feeds"
+
+[FeedsExternalFeedsTitle]
+hash = "sha1-eda4203f0af0ea39a3ff084baeb36a5dcee840c0"
+other = "外部 Feeds"
+
+[FeedsFormCreate]
+hash = "sha1-6e157c5da4410b7e9de85f5c93026b9176e69064"
+other = "创建"
+
+[FeedsFormName]
+hash = "sha1-3a903f81683ea9faa415ebef0a716d930a6483c5"
+other = "Feed名称"
+
+[FeedsHowToContent]
+hash = "sha1-f3db21eef88dacccf97a983642144d982a90cc3e"
+other = "创建您自己的Feed或您想要与他人共享的主题。这样，您就可以以此Feed作为“发布者”创建相关的推文。"
+
+[FeedsLocalFeedsContent]
+hash = "sha1-bb7ef9ae3dba4dfeb18a7534df1c6becf5086077"
+other = "这是您可以订阅并关注的本地 Feed 列表。这些是由用户在 {{.InstanceName}}上创建，实际上是“特殊兴趣”，“主题”或“组”，通过这些 Feed，用户可以以个人身份发布有趣的内容"
+
+[FeedsLocalFeedsSummary]
+hash = "sha1-8738599c8ca4c87588afd38e42f6cf5edce79b74"
+other = "本地可用的 Feed 列表"
+
+[FeedsLocalFeedsTitle]
+hash = "sha1-0e13ac7fae26810c01f86897edf0fa7fb4deee7c"
+other = "本地 Feeds"
+
+[FeedsMyFeedsSummary]
+hash = "sha1-a4a396afca42119579a76d4a1a66d5d5279a3144"
+other = "这是您可以查看或管理的 Feeds"
+
+[FeedsMyFeedsTitle]
+hash = "sha1-d4e95c7858c7cca380da3c6bdd91e5bf0002d2cb"
+other = "我的 Feeds"
+
+[FeedsNoFeedsSummary]
+hash = "sha1-876529acc2ed0d57903292b5c4dd4869cd2f3108"
+other = "您还没有 Feed，<a href=\"#create\">创建</a> 一个？"
+
+[FeedsSummary]
+hash = "sha1-351a6b26b69cc08ab69024f162aca2e13b9d7e57"
+other = "创建一个本地 Feed"
+
+[FeedsTitle]
+hash = "sha1-074e5c72245f23f1864a151844ef4ffd970aeca2"
+other = "创建 Feed"
+
 [FollowFormFollow]
 hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"
 other = "关注"
@@ -300,7 +356,7 @@ other = "发现"
 
 [NavFeeds]
 hash = "sha1-ffe8e99492ee9b850395d53f6c519938952fde0d"
-other = "订阅"
+other = "Feeds"
 
 [NavFollow]
 hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"

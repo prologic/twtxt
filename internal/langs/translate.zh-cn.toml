@@ -1,139 +1,27 @@
-[ManagePodLinkTitle]
-hash = "sha1-0cf5b0b8b7f4dc729cd3230988a0a5bb3834e01e"
-other = "管理 Pod"
+[ProfileAtomLinkTitle]
+hash = "sha1-41dded417052424bdcf3c39f6c8664147fae6806"
+other = "Atom"
 
-[ManageUsersLinkTitle]
-hash = "sha1-751f7d627ad7fe72372b355b1cd24895dc08b8f3"
-other = "管理用户"
+[ProfileBlogsLinkTitle]
+hash = "sha1-5ef4439786692eab160ee60be0da2bb3a8597d9a"
+other = "博客"
 
-[SettingsAPIClient]
-hash = "sha1-1bdd79b12628d8c4ec4226ff4207341dcb869ab8"
-other = "客户端"
+[ProfileBookmarksLinkTitle]
+hash = "sha1-6a5a0b75f31c888349fd59ca3242acef5c6fe291"
+other = "书签"
 
-[SettingsAPICreated]
-hash = "sha1-accf40c89baa4fa88e6a7ff11e1f805beecafd3f"
-other = "创建时间"
+[ProfileConfigLinkTitle]
+hash = "sha1-8851142da56fd885ce668a165b33fee7003e858d"
+other = "配置"
 
-[SettingsAPIDelete]
-hash = "sha1-f6fdbe48dc54dd86f63097a03bd24094dedd713a"
-other = "删除"
+[ProfileFollowersLinkTitle]
+hash = "sha1-60307d4b8f5c2d8eb88f9f031a041fe636c05f43"
+other = "粉丝:"
 
-[SettingsAPIExpiry]
-hash = "sha1-ba8f571e0f93e1c1532af206aa8ee39bb19f1cb9"
-other = "有效期"
+[ProfileFollowingLinkTitle]
+hash = "sha1-3bdfc897922908283888272081e3df5ea78d8a7a"
+other = "关注:"
 
-[SettingsAPITitle]
-hash = "sha1-ee50ac8b7e16fca6b3119b7ed72141788be927b8"
-other = "API 令牌"
-
-[SettingsDeleteAccountFormDelete]
-hash = "sha1-f6fdbe48dc54dd86f63097a03bd24094dedd713a"
-other = "删除"
-
-[SettingsDeleteAccountSummary]
-hash = "sha1-c2508c59a9a2da262ded2de1889ab258ab122241"
-other = "<b>警告:</b>&nbsp;这是永久删除且无法撤消!\n(<i>没有确认操作!</i>)"
-
-[SettingsDeleteAccountTitle]
-hash = "sha1-1753c2061c676db8dd89101b51b92f09a277f51c"
-other = "删除账号"
-
-[SettingsFormChangeAvatarTitle]
-hash = "sha1-60f2e98ebe1b8c0c354734b807e898fd56146b83"
-other = "改变头像"
-
-[SettingsFormChangeEmail]
-hash = "sha1-dbc7f1cb535bc000b0f2b463b6b1552763dcf66a"
-other = "更新电子邮件"
-
-[SettingsFormChangeEmailSummary]
-hash = "sha1-2b2a92b2a28c580effa22db980e7748472873fb6"
-other = "<b>注意:</b>我们实际上并不存储此信息！如果您忘记或失去对此处提供的电子邮件帐户的访问权限，将无法恢复您的Twt.social帐户！"
-
-[SettingsFormChangeEmailTitle]
-hash = "sha1-03e8c409bff190a9756ced3e3af8f175885d2bd3"
-other = "修改电子邮件"
-
-[SettingsFormChangePassword]
-hash = "sha1-148a65a983e878a68d6a62f2a066789fb82df14a"
-other = "更新密码"
-
-[SettingsFormChangePasswordTitle]
-hash = "sha1-635e3f03e27f1e818f2fbc600399950632963bcc"
-other = "修改密码"
-
-[SettingsFormChangeTagline]
-hash = "sha1-cbeefd0bc1b8b18c1d03094f993cfa16059ba7fb"
-other = "关于您的简短描述,标语或口号"
-
-[SettingsFormPrivacySettingsShowBookmarks]
-hash = "sha1-16c928b369bea36feddb8047b9b25595f181976d"
-other = "公开显示我的书签"
-
-[SettingsFormPrivacySettingsShowFollowers]
-hash = "sha1-18e55eea6d17428454501e7b1c9a694cfb28742c"
-other = "公开显示我的粉丝"
-
-[SettingsFormPrivacySettingsShowFollowings]
-hash = "sha1-1199a6b85274b60b8477a6a171958923fd46230a"
-other = "公开显示我的关注"
-
-[SettingsFormPrivacySettingsTitle]
-hash = "sha1-f41f1bc7002fffee32655b2ca02e0019efa27671"
-other = "隐私设置"
-
-[SettingsFormThemeTitle]
-hash = "sha1-0485a026596091082310d7d66c39c579a9ab6566"
-other = "主题"
-
-[SettingsFormTimezoneTitle]
-hash = "sha1-cc6b7d5a9e6ad370824bc702023b0d2e44d5eb2b"
-other = "时区"
-
-[SettingsFormUpdate]
-hash = "sha1-fb91e24fa52d8d2b32937bf04d843f730319a902"
-other = "更新"
-
-[SettingsFormUpdateTaglineTitle]
-hash = "sha1-3547a41d0344427489dfcd825bfb6578a88672b3"
-other = "标语"
-
-[SettingsFormViewProfile]
-hash = "sha1-b98795a246f09961ab85071a7f50013203007e9f"
-other = "查看用户详情"
-
-[SettingsMessagingPOP3Title]
-hash = "sha1-388d294b27938ce044aa44511baf38334a66eb0e"
-other = "POP3 令牌"
-
-[SettingsMessagingSMTPTitle]
-hash = "sha1-ce3cec9800dd64d6c7a07fe45b2dbeea9ecd9f75"
-other = "SMTP 令牌"
-
-[SettingsMessagingTitle]
-hash = "sha1-a4a53482c7bea90cd4d73f226aa5156f64f913c4"
-other = "消息令牌"
-
-[SettingsPodManagementTitle]
-hash = "sha1-9a2d74e99197deb098f491ce7fc19ecca9a7c1b1"
-other = "Pod 管理"
-
-[SettingsSummary]
-hash = "sha1-66c5325c25f10fdc5451819a3a2cdca81f5a2f01"
-other = "在此处更新您的帐户设置和密码"
-
-[SettingsTitle]
-hash = "sha1-82cf8a5fc7ac9479f022ea7797d2fc24455ab4ee"
-other = "账号设置"
-
-[ThemeAuto]
-hash = "sha1-c614ba7c453cdcd4d21b20e8286c6266c891e0c6"
-other = "自动"
-
-[ThemeDark]
-hash = "sha1-ae1ef01432946b8976b9b58575b3390ab7644db2"
-other = "深色"
-
-[ThemeLight]
-hash = "sha1-a36ef8aba22905e2d2efbf1ac1d6230d5761859d"
-other = "浅色"
+[ProfileTwtxtLinkTitle]
+hash = "sha1-45c9437b0fb70f8f31804a3d49137e3bec03d99d"
+other = "Twtxt"

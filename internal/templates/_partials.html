@@ -252,19 +252,19 @@
 {{ define "profileLinks" }}
 <ul>
   {{ if $.ShowConfig }}
-  <li><a target="_blank" href="/user/{{ $.Profile.Username }}/config.yaml">Config&nbsp;<i class="icss-gear"></i></a></li>
+  <li><a target="_blank" href="/user/{{ $.Profile.Username }}/config.yaml">{{tr $.Ctx "ProfileConfigLinkTitle"}}&nbsp;<i class="icss-gear"></i></a></li>
   {{ end }}
-  <li><a href="{{ $.Profile.BlogsURL }}">Blogs&nbsp;<i class="icss-quill-pen"></i></a></li>
-  <li><a target="_blank" href="{{ $.Profile.URL }}">Twtxt&nbsp;<i class="icss-link"></i></a></li>
-  <li><a target="_blank" href="{{ $.Profile.URL | trimSuffix "/twtxt.txt" }}/atom.xml">Atom&nbsp;<i class="icss-rss"></i></a></li>
+  <li><a href="{{ $.Profile.BlogsURL }}">{{tr $.Ctx "ProfileBlogsLinkTitle"}}&nbsp;<i class="icss-quill-pen"></i></a></li>
+  <li><a target="_blank" href="{{ $.Profile.URL }}">{{tr $.Ctx "ProfileTwtxtLinkTitle"}}&nbsp;<i class="icss-link"></i></a></li>
+  <li><a target="_blank" href="{{ $.Profile.URL | trimSuffix "/twtxt.txt" }}/atom.xml">{{tr $.Ctx "ProfileAtomLinkTitle"}}&nbsp;<i class="icss-rss"></i></a></li>
   {{ if $.Profile.ShowFollowers }}
-  <li><a href="/user/{{ $.Profile.Username }}/followers">Followers: {{ $.Profile.Followers | len }}</a></li>
+  <li><a href="/user/{{ $.Profile.Username }}/followers">{{tr $.Ctx "ProfileFollowersLinkTitle"}} {{ $.Profile.Followers | len }}</a></li>
   {{ end }}
   {{ if $.Profile.ShowFollowing }}
-  <li><a href="/user/{{ $.Profile.Username }}/following">Following: {{ $.Profile.Following | len }}</a></li>
+  <li><a href="/user/{{ $.Profile.Username }}/following">{{tr $.Ctx "ProfileFollowingLinkTitle"}} {{ $.Profile.Following | len }}</a></li>
   {{ end }}
   {{ if $.Profile.ShowBookmarks }}
-  <li><a href="/user/{{ $.Profile.Username }}/bookmarks">Bookmarks: {{ $.Profile.Bookmarks | len }}</a></li>
+  <li><a href="/user/{{ $.Profile.Username }}/bookmarks">{{tr $.Ctx "ProfileBookmarksLinkTitle"}} {{ $.Profile.Bookmarks | len }}</a></li>
   {{ end }}
 </ul>
 {{ end }}

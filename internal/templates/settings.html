@@ -24,7 +24,7 @@
           </label>
         </div>
         <div>
-          {{ template "profileLinks" (dict "Profile" (.User.Profile .BaseURL .User) "ShowConfig" true) }}
+          {{ template "profileLinks" (dict "Profile" (.User.Profile .BaseURL .User) "ShowConfig" true "Ctx" .) }}
         </div>
       </div>
       <div class="grid">

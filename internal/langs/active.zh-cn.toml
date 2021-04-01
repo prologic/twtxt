@@ -246,6 +246,34 @@ other = "设置"
 hash = "sha1-018514a3d58aa08353dd5e387ee29de45981c409"
 other = "动态"
 
+[ProfileAtomLinkTitle]
+hash = "sha1-41dded417052424bdcf3c39f6c8664147fae6806"
+other = "Atom"
+
+[ProfileBlogsLinkTitle]
+hash = "sha1-5ef4439786692eab160ee60be0da2bb3a8597d9a"
+other = "博客"
+
+[ProfileBookmarksLinkTitle]
+hash = "sha1-6a5a0b75f31c888349fd59ca3242acef5c6fe291"
+other = "书签"
+
+[ProfileConfigLinkTitle]
+hash = "sha1-8851142da56fd885ce668a165b33fee7003e858d"
+other = "配置"
+
+[ProfileFollowersLinkTitle]
+hash = "sha1-60307d4b8f5c2d8eb88f9f031a041fe636c05f43"
+other = "粉丝:"
+
+[ProfileFollowingLinkTitle]
+hash = "sha1-3bdfc897922908283888272081e3df5ea78d8a7a"
+other = "关注:"
+
+[ProfileTwtxtLinkTitle]
+hash = "sha1-45c9437b0fb70f8f31804a3d49137e3bec03d99d"
+other = "Twtxt"
+
 [RegisterDisabledMessage]
 hash = "sha1-14d26e1e7754b30ed7402bbaf188baa629d8a79b"
 other = "当前实例禁止注册, 请联系管理员"

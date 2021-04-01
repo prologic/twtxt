@@ -1,19 +1,3 @@
-[BlogFeedManageLinkTitle]
-hash = "sha1-bf58d17e561b1b858e35f9202f811297dac2e9db"
-other = "管理"
-
-[BlogsFollowLinkTitle]
-hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"
-other = "关注"
-
-[BlogsForUserLinkTitle]
-hash = "sha1-61488fb76586945c474ad5574cf7856f94384656"
-other = "{{ .Username }} 的博客"
-
-[BlogsMyLinkTitle]
-hash = "sha1-90ae4fffc47a576c3e57b419e8adae295ae697f8"
-other = "我的博客"
-
-[BlogsUnfollowLinkTitle]
-hash = "sha1-e3a6fe565c7f64204f2dd182dc8b8ca9fe725d99"
-other = "取消关注"
+[MeLinkTitle]
+hash = "sha1-b1c1d8736f20db3fb6c1c66bb1455ed43909f0d8"
+other = "我"

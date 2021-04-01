@@ -2,21 +2,22 @@
   <article class="grid">
     <div>
       <hgroup>
-        <h2>Followers</h2>
+          <h2>{{tr . "FollowersTitle"}}</h2>
         <h3>
           {{ if $.User.Is .Profile.URL }}
-            List of users following you
+          {{tr . "FollowersFollowingYou"}}
           {{ else }}
-            List of users following <b>{{ .Profile.Username }}</b>
+          {{(tr . "FollowersFollowingUser" (dict "Username" .Profile.Username))|html}} </b>
           {{ end }}
         </h3>
       </hgroup>
       {{ if .Profile.Followers }}
         <ol>
+          {{$ctx:=.}}
           {{ range $Nick, $URL := .Profile.Followers }}
             <li>
               {{ if $.User.Is $URL }}
-                <a href="{{ $URL }}">me</a>
+              <a href="{{ $URL }}">{{tr $ctx "MeLinkTitle"}}</a>
               {{ else }}
                 {{ if isLocalURL $URL }}
                   <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">{{ $Nick }}</a>
@@ -28,9 +29,9 @@
                 {{ if $.Authenticated }}
                   {{ if not ($.User.Is $URL) }}
                     {{ if $.User.Follows $URL }}
-                      [<a href="/unfollow?nick={{ $Nick }}">Unfollow</a>]
+                    [<a href="/unfollow?nick={{ $Nick }}">{{tr $ctx "UnfollowLinkTitle"}}</a>]
                     {{ else }}
-                      [<a href="/follow?nick={{ $Nick }}&url={{ $URL }}">Follow</a>]
+                    [<a href="/follow?nick={{ $Nick }}&url={{ $URL }}">{{tr $ctx "FollowLinkTitle"}}</a>]
                     {{ end }}
                   {{ end }}
                 {{ end }}
@@ -41,11 +42,9 @@
       {{ else }}
         <small>
           {{ if $.User.Is .Profile.URL }}
-            You have not followers! Make a twt and it will appear on the
-            <a href="/discover">discover</a> for users of {{ .InstanceName }}
-            to <a href="/follow">follow</a>.
+          {{(tr . "FollowersNoFollowersSummary" (dict "InstanceName" .InstanceName))|html}}
           {{ else }}
-            <b>{{ .Profile.Username }}</b> has no followers!</i>
+          <b>{{ .Profile.Username }}</b> {{tr . "FollowersNoFollowers"}}</i>
           {{ end }}
       {{ end }}
     </div>

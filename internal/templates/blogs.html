@@ -20,17 +20,17 @@
             {{ if $.User.Follows .Profile.URL }}
               <a href="/unfollow?nick={{ .Profile.Username  }}">
                 <i class="icss-minus"></i>
-                {{tr . "BlogsUnfollowLinkTitle"}}
+                {{tr . "UnfollowLinkTitle"}}
               </a>
             {{ else }}
               <a href="/follow?nick={{ .Profile.Username  }}&url={{ .Profile.URL }}">
                 <i class="icss-plus"></i>
-                {{tr . "BlogsFollowLinkTitle"}}
+                {{tr . "FollowLinkTitle"}}
               </a>
             {{ end }}
 
             {{ if $.User.OwnsFeed .Profile.Username }}
-            | <a href="/feed/{{ .Profile.Username  }}/manage">{{tr . "BlogsFeedManageLinkTitle"}}</a>
+            | <a href="/feed/{{ .Profile.Username  }}/manage">{{tr . "FeedManageLinkTitle"}}</a>
             {{ end }}
           </h3>
         {{ end}}

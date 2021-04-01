@@ -2,17 +2,18 @@
   <article class="grid">
     <div>
       <hgroup>
-        <h2>Following</h2>
+          <h2>{{tr . "FollowingTitle"}}</h2>
         <h3>
           {{ if $.User.Is .Profile.URL }}
-            List of users and feeds you are following
+          {{tr . "FollowingFollowingYou"}}
           {{ else }}
-            List of users and feeds <b>{{ .Profile.Username }}</b> is following
+          {{(tr . "FollowingFollowingUser" (dict "Username" .Profile.Username))|html}}  
           {{ end }}
         </h3>
       </hgroup>
       {{ if .Profile.Following }}
         <ol>
+          {{$ctx:=.}}
           {{ range $Nick, $URL := .Profile.Following }}
             <li>
               {{ if isLocalURL $URL }}
@@ -20,14 +21,14 @@
               {{ else }}
                 <a href="/external?uri={{ $URL }}&nick={{ $Nick  }}">
               {{ end }}
-              {{ if $.User.Is $URL }}me{{ else }}{{ $Nick }}{{ end }}</a>
+              {{ if $.User.Is $URL }}{{tr $ctx "MeLinkTitle"}}{{ else }}{{ $Nick }}{{ end }}</a>
 
               {{ if $.Authenticated }}
                 {{ if not ($.User.Is $URL) }}
                   {{ if $.User.Follows $URL }}
-                    [<a href="/unfollow?nick={{ $Nick }}">Unfollow</a>]
+                  [<a href="/unfollow?nick={{ $Nick }}">{{tr $ctx "UnfollowLinkTitle"}}</a>]
                   {{ else }}
-                    [<a href="/follow?nick={{ $Nick }}&url={{ $URL }}">Follow</a>]
+                  [<a href="/follow?nick={{ $Nick }}&url={{ $URL }}">{{tr $ctx "FollowLinkTitle"}}</a>]
                   {{ end }}
                 {{ end }}
               {{ end }}
@@ -37,11 +38,9 @@
       {{ else }}
         <small>
           {{ if $.User.Is .Profile.URL }}
-            You are not following any users or feeds!
-            <a href="/follow">Follow</a> someone or <a href="/discover">discover</a>
-            new users or interesting <a href="/feeds">feeds</a> on {{ .InstanceName }}.
+          {{(tr . "FollowingNoFollowingSummary" (dict "InstanceName" .InstanceName))|html}}
           {{ else }}
-            <b>{{ .Profile.Username }}</b> is not following any users or feeds.</i>
+            <b>{{ .Profile.Username }}</b> {{tr . "FollowingNoFollowing"}}</i>
           {{ end }}
         </small>
       {{ end }}

@@ -126,6 +126,26 @@ other = "您还没有粉丝! 发表一篇推文, 它将出现在a href=\"/discov
 hash = "sha1-78eaabf4a629795fe52f523f44f5000c6b204f2f"
 other = "粉丝"
 
+[FollowingFollowingUser]
+hash = "sha1-fbf827af5e0df2f2953a555ec1e874fb441aa425"
+other = "<b>{{ .Username }}</b> 关注列表"
+
+[FollowingFollowingYou]
+hash = "sha1-a9c227473605df6d6e02aaa04582c2590e5a55b0"
+other = "您的关注列表"
+
+[FollowingNoFollowing]
+hash = "sha1-5a97124f8ccf9c1a9c45a2ba262842bc995881c8"
+other = "还没有关注"
+
+[FollowingNoFollowingSummary]
+hash = "sha1-27f9e5536a24088d91b836b3173f51e6982eac0d"
+other = "您没有关注任何用户或Feed！ 在{{ .InstanceName }}上<a href=\"/follow\">关注</a>某人或在<a href=\"/discover\">发现</a>页找到感兴的用户或Feed。"
+
+[FollowingTitle]
+hash = "sha1-90eeb100838048513e8d2290a6892e18077c24f6"
+other = "关注"
+
 [ForgottenPasswordContent]
 hash = "sha1-122216d4af117201b618588c4a2969c8ee9a1c16"
 other = "如果您忘记了密码, 只要您记住注册时使用的用户名和电子邮件地址并保留对电子邮件的访问权限，就可以请求<a href=\"/resetPassword\">重置密码</a>(<i>我们 <b>从不</b> 存储您的邮件地址!</i>)."

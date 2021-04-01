@@ -1,3 +1,19 @@
-[MeLinkTitle]
-hash = "sha1-b1c1d8736f20db3fb6c1c66bb1455ed43909f0d8"
-other = "我"
+[FollowingFollowingUser]
+hash = "sha1-fbf827af5e0df2f2953a555ec1e874fb441aa425"
+other = "<b>{{ .Username }}</b> 关注列表"
+
+[FollowingFollowingYou]
+hash = "sha1-a9c227473605df6d6e02aaa04582c2590e5a55b0"
+other = "您的关注列表"
+
+[FollowingNoFollowing]
+hash = "sha1-5a97124f8ccf9c1a9c45a2ba262842bc995881c8"
+other = "还没有关注"
+
+[FollowingNoFollowingSummary]
+hash = "sha1-27f9e5536a24088d91b836b3173f51e6982eac0d"
+other = "您没有关注任何用户或Feed！ 在{{ .InstanceName }}上<a href=\"/follow\">关注</a>某人或在<a href=\"/discover\">发现</a>页找到感兴的用户或Feed。"
+
+[FollowingTitle]
+hash = "sha1-90eeb100838048513e8d2290a6892e18077c24f6"
+other = "关注"

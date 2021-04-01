@@ -250,6 +250,14 @@ other = "动态"
 hash = "sha1-41dded417052424bdcf3c39f6c8664147fae6806"
 other = "Atom"
 
+[ProfileBlockUserContent]
+hash = "sha1-d2aeb6f1e3c14710c48aa32a21a783114bc610f5"
+other = " <p>如果此用户或Feed违反了 Pod({{ .InstanceName }})实例的社区准则及相关<a href=\"/abuse\">政策</a>，请立即举报！</p><p>您还可以取消关注或屏蔽此用户或Feed。禁言也会从您的视图中删除该用户/ Feed的内容，并且您将不再在任何地方看到该用户或Feed的内容。</p>"
+
+[ProfileBlockUserTitle]
+hash = "sha1-ef0754928f9eec23313a4e9f46f10b061e5ead48"
+other = "屏蔽 / 报告"
+
 [ProfileBlogsLinkTitle]
 hash = "sha1-5ef4439786692eab160ee60be0da2bb3a8597d9a"
 other = "博客"
@@ -262,6 +270,18 @@ other = "书签"
 hash = "sha1-8851142da56fd885ce668a165b33fee7003e858d"
 other = "配置"
 
+[ProfileDoesNotFollowYou]
+hash = "sha1-39a192be045429f69662e113e83bbcc7b46f24dc"
+other = "还没有关注你 (<i>他可能没看到你的消息!</i>)"
+
+[ProfileFeedManageLinkTitle]
+hash = "sha1-bf58d17e561b1b858e35f9202f811297dac2e9db"
+other = "管理"
+
+[ProfileFollowLinkTitle]
+hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"
+other = "关注"
+
 [ProfileFollowersLinkTitle]
 hash = "sha1-60307d4b8f5c2d8eb88f9f031a041fe636c05f43"
 other = "粉丝:"
@@ -270,9 +290,41 @@ other = "粉丝:"
 hash = "sha1-3bdfc897922908283888272081e3df5ea78d8a7a"
 other = "关注:"
 
+[ProfileFollowsYou]
+hash = "sha1-9c3afad24345228d89b18f923e7212b2e4cc266b"
+other = "关注了你"
+
+[ProfileMeLinkTitle]
+hash = "sha1-b1c1d8736f20db3fb6c1c66bb1455ed43909f0d8"
+other = "我就是我,不一样的烟火"
+
+[ProfileMuteLinkTitle]
+hash = "sha1-0f0973483d912464153b3be374a94b58e6cd0ef6"
+other = "禁言"
+
+[ProfileReportLinkTitle]
+hash = "sha1-ee45c30326b750387589752c0f75e1dd87ddc7e4"
+other = "报告"
+
 [ProfileTwtxtLinkTitle]
 hash = "sha1-45c9437b0fb70f8f31804a3d49137e3bec03d99d"
 other = "Twtxt"
+
+[ProfileUnfollowLinkTitle]
+hash = "sha1-e3a6fe565c7f64204f2dd182dc8b8ca9fe725d99"
+other = "取消关注"
+
+[ProfileUnmuteLinkTitle]
+hash = "sha1-7044c3104095ed2673eb6a7d23cb1bb27847b930"
+other = "取消禁言"
+
+[RecentTwtsSummary]
+hash = "sha1-86f9404e41167e340565f72ea9d15be2d4de1cf5"
+other = "来自 {{ .Username }} 的最近推文"
+
+[RecentTwtsTitle]
+hash = "sha1-5471aee8e78958c108a802ab9385f2a13f184d2b"
+other = "最近推文"
 
 [RegisterDisabledMessage]
 hash = "sha1-14d26e1e7754b30ed7402bbaf188baa629d8a79b"

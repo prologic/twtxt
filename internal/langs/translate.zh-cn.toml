@@ -1,27 +1,3 @@
-[ProfileAtomLinkTitle]
-hash = "sha1-41dded417052424bdcf3c39f6c8664147fae6806"
-other = "Atom"
-
-[ProfileBlogsLinkTitle]
-hash = "sha1-5ef4439786692eab160ee60be0da2bb3a8597d9a"
-other = "博客"
-
-[ProfileBookmarksLinkTitle]
-hash = "sha1-6a5a0b75f31c888349fd59ca3242acef5c6fe291"
-other = "书签"
-
-[ProfileConfigLinkTitle]
-hash = "sha1-8851142da56fd885ce668a165b33fee7003e858d"
-other = "配置"
-
-[ProfileFollowersLinkTitle]
-hash = "sha1-60307d4b8f5c2d8eb88f9f031a041fe636c05f43"
-other = "粉丝:"
-
-[ProfileFollowingLinkTitle]
-hash = "sha1-3bdfc897922908283888272081e3df5ea78d8a7a"
-other = "关注:"
-
-[ProfileTwtxtLinkTitle]
-hash = "sha1-45c9437b0fb70f8f31804a3d49137e3bec03d99d"
-other = "Twtxt"
+[RecentTwtsSummary]
+hash = "sha1-86f9404e41167e340565f72ea9d15be2d4de1cf5"
+other = "来自 {{ .Username }} 的最近推文"

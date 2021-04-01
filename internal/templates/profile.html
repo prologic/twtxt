@@ -6,7 +6,7 @@
           {{ if $.User.Is .Profile.URL }}
             <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
               <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" alt="" />
-              <span class="p-name">me</span>
+              <span class="p-name">{{tr . "ProfileMeLinkTitle"}}</span>
             </a>
           {{ else }}
             <a href="{{ .Profile.URL | trimSuffix "/twtxt.txt" }}" class="u-url p-name">
@@ -20,51 +20,42 @@
             {{ if $.User.Follows .Profile.URL }}
               <a href="/unfollow?nick={{ .Profile.Username  }}">
                 <i class="icss-minus"></i>
-                Unfollow
+                {{tr . "ProfileUnfollowLinkTitle"}}
               </a>
             {{ else }}
               <a href="/follow?nick={{ .Profile.Username  }}&url={{ .Profile.URL }}">
                 <i class="icss-plus"></i>
-                Follow
+                {{tr . "ProfileFollowLinkTitle"}}
               </a>
             {{ end }}
 
             {{ if $.User.OwnsFeed .Profile.Username }}
-              | <a href="/feed/{{ .Profile.Username  }}/manage">Manage</a>
+            | <a href="/feed/{{ .Profile.Username  }}/manage">{{tr . "ProfileFeedManageLinkTitle"}}</a>
             {{ end }}
           </h3>
         {{ end}}
         <p><i>{{ .Profile.Tagline }}</i></p>
         <details>
-          <summary>Block / Report User</summary>
-          <p>
-            If this user/feed is violating this Pod's ({{ .InstanceName }})
-            community guidelines as set out in the <a href="/abuse">Abuse Policy</a>,
-            please report them immediately!
-          </p>
-          <p>
-            You are also free to Unfollow or Mute this user or feed. Muting will
-            also remove that user/feed's content from your view and you will
-            no longer see content from that user/feed anywhere.
-          </p>
+            <summary>{{tr . "ProfileBlockUserTitle"}}</summary>
+            {{(tr . "ProfileBlockUserContent" (dict "InstanceName" .InstanceName))|html}}
           <ul>
             <li>
               {{ if $.User.HasMuted .Profile.URL }}
                 <a href="/unmute?nick={{ .Profile.Username }}">
                   <i class="icss-sound-3"></i>
-                  Unmute
+                  {{tr . "ProfileUnmuteLinkTitle"}}
                 </a>
               {{ else }}
                 <a href="/mute?nick={{ .Profile.Username }}&url={{ .Profile.URL }}">
                   <i class="icss-sound-0"></i>
-                  Mute
+                  {{tr . "ProfileMuteLinkTitle"}}
                 </a>
               {{ end }}
             </li>
             <li>
               <a href="/report?nick={{ .Profile.Username  }}&url={{ .Profile.URL }}">
                 <i class="icss-exclamation-circle" style="color:red;"></i>
-                Report
+                {{tr . "ProfileReportLinkTitle"}}
               </a>
             </li>
           </ul>
@@ -75,23 +66,23 @@
           <a href="{{ .Profile.TwtURL }}">@{{ .Profile.Username }}
             <i class="icss-exchagne"></i>
           </a>
-          follows you
+          {{tr . "ProfileFollowsYou"}}
         {{ else }}
           <a href="{{ .Profile.TwtURL }}">@{{ .Profile.Username }}
             <i class="icss-x"></i>
           </a>
-          does not follow you (<i>they may not see your replies!</i>)
+          {{(tr . "ProfileDoesNotFollowYou")|html}}
         {{ end }}
       </p>
     </div>
     <div>
-      {{ template "profileLinks" (dict "Profile" .Profile "ShowConfig" false) }}
+      {{ template "profileLinks" (dict "Profile" .Profile "ShowConfig" false "Ctx" .) }}
     </div>
   </div>
   <div class="container">
     <hgroup>
-      <h2>Recent Twts</h2>
-      <h3>Recent twts from {{ .Profile.Username }}</h3>
+        <h2>{{tr . "RecentTwtsTitle"}}</h2>
+        <h3>{{tr . "RecentTwtsSummary" (dict "Username" .Profile.Username)}}</h3>
     </hgroup>
   </div>
   {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true "CSRFToken" $.CSRFToken) }}

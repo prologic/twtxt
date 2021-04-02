@@ -318,7 +318,8 @@ func getMessage(conf *Config, username string, msgId int) (msg Message, err erro
 				Sent:    d,
 				Subject: e.Header.Get(headerKeySubject),
 				Status:  e.Header.Get(headerKeyStatus),
-				body:    string(body),
+				// Treat private messages like Twts.
+				body: CleanTwt(string(body)),
 			}, nil
 		}
 

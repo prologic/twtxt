@@ -716,7 +716,11 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	}
 
 	// translator
-	translator := NewTranslator()
+	translator, err := NewTranslator()
+	if err != nil {
+		log.WithError(err).Error("error loading translator")
+		return nil, err
+	}
 
 	tmplman, err := NewTemplateManager(config, translator, blogs, cache, archive)
 	if err != nil {

@@ -51,20 +51,3 @@ func (t *Translator) Translate(ctx *Context, msgID string, data ...interface{}) 
 	return localizer.MustLocalize(&conf)
 
 }
-
-func MustLoadMessageFromFS(b *i18n.Bundle, fsys fs.FS, path string) {
-	if _, err := LoadMessageFromFS(b, fsys, path); err != nil {
-		panic(err)
-	}
-}
-
-// LoadMessageFromFileFS is like LoadMessageFile but instead of reading from the
-// hosts operating system's file system it reads from the fs file system.
-func LoadMessageFromFS(b *i18n.Bundle, fsys fs.FS, path string) (*i18n.MessageFile, error) {
-	buf, err := fs.ReadFile(fsys, path)
-	if err != nil {
-		return nil, err
-	}
-
-	return b.ParseMessageFileBytes(buf, path)
-}

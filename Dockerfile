@@ -29,6 +29,9 @@ COPY ./internal/pages/* ./internal/pages/
 # Copy templates
 COPY ./internal/templates/* ./internal/templates/
 
+# Copy langs (localization / i18n)
+COPY ./internal/langs/* ./internal/langs/
+
 # Copy sources
 COPY *.go ./
 COPY ./internal/*.go ./internal/

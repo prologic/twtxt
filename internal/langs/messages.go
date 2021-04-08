@@ -2,5 +2,7 @@ package langs
 
 import "embed"
 
-//go:embed *.toml
-var LocaleFS embed.FS
+// go:generate goi18n merge active.*.toml translate.*.toml
+
+//go:embed active.*.toml
+var LangFS embed.FS

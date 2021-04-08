@@ -1,6 +1,9 @@
 package internal
 
 import (
+	"io/fs"
+
+	"github.com/jointwt/twtxt/internal/langs"
 	"github.com/naoina/toml"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
@@ -14,10 +17,8 @@ func NewTranslator() *Translator {
 	// lang
 	bundle := i18n.NewBundle(language.English)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
-	// No need to load active.en.toml since we are providing default translations.
-	bundle.MustLoadMessageFile("./internal/langs/active.en.toml")
-	bundle.MustLoadMessageFile("./internal/langs/active.zh-cn.toml")
-	// bundle.LoadMessageFile("./langs/active.zh-tw.toml")
+	MustLoadMessageFromFS(bundle, langs.LangFS, "active.en.toml")
+	MustLoadMessageFromFS(bundle, langs.LangFS, "active.zh-cn.toml")
 	return &Translator{
 		Bundle: bundle,
 	}
@@ -37,4 +38,21 @@ func (t *Translator) Translate(ctx *Context, msgID string, data ...interface{}) 
 
 	return localizer.MustLocalize(&conf)
 
+}
+
+func MustLoadMessageFromFS(b *i18n.Bundle, fsys fs.FS, path string) {
+	if _, err := LoadMessageFromFS(b, fsys, path); err != nil {
+		panic(err)
+	}
+}
+
+// LoadMessageFromFileFS is like LoadMessageFile but instead of reading from the
+// hosts operating system's file system it reads from the fs file system.
+func LoadMessageFromFS(b *i18n.Bundle, fsys fs.FS, path string) (*i18n.MessageFile, error) {
+	buf, err := fs.ReadFile(fsys, path)
+	if err != nil {
+		return nil, err
+	}
+
+	return b.ParseMessageFileBytes(buf, path)
 }

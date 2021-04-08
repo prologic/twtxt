@@ -78,6 +78,7 @@ require (
 	github.com/steambap/captcha v1.3.1
 	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/stretchr/testify v1.6.1
+	github.com/tdewolff/minify/v2 v2.9.15 // indirect
 	github.com/tebeka/selenium v0.9.9
 	github.com/theplant-retired/timezones v0.0.0-20150304063004-f9bd3c0ef9db
 	github.com/unrolled/logger v0.0.0-20201216141554-31a3694fe979
@@ -88,9 +89,9 @@ require (
 	golang.org/x/exp v0.0.0-20201229011636-eab1b5eb1a03 // indirect
 	golang.org/x/image v0.0.0-20201208152932-35266b937fa6 // indirect
 	golang.org/x/net v0.0.0-20201224014010-6772e930b67b
-	golang.org/x/sys v0.0.0-20201223074533-0d417f636930 // indirect
+	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 // indirect
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
-	golang.org/x/text v0.3.5
+	golang.org/x/text v0.3.6
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect

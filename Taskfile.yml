@@ -5,8 +5,8 @@ version: '3'
 output: 'prefixed'
 
 vars:
-  TwtdSvc: twtd 
-  TwtdExe: twtd{{exeExt}} 
+  TwtdSvc: twtd
+  TwtdExe: twtd{{exeExt}}
 
 tasks:
   default:
@@ -17,19 +17,19 @@ tasks:
   twtd:
     desc: run twtd service
     cmds:
-      - task: run-twtd 
+      - task: run-twtd
 
 
   build-twtd:
     desc: build twtd service
-    deps: [twtd-css,twtd-js,tr-merge]
+    deps: [twtd-css, twtd-js, tr-merge]
     cmds:
       - echo "{{.TwtdExe}} building..."
       - go build -v -o {{.TwtdExe}} -ldflags "-w -X {{.Module}}.Version={{.Version}} -X {{.Module}}.Commit={{.Commit}}" cmd/{{.TwtdSvc}}/main.go
       - echo "{{.TwtdExe}} built."
     generates:
       - '{{.TwtdExe}}'
-    sources: 
+    sources:
       - '**/*.go'
     method: none
     vars:
@@ -43,14 +43,14 @@ tasks:
 
   run-twtd:
     cmds:
-      -  ./twtd --cookie-secret abc --magiclink-secret abc --api-signing-key abc -R --debug
+      - ./twtd --cookie-secret abc --magiclink-secret abc --api-signing-key abc -R --debug
     deps: [build-twtd]
     desc: run twtd service
     silent: false
 
   twtd-css:
     cmds:
-      - minify -b -o ./internal/static/css/twtxt.min.css ./internal/static/css/[0-9]*-*.css	
+      - minify -b -o ./internal/static/css/twtxt.min.css ./internal/static/css/[0-9]*-*.css
     sources:
       - internal/css/**/*.css
     generates:
@@ -58,7 +58,7 @@ tasks:
 
   twtd-js:
     cmds:
-      - minify -b -o ./internal/static/js/twtxt.min.js ./internal/static/js/[0-9]*-*.js		
+      - minify -b -o ./internal/static/js/twtxt.min.js ./internal/static/js/[0-9]*-*.js
     sources:
       - internal/js/**/*.js
     generates:
@@ -76,3 +76,19 @@ tasks:
       - goi18n merge active.*.toml translate.*.toml
     desc: goi18n merge
 
+  release:
+    desc: release
+    deps: [build-twtd]
+    cmds:
+      # - mkdir -pv ./release/internal/{static,langs}
+      - mkdir -pv ./release/internal/static/{css,js}
+      - cp -Rpfv ./{{.TwtdExe}} ./release/
+      - cp -Rpfv ./internal/static/css/twtxt.min.css ./release/internal/static/css/
+      - cp -Rpfv ./internal/static/js/twtxt.min.js ./release/internal/static/js/
+      # - cp -Rpfv ./internal/langs/active.*.toml ./release/internal/langs/
+      - ./release/{{.TwtdExe}} --cookie-secret abc --magiclink-secret abc --api-signing-key abc -R --debug
+
+  clean:
+    desc: clean
+    cmds:
+      - rm -rf ./release

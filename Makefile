@@ -10,6 +10,7 @@ all: build
 
 deps:
 	@$(GOCMD) get -u github.com/tdewolff/minify/v2/cmd/...
+	@$(GOCMD) get -u github.com/nicksnyder/go-i18n/v2/goi18n
 
 dev : DEBUG=1
 dev : build

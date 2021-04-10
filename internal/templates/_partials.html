@@ -67,7 +67,7 @@
       {{ with $.BlogPost }}
       {{ else }}
       <select id="postas" class="postas" name="postas">
-        <option value="{{ $.User.Username }}" selected>Post as {{ $.User.Username }}</option>
+          <option value="{{ $.User.Username }}" selected>{{tr $.Ctx "TwtFormPostAs" (dict "Username" $.User.Username)}}</option>
         {{ range $index, $feed := $.User.Feeds }}
         <option value="{{ $feed }}">{{ $feed }}</option>
         {{ end }}
@@ -76,10 +76,10 @@
       <button id="post" type="submit">
         {{ with $.BlogPost }}
         <i class="icss-print"></i>
-        Save
+        {{tr $.Ctx "TwtFormSave"}}
         {{ else }}
         <i class="icss-paper-plane"></i>
-        Post
+        {{tr $.Ctx  "TwtFormPost"}}
         {{ end }}
       </button>
     </div>

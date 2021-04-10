@@ -74,6 +74,10 @@ other = "&copy; 2020 <a href='https://github.com/prologic' target='_blank'>James
 hash = "sha1-e7946380febed70ea56d525f57b79799b220e087"
 other = "由 <a href='https://github.com/prologic' target='_blank'>James Mills</a> 创建"
 
+[DefaultTwtPrompts]
+hash = "sha1-f585553bb01b2326a11e091a6e07c6426d8c5c35"
+other = "你在想什么？\n您的见地非常重要！\n今天是个好日子! 有什么新鲜事？\n今天有什么有趣的事，马上与大家分享！ \n嗨！👋 朋友，别忘了发推文哦！"
+
 [ErrorInvalidPassword]
 hash = "sha1-52b29810c7c76d469feec362b5c77ccb7531718b"
 other = "密码无效! 提示: 重新设置密码?"
@@ -89,6 +93,10 @@ other = "太多次登录失败. 账号临时锁定, 请稍候重试."
 [ErrorRegisterDisabled]
 hash = "sha1-58ae30a9afd39e0111c2d0864b81bb12b799820e"
 other = "当前实例禁止注册, 请联系管理员."
+
+[ErrorTimelineLoad]
+hash = "sha1-aab0d6f0ea631fdcbe5ec82b50b086ae23c5c82a"
+other = "加载动态数据时发生了错误"
 
 [ErrorTitle]
 hash = "sha1-7f2f6a15cf8da2b27e5a4af47b58e7ad71c0b3d9"
@@ -390,6 +398,14 @@ other = "设置"
 hash = "sha1-018514a3d58aa08353dd5e387ee29de45981c409"
 other = "动态"
 
+[PageLocalTimelineTitle]
+hash = "sha1-c69cd8d5a9c8ce344bc8d779a0b8a2710ebca482"
+other = "本地动态"
+
+[PageUserTimelineTitle]
+hash = "sha1-16c00449a9a3f15a32149863cc14f591ad497ff2"
+other = "动态"
+
 [ProfileAtomLinkTitle]
 hash = "sha1-41dded417052424bdcf3c39f6c8664147fae6806"
 other = "Atom"
@@ -673,6 +689,18 @@ other = "深色"
 [ThemeLight]
 hash = "sha1-a36ef8aba22905e2d2efbf1ac1d6230d5761859d"
 other = "浅色"
+
+[TwtFormPost]
+hash = "sha1-7858ac3ff63354f37161bd349efe11edd13b89cb"
+other = "发表"
+
+[TwtFormPostAs]
+hash = "sha1-41d744f5d0413bf98192910d9cd58a8c4de02a47"
+other = "用户 {{ .Username }}"
+
+[TwtFormSave]
+hash = "sha1-efc007a393f66cdb14d57d385822a3d9e36ef873"
+other = "保存"
 
 [UnfollowLinkTitle]
 hash = "sha1-e3a6fe565c7f64204f2dd182dc8b8ca9fe725d99"

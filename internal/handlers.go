@@ -702,16 +702,17 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		}
 
 		ctx := NewContext(s.config, s.db, r)
+		// ctx translate
+		// TODO it's bad, I have no idea. @venjiang
+		ctx.Translate(s.translator)
 
-		log.Infof("conext.lang=%s", ctx.Lang)
-		log.Infof("user.lang=%s", ctx.User.Lang)
 		var twts types.Twts
 
 		if !ctx.Authenticated {
 			twts = s.cache.GetByPrefix(s.config.BaseURL, false)
-			ctx.Title = "Local timeline"
+			ctx.Title = s.tr(ctx, "PageLocalTimelineTitle")
 		} else {
-			ctx.Title = "Timeline"
+			ctx.Title = s.tr(ctx, "PageUserTimelineTitle")
 			user := ctx.User
 			if user != nil {
 				for feed := range user.Sources() {
@@ -730,7 +731,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		if err := pager.Results(&pagedTwts); err != nil {
 			log.WithError(err).Error("error sorting and paging twts")
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading the timeline"
+			ctx.Message = s.tr(ctx, "ErrorTimelineLoad")
 			s.render("error", w, ctx)
 			return
 		}
@@ -740,7 +741,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			if err != nil {
 				log.WithError(err).Error("error getting user last twt")
 				ctx.Error = true
-				ctx.Message = "An error occurred while loading the timeline"
+				ctx.Message = s.tr(ctx, "ErrorTimelineLoad")
 				s.render("error", w, ctx)
 				return
 			}

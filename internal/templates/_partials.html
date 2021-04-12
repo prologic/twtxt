@@ -97,7 +97,7 @@
         <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" alt="" />
       </a>
       {{ else }}
-      {{ if isLocalURL $.Twt.Twter.URL }}
+        {{ if isLocalURL $.Twt.Twter.URL }}
       <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
         <img class="avatar u-photo" src="/user/{{ $.Twt.Twter.Nick }}/avatar" alt="" />
         {{ else }}
@@ -107,13 +107,13 @@
           {{ else }}
           <i class="icss-rss" style="font-size:3em"></i>
           {{ end }}
-          {{ end }}
-        </a>
         {{ end }}
+        </a>
+      {{ end }}
     </div>
     <div class="author">
       {{ if $.User.Is $.Twt.Twter.URL }}
-      <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="p-name">me</a>
+      <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="p-name">{{tr $.Ctx "MeLinkTitle"}}</a>
       {{ else }}
       {{ if isLocalURL $.Twt.Twter.URL }}
       <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="p-name">{{ $.Twt.Twter.Nick }}</a>
@@ -133,7 +133,7 @@
         <span> &nbsp;({{ $.Twt.Created | time }})</span>
         {{ if $.Authenticated }}
         <span> &nbsp;
-          <a class="bookmark" href="/bookmark/{{ $.Twt.Hash }}" data-tooltip="{{ if $.User.Bookmarked $.Twt.Hash }}Remove Twt Bookmark{{ else }}Bookmark Twt{{ end }}">
+            <a class="bookmark" href="/bookmark/{{ $.Twt.Hash }}" data-tooltip="{{ if $.User.Bookmarked $.Twt.Hash }}{{tr $.Ctx "BookmarkRemoveTwt"}}{{ else }}{{tr $.Ctx "BookmarkAddTwt"}}{{ end }}">
             <i class="icss-{{ if $.User.Bookmarked $.Twt.Hash }}bookmark{{ else }}bookmark-o{{ end }}"></i>
           </a>
         </span>
@@ -150,20 +150,20 @@
     <ul>
       {{ if $.Authenticated }}
       {{ if eq $.LastTwt.Hash $.Twt.Hash }}
-      <li><a class="edit" href="#" data-hash="{{ $.Twt.Hash }}" data-text="{{ $.Twt.Text | unparseTwt }}"><i class="icss-edit"></i>Edit</a></li>
+      <li><a class="edit" href="#" data-hash="{{ $.Twt.Hash }}" data-text="{{ $.Twt.Text | unparseTwt }}"><i class="icss-edit"></i>{{tr $.Ctx "TwtEditLinkTitle"}}</a></li>
       <li>&nbsp;</li>
-      <li><a class="delete" href="#" data-hash="{{ $.Twt.Hash }}"><i class="icss-x"></i>Delete</a></li>
+      <li><a class="delete" href="#" data-hash="{{ $.Twt.Hash }}"><i class="icss-x"></i>{{tr $.Ctx "TwtDeleteLinkTitle"}}</a></li>
       <li>&nbsp;</li>
       {{ end }}
-      <li><a class="reply" href="#" data-reply="{{ $.User.Reply $.Twt }}"><i class="icss-arrow-left"></i>Reply</a></li>
+      <li><a class="reply" href="#" data-reply="{{ $.User.Reply $.Twt }}"><i class="icss-arrow-left"></i>{{tr $.Ctx "TwtReplyLinkTitle"}}</a></li>
       <li>&nbsp;</li>
       {{ end }}
       {{ with urlForBlog $.Twt }}
-      <li><a class="blog" href="{{ urlForBlog $.Twt }}"><i class="icss-quill-pen"></i>Blog</a></li>
+      <li><a class="blog" href="{{ urlForBlog $.Twt }}"><i class="icss-quill-pen"></i>{{tr $.Ctx "BlogLinkTitle"}}</a></li>
       <li>&nbsp;</li>
       {{ end }}
       {{ with urlForConv $.Twt }}
-      <li><a class="conv" href="{{ urlForConv $.Twt }}"><i class="icss-comment"></i>Conversation</a></li>
+      <li><a class="conv" href="{{ urlForConv $.Twt }}"><i class="icss-comment"></i>{{tr $.Ctx "TwtConversationLinkTitle"}}</a></li>
       <li>&nbsp;</li>
       {{ end }}
     </ul>
@@ -176,9 +176,9 @@
   <div>
     {{ template "pager" $.Pager }}
     {{ range $idx, $twt := $.Twts }}
-    {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" $twt) }}
+    {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" $twt "Ctx" $.Ctx) }}
     {{ else }}
-    <small><i>There are no twts yet... come back later!</i></small>
+    <small><i>{{tr $.Ctx "NoTwts"}}</i></small>
     {{ end }}
     {{ template "pager" $.Pager }}
   </div>

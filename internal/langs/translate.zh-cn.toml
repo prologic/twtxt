@@ -1,11 +1,11 @@
-[TwtFormPost]
-hash = "sha1-7858ac3ff63354f37161bd349efe11edd13b89cb"
-other = "发表"
+[ConversationJoinSummary]
+hash = "sha1-014203a6918312802a958cefc865abf84a73dd45"
+other = "加入对话，请先 <a href=\"/login\">登录</a> "
 
-[TwtFormPostAs]
-hash = "sha1-41d744f5d0413bf98192910d9cd58a8c4de02a47"
-other = "用户 {{ .Username }}"
+[ConversationSummary]
+hash = "sha1-b3159edf1a6dcde8b522b27a28af84c17ef6646f"
+other = "最近回复"
 
-[TwtFormSave]
-hash = "sha1-efc007a393f66cdb14d57d385822a3d9e36ef873"
-other = "保存"
+[ConversationTitle]
+hash = "sha1-2a20c75033890ef64222cf0bae1c4564bbdce951"
+other = "对话"

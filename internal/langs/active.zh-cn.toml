@@ -1,3 +1,7 @@
+[BlogLinkTitle]
+hash = "sha1-0b9d2b2362bc33581ba11fddcb0cf0590ebd3a7a"
+other = "博客"
+
 [BlogsFollowLinkTitle]
 hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"
 other = "关注"
@@ -13,6 +17,14 @@ other = "我的博客"
 [BlogsUnfollowLinkTitle]
 hash = "sha1-e3a6fe565c7f64204f2dd182dc8b8ca9fe725d99"
 other = "取消关注"
+
+[BookmarkAddTwt]
+hash = "sha1-ac2bfa54407bb541fb8664b510bf56b33ca79222"
+other = "加入书签"
+
+[BookmarkRemoveTwt]
+hash = "sha1-a92b8cfd1f3d8136a08e92926adcb32d6d82069e"
+other = "删除书签"
 
 [BookmarksNoBookmarks]
 hash = "sha1-67d3ef16242b6011a62bccdf9dc15c2a999c5ed6"
@@ -65,6 +77,18 @@ other = "回信"
 [ComposeMessageTitle]
 hash = "sha1-7649c59ec35a7b5d82785e247c60b73c803b20eb"
 other = "写信"
+
+[ConversationJoinSummary]
+hash = "sha1-014203a6918312802a958cefc865abf84a73dd45"
+other = "加入对话，请先 <a href=\"/login\">登录</a> "
+
+[ConversationSummary]
+hash = "sha1-b3159edf1a6dcde8b522b27a28af84c17ef6646f"
+other = "最近回复"
+
+[ConversationTitle]
+hash = "sha1-2a20c75033890ef64222cf0bae1c4564bbdce951"
+other = "对话"
 
 [Copyright]
 hash = "sha1-ed6768b21eb5e05d75dd18c9cb9ed38e56de94d6"
@@ -398,6 +422,10 @@ other = "设置"
 hash = "sha1-018514a3d58aa08353dd5e387ee29de45981c409"
 other = "动态"
 
+[NoTwts]
+hash = "sha1-5b57a49ebae0d4b1b458af42b9ed71896504614b"
+other = "还没有内容... 稍候再来！"
+
 [PageLocalTimelineTitle]
 hash = "sha1-c69cd8d5a9c8ce344bc8d779a0b8a2710ebca482"
 other = "本地动态"
@@ -690,6 +718,18 @@ other = "深色"
 hash = "sha1-a36ef8aba22905e2d2efbf1ac1d6230d5761859d"
 other = "浅色"
 
+[TwtConversationLinkTitle]
+hash = "sha1-2a20c75033890ef64222cf0bae1c4564bbdce951"
+other = "对话"
+
+[TwtDeleteLinkTitle]
+hash = "sha1-f6fdbe48dc54dd86f63097a03bd24094dedd713a"
+other = "删除"
+
+[TwtEditLinkTitle]
+hash = "sha1-5301648dcf6b53cefc9ed52999aaa92d4603cae0"
+other = "编辑"
+
 [TwtFormPost]
 hash = "sha1-7858ac3ff63354f37161bd349efe11edd13b89cb"
 other = "发表"
@@ -701,6 +741,10 @@ other = "用户 {{ .Username }}"
 [TwtFormSave]
 hash = "sha1-efc007a393f66cdb14d57d385822a3d9e36ef873"
 other = "保存"
+
+[TwtReplyLinkTitle]
+hash = "sha1-6c2bb735a46a8ff307fe2e638d581295b2a49e09"
+other = "回复"
 
 [UnfollowLinkTitle]
 hash = "sha1-e3a6fe565c7f64204f2dd182dc8b8ca9fe725d99"

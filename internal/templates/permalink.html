@@ -1,4 +1,4 @@
 {{define "content"}}
-  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true "CSRFToken" $.CSRFToken) }}
-  {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" ( $.Twts | first) ) }}
+  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true "CSRFToken" $.CSRFToken "Ctx" .) }}
+  {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" ( $.Twts | first) "Ctx" .) }}
 {{end}}

@@ -208,6 +208,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 		log.Debugf("in ProfileHandler()...")
 
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Translate(s.translator)
 
 		nick := NormalizeUsername(p.ByName("nick"))
 		if nick == "" {
@@ -770,6 +771,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Translate(s.translator)
 
 		hash := p.ByName("hash")
 		if hash == "" {
@@ -954,6 +956,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 func (s *Server) SearchHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Translate(s.translator)
 
 		var twts types.Twts
 
@@ -1520,6 +1523,7 @@ func (s *Server) FollowingHandler() httprouter.Handle {
 func (s *Server) ExternalHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Translate(s.translator)
 
 		uri := r.URL.Query().Get("uri")
 		nick := r.URL.Query().Get("nick")

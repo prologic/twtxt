@@ -43,7 +43,7 @@ tasks:
 
   run-twtd:
     cmds:
-        - ./twtd --cookie-secret abc --magiclink-secret abc --api-signing-key abc -R --debug --base-url http://localhost:8000
+        - ./twtd --cookie-secret abc --magiclink-secret abc --api-signing-key abc -R --debug --base-url http://localhost:8000 --bind 127.0.0.1:8000 --twts-per-page 5
     deps: [build-twtd]
     desc: run twtd service
     silent: false
@@ -86,7 +86,7 @@ tasks:
       - cp -Rpfv ./internal/static/css/twtxt.min.css ./release/internal/static/css/
       - cp -Rpfv ./internal/static/js/twtxt.min.js ./release/internal/static/js/
       # - cp -Rpfv ./internal/langs/active.*.toml ./release/internal/langs/
-      - ./release/{{.TwtdExe}} --cookie-secret abc --magiclink-secret abc --api-signing-key abc -R --debug --base-url http://localhost:8000
+      - ./release/{{.TwtdExe}} --cookie-secret abc --magiclink-secret abc --api-signing-key abc -R --debug --base-url http://localhost:8000 --bind 127.0.0.1:8000
 
   clean:
     desc: clean

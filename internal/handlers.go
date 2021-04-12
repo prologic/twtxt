@@ -600,6 +600,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		hash := r.FormValue("hash")
 		lastTwt, _, err := GetLastTwt(s.config, ctx.User)
+		log.Debugf("form.hash=%v,lastTwt.hash=%v", hash, lastTwt.Hash())
 		if err != nil {
 			ctx.Error = true
 			ctx.Message = "Error deleting last twt"
@@ -739,6 +740,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 
 		if ctx.Authenticated {
 			lastTwt, _, err := GetLastTwt(s.config, ctx.User)
+			log.Debugf("lastTwt=%+v", lastTwt)
 			if err != nil {
 				log.WithError(err).Error("error getting user last twt")
 				ctx.Error = true
@@ -749,7 +751,12 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			ctx.LastTwt = lastTwt
 		}
 
+		log.Debugf("lastTwt.hash()=%s", ctx.LastTwt.Hash())
 		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
+		log.Debugf("twt filter.list(%v)", len(ctx.Twts))
+		for _, twt := range ctx.Twts {
+			log.Debugf("\ttwt.hash()=%s", twt.Hash())
+		}
 		ctx.Pager = &pager
 
 		s.render("timeline", w, ctx)
@@ -887,6 +894,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 func (s *Server) DiscoverHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Translate(s.translator)
 
 		localTwts := s.cache.GetByPrefix(s.config.BaseURL, false)
 
@@ -928,6 +936,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 func (s *Server) MentionsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Translate(s.translator)
 
 		twts := s.cache.GetMentions(ctx.User)
 		sort.Sort(twts)

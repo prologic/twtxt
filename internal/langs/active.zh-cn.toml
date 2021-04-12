@@ -434,6 +434,26 @@ other = "本地动态"
 hash = "sha1-16c00449a9a3f15a32149863cc14f591ad497ff2"
 other = "动态"
 
+[PagerNextLinkTitle]
+hash = "sha1-bc981983e7f547dc62e19a1e383acfe00782a6d5"
+other = "下一页"
+
+[PagerNoNextTooltip]
+hash = "sha1-b068268b48718d1fc90aacd1f40498095a712532"
+other = "没有了"
+
+[PagerNoPreviousTooltip]
+hash = "sha1-3866fcde85eda2bbcb7be0aaa8507477286fe238"
+other = "没有了"
+
+[PagerPrevLinkTitle]
+hash = "sha1-e96fea52df5eb0d7ea088eb0523f5fd6be20645f"
+other = "上一页"
+
+[PagerTwtsSummary]
+hash = "sha1-9e6b15e93c90719d3bc88054cc839c6c8cb5ef1d"
+other = "第 {{ .Page }}/{{ .PageNums }} 页，总计 {{ .Nums }} 条推文"
+
 [ProfileAtomLinkTitle]
 hash = "sha1-41dded417052424bdcf3c39f6c8664147fae6806"
 other = "Atom"

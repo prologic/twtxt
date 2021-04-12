@@ -174,13 +174,13 @@
 {{ define "feed" }}
 <div class="grid h-feed">
   <div>
-    {{ template "pager" $.Pager }}
+    {{ template "pager" (dict "Pager" $.Pager "Ctx" $.Ctx)}}
     {{ range $idx, $twt := $.Twts }}
     {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" $twt "Ctx" $.Ctx) }}
     {{ else }}
     <small><i>{{tr $.Ctx "NoTwts"}}</i></small>
     {{ end }}
-    {{ template "pager" $.Pager }}
+    {{ template "pager" (dict "Pager" $.Pager "Ctx" $.Ctx)}}
   </div>
 </div>
 {{ end }}
@@ -222,26 +222,26 @@
 {{ end }}
 
 {{ define "pager" }}
-{{ if .HasPages }}
+{{ if $.Pager.HasPages }}
 <nav class="pagination-nav">
   <ul>
     <li>
-      {{ if .HasPrev }}
-      <a href="?p={{ .PrevPage }}">Prev</a>
+      {{ if $.Pager.HasPrev }}
+      <a href="?p={{ $.Pager.PrevPage }}">{{tr $.Ctx "PagerPrevLinkTitle"}}</a>
       {{ else }}
-      <a href="#" data-tooltip="No previous page">Prev</a>
+      <a href="#" data-tooltip="{{tr $.Ctx "PagerNoPreviousTooltip"}}">{{tr $.Ctx "PagerPrevLinkTitle"}}</a>
       {{ end }}
     </li>
   </ul>
   <ul>
-    <li><small>Page {{ .Page }}/{{ .PageNums }} of {{ .Nums }} Twts</small></li>
+      <li><small>{{tr $.Ctx "PagerTwtsSummary" (dict "Page" $.Pager.Page "PageNums" $.Pager.PageNums "Nums" $.Pager.Nums)}}</small></li>
   </ul>
   <ul>
     <li>
-      {{ if .HasNext }}
-      <a href="?p={{ .NextPage }}">Next</a>
+      {{ if $.Pager.HasNext }}
+      <a href="?p={{ $.Pager.NextPage }}">{{tr $.Ctx "PagerNextLinkTitle"}}</a>
       {{ else }}
-      <a href="#" data-tooltip="No next page">Next</a>
+      <a href="#" data-tooltip="{{tr $.Ctx "PagerNoNextTooltip"}}">{{tr $.Ctx "PagerNextLinkTitle"}}</a>
       {{ end }}
     </li>
   </ul>

@@ -23,6 +23,7 @@ import (
 func (s *Server) ViewBlogHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Translate(s.translator)
 
 		blogPost := BlogPostFromParams(s.config, p)
 		if !s.blogs.Has(blogPost.Hash()) {

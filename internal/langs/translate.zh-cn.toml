@@ -1,3 +1,31 @@
-[TwtFormTitle]
-hash = "sha1-768e0c1c69573fb588f61f1308a015c11468e05f"
-other = "标题"
+[BlogCommentJoinSummary]
+hash = "sha1-26e6951ad535fa0ab3c9db8a80f113ee4aa1d2bd"
+other = "要发表评论，请先 <a href=\"/login\">登录</a>"
+
+[BlogCommentPostSummary]
+hash = "sha1-78f1b7a5d6dd8e9fce43c7dfd651c994b41ca867"
+other = "发表内容，参与讨论！"
+
+[BlogCommentPostTitle]
+hash = "sha1-58a6da790f3ba0fff150eaed33c8d34d60e139a8"
+other = "想说点什么？"
+
+[BlogCommentsSummary]
+hash = "sha1-5e502d25a78198f0f0596c27c6ef4a0b4d377c11"
+other = "最近的评论"
+
+[BlogCommentsTitle]
+hash = "sha1-e4ed7f96515dbdbe5f5d0ecace105efe68e6c3ec"
+other = "评论："
+
+[BlogCreated]
+hash = "sha1-accf40c89baa4fa88e6a7ff11e1f805beecafd3f"
+other = "已创建"
+
+[BlogDraft]
+hash = "sha1-0e7766b460fd2a39a2fd81d4a3a636b033b52be4"
+other = "草稿"
+
+[BlogPublished]
+hash = "sha1-483bf2075c12023a5e849d12a42027be89c5e94b"
+other = "发表"

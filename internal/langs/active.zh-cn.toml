@@ -1,6 +1,50 @@
+[BlogCommentJoinSummary]
+hash = "sha1-26e6951ad535fa0ab3c9db8a80f113ee4aa1d2bd"
+other = "要发表评论，请先 <a href=\"/login\">登录</a>"
+
+[BlogCommentPostSummary]
+hash = "sha1-78f1b7a5d6dd8e9fce43c7dfd651c994b41ca867"
+other = "发表内容，参与讨论！"
+
+[BlogCommentPostTitle]
+hash = "sha1-58a6da790f3ba0fff150eaed33c8d34d60e139a8"
+other = "想说点什么？"
+
+[BlogCommentsSummary]
+hash = "sha1-5e502d25a78198f0f0596c27c6ef4a0b4d377c11"
+other = "最近的评论"
+
+[BlogCommentsTitle]
+hash = "sha1-e4ed7f96515dbdbe5f5d0ecace105efe68e6c3ec"
+other = "评论："
+
+[BlogCreated]
+hash = "sha1-accf40c89baa4fa88e6a7ff11e1f805beecafd3f"
+other = "已创建"
+
+[BlogDeleteLinkTitle]
+hash = "sha1-f6fdbe48dc54dd86f63097a03bd24094dedd713a"
+other = "删除"
+
+[BlogDraft]
+hash = "sha1-0e7766b460fd2a39a2fd81d4a3a636b033b52be4"
+other = "草稿"
+
+[BlogEditLinkTitle]
+hash = "sha1-5301648dcf6b53cefc9ed52999aaa92d4603cae0"
+other = "编辑"
+
 [BlogLinkTitle]
 hash = "sha1-0b9d2b2362bc33581ba11fddcb0cf0590ebd3a7a"
 other = "博客"
+
+[BlogPublishLinkTitle]
+hash = "sha1-5656400564f25dcbe129f43deea78952060bee36"
+other = "发表"
+
+[BlogPublished]
+hash = "sha1-483bf2075c12023a5e849d12a42027be89c5e94b"
+other = "发表"
 
 [BlogsFollowLinkTitle]
 hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"
@@ -421,6 +465,10 @@ other = "设置"
 [NavTimeline]
 hash = "sha1-018514a3d58aa08353dd5e387ee29de45981c409"
 other = "动态"
+
+[NoBlogs]
+hash = "sha1-160983df3739e9e41947731c7f1e865f89e0169b"
+other = "还没有博文，稍候再来！"
 
 [NoTwts]
 hash = "sha1-5b57a49ebae0d4b1b458af42b9ed71896504614b"

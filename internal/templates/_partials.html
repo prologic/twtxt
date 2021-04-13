@@ -204,19 +204,19 @@
         {{ if eq $.User.Username $blogPost.Author }}
         {{ if $blogPost.Draft }}
         &nbsp;
-        [<a href="{{ $blogPost.URL $.BaseURL }}/publish" onclick="return confirm('Are you sure you want to publish this blog post? This cannot be undone!');">Publish</a>]
+        [<a href="{{ $blogPost.URL $.BaseURL }}/publish" onclick="return confirm('Are you sure you want to publish this blog post? This cannot be undone!');">{{tr $ctx "BlogPublishLinkTitle"}}</a>]
         {{ end }}
         &nbsp;
-        [<a href="{{ $blogPost.URL $.BaseURL }}/edit">Edit</a>]
+        [<a href="{{ $blogPost.URL $.BaseURL }}/edit">{{tr $ctx "BlogEditLinkTitle"}}</a>]
         &nbsp;
-        [<a href="{{ $blogPost.URL $.BaseURL }}/delete" onclick="return confirm('Are you sure you want to delete this blog post? This cannot be undone!');">Delete</a>]
+        [<a href="{{ $blogPost.URL $.BaseURL }}/delete" onclick="return confirm('Are you sure you want to delete this blog post? This cannot be undone!');">{{tr $ctx "BlogDeleteLinkTitle"}}</a>]
         {{ end }}
       </li>
       {{ end }}
     </ul>
     {{ template "pager" (dict "Pager" $.Pager "Ctx" $ctx) }}
     {{ else }}
-    <small><i>No twt blogs found! Come back later!</i></small>
+    <small><i>{{tr $ctx "NoBlogs"}}</i></small>
     {{ end }}
   </div>
 </div>

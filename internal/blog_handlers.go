@@ -359,8 +359,10 @@ func (s *Server) ListBlogsHandler() httprouter.Handle {
 			s.render("error", w, ctx)
 			return
 		}
-
-		ctx.Title = fmt.Sprintf("%s's Twt Blog Posts", profile.Username)
+		trdata := map[string]interface{}{
+			"Username": profile.Username,
+		}
+		ctx.Title = s.tr(ctx, "PageUserBlogsTitle", trdata)
 		ctx.BlogPosts = pagedBlogPosts
 		ctx.Pager = &pager
 

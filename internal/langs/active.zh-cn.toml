@@ -474,9 +474,57 @@ other = "还没有博文，稍候再来！"
 hash = "sha1-5b57a49ebae0d4b1b458af42b9ed71896504614b"
 other = "还没有内容... 稍候再来！"
 
+[PageDiscoverTitle]
+hash = "sha1-4827ea22716a74aaf8bbe499fc314bb93f73c65e"
+other = "发现"
+
+[PageFeedsTitle]
+hash = "sha1-ffe8e99492ee9b850395d53f6c519938952fde0d"
+other = "Feeds"
+
+[PageFollowTitle]
+hash = "sha1-c3954605089b8a03bc74ad154731981fe88eb87e"
+other = "关注"
+
 [PageLocalTimelineTitle]
 hash = "sha1-c69cd8d5a9c8ce344bc8d779a0b8a2710ebca482"
 other = "本地动态"
+
+[PageMentionsTitle]
+hash = "sha1-85e12bc6f2e56024e47cc826a14968247a52dc54"
+other = "提及"
+
+[PageMessagesTitle]
+hash = "sha1-e5204fc48e8ac1f01ba1f391a69aa88ba367d672"
+other = "私信"
+
+[PageNotFoundTitle]
+hash = "sha1-e637d9faea1e24d9196c254461fefa8d2932e5a1"
+other = "页面没有找到"
+
+[PageResetPasswordTitle]
+hash = "sha1-5c4bc97ee5d0ac344829dbcef02d7302feb098a8"
+other = "重置密码"
+
+[PageSettingsTitle]
+hash = "sha1-c7f73bb54d928922c3838bb789ee9fb8a5b1eb37"
+other = "设置"
+
+[PageUserBlogsTitle]
+hash = "sha1-1cb26d4c6d6078d442aab35d90d440247f63b98e"
+other = "{{.Username}} 的博客"
+
+[PageUserBookmarksTitle]
+hash = "sha1-8e9534124c7acc82957be8d1cf482efa8821c6a8"
+other = "{{.Username}} 的书签"
+
+[PageUserFollowersTitle]
+hash = "sha1-c14219d1dfc95b5a97e6e9e5a66a142059ab861d"
+other = "{{.Username}} 的粉丝"
+
+[PageUserFollowingTitle]
+hash = "sha1-8f95f4e7fb12ac3a084936579ea6af9c06e8b692"
+other = "{{.Username}} 的关注"
 
 [PageUserTimelineTitle]
 hash = "sha1-16c00449a9a3f15a32149863cc14f591ad497ff2"

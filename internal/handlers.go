@@ -58,7 +58,7 @@ func (s *Server) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := NewContext(s.config, s.db, r)
-	ctx.Title = "Page Not Found"
+	ctx.Title = s.tr(ctx, "PageNotFoundTitle")
 	w.WriteHeader(http.StatusNotFound)
 	s.render("404", w, ctx)
 }
@@ -600,7 +600,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		hash := r.FormValue("hash")
 		lastTwt, _, err := GetLastTwt(s.config, ctx.User)
-		log.Debugf("form.hash=%v,lastTwt.hash=%v", hash, lastTwt.Hash())
+		// log.Debugf("form.hash=%v,lastTwt.hash=%v", hash, lastTwt.Hash())
 		if err != nil {
 			ctx.Error = true
 			ctx.Message = "Error deleting last twt"
@@ -924,7 +924,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 			ctx.LastTwt = lastTwt
 		}
 
-		ctx.Title = "Local timeline"
+		ctx.Title = s.tr(ctx, "PageDiscoverTitle")
 		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 
@@ -954,7 +954,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = "Mentions"
+		ctx.Title = s.tr(ctx, "PageMentionsTitle")
 		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 		s.render("timeline", w, ctx)
@@ -1084,7 +1084,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = "Feeds"
+		ctx.Title = s.tr(ctx, "PageFeedsTitle")
 		ctx.Feeds = feeds
 		ctx.FeedSources = feedsources.Sources
 
@@ -1317,7 +1317,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
-			ctx.Title = "Settings"
+			ctx.Title = s.tr(ctx, "PageSettingsTitle")
 			s.render("settings", w, ctx)
 			return
 		}
@@ -1477,7 +1477,10 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = fmt.Sprintf("Followers for %s", nick)
+		trdata := map[string]interface{}{
+			"Username": nick,
+		}
+		ctx.Title = s.tr(ctx, "PageUserFollowersTitle", trdata)
 		s.render("followers", w, ctx)
 	}
 }
@@ -1523,7 +1526,10 @@ func (s *Server) FollowingHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = fmt.Sprintf("Users following %s", nick)
+		trdata := map[string]interface{}{
+			"Username": nick,
+		}
+		ctx.Title = s.tr(ctx, "PageUserFollowingTitle", trdata)
 		s.render("following", w, ctx)
 	}
 }
@@ -1688,7 +1694,7 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
-			ctx.Title = "Reset password"
+			ctx.Title = s.tr(ctx, "PageResetPasswordTitle")
 			s.render("resetPassword", w, ctx)
 			return
 		}

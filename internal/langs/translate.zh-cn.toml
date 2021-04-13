@@ -1,31 +1,15 @@
-[BlogCommentJoinSummary]
-hash = "sha1-26e6951ad535fa0ab3c9db8a80f113ee4aa1d2bd"
-other = "要发表评论，请先 <a href=\"/login\">登录</a>"
+[PageUserBlogsTitle]
+hash = "sha1-1cb26d4c6d6078d442aab35d90d440247f63b98e"
+other = "{{.Username}} 的博客"
 
-[BlogCommentPostSummary]
-hash = "sha1-78f1b7a5d6dd8e9fce43c7dfd651c994b41ca867"
-other = "发表内容，参与讨论！"
+[PageUserBookmarksTitle]
+hash = "sha1-8e9534124c7acc82957be8d1cf482efa8821c6a8"
+other = "{{.Username}} 的书签"
 
-[BlogCommentPostTitle]
-hash = "sha1-58a6da790f3ba0fff150eaed33c8d34d60e139a8"
-other = "想说点什么？"
+[PageUserFollowersTitle]
+hash = "sha1-c14219d1dfc95b5a97e6e9e5a66a142059ab861d"
+other = "{{.Username}} 的粉丝"
 
-[BlogCommentsSummary]
-hash = "sha1-5e502d25a78198f0f0596c27c6ef4a0b4d377c11"
-other = "最近的评论"
-
-[BlogCommentsTitle]
-hash = "sha1-e4ed7f96515dbdbe5f5d0ecace105efe68e6c3ec"
-other = "评论："
-
-[BlogCreated]
-hash = "sha1-accf40c89baa4fa88e6a7ff11e1f805beecafd3f"
-other = "已创建"
-
-[BlogDraft]
-hash = "sha1-0e7766b460fd2a39a2fd81d4a3a636b033b52be4"
-other = "草稿"
-
-[BlogPublished]
-hash = "sha1-483bf2075c12023a5e849d12a42027be89c5e94b"
-other = "发表"
+[PageUserFollowingTitle]
+hash = "sha1-8f95f4e7fb12ac3a084936579ea6af9c06e8b692"
+other = "{{.Username}} 的关注"

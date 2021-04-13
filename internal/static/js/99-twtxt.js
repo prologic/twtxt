@@ -738,6 +738,18 @@ u("#register #agree").on("change", function(e) {
   }
 });
 
+u("#togglePostFormBtn").attr("style", "");
+u("#togglePostFormBtn").on("click", function(e) {
+  e.preventDefault();
+
+  u("postform").toggleClass("hidden");
+
+  var el = u("textarea#text");
+  var text = document.getElementById("text");
+  el.scroll();
+  text.focus();
+});
+
 u("#burgerMenu").on("click", function(e) {
   e.preventDefault();
 

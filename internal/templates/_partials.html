@@ -1,91 +1,94 @@
 {{ define "post" }}
-{{ if $.Authenticated }}
-<nav class="toolbar-nav">
-  <ul>
-    <li><a id="bBtn" href="#" data-tooltip="Bold"><i class="icss-text-bold"></i></a></li>
-    <li><a id="iBtn" href="#" data-tooltip="Italic"><i class="icss-text-italic"></i></a></li>
-    <li><a id="cBtn" href="#" data-tooltip="Code"><i class="icss-text-width"></i></a></li>
-    <li><a id="sBtn" href="#" data-tooltip="Strikethrough"><i class="icss-x"></i></a></li>
-    <li><a id="usrBtn" href="#" data-tooltip="Mention"><i class="icss-user-circle"></i></a></li>
-    <li><a id="lnkBtn" href="#" data-tooltip="Link"><i class="icss-link"></i></a></li>
-    <li><a id="imgBtn" href="#" data-tooltip="Image"><i class="icss-image"></i></a></li>
-    {{ with $.BlogPost }}
-    {{ else }}
-    <li><a id="writeBtn" href="#" data-tooltip="Open blog post editor"><i class="icss-quill-pen"></i></a></li>
-    {{ end }}
-    <li class="toolbar-form-button">
-      <form id="imageUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload image">
-        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-        <label for="uploadImage">
-          <i id="uploadImageButton" class="icss-camera"></i>
-        </label>
-        <input id="uploadImage" class="invisible width-none" type="file" accept="image/*" name="media_file" />
-      </form>
-    </li>
-    <li class="toolbar-form-button">
-      <form id="audioUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload audio">
-        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-        <label for="uploadAudio">
-          <i id="uploadAudioButton" class="icss-microphone"></i>
-        </label>
-        <input id="uploadAudio" class="invisible width-none" type="file" accept="audio/*" name="media_file" />
-      </form>
-    </li>
-    <li class="toolbar-form-button">
-      <form id="videoUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload video">
-        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-        <label for="uploadVideo">
-          <i id="uploadVideoButton" class="icss-video-camera"></i>
-        </label>
-        <input id="uploadVideo" class="invisible width-none" type="file" accept="video/*" name="media_file" />
-      </form>
-    </li>
-  </ul>
-</nav>
-<form id="form" action="{{ with $.BlogPost }}/blog{{ else }}/post{{ end }}" method="POST">
-  <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-  {{ with $.BlogPost }}
-  <input type="hidden" id="replaceBlog" name="hash" value="{{ $.BlogPost.Hash }}" />
-  {{ else }}
-  <input type="hidden" id="replaceTwt" name="hash" value="" />
-  <input type="hidden" id="replyTo" name="reply" value="{{ $.Reply }}" />
-  <input type="hidden" id="title" name="title" placeholder="Title" value="" />
-  {{ end }}
-  <div class="textarea-container">
-    {{ with $.BlogPost }}
-    <textarea id="text" name="text" rows=24 autofocus required>{{ $.BlogPost.Content }}</textarea>
-    {{ else }}
-    <textarea id="text" name="text" placeholder="{{ $.TwtPrompt }}" rows=3 maxlength={{ $.MaxTwtLength }} {{ if $.AutoFocus }}autofocus{{ end }} required></textarea>
-    {{ end }}
-    <div id="mentioned-list" class="users-list">
-      <div id="mentioned-list-content" class="mentioned-list-content">
-      </div>
-    </div>
-  </div>
-  <div class="grid">
-    <div>
+<script>document.write("<postform class=\"hidden\">");</script>
+<noscript><postform></noscript>
+  {{ if $.Authenticated }}
+  <nav class="toolbar-nav">
+    <ul>
+      <li><a id="bBtn" href="#" data-tooltip="Bold"><i class="icss-text-bold"></i></a></li>
+      <li><a id="iBtn" href="#" data-tooltip="Italic"><i class="icss-text-italic"></i></a></li>
+      <li><a id="cBtn" href="#" data-tooltip="Code"><i class="icss-text-width"></i></a></li>
+      <li><a id="sBtn" href="#" data-tooltip="Strikethrough"><i class="icss-x"></i></a></li>
+      <li><a id="usrBtn" href="#" data-tooltip="Mention"><i class="icss-user-circle"></i></a></li>
+      <li><a id="lnkBtn" href="#" data-tooltip="Link"><i class="icss-link"></i></a></li>
+      <li><a id="imgBtn" href="#" data-tooltip="Image"><i class="icss-image"></i></a></li>
       {{ with $.BlogPost }}
       {{ else }}
-      <select id="postas" class="postas" name="postas">
-        <option value="{{ $.User.Username }}" selected>Post as {{ $.User.Username }}</option>
-        {{ range $index, $feed := $.User.Feeds }}
-        <option value="{{ $feed }}">{{ $feed }}</option>
-        {{ end }}
-      </select>
+      <li><a id="writeBtn" href="#" data-tooltip="Open blog post editor"><i class="icss-quill-pen"></i></a></li>
       {{ end }}
-      <button id="post" type="submit">
-        {{ with $.BlogPost }}
-        <i class="icss-print"></i>
-        Save
-        {{ else }}
-        <i class="icss-paper-plane"></i>
-        Post
-        {{ end }}
-      </button>
+      <li class="toolbar-form-button">
+        <form id="imageUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload image">
+          <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+          <label for="uploadImage">
+            <i id="uploadImageButton" class="icss-camera"></i>
+          </label>
+          <input id="uploadImage" class="invisible width-none" type="file" accept="image/*" name="media_file" />
+        </form>
+      </li>
+      <li class="toolbar-form-button">
+        <form id="audioUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload audio">
+          <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+          <label for="uploadAudio">
+            <i id="uploadAudioButton" class="icss-microphone"></i>
+          </label>
+          <input id="uploadAudio" class="invisible width-none" type="file" accept="audio/*" name="media_file" />
+        </form>
+      </li>
+      <li class="toolbar-form-button">
+        <form id="videoUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload video">
+          <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+          <label for="uploadVideo">
+            <i id="uploadVideoButton" class="icss-video-camera"></i>
+          </label>
+          <input id="uploadVideo" class="invisible width-none" type="file" accept="video/*" name="media_file" />
+        </form>
+      </li>
+    </ul>
+  </nav>
+  <form id="form" action="{{ with $.BlogPost }}/blog{{ else }}/post{{ end }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
+    {{ with $.BlogPost }}
+    <input type="hidden" id="replaceBlog" name="hash" value="{{ $.BlogPost.Hash }}" />
+    {{ else }}
+    <input type="hidden" id="replaceTwt" name="hash" value="" />
+    <input type="hidden" id="replyTo" name="reply" value="{{ $.Reply }}" />
+    <input type="hidden" id="title" name="title" placeholder="Title" value="" />
+    {{ end }}
+    <div class="textarea-container">
+      {{ with $.BlogPost }}
+      <textarea id="text" name="text" rows=24 autofocus required>{{ $.BlogPost.Content }}</textarea>
+      {{ else }}
+      <textarea id="text" name="text" placeholder="{{ $.TwtPrompt }}" rows=3 maxlength={{ $.MaxTwtLength }} {{ if $.AutoFocus }}autofocus{{ end }} required></textarea>
+      {{ end }}
+      <div id="mentioned-list" class="users-list">
+        <div id="mentioned-list-content" class="mentioned-list-content">
+        </div>
+      </div>
     </div>
-  </div>
-</form>
-{{ end }}
+    <div class="grid">
+      <div>
+        {{ with $.BlogPost }}
+        {{ else }}
+        <select id="postas" class="postas" name="postas">
+          <option value="{{ $.User.Username }}" selected>Post as {{ $.User.Username }}</option>
+          {{ range $index, $feed := $.User.Feeds }}
+          <option value="{{ $feed }}">{{ $feed }}</option>
+          {{ end }}
+        </select>
+        {{ end }}
+        <button id="post" type="submit">
+          {{ with $.BlogPost }}
+          <i class="icss-print"></i>
+          Save
+          {{ else }}
+          <i class="icss-paper-plane"></i>
+          Post
+          {{ end }}
+        </button>
+      </div>
+    </div>
+  </form>
+  {{ end }}
+</postform>
 {{ end }}
 
 {{ define "twt" }}

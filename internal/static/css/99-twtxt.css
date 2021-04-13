@@ -29,6 +29,10 @@ article hgroup footer {
   -moz-border-radius: 60px;
 }
 
+.hidden {
+  display: none;
+}
+
 .invisible {
     visibility:hidden;
     width:0;

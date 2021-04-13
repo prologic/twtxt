@@ -451,7 +451,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: FilterTwts(user, pagedTwts),
+			Twts: FilterTwtsByUser(user, pagedTwts),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
@@ -497,7 +497,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: FilterTwts(loggedInUser, pagedTwts),
+			Twts: FilterTwtsByUser(loggedInUser, pagedTwts),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
@@ -544,7 +544,7 @@ func (a *API) MentionsEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: FilterTwts(user, pagedTwts),
+			Twts: FilterTwtsByUser(user, pagedTwts),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
@@ -1147,7 +1147,7 @@ func (a *API) ConversationEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: FilterTwts(loggedInUser, pagedTwts),
+			Twts: FilterTwtsByUser(loggedInUser, pagedTwts),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),
@@ -1231,7 +1231,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 		}
 
 		res := types.PagedResponse{
-			Twts: FilterTwts(loggedInUser, pagedTwts),
+			Twts: FilterTwtsByUser(loggedInUser, pagedTwts),
 			Pager: types.PagerResponse{
 				Current:   pager.Page(),
 				MaxPages:  pager.PageNums(),

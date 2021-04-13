@@ -285,7 +285,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 		}
 
 		ctx.Title = fmt.Sprintf("%s's Profile: %s", profile.Username, profile.Tagline)
-		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
+		ctx.Twts = FilterTwtsByUser(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 
 		s.render("profile", w, ctx)
@@ -718,8 +718,12 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 					twts = append(twts, s.cache.GetByURL(feed.URL)...)
 				}
 			}
-			sort.Sort(twts)
 		}
+
+		hide := r.URL.Query()["hide"]
+		twts = FilterTwtsBySlice(hide, twts)
+
+		sort.Sort(twts)
 
 		var pagedTwts types.Twts
 
@@ -747,7 +751,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			ctx.LastTwt = lastTwt
 		}
 
-		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
+		ctx.Twts = FilterTwtsByUser(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 
 		s.render("timeline", w, ctx)
@@ -874,7 +878,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			}...)
 		}
 
-		ctx.Twts = FilterTwts(ctx.User, types.Twts{twt})
+		ctx.Twts = FilterTwtsByUser(ctx.User, types.Twts{twt})
 		s.render("permalink", w, ctx)
 
 	}
@@ -914,7 +918,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 		}
 
 		ctx.Title = "Local timeline"
-		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
+		ctx.Twts = FilterTwtsByUser(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 
 		s.render("timeline", w, ctx)
@@ -943,7 +947,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 		}
 
 		ctx.Title = "Mentions"
-		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
+		ctx.Twts = FilterTwtsByUser(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 		s.render("timeline", w, ctx)
 	}
@@ -994,7 +998,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
+		ctx.Twts = FilterTwtsByUser(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 
 		s.render("timeline", w, ctx)
@@ -1557,7 +1561,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
+		ctx.Twts = FilterTwtsByUser(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 
 		if len(ctx.Twts) > 0 {

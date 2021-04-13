@@ -65,6 +65,7 @@ require (
 	github.com/prologic/smtpd v0.0.0-20201215080427-fd3f94c87eb7
 	github.com/prometheus/client_golang v1.9.0 // indirect
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
+	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
 	github.com/renstrom/shortuuid v3.0.0+incompatible
 	github.com/rickb777/accept v0.0.0-20170318132422-d5183c44530d
 	github.com/robfig/cron v1.2.0

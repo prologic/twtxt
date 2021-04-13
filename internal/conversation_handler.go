@@ -175,7 +175,7 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 		}
 
 		ctx.Reply = fmt.Sprintf("#%s", twt.Hash())
-		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
+		ctx.Twts = FilterTwtsByUser(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 		s.render("conversation", w, ctx)
 	}

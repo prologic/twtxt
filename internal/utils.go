@@ -1504,8 +1504,35 @@ func UnparseTwtFactory(conf *Config) func(text string) string {
 	}
 }
 
-// FilterTwts filters out Twts from users/feeds that a User has chosen to mute
-func FilterTwts(user *User, twts types.Twts) (filtered types.Twts) {
+// FilterTwtsBySlice filters out Twts from users/feeds based on a slice of
+// Twter URIs to exclude from the resulting Twts
+func FilterTwtsBySlice(exclude []string, twts types.Twts) (filtered types.Twts) {
+	// fast-path
+	if exclude == nil || len(exclude) == 0 {
+		return twts
+	}
+
+	excluded := make(map[string]bool)
+	for _, uri := range exclude {
+		excluded[NormalizeURL(uri)] = true
+	}
+
+	isExcluded := func(url string) bool {
+		_, ok := excluded[NormalizeURL(url)]
+		return ok
+	}
+
+	for _, twt := range twts {
+		if isExcluded(twt.Twter().URL) {
+			continue
+		}
+		filtered = append(filtered, twt)
+	}
+	return
+}
+
+// FilterTwtsByUser filters out Twts from users/feeds that a User has chosen to mute
+func FilterTwtsByUser(user *User, twts types.Twts) (filtered types.Twts) {
 	if user == nil {
 		return twts
 	}

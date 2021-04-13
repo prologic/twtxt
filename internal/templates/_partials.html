@@ -49,7 +49,7 @@
   {{ else }}
   <input type="hidden" id="replaceTwt" name="hash" value="" />
   <input type="hidden" id="replyTo" name="reply" value="{{ $.Reply }}" />
-  <input type="hidden" id="title" name="title" placeholder="Title" value="" />
+  <input type="hidden" id="title" name="title" placeholder="{{tr $.Ctx "TwtFormTitle"}}" value="" />
   {{ end }}
   <div class="textarea-container">
     {{ with $.BlogPost }}

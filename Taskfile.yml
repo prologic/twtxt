@@ -43,7 +43,7 @@ tasks:
 
   run-twtd:
     cmds:
-        - ./twtd --cookie-secret abc --magiclink-secret abc --api-signing-key abc -R --debug --base-url http://localhost:8000 --bind 127.0.0.1:8000 --twts-per-page 5
+        - ./twtd --cookie-secret abc --magiclink-secret abc --api-signing-key abc -R --debug --base-url http://localhost:8000 --bind 127.0.0.1:8000 --twts-per-page 5 --name twt.pub
     deps: [build-twtd]
     desc: run twtd service
     silent: false

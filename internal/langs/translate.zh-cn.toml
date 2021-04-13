@@ -1,19 +1,3 @@
-[PagerNextLinkTitle]
-hash = "sha1-bc981983e7f547dc62e19a1e383acfe00782a6d5"
-other = "下一页"
-
-[PagerNoNextTooltip]
-hash = "sha1-b068268b48718d1fc90aacd1f40498095a712532"
-other = "没有了"
-
-[PagerNoPreviousTooltip]
-hash = "sha1-3866fcde85eda2bbcb7be0aaa8507477286fe238"
-other = "没有了"
-
-[PagerPrevLinkTitle]
-hash = "sha1-e96fea52df5eb0d7ea088eb0523f5fd6be20645f"
-other = "上一页"
-
-[PagerTwtsSummary]
-hash = "sha1-9e6b15e93c90719d3bc88054cc839c6c8cb5ef1d"
-other = "第 {{ .Page }}/{{ .PageNums }} 页，总计 {{ .Nums }} 条推文"
+[TwtFormTitle]
+hash = "sha1-768e0c1c69573fb588f61f1308a015c11468e05f"
+other = "标题"

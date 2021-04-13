@@ -762,6 +762,10 @@ other = "用户 {{ .Username }}"
 hash = "sha1-efc007a393f66cdb14d57d385822a3d9e36ef873"
 other = "保存"
 
+[TwtFormTitle]
+hash = "sha1-768e0c1c69573fb588f61f1308a015c11468e05f"
+other = "标题"
+
 [TwtReplyLinkTitle]
 hash = "sha1-6c2bb735a46a8ff307fe2e638d581295b2a49e09"
 other = "回复"

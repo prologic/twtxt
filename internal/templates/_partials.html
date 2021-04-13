@@ -188,8 +188,9 @@
 {{ define "blogposts" }}
 <div class="grid h-feed">
   <div>
+    {{$ctx:=.}}
     {{ if $.BlogPosts }}
-    {{ template "pager" $.Pager }}
+    {{ template "pager" (dict "Pager" $.Pager "Ctx" $ctx) }}
     <ul>
       {{ range $idx, $blogPost := $.BlogPosts }}
       <li>
@@ -213,7 +214,7 @@
       </li>
       {{ end }}
     </ul>
-    {{ template "pager" $.Pager }}
+    {{ template "pager" (dict "Pager" $.Pager "Ctx" $ctx) }}
     {{ else }}
     <small><i>No twt blogs found! Come back later!</i></small>
     {{ end }}

@@ -49,13 +49,14 @@
     <h2>Comments:</h2>
     <h3>Recent tws in reply to this post.</h3>
   </hgroup>
-  {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" $.Twts) }}
+  {{ $ctx:=. }}
+  {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" $.Twts "Ctx" $ctx) }}
   {{ if .Authenticated }}
   <hgroup>
     <h2>Have your say!</h2>
     <h3>Post your twt here and add to the discussion!</h3>
   </hgroup>
-  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" false "CSRFToken" $.CSRFToken) }}
+  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" false "CSRFToken" $.CSRFToken "Ctx" $ctx) }}
   {{ else }}
   <small>You must be <a href="/login">Logged in</a> to comment.</small>
   {{ end }}

@@ -124,7 +124,13 @@ var (
 	}
 
 	// DefaultTwtPrompts are the set of default prompts  for twt text(s)
-	DefaultTwtPrompts = `What's on your mind?\nShare something insightful!\nGood day to you! What's new?\nDid something cool lately? Share it!\nHi! 👋 Don't forget to post a Twt today!`
+	DefaultTwtPrompts = []string{
+		`What's on your mind?`,
+		`Share something insightful!`,
+		`Good day to you! What's new?`,
+		`Did something cool lately? Share it!`,
+		`Hi! 👋 Don't forget to post a Twt today!`,
+	}
 
 	// DefaultWhitelistedDomains is the default list of domains to whitelist for external images
 	DefaultWhitelistedDomains = []string{

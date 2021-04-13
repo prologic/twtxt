@@ -52,7 +52,7 @@ type Config struct {
 	FeedSources       []string
 	RegisterMessage   string
 	CookieSecret      string
-	TwtPrompts        string
+	TwtPrompts        []string
 	TwtsPerPage       int
 	MaxUploadSize     int64
 	MaxTwtLength      int
@@ -135,9 +135,8 @@ func (c *Config) WhitelistedDomain(domain string) (bool, bool) {
 
 // RandomTwtPrompt returns a random  Twt Prompt for display by the UI
 func (c *Config) RandomTwtPrompt() string {
-	twtPrompts := strings.Split(c.TwtPrompts, "\\n")
-	n := rand.Int() % len(twtPrompts)
-	return twtPrompts[n]
+	n := rand.Int() % len(c.TwtPrompts)
+	return c.TwtPrompts[n]
 }
 
 // Validate validates the configuration is valid which for the most part

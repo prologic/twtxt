@@ -15,7 +15,7 @@
 [![GoDoc](https://godoc.org/github.com/jointwt/twtxt?status.svg)](https://godoc.org/github.com/jointwt/twtxt)
 [![GitHub license](https://img.shields.io/github/license/jointwt/twtxt.svg)](https://github.com/jointwt/twtxt)
 
-📕 twtxt是一个类似Twitter™的自托管式分散式微博客平台。没有广告，没有跟踪，您的内容，您的数据！
+📕 twtxt是一个类似Twitter™的自托管式分散式微博客平台。没有广告，没有跟踪（针对您的内容和数据）！
 
 ![](https://twtxt.net/media/XsLsDHuisnXcL6NuUkYguK.png)
 

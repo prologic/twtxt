@@ -19,18 +19,24 @@ func NewTranslator() (*Translator, error) {
 	// lang
 	bundle := i18n.NewBundle(language.English)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
-
+	// English
 	buf, err := fs.ReadFile(langs.LocaleFS, "active.en.toml")
 	if err != nil {
 		return nil, fmt.Errorf("error loading en locale: %w", err)
 	}
 	bundle.MustParseMessageFileBytes(buf, "active.en.toml")
-
+	// Simplified Chinese
 	buf, err = fs.ReadFile(langs.LocaleFS, "active.zh-cn.toml")
 	if err != nil {
 		return nil, fmt.Errorf("error loading zh-cn locale: %w", err)
 	}
 	bundle.MustParseMessageFileBytes(buf, "active.zh-cn.toml")
+	// Traditional Chinese
+	buf, err = fs.ReadFile(langs.LocaleFS, "active.zh-tw.toml")
+	if err != nil {
+		return nil, fmt.Errorf("error loading zh-tw locale: %w", err)
+	}
+	bundle.MustParseMessageFileBytes(buf, "active.zh-tw.toml")
 
 	return &Translator{
 		Bundle: bundle,

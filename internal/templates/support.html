@@ -2,21 +2,21 @@
   <article class="grid">
     <div>
       <hgroup>
-        <h2>Contact us</h2>
-        <h3>How can we help you?</h3>
+          <h2>{{tr . "SupportTitle"}}</h2>
+          <h3>{{tr . "SupportSummary"}}</h3>
       </hgroup>
       <form action="/support" method="POST">
         <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-        <input type="text" name="name" placeholder="Name" aria-label="Name" autofocus required>
-        <input type="email" name="email" placeholder="Email address" aria-label="Email" required>
-        <input type="text" name="subject" placeholder="Subject" aria-label="Subject" required>
-        <textarea name="message" placeholder="Message" aria-label="Message" rows="4" cols="50" required></textarea>
+        <input type="text" name="name" placeholder="{{tr . "SupportFormName"}}" aria-label="Name" autofocus required>
+        <input type="email" name="email" placeholder="{{tr . "SupportFormEmail"}}" aria-label="Email" required>
+        <input type="text" name="subject" placeholder="{{tr . "SupportFormSubject"}}" aria-label="Subject" required>
+        <textarea name="message" placeholder="{{tr . "SupportFormMessage"}}" aria-label="Message" rows="4" cols="50" required></textarea>
 
-        <small>Please solve this simple math problem below so we know you're a human!</small>
+        <small>{{tr . "SupportCaptchaSummary"}}</small>
         <img id="captcha" src="/_captcha" alt="captcha" height="50" width="150" />
-        <input type="text" name="captchaInput" class="captchaInput" placeholder="Captcha" aria-label="Captcha" required>
+        <input type="text" name="captchaInput" class="captchaInput" placeholder="{{tr . "SupportFormCaptcha"}}" aria-label="Captcha" required>
 
-        <button type="submit" class="contrast">Submit</button>
+        <button type="submit" class="contrast">{{tr . "SupportFormSubmit"}}</button>
       </form>
     </div>
     <div></div>

@@ -1,30 +1,30 @@
 [BlogCommentJoinSummary]
 hash = "sha1-26e6951ad535fa0ab3c9db8a80f113ee4aa1d2bd"
-other = "要发表评论，请先 <a href=\"/login\">登录</a>"
+other = "要發表評論论，請先 <a href=\"/login\">登錄</a>"
 
 [BlogCommentPostSummary]
 hash = "sha1-78f1b7a5d6dd8e9fce43c7dfd651c994b41ca867"
-other = "发表内容，参与讨论！"
+other = "發表內容，參與討論！"
 
 [BlogCommentPostTitle]
 hash = "sha1-58a6da790f3ba0fff150eaed33c8d34d60e139a8"
-other = "想说点什么？"
+other = "想說點什麼么？"
 
 [BlogCommentsSummary]
 hash = "sha1-5e502d25a78198f0f0596c27c6ef4a0b4d377c11"
-other = "最近的评论"
+other = "最近的評論"
 
 [BlogCommentsTitle]
 hash = "sha1-e4ed7f96515dbdbe5f5d0ecace105efe68e6c3ec"
-other = "评论："
+other = "評論："
 
 [BlogCreated]
 hash = "sha1-accf40c89baa4fa88e6a7ff11e1f805beecafd3f"
-other = "已创建"
+other = "已創建"
 
 [BlogDeleteLinkTitle]
 hash = "sha1-f6fdbe48dc54dd86f63097a03bd24094dedd713a"
-other = "删除"
+other = "刪除"
 
 [BlogDraft]
 hash = "sha1-0e7766b460fd2a39a2fd81d4a3a636b033b52be4"
@@ -32,7 +32,7 @@ other = "草稿"
 
 [BlogEditLinkTitle]
 hash = "sha1-5301648dcf6b53cefc9ed52999aaa92d4603cae0"
-other = "编辑"
+other = "編輯"
 
 [BlogLinkTitle]
 hash = "sha1-0b9d2b2362bc33581ba11fddcb0cf0590ebd3a7a"
@@ -40,15 +40,15 @@ other = "博客"
 
 [BlogPublishLinkTitle]
 hash = "sha1-5656400564f25dcbe129f43deea78952060bee36"
-other = "发表"
+other = "發表"
 
 [BlogPublished]
 hash = "sha1-483bf2075c12023a5e849d12a42027be89c5e94b"
-other = "发表"
+other = "發表"
 
 [BlogsFollowLinkTitle]
 hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"
-other = "关注"
+other = "跟隨"
 
 [BlogsForUserLinkTitle]
 hash = "sha1-61488fb76586945c474ad5574cf7856f94384656"
@@ -60,115 +60,115 @@ other = "我的博客"
 
 [BlogsUnfollowLinkTitle]
 hash = "sha1-e3a6fe565c7f64204f2dd182dc8b8ca9fe725d99"
-other = "取消关注"
+other = "取消跟隨"
 
 [BookmarkAddTwt]
 hash = "sha1-ac2bfa54407bb541fb8664b510bf56b33ca79222"
-other = "加入书签"
+other = "加入書籤"
 
 [BookmarkRemoveTwt]
 hash = "sha1-a92b8cfd1f3d8136a08e92926adcb32d6d82069e"
-other = "删除书签"
+other = "刪除書籤"
 
 [BookmarksNoBookmarks]
 hash = "sha1-67d3ef16242b6011a62bccdf9dc15c2a999c5ed6"
-other = "还没有任何书签"
+other = "還沒有任何書籤"
 
 [BookmarksNoBookmarksSummary]
 hash = "sha1-efc43ea07cd5668c0c829258f87f2b33c8e29222"
-other = "还没有书签"
+other = "還沒有書籤"
 
 [BookmarksTitle]
 hash = "sha1-ca3cddd25bd8f6bc4ce35a262e2e1398541ecf3d"
-other = "书签"
+other = "書籤"
 
 [BookmarksUser]
 hash = "sha1-825ad45a9df6967dce6f317c2499387b590ebaf1"
-other = "<b>{{ .Username }}</b> 的书签"
+other = "<b>{{ .Username }}</b> 的書籤"
 
 [BookmarksYou]
 hash = "sha1-d266af92cbd1cf42a3ff8d2dbf46fa1924dc7de5"
-other = "您的书签"
+other = "您的書籤"
 
 [ComposeMessageFormBody]
 hash = "sha1-f190c98ece6a67328e369fcdfcf84eea73c94b7e"
-other = "私信内容"
+other = "訊息內容"
 
 [ComposeMessageFormSend]
 hash = "sha1-9bc2575c3930437e80555f78757b783c842e8e66"
-other = "发送"
+other = "發送"
 
 [ComposeMessageFormSubject]
 hash = "sha1-8d183dbdcea3b29906090bd83fa6fa37923cc8ec"
-other = "主题"
+other = "主題"
 
 [ComposeMessageFormUsername]
 hash = "sha1-84c29015de33e5d22422382a372caba5c58f8c01"
-other = "用户名"
+other = "用戶名"
 
 [ComposeMessageReplyFormBody]
 hash = "sha1-bf9a79bf82a9b2c0ee324e18bfcc7f088e8cb34b"
-other = "私信内容"
+other = "訊息內容"
 
 [ComposeMessageReplyFormSend]
 hash = "sha1-9bc2575c3930437e80555f78757b783c842e8e66"
-other = "发送"
+other = "發送"
 
 [ComposeMessageReplyTitle]
 hash = "sha1-ca6da7b9aa973b9dc68a0f8cb020d4369d5fafaa"
-other = "回信"
+other = "回復訊息"
 
 [ComposeMessageTitle]
 hash = "sha1-7649c59ec35a7b5d82785e247c60b73c803b20eb"
-other = "写信"
+other = "編寫訊息"
 
 [ConversationJoinSummary]
 hash = "sha1-014203a6918312802a958cefc865abf84a73dd45"
-other = "加入对话，请先 <a href=\"/login\">登录</a> "
+other = "要加入對話话，請先 <a href=\"/login\">登錄</a> "
 
 [ConversationSummary]
 hash = "sha1-b3159edf1a6dcde8b522b27a28af84c17ef6646f"
-other = "最近回复"
+other = "最近回復"
 
 [ConversationTitle]
 hash = "sha1-2a20c75033890ef64222cf0bae1c4564bbdce951"
-other = "对话"
+other = "對話"
 
 [Copyright]
 hash = "sha1-ed6768b21eb5e05d75dd18c9cb9ed38e56de94d6"
-other = "&copy; 2020 <a href='https://github.com/prologic' target='_blank'>James Mills</a>. 版权所有."
+other = "&copy; 2020 <a href='https://github.com/prologic' target='_blank'>James Mills</a>. 版權所有."
 
 [CopyrightCreator]
 hash = "sha1-e7946380febed70ea56d525f57b79799b220e087"
-other = "由 <a href='https://github.com/prologic' target='_blank'>James Mills</a> 创建"
+other = "由 <a href='https://github.com/prologic' target='_blank'>James Mills</a> 創建"
 
 [DefaultTwtPrompts]
 hash = "sha1-f585553bb01b2326a11e091a6e07c6426d8c5c35"
-other = "你在想什么？\n您的见地非常重要！\n今天是个好日子! 有什么新鲜事？\n今天有什么有趣的事，马上与大家分享！ \n嗨！👋 朋友，别忘了发推文哦！"
+other = "你在想什麼？\n您的見地非常重要！\n今天是個好日子! 有什麼新鮮事兒？\n今天有什麼有趣的事，馬上與大家分享！ \n嗨！👋 朋友，別忘了發推文哦！"
 
 [ErrorInvalidPassword]
 hash = "sha1-52b29810c7c76d469feec362b5c77ccb7531718b"
-other = "密码无效! 提示: 重新设置密码?"
+other = "密碼無效! 提示: 重新設置密碼?"
 
 [ErrorInvalidUsername]
 hash = "sha1-c1d07ba7f57bf718dfb346b21773834cc34c7fcd"
-other = "用户名无效! 提示: 注册一个账号?"
+other = "用戶名無效! 提示: 註冊一個賬號?"
 
 [ErrorMaxFailedLogins]
 hash = "sha1-dbebd52a4449b3d284699bd8f79dc7d55699e754"
-other = "太多次登录失败. 账号临时锁定, 请稍候重试."
+other = "太多次登錄失敗. 賬號臨時鎖定, 請稍候再試."
 
 [ErrorRegisterDisabled]
 hash = "sha1-58ae30a9afd39e0111c2d0864b81bb12b799820e"
-other = "当前实例禁止注册, 请联系管理员."
+other = "當前實例禁止註冊, 請聯繫管理員。"
 
 [ErrorTimelineLoad]
 hash = "sha1-aab0d6f0ea631fdcbe5ec82b50b086ae23c5c82a"
-other = "加载动态数据时发生了错误"
+other = "加載數據時發生了錯誤"
 
 [ErrorTitle]
 hash = "sha1-7f2f6a15cf8da2b27e5a4af47b58e7ad71c0b3d9"
-other = "错误"
+other = "錯誤"
 
 [FeedManageLinkTitle]
 hash = "sha1-bf58d17e561b1b858e35f9202f811297dac2e9db"
@@ -176,11 +176,11 @@ other = "管理"
 
 [FeedsExternalFeedsContent]
 hash = "sha1-e643a20c31511b08a00bf83fefd065a26311254f"
-other = "<p>\n这是您可以订阅并关注的外部 Feed 列表。这些 Feed 源由 {{.InstanceName}} 运营商从外部获取和配置。默认情况下， <a href=\"https://twtxt.net\">twtxt.net</a> 来自以下来源：<ul>\n<li><a href=\"https://feeds.twtxt.net\">feeds.twtxt.net</a> RSS/Atom 到 twtxt feed 的聚合器</li>\n<li><a href=\"https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-bots.txt\">we-are-bots</a> twtxt机器人目录(<i>自动 Feeds</i>)</li>\n<li><a href=\"https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-twtxt.txt\">we-are-twtxt</a> twtxt用户目录(<i>由自愿将自己添加到此列表的用户管理</i>)</li>\n</ul>\n</p>\n<p>\n如果要添加新的外部 Feed：<ul>\n<li>首先，确保它是有效的RSS或Atom Feed(<i><a href=\"https://en.wikipedia.org/wiki/Atom_(Web_standard)\">有效Feed?</a></i>)。</li>\n<li>访问<a href=\"https://feeds.twtxt.net\">feeds.twtxt.net</a>并给 Feed 命名，然后输入RSS/Atom URL并点击 Add 提交。</li>\n</ul>\n几分钟后，新添加的外部 Feed 将显示在 {{ .InstanceName }} 实例 <a href=\"https://twtxt.net/feeds\">/feeds</a> 中。\n</p>"
+other = "<p>\n這是您可以訂閱並關注的外部 Feed 列表。這些 Feed 源由 {{.InstanceName}} 運營商從外部獲取和配置。默認情況下， <a href=\"https://twtxt.net\">twtxt.net</a> 來自以下來源：<ul>\n<li><a href=\"https://feeds.twtxt.net\">feeds.twtxt.net</a> RSS/Atom 到 twtxt feed 的聚合器</li>\n<li><a href=\"https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-bots.txt\">we-are-bots</a> twtxt機器人目錄(<i>自動 Feeds</i>)</li>\n<li><a href=\"https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-twtxt.txt\">we-are-twtxt</a> twtxt用戶目錄(<i>由自願將自己添加到此列表的用戶管理</i>)</li>\n</ul>\n</p>\n<p>\n如果要添加新的外部 Feed：<ul>\n<li>首先，確保它是有效的RSS或Atom Feed(<i><a href=\"https://en.wikipedia.org/wiki/Atom_(Web_standard)\">有效Feed?</a></i>)。</li>\n<li>訪問<a href=\"https://feeds.twtxt.net\">feeds.twtxt.net</a>並給 Feed 命名，然後輸入RSS/Atom URL並點擊 Add 提交。</li>\n</ul>\n幾分鍾後，新添加的外部 Feed 將顯示在 {{ .InstanceName }} 實例 <a href=\"https://twtxt.net/feeds\">/feeds</a> 中。\n</p>"
 
 [FeedsExternalFeedsSummary]
 hash = "sha1-55c8dba827a4c56d82c9f2076cc2b31d5a99e726"
-other = "来自新闻和外部用户的 Feeds"
+other = "來自新聞和外部用戶的 Feeds"
 
 [FeedsExternalFeedsTitle]
 hash = "sha1-eda4203f0af0ea39a3ff084baeb36a5dcee840c0"
@@ -188,19 +188,19 @@ other = "外部 Feeds"
 
 [FeedsFormCreate]
 hash = "sha1-6e157c5da4410b7e9de85f5c93026b9176e69064"
-other = "创建"
+other = "創建"
 
 [FeedsFormName]
 hash = "sha1-3a903f81683ea9faa415ebef0a716d930a6483c5"
-other = "Feed名称"
+other = "Feed名稱"
 
 [FeedsHowToContent]
 hash = "sha1-f3db21eef88dacccf97a983642144d982a90cc3e"
-other = "创建您自己的Feed或您想要与他人共享的主题。这样，您就可以以此Feed作为“发布者”创建相关的推文。"
+other = "創建您自己的Feed或您想要與他人分享的主題。這樣您就可以以此Feed作為“發布者”創建相關的推文。"
 
 [FeedsLocalFeedsContent]
 hash = "sha1-bb7ef9ae3dba4dfeb18a7534df1c6becf5086077"
-other = "这是您可以订阅并关注的本地 Feed 列表。这些是由用户在 {{.InstanceName}}上创建，实际上是“特殊兴趣”，“主题”或“组”，通过这些 Feed，用户可以以个人身份发布有趣的内容"
+other = "這是您可以訂閱並關注的本地 Feed 列表。這些是由用戶在 {{.InstanceName}} 上創建，實際上是“興趣”，“主題”或“群組”，通過這些 Feed，用戶可以以個人身份發布有趣的內容"
 
 [FeedsLocalFeedsSummary]
 hash = "sha1-8738599c8ca4c87588afd38e42f6cf5edce79b74"
@@ -212,7 +212,7 @@ other = "本地 Feeds"
 
 [FeedsMyFeedsSummary]
 hash = "sha1-a4a396afca42119579a76d4a1a66d5d5279a3144"
-other = "这是您可以查看或管理的 Feeds"
+other = "這是您可以查看或管理的 Feeds"
 
 [FeedsMyFeedsTitle]
 hash = "sha1-d4e95c7858c7cca380da3c6bdd91e5bf0002d2cb"
@@ -220,23 +220,23 @@ other = "我的 Feeds"
 
 [FeedsNoFeedsSummary]
 hash = "sha1-876529acc2ed0d57903292b5c4dd4869cd2f3108"
-other = "您还没有 Feed，<a href=\"#create\">创建</a> 一个？"
+other = "您還沒 Feed，<a href=\"#create\">創建</a> 一個？"
 
 [FeedsSummary]
 hash = "sha1-351a6b26b69cc08ab69024f162aca2e13b9d7e57"
-other = "创建一个本地 Feed"
+other = "創建一個本地 Feed"
 
 [FeedsTitle]
 hash = "sha1-074e5c72245f23f1864a151844ef4ffd970aeca2"
-other = "创建 Feed"
+other = "創建 Feed"
 
 [FollowFormFollow]
 hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"
-other = "关注"
+other = "跟隨"
 
 [FollowFormNickname]
 hash = "sha1-a13b2d85f9a867e6b997e106d7d78903f8201691"
-other = "昵称"
+other = "暱稱"
 
 [FollowFormURL]
 hash = "sha1-83f5eadf29e2d9a3510644c2e565df6964447a0d"
@@ -244,63 +244,63 @@ other = "URL"
 
 [FollowHowToContent]
 hash = "sha1-28d94b74e71b2b65f4299219080260f2b556fa95"
-other = "需要从另一个客户端导入提要列表吗？使用<a href=\"/import\">导入</a>功能。您还可以在/ <a href=\"/discover\">发现</a>页面上的{{.InstanceName}}实例上找到其他用户（假设他们已发布），或在<a href=\"/feeds\">订阅</a>页面上找到其他外部feed的来源。"
+other = "需要從另一個客戶端導入列表嗎？使用<a href=\"/import\">導入</a>功能。您還可以在 <a href=\"/discover\">發現</a> 頁面上的{{.InstanceName}} 實例上找到其他用戶（假設他們已發文），或在 <a href=\"/feeds\">Feeds</a> 頁面上找到其它外部 Feed 來源。"
 
 [FollowLinkTitle]
 hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"
-other = "关注"
+other = "跟隨"
 
 [FollowSummary]
 hash = "sha1-663405cfecbcf8daebd116d839113aac7cb00f7d"
-other = "关注用户或订阅"
+other = "跟隨用䚮或Feed"
 
 [FollowTitle]
 hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"
-other = "关注"
+other = "跟隨"
 
 [FollowersFollowingUser]
 hash = "sha1-5d8880619b0c9343fcad11867c6969e10728accc"
-other = "<b>{{ .Username }}</b> 的粉丝"
+other = "<b>{{ .Username }}</b> 的粉絲"
 
 [FollowersFollowingYou]
 hash = "sha1-c423c69e2673ceefd3e3fe1645423b689d492fe8"
-other = "您的粉丝"
+other = "您的粉絲"
 
 [FollowersNoFollowers]
 hash = "sha1-a76c590e42eb904baf7fa2c68c9cf5e17c848b30"
-other = "还没有粉丝"
+other = "還沒有粉絲"
 
 [FollowersNoFollowersSummary]
 hash = "sha1-be479396852a114469ca91160b52427ecb6e86a6"
-other = "您还没有粉丝! 发表一篇推文, 它将出现在a href=\"/discover\">发现</a> 页，{{ .InstanceName }} 实例的所有用户都可以<a href=\"/follow\">关注</a>您。"
+other = "您還沒有粉絲! 馬上發表一篇推文, 它將出現在 <a href=\"/discover\">發現</a> 頁，{{ .InstanceName }} 實例的所有用戶都可以 <a href=\"/follow\">跟隨</a> 您。"
 
 [FollowersTitle]
 hash = "sha1-78eaabf4a629795fe52f523f44f5000c6b204f2f"
-other = "粉丝"
+other = "粉絲"
 
 [FollowingFollowingUser]
 hash = "sha1-fbf827af5e0df2f2953a555ec1e874fb441aa425"
-other = "<b>{{ .Username }}</b> 关注列表"
+other = "<b>{{ .Username }}</b> 跟隨列表"
 
 [FollowingFollowingYou]
 hash = "sha1-a9c227473605df6d6e02aaa04582c2590e5a55b0"
-other = "您的关注列表"
+other = "您的跟隨列表"
 
 [FollowingNoFollowing]
 hash = "sha1-5a97124f8ccf9c1a9c45a2ba262842bc995881c8"
-other = "还没有关注"
+other = "還沒有跟隨"
 
 [FollowingNoFollowingSummary]
 hash = "sha1-27f9e5536a24088d91b836b3173f51e6982eac0d"
-other = "您没有关注任何用户或Feed！ 在{{ .InstanceName }}上<a href=\"/follow\">关注</a>某人或在<a href=\"/discover\">发现</a>页找到感兴的用户或Feed。"
+other = "您還沒有關注任何用戶或Feed！ 在{{ .InstanceName }}上<a href=\"/follow\">跟隨</a>某人或在<a href=\"/discover\">發現</a> 頁找到感興趣的用戶或Feed。"
 
 [FollowingTitle]
 hash = "sha1-90eeb100838048513e8d2290a6892e18077c24f6"
-other = "关注"
+other = "跟隨"
 
 [ForgottenPasswordContent]
 hash = "sha1-122216d4af117201b618588c4a2969c8ee9a1c16"
-other = "如果您忘记了密码, 只要您记住注册时使用的用户名和电子邮件地址并保留对电子邮件的访问权限，就可以请求<a href=\"/resetPassword\">重置密码</a>(<i>我们 <b>从不</b> 存储您的邮件地址!</i>)."
+other = "如果您忘記了密碼, 只要您記住註冊時使用的的用戶名和電子郵件地址並對電子郵件有訪問權限，就可以請求 <a href=\"/resetPassword\">重置密碼</a>(<i>我們 <b>從不</b> 存儲您的郵件地址！</i>)"
 
 [Instead]
 hash = "sha1-6568964b0e39083c6acb94093d9e6cd117dbe508"
@@ -308,43 +308,43 @@ other = "."
 
 [LoginFormLogin]
 hash = "sha1-4e5a2893bdcc7d239c1db72e4c4ffbe4bea73174"
-other = "登录"
+other = "登錄"
 
 [LoginFormPassword]
 hash = "sha1-8be3c943b1609fffbfc51aad666d0a04adf83c9d"
-other = "密码"
+other = "密碼"
 
 [LoginFormRemberMe]
 hash = "sha1-06716884880fe454166b2b598e01544d1aefd999"
-other = "记住我?"
+other = "記住我?"
 
 [LoginFormUsername]
 hash = "sha1-84c29015de33e5d22422382a372caba5c58f8c01"
-other = "用户名"
+other = "用戶名"
 
 [LoginHowToContent]
 hash = "sha1-9afcf1df91de941735d380b6b91b01a0de6e771b"
-other = "      <p>\n填写在创建账号时使用的用户名和密码，登录{{.InstanceName}}.\n </p><p>\n 如果您不想每隔几个小时登录一次，请选中“记住我”复选框.</p><p>\n还没有账号?\n您可以点击<a href=\"/register\">注册</a>马上创建一个.</p>\n"
+other = "<p>\n填寫在創建賬號時使用的用戶名和密碼，登錄 {{.InstanceName}}.\n </p><p>\n 如果您不想每隔幾個小時就登錄一次，請選中“記住我”復選框。</p><p>\n還沒有賬號？\n您可以點擊 <a href=\"/register\">註冊</a> 馬上創建一個。</p>\n"
 
 [LoginHowToTitle]
 hash = "sha1-097f2ed883de33056433137a3d1ddc53da9931df"
-other = "如何登录"
+other = "如何登錄"
 
 [LoginNoAccountSummary]
 hash = "sha1-f838dc11db151df79ee689f598453d38bbac6fe9"
-other = "还没有账号"
+other = "還沒有賬號"
 
 [LoginNoAccountTitle]
 hash = "sha1-f838dc11db151df79ee689f598453d38bbac6fe9"
-other = "还没有账号"
+other = "還沒有賬號"
 
 [LoginSummary]
 hash = "sha1-bab7c351f3af43d5f4c56baf11d65b4384a1ba86"
-other = "在 {{ .InstanceName }} 登录你的社交账号"
+other = "在 {{ .InstanceName }} 登錄您的社交賬號"
 
 [LoginTitle]
 hash = "sha1-ada2e9e96fa9ce85430225b412068b5b62b79800"
-other = "登录"
+other = "登錄"
 
 [ManagePodLinkTitle]
 hash = "sha1-0cf5b0b8b7f4dc729cd3230988a0a5bb3834e01e"
@@ -352,7 +352,7 @@ other = "管理 Pod"
 
 [ManageUsersLinkTitle]
 hash = "sha1-751f7d627ad7fe72372b355b1cd24895dc08b8f3"
-other = "管理用户"
+other = "管理用戶"
 
 [MeLinkTitle]
 hash = "sha1-b1c1d8736f20db3fb6c1c66bb1455ed43909f0d8"
@@ -360,11 +360,11 @@ other = "我"
 
 [MenuAbout]
 hash = "sha1-6b21fb791ac05170893860c248401cd24a59b732"
-other = "关于我们"
+other = "關於我們"
 
 [MenuAbuse]
 hash = "sha1-411d6ee2454b2cd4eada9d338861ed000fc07b6e"
-other = "滥用政策"
+other = "濫用政策"
 
 [MenuAtom]
 hash = "sha1-41dded417052424bdcf3c39f6c8664147fae6806"
@@ -372,11 +372,11 @@ other = "Atom"
 
 [MenuHelp]
 hash = "sha1-c47ae15370cfe1ed2781eedc1dc2547d12d9e972"
-other = "帮助"
+other = "幫助"
 
 [MenuPrivacy]
 hash = "sha1-cf01481f626d5127ec7732fcbdb29504f08abefd"
-other = "隐私"
+other = "隱私"
 
 [MenuSupport]
 hash = "sha1-f32d5a3b17e614297417cc279a7ec1cd02274d65"
@@ -384,19 +384,19 @@ other = "支持"
 
 [MessageFormDelete]
 hash = "sha1-df39a3f9dbd02e0b603c545752a5cf0e767d8ea9"
-other = "删除"
+other = "刪除"
 
 [MessageFrom]
 hash = "sha1-3f66052a107eaf9bae7cad0f61fb462f47ec2c47"
-other = "发件人"
+other = "發信人"
 
 [MessageReceived]
 hash = "sha1-27548c4fc95d7c7fdabb7df9f94a1e05cc1d7cb7"
-other = "接收时间"
+other = "接收時間"
 
 [MessageStatus]
 hash = "sha1-bae7d5be70820ed56467bd9a63744e23b47bd711"
-other = "状态"
+other = "狀態"
 
 [MessageStatusNew]
 hash = "sha1-66aabd91fc41cc4635aad94dc77d93a0e2eac67b"
@@ -404,31 +404,31 @@ other = "新"
 
 [MessageStatusRead]
 hash = "sha1-852b438f91ad9eb2cdd84419a675a216d543c687"
-other = "已读"
+other = "已讀"
 
 [MessageSubject]
 hash = "sha1-8d183dbdcea3b29906090bd83fa6fa37923cc8ec"
-other = "主题"
+other = "主題"
 
 [MessagesFormDeleteSelected]
 hash = "sha1-76bf56ab14044667c152353086e0cb89f31f6761"
-other = "删除选择"
+other = "刪除選擇"
 
 [MessagesSummary]
 hash = "sha1-3eeda6d403156e70ae89b84574cc731c15e0ba95"
-other = "您收到的私信列表"
+other = "您收到的訊息列表"
 
 [MessagesTitle]
 hash = "sha1-e5204fc48e8ac1f01ba1f391a69aa88ba367d672"
-other = "私信"
+other = "訊息"
 
 [MsgMessagesSuccessfullySent]
 hash = "sha1-03a2ed9b9721a9755729b829c7623cfa4a9c0586"
-other = "私信已成功发送"
+other = "已成功發送訊息"
 
 [NavDiscover]
 hash = "sha1-4827ea22716a74aaf8bbe499fc314bb93f73c65e"
-other = "发现"
+other = "發現"
 
 [NavFeeds]
 hash = "sha1-ffe8e99492ee9b850395d53f6c519938952fde0d"
@@ -436,11 +436,11 @@ other = "Feeds"
 
 [NavFollow]
 hash = "sha1-66587a7a62a90fc91c4c88f1872bedaa52d23a35"
-other = "关注"
+other = "跟隨"
 
 [NavLogin]
 hash = "sha1-4e5a2893bdcc7d239c1db72e4c4ffbe4bea73174"
-other = "登录"
+other = "登錄"
 
 [NavLogout]
 hash = "sha1-e43d612e11f1568f2373e719d4c4b08dcecdc7cc"
@@ -448,35 +448,35 @@ other = "退出"
 
 [NavMentions]
 hash = "sha1-85e12bc6f2e56024e47cc826a14968247a52dc54"
-other = "提及"
+other = "連接"
 
 [NavMessages]
 hash = "sha1-f1702b4686278becffc88baabe6f4b7a8355532c"
-other = "私信"
+other = "訊息"
 
 [NavRegister]
 hash = "sha1-d672995a14650d0e018026b64f297663d8c71c8d"
-other = "注册"
+other = "註冊"
 
 [NavSettings]
 hash = "sha1-c7f73bb54d928922c3838bb789ee9fb8a5b1eb37"
-other = "设置"
+other = "設置"
 
 [NavTimeline]
 hash = "sha1-018514a3d58aa08353dd5e387ee29de45981c409"
-other = "动态"
+other = "動態"
 
 [NoBlogs]
 hash = "sha1-160983df3739e9e41947731c7f1e865f89e0169b"
-other = "还没有博文，稍候再来！"
+other = "還沒有貼文，稍候再來！"
 
 [NoTwts]
 hash = "sha1-5b57a49ebae0d4b1b458af42b9ed71896504614b"
-other = "还没有内容... 稍候再来！"
+other = "還沒有推文... 稍候再來！"
 
 [PageDiscoverTitle]
 hash = "sha1-4827ea22716a74aaf8bbe499fc314bb93f73c65e"
-other = "发现"
+other = "發現"
 
 [PageFeedsTitle]
 hash = "sha1-ffe8e99492ee9b850395d53f6c519938952fde0d"
@@ -484,31 +484,31 @@ other = "Feeds"
 
 [PageFollowTitle]
 hash = "sha1-c3954605089b8a03bc74ad154731981fe88eb87e"
-other = "关注"
+other = "跟隨"
 
 [PageLocalTimelineTitle]
 hash = "sha1-c69cd8d5a9c8ce344bc8d779a0b8a2710ebca482"
-other = "本地动态"
+other = "本地動態"
 
 [PageMentionsTitle]
 hash = "sha1-85e12bc6f2e56024e47cc826a14968247a52dc54"
-other = "提及"
+other = "連接"
 
 [PageMessagesTitle]
 hash = "sha1-e5204fc48e8ac1f01ba1f391a69aa88ba367d672"
-other = "私信"
+other = "訊息"
 
 [PageNotFoundTitle]
 hash = "sha1-e637d9faea1e24d9196c254461fefa8d2932e5a1"
-other = "页面没有找到"
+other = "頁面沒有找到"
 
 [PageResetPasswordTitle]
 hash = "sha1-5c4bc97ee5d0ac344829dbcef02d7302feb098a8"
-other = "重置密码"
+other = "重置密碼"
 
 [PageSettingsTitle]
 hash = "sha1-c7f73bb54d928922c3838bb789ee9fb8a5b1eb37"
-other = "设置"
+other = "設置"
 
 [PageSupportTitle]
 hash = "sha1-2b658ffd9420a73ab8def21ea11ec05a7927cf2c"
@@ -520,39 +520,39 @@ other = "{{.Username}} 的博客"
 
 [PageUserBookmarksTitle]
 hash = "sha1-8e9534124c7acc82957be8d1cf482efa8821c6a8"
-other = "{{.Username}} 的书签"
+other = "{{.Username}} 的書籤"
 
 [PageUserFollowersTitle]
 hash = "sha1-c14219d1dfc95b5a97e6e9e5a66a142059ab861d"
-other = "{{.Username}} 的粉丝"
+other = "{{.Username}} 的粉絲"
 
 [PageUserFollowingTitle]
 hash = "sha1-8f95f4e7fb12ac3a084936579ea6af9c06e8b692"
-other = "{{.Username}} 的关注"
+other = "{{.Username}} 的跟隨"
 
 [PageUserTimelineTitle]
 hash = "sha1-16c00449a9a3f15a32149863cc14f591ad497ff2"
-other = "动态"
+other = "動態"
 
 [PagerNextLinkTitle]
 hash = "sha1-bc981983e7f547dc62e19a1e383acfe00782a6d5"
-other = "下一页"
+other = "下一頁"
 
 [PagerNoNextTooltip]
 hash = "sha1-b068268b48718d1fc90aacd1f40498095a712532"
-other = "没有了"
+other = "沒有了"
 
 [PagerNoPreviousTooltip]
 hash = "sha1-3866fcde85eda2bbcb7be0aaa8507477286fe238"
-other = "没有了"
+other = "沒有了"
 
 [PagerPrevLinkTitle]
 hash = "sha1-e96fea52df5eb0d7ea088eb0523f5fd6be20645f"
-other = "上一页"
+other = "上一頁"
 
 [PagerTwtsSummary]
 hash = "sha1-9e6b15e93c90719d3bc88054cc839c6c8cb5ef1d"
-other = "第 {{ .Page }}/{{ .PageNums }} 页，总计 {{ .Nums }} 条推文"
+other = "第 {{ .Page }}/{{ .PageNums }} 頁，總計 {{ .Nums }} 條推文"
 
 [ProfileAtomLinkTitle]
 hash = "sha1-41dded417052424bdcf3c39f6c8664147fae6806"
@@ -560,11 +560,11 @@ other = "Atom"
 
 [ProfileBlockUserContent]
 hash = "sha1-d2aeb6f1e3c14710c48aa32a21a783114bc610f5"
-other = " <p>如果此用户或Feed违反了 Pod({{ .InstanceName }})实例的社区准则及相关<a href=\"/abuse\">政策</a>，请立即举报！</p><p>您还可以取消关注或屏蔽此用户或Feed。禁言也会从您的视图中删除该用户/ Feed的内容，并且您将不再在任何地方看到该用户或Feed的内容。</p>"
+other = " <p>如果此用戶或Feed違反了 Pod({{ .InstanceName }}) 實例的社區準則及相關<a href=\"/abuse\">政策</a>，請立即舉報！</p><p>您 還可以取消跟隨或屏蔽此用戶或Feed。禁言也會從您的視圖中刪除該用戶的內容，並且您將不再在任何地方看到該用戶或Feed的內容。</p>"
 
 [ProfileBlockUserTitle]
 hash = "sha1-ef0754928f9eec23313a4e9f46f10b061e5ead48"
-other = "屏蔽 / 报告"
+other = "屏蔽 / 報告"
 
 [ProfileBlogsLinkTitle]
 hash = "sha1-5ef4439786692eab160ee60be0da2bb3a8597d9a"
@@ -572,7 +572,7 @@ other = "博客"
 
 [ProfileBookmarksLinkTitle]
 hash = "sha1-6a5a0b75f31c888349fd59ca3242acef5c6fe291"
-other = "书签"
+other = "書籤"
 
 [ProfileConfigLinkTitle]
 hash = "sha1-8851142da56fd885ce668a165b33fee7003e858d"
@@ -580,19 +580,19 @@ other = "配置"
 
 [ProfileDoesNotFollowYou]
 hash = "sha1-39a192be045429f69662e113e83bbcc7b46f24dc"
-other = "还没有关注你 (<i>他可能没看到你的消息!</i>)"
+other = "還沒有跟隨你 (<i>他可能沒看到您的訊息!</i>)"
 
 [ProfileFollowersLinkTitle]
 hash = "sha1-60307d4b8f5c2d8eb88f9f031a041fe636c05f43"
-other = "粉丝:"
+other = "粉絲:"
 
 [ProfileFollowingLinkTitle]
 hash = "sha1-3bdfc897922908283888272081e3df5ea78d8a7a"
-other = "关注:"
+other = "跟隨:"
 
 [ProfileFollowsYou]
 hash = "sha1-9c3afad24345228d89b18f923e7212b2e4cc266b"
-other = "关注了你"
+other = "跟隨了你"
 
 [ProfileMuteLinkTitle]
 hash = "sha1-0f0973483d912464153b3be374a94b58e6cd0ef6"
@@ -600,7 +600,7 @@ other = "禁言"
 
 [ProfileReportLinkTitle]
 hash = "sha1-ee45c30326b750387589752c0f75e1dd87ddc7e4"
-other = "报告"
+other = "報告"
 
 [ProfileTwtxtLinkTitle]
 hash = "sha1-45c9437b0fb70f8f31804a3d49137e3bec03d99d"
@@ -612,107 +612,107 @@ other = "取消禁言"
 
 [RecentTwtsSummary]
 hash = "sha1-86f9404e41167e340565f72ea9d15be2d4de1cf5"
-other = "来自 {{ .Username }} 的最近推文"
+other = "來自 {{ .Username }} 的最新推文"
 
 [RecentTwtsTitle]
 hash = "sha1-5471aee8e78958c108a802ab9385f2a13f184d2b"
-other = "最近推文"
+other = "最新推文"
 
 [RegisterDisabledMessage]
 hash = "sha1-14d26e1e7754b30ed7402bbaf188baa629d8a79b"
-other = "当前实例禁止注册, 请联系管理员"
+other = "當前實例禁止註冊, 請聯繫管理員"
 
 [RegisterFormEmail]
 hash = "sha1-c94d3175a6560565410511df2cebab9cda96027e"
-other = "电子邮件"
+other = "電子郵件"
 
 [RegisterFormEmailSummary]
 hash = "sha1-a002997d17e931c8aa6c7b45ff19550706a116b5"
-other = "注意：我们实际上并不存储此信息！如果您忘记或丢失电子邮件帐户信息，我们将无法恢复您的帐户！"
+other = "注意：我們實際上並不存儲些信息！如果您忘記或丟失電子郵件賬戶信息，我們將無法恢復您的賬戶！"
 
 [RegisterFormLogin]
 hash = "sha1-8cc61755932c795b961af3625f92b8a3a9d7e5c3"
-other = "已有账号? <a href='/login'>/登录</a> "
+other = "已有賬號? <a href='/login'>/登錄</a> "
 
 [RegisterFormPassword]
 hash = "sha1-8be3c943b1609fffbfc51aad666d0a04adf83c9d"
-other = "密码"
+other = "密碼"
 
 [RegisterFormRegister]
 hash = "sha1-d672995a14650d0e018026b64f297663d8c71c8d"
-other = "注册"
+other = "註冊"
 
 [RegisterFormUsername]
 hash = "sha1-84c29015de33e5d22422382a372caba5c58f8c01"
-other = "用户名"
+other = "用戶名"
 
 [RegisterGuidelines]
 hash = "sha1-09f2d7efb99d67b64c2193d184c5bc760bc8c412"
-other = "我同意遵守 <a href='/abuse'>社区准则及相关政策</a>."
+other = "我同意遵守 <a href='/abuse'>社區準則及相關政策</a>。"
 
 [RegisterHowToContent]
 hash = "sha1-0d58603b0b6a7a7d38c0ea9d73a9c54f68f76535"
-other = "<p>\n你将在{{ .InstanceName }}创建一个新的<a href='https://twt.social' target='_blank'>Twt.social</a>\n\n</p>\n<p>\n在 {{ .InstanceName }} 注册一个账号, 遵守<a href='/abuse'>政策</a>中的社区准则.\n</p>\n<p>\n<ul>\n<li>选择一个用户名</li>\n<li>创建一个安全的密码</li>\n<li>提供电子邮件用于找回您的密码</li>\n</ul>\n</p>\n<p>\n选择任何你喜欢的用户 (<i>只要在 {{ .InstanceName }}可用</i>).\n</p>\n<p>\n请注意: 我们 <b>不储存</b> 电子邮件地址, 请记住您的电子邮件地址,  如果电子邮件地址丢失或忘记, 我们将不能恢复您的账号或帮您找回密码\n</p>"
+other = "<p>\n您將在{{ .InstanceName }}創建一個新的<a href='https://twt.social' target='_blank'>Twt.social</a>\n\n</p>\n<p>\n在 {{ .InstanceName }} 註冊一個賬號, 遵守<a href='/abuse'>政策</a>中的社區準則。\n</p>\n<p>\n<ul>\n<li>選擇一個用戶名</li>\n<li>創建一個安全的密碼</li>\n<li>提供電子郵件用於找回您的密碼</li>\n</ul>\n</p>\n<p>\n選擇任何你喜歡的用戶名 (<i>只要在 {{ .InstanceName }} 可用</i>)。\n</p>\n<p>\n請注意: 我們 <b>不儲存</b> 電子郵件地址，請牢記您的電子郵件地址, 如果電子郵件地址丟失或忘記， 我們將不能恢復您的賬號或幫您找回密碼\n</p>"
 
 [RegisterHowToTitle]
 hash = "sha1-61b07a27c8f9b25d9065b26390b2884fb025586e"
-other = "如何创建账号"
+other = "如何創建賬號"
 
 [RegisterLinkTitle]
 hash = "sha1-5b402e3dfa8bfeaa6620b1ee5bf38fb965bcbe3c"
-other = "注册"
+other = "註冊"
 
 [RegisterSummary]
 hash = "sha1-87d65ce0904f254e39fbb671ccd7a58f79cfa18b"
-other = "在{{.InstanceName}}上创建并注册一个新的社交帐户"
+other = "在{{.InstanceName}} 上創建並註冊一個新的社交賬號"
 
 [RegisterTitle]
 hash = "sha1-0b81497c8589af2714a1ddbeb62b3a4be679c318"
-other = "注册"
+other = "註冊"
 
 [ResetPasswordFormEmail]
 hash = "sha1-c94d3175a6560565410511df2cebab9cda96027e"
-other = "电子邮件"
+other = "電子郵件"
 
 [ResetPasswordFormReset]
 hash = "sha1-3fb75e3bfe4de94eb5198656fa9de95352dab915"
-other = "重置密码"
+other = "重置密碼"
 
 [ResetPasswordFormUsername]
 hash = "sha1-84c29015de33e5d22422382a372caba5c58f8c01"
-other = "用户名"
+other = "用戶名"
 
 [ResetPasswordHowToContent]
 hash = "sha1-76cf47fef180d4e68557d75ef348e2569c5d4b7d"
-other = " \n<p>\n使用左侧的表格来恢复您的帐户并重置密码。\n只需填写用于创建帐户的用户名和电子邮件地址即可。</p>\n<p>\n但是请注意，您必须在此处提供与最初创建帐户时相同的电子邮件地址。我们<b>不会</b>实际存储档案中的电子邮件地址，所以如果你没有访问或已经忘记了自己的电子邮件地址，那么你将无法恢复您的帐户。\n</p>"
+other = "\n<p>\n使用左郵件裏的表單來恢復您的賬號並重置密碼。\n只需要填寫用於創建賬號的用戶名和電子郵件即可。</p>\n<p>\n請注意，您必須 在此處提供與最初創建賬號時相同的電子郵件地址。我們<b>不會</b>實際存儲您的電子郵件地址，所以如果您沒有訪問或已經忘記了自己的電子郵件地址，那麽您將無法恢復賬號。\n</p>"
 
 [ResetPasswordHowToTitle]
 hash = "sha1-8b19f439204c9f765b9d0ddc81459d9dff6e5a1b"
-other = "如何重置您的密码"
+other = "如何重置您的密碼"
 
 [ResetPasswordLinkTitle]
 hash = "sha1-19dda05128bca657bda59fd4ada178cc349f00ec"
-other = "忘记密码"
+other = "忘記密碼"
 
 [ResetPasswordSummary]
 hash = "sha1-f4c4fc1a4556f29189ff762b92fc4107b48f900f"
-other = "填写下面表单重置您的密码"
+other = "填寫下面表單重置您的密碼"
 
 [ResetPasswordTitle]
 hash = "sha1-3fb75e3bfe4de94eb5198656fa9de95352dab915"
-other = "重置密码"
+other = "重置密碼"
 
 [SettingsAPIClient]
 hash = "sha1-1bdd79b12628d8c4ec4226ff4207341dcb869ab8"
-other = "客户端"
+other = "客戶端"
 
 [SettingsAPICreated]
 hash = "sha1-accf40c89baa4fa88e6a7ff11e1f805beecafd3f"
-other = "创建时间"
+other = "創建時間"
 
 [SettingsAPIDelete]
 hash = "sha1-f6fdbe48dc54dd86f63097a03bd24094dedd713a"
-other = "删除"
+other = "刪除"
 
 [SettingsAPIExpiry]
 hash = "sha1-ba8f571e0f93e1c1532af206aa8ee39bb19f1cb9"
@@ -724,71 +724,71 @@ other = "API 令牌"
 
 [SettingsDeleteAccountFormDelete]
 hash = "sha1-f6fdbe48dc54dd86f63097a03bd24094dedd713a"
-other = "删除"
+other = "刪除"
 
 [SettingsDeleteAccountSummary]
 hash = "sha1-c2508c59a9a2da262ded2de1889ab258ab122241"
-other = "<b>警告:</b>&nbsp;这是永久删除且无法撤消!\n(<i>没有确认操作!</i>)"
+other = "<b>警告:</b>&nbsp;這是永久刪除且無法恢復！\n(<i>沒有確認操作！</i>)"
 
 [SettingsDeleteAccountTitle]
 hash = "sha1-1753c2061c676db8dd89101b51b92f09a277f51c"
-other = "删除账号"
+other = "刪除賬號"
 
 [SettingsFormChangeAvatarTitle]
 hash = "sha1-60f2e98ebe1b8c0c354734b807e898fd56146b83"
-other = "改变头像"
+other = "改變頭像"
 
 [SettingsFormChangeEmail]
 hash = "sha1-dbc7f1cb535bc000b0f2b463b6b1552763dcf66a"
-other = "更新电子邮件"
+other = "更新電子郵件"
 
 [SettingsFormChangeEmailSummary]
 hash = "sha1-2b2a92b2a28c580effa22db980e7748472873fb6"
-other = "<b>注意:</b>我们实际上并不存储此信息！如果您忘记或失去对此处提供的电子邮件帐户的访问权限，将无法恢复您的Twt.social帐户！"
+other = "<b>注意:</b>我們實際上並不存儲此信息！如果您忘記或丟失電子郵件的訪問權限，您將無法恢復Twt.social賬號！"
 
 [SettingsFormChangeEmailTitle]
 hash = "sha1-03e8c409bff190a9756ced3e3af8f175885d2bd3"
-other = "修改电子邮件"
+other = "修改電子郵件"
 
 [SettingsFormChangePassword]
 hash = "sha1-148a65a983e878a68d6a62f2a066789fb82df14a"
-other = "更新密码"
+other = "更新密碼"
 
 [SettingsFormChangePasswordTitle]
 hash = "sha1-635e3f03e27f1e818f2fbc600399950632963bcc"
-other = "修改密码"
+other = "修改密碼"
 
 [SettingsFormChangeTagline]
 hash = "sha1-cbeefd0bc1b8b18c1d03094f993cfa16059ba7fb"
-other = "关于您的简短描述,标语或口号"
+other = "關於您的簡短描述，標語或口號"
 
 [SettingsFormChangeTaglineTitle]
 hash = "sha1-3547a41d0344427489dfcd825bfb6578a88672b3"
-other = "标语"
+other = "標語"
 
 [SettingsFormPrivacySettingsShowBookmarks]
 hash = "sha1-16c928b369bea36feddb8047b9b25595f181976d"
-other = "公开显示我的书签"
+other = "公開顯示我的書籤"
 
 [SettingsFormPrivacySettingsShowFollowers]
 hash = "sha1-18e55eea6d17428454501e7b1c9a694cfb28742c"
-other = "公开显示我的粉丝"
+other = "公開顯示我的粉絲"
 
 [SettingsFormPrivacySettingsShowFollowings]
 hash = "sha1-1199a6b85274b60b8477a6a171958923fd46230a"
-other = "公开显示我的关注"
+other = "公開顯示我的跟隨"
 
 [SettingsFormPrivacySettingsTitle]
 hash = "sha1-f41f1bc7002fffee32655b2ca02e0019efa27671"
-other = "隐私设置"
+other = "隱私設置"
 
 [SettingsFormThemeTitle]
 hash = "sha1-0485a026596091082310d7d66c39c579a9ab6566"
-other = "主题"
+other = "主題"
 
 [SettingsFormTimezoneTitle]
 hash = "sha1-cc6b7d5a9e6ad370824bc702023b0d2e44d5eb2b"
-other = "时区"
+other = "時區"
 
 [SettingsFormUpdate]
 hash = "sha1-fb91e24fa52d8d2b32937bf04d843f730319a902"
@@ -796,7 +796,7 @@ other = "更新"
 
 [SettingsFormViewProfile]
 hash = "sha1-b98795a246f09961ab85071a7f50013203007e9f"
-other = "查看用户详情"
+other = "查看用戶詳情"
 
 [SettingsMessagingPOP3Title]
 hash = "sha1-388d294b27938ce044aa44511baf38334a66eb0e"
@@ -808,7 +808,7 @@ other = "SMTP 令牌"
 
 [SettingsMessagingTitle]
 hash = "sha1-a4a53482c7bea90cd4d73f226aa5156f64f913c4"
-other = "消息令牌"
+other = "訊息令牌"
 
 [SettingsPodManagementTitle]
 hash = "sha1-9a2d74e99197deb098f491ce7fc19ecca9a7c1b1"
@@ -816,11 +816,11 @@ other = "Pod 管理"
 
 [SettingsSummary]
 hash = "sha1-66c5325c25f10fdc5451819a3a2cdca81f5a2f01"
-other = "在此处更新您的帐户设置和密码"
+other = "在此處更新您的賬號設置和密碼"
 
 [SettingsTitle]
 hash = "sha1-82cf8a5fc7ac9479f022ea7797d2fc24455ab4ee"
-other = "账号设置"
+other = "賬號設置"
 
 [SuccessTitle]
 hash = "sha1-42a8f651d79fd005eeac0612df6442b983a01184"
@@ -828,19 +828,19 @@ other = "成功"
 
 [SupportCaptchaSummary]
 hash = "sha1-88758c3aef244e41de7bf377918be88a1cc2a881"
-other = "请输入验证码，让我们知道您不是一个机器人！"
+other = "請輸入驗證碼，以便讓我們知道您不是一個機器人！"
 
 [SupportFormCaptcha]
 hash = "sha1-e9312bd1b14ea0402dd548180b030e6c19d7c452"
-other = "验证码"
+other = "驗證碼"
 
 [SupportFormEmail]
 hash = "sha1-c94d3175a6560565410511df2cebab9cda96027e"
-other = "电子邮件"
+other = "電子郵件"
 
 [SupportFormMessage]
 hash = "sha1-68f4145fee7dde76afceb910165924ad14cf0d00"
-other = "内容"
+other = "內容"
 
 [SupportFormName]
 hash = "sha1-709a23220f2c3d64d1e1d6d18c4d5280f8d82fca"
@@ -848,7 +848,7 @@ other = "名字"
 
 [SupportFormSubject]
 hash = "sha1-8d183dbdcea3b29906090bd83fa6fa37923cc8ec"
-other = "标题"
+other = "標題"
 
 [SupportFormSubmit]
 hash = "sha1-2dacf65959849884a011f36f76a04eebea94c5ea"
@@ -856,15 +856,15 @@ other = "提交"
 
 [SupportSummary]
 hash = "sha1-339139a85743fd3ba78316ad7db894e4307b6f0c"
-other = "需要我们的帮助吗？"
+other = "需要我們的幫助嗎？"
 
 [SupportTitle]
 hash = "sha1-4832e45812a2724f16a15f9ae87adfc8ae4168cf"
-other = "联系我们"
+other = "聯繫我們"
 
 [ThemeAuto]
 hash = "sha1-c614ba7c453cdcd4d21b20e8286c6266c891e0c6"
-other = "自动"
+other = "自動"
 
 [ThemeDark]
 hash = "sha1-ae1ef01432946b8976b9b58575b3390ab7644db2"
@@ -872,27 +872,27 @@ other = "深色"
 
 [ThemeLight]
 hash = "sha1-a36ef8aba22905e2d2efbf1ac1d6230d5761859d"
-other = "浅色"
+other = "淺色"
 
 [TwtConversationLinkTitle]
 hash = "sha1-2a20c75033890ef64222cf0bae1c4564bbdce951"
-other = "对话"
+other = "對話"
 
 [TwtDeleteLinkTitle]
 hash = "sha1-f6fdbe48dc54dd86f63097a03bd24094dedd713a"
-other = "删除"
+other = "刪除"
 
 [TwtEditLinkTitle]
 hash = "sha1-5301648dcf6b53cefc9ed52999aaa92d4603cae0"
-other = "编辑"
+other = "編輯"
 
 [TwtFormPost]
 hash = "sha1-7858ac3ff63354f37161bd349efe11edd13b89cb"
-other = "发表"
+other = "發表"
 
 [TwtFormPostAs]
 hash = "sha1-41d744f5d0413bf98192910d9cd58a8c4de02a47"
-other = "用户 {{ .Username }}"
+other = "用戶 {{ .Username }}"
 
 [TwtFormSave]
 hash = "sha1-efc007a393f66cdb14d57d385822a3d9e36ef873"
@@ -900,12 +900,12 @@ other = "保存"
 
 [TwtFormTitle]
 hash = "sha1-768e0c1c69573fb588f61f1308a015c11468e05f"
-other = "标题"
+other = "標題"
 
 [TwtReplyLinkTitle]
 hash = "sha1-6c2bb735a46a8ff307fe2e638d581295b2a49e09"
-other = "回复"
+other = "回復"
 
 [UnfollowLinkTitle]
 hash = "sha1-e3a6fe565c7f64204f2dd182dc8b8ca9fe725d99"
-other = "取消关注"
+other = "取消跟隨"

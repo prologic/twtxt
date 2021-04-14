@@ -45,7 +45,7 @@ func (s *Server) SupportHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
-			ctx.Title = "Contact support"
+			ctx.Title = s.tr(ctx, "PageSupportTitle")
 			s.render("support", w, ctx)
 			return
 		}

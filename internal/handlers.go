@@ -740,7 +740,6 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 
 		if ctx.Authenticated {
 			lastTwt, _, err := GetLastTwt(s.config, ctx.User)
-			log.Debugf("lastTwt=%+v", lastTwt)
 			if err != nil {
 				log.WithError(err).Error("error getting user last twt")
 				ctx.Error = true
@@ -751,12 +750,12 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			ctx.LastTwt = lastTwt
 		}
 
-		log.Debugf("lastTwt.hash()=%s", ctx.LastTwt.Hash())
+		// log.Debugf("lastTwt.hash()=%s", ctx.LastTwt.Hash())
 		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
-		log.Debugf("twt filter.list(%v)", len(ctx.Twts))
-		for _, twt := range ctx.Twts {
-			log.Debugf("\ttwt.hash()=%s", twt.Hash())
-		}
+		// log.Debugf("twt filter.list(%v)", len(ctx.Twts))
+		// for _, twt := range ctx.Twts {
+		// 	log.Debugf("\ttwt.hash()=%s", twt.Hash())
+		// }
 		ctx.Pager = &pager
 
 		s.render("timeline", w, ctx)

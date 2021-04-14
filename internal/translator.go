@@ -26,17 +26,17 @@ func NewTranslator() (*Translator, error) {
 	}
 	bundle.MustParseMessageFileBytes(buf, "active.en.toml")
 	// Simplified Chinese
-	buf, err = fs.ReadFile(langs.LocaleFS, "active.zh-cn.toml")
+	buf, err = fs.ReadFile(langs.LocaleFS, "active.zh-CN.toml")
 	if err != nil {
-		return nil, fmt.Errorf("error loading zh-cn locale: %w", err)
+		return nil, fmt.Errorf("error loading zh-CN locale: %w", err)
 	}
-	bundle.MustParseMessageFileBytes(buf, "active.zh-cn.toml")
+	bundle.MustParseMessageFileBytes(buf, "active.zh-CN.toml")
 	// Traditional Chinese
-	buf, err = fs.ReadFile(langs.LocaleFS, "active.zh-tw.toml")
+	buf, err = fs.ReadFile(langs.LocaleFS, "active.zh-TW.toml")
 	if err != nil {
-		return nil, fmt.Errorf("error loading zh-tw locale: %w", err)
+		return nil, fmt.Errorf("error loading zh-TW locale: %w", err)
 	}
-	bundle.MustParseMessageFileBytes(buf, "active.zh-tw.toml")
+	bundle.MustParseMessageFileBytes(buf, "active.zh-TW.toml")
 
 	return &Translator{
 		Bundle: bundle,

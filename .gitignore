@@ -33,6 +33,7 @@
 /data/external/*
 
 /docs/_site/
+/docs/_errors/
 
 /internal/static/css/twtxt.min.css
 /internal/static/js/twtxt.min.js
@@ -41,3 +42,4 @@ bench-twtxt.txt
 
 .task/
 /doc/
+/release/

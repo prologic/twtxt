@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"html/template"
+	"math/rand"
 	"net/http"
 	"strings"
 
@@ -183,6 +184,16 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	if lang != "" && lang != "auto" {
 		ctx.Lang = lang
 	}
+	log.Debugf("acceptLangs: %s", ctx.AcceptLangs)
+	log.Debugf("lang: %s", lang)
 
 	return ctx
+}
+
+func (ctx *Context) Translate(translator *Translator, data ...interface{}) {
+	// TwtPrompt
+	defualtTwtPrompts := translator.Translate(ctx, "DefaultTwtPrompts", data...)
+	twtPrompts := strings.Split(defualtTwtPrompts, "\n")
+	n := rand.Int() % len(twtPrompts)
+	ctx.TwtPrompt = twtPrompts[n]
 }

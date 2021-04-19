@@ -4,19 +4,19 @@ other = "支持"
 
 [SupportCaptchaSummary]
 hash = "sha1-88758c3aef244e41de7bf377918be88a1cc2a881"
-other = "请输入验证码，让我们知道您不是一个机器人！"
+other = "請輸入驗證碼，以便讓我們知道您不是一個機器人！"
 
 [SupportFormCaptcha]
 hash = "sha1-e9312bd1b14ea0402dd548180b030e6c19d7c452"
-other = "验证码"
+other = "驗證碼"
 
 [SupportFormEmail]
 hash = "sha1-c94d3175a6560565410511df2cebab9cda96027e"
-other = "电子邮件"
+other = "電子郵件"
 
 [SupportFormMessage]
 hash = "sha1-68f4145fee7dde76afceb910165924ad14cf0d00"
-other = "内容"
+other = "內容"
 
 [SupportFormName]
 hash = "sha1-709a23220f2c3d64d1e1d6d18c4d5280f8d82fca"
@@ -24,7 +24,7 @@ other = "名字"
 
 [SupportFormSubject]
 hash = "sha1-8d183dbdcea3b29906090bd83fa6fa37923cc8ec"
-other = "标题"
+other = "標題"
 
 [SupportFormSubmit]
 hash = "sha1-2dacf65959849884a011f36f76a04eebea94c5ea"
@@ -32,8 +32,8 @@ other = "提交"
 
 [SupportSummary]
 hash = "sha1-339139a85743fd3ba78316ad7db894e4307b6f0c"
-other = "需要我们的帮助吗？"
+other = "需要我們的幫助嗎？"
 
 [SupportTitle]
 hash = "sha1-4832e45812a2724f16a15f9ae87adfc8ae4168cf"
-other = "联系我们"
+other = "聯繫我們"

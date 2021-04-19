@@ -16,12 +16,12 @@
           {{ if $.User.Follows .Profile.TwtURL }}
             <a href="/unfollow?nick={{ .Profile.Username  }}">
             <i class="icss-minus"></i>
-            Unfollow
+            {{tr . "UnfollowLinkTitle"}}
             </a>
           {{ else }}
             <a href="/follow?nick={{ .Profile.Username  }}&url={{ .Profile.TwtURL }}">
             <i class="icss-plus"></i>
-            Follow
+            {{tr . "FollowLinkTitle"}}
             </a>
           {{ end }}
         </h3>
@@ -35,22 +35,22 @@
           <a href="{{ .Profile.TwtURL }}">@{{ .Profile.Username }}
             <i class="icss-exchagne"></i>
           </a>
-          follows you
+          {{tr . "ProfileFollowsYou"}}
         {{ else }}
           <a href="{{ .Profile.TwtURL }}">@{{ .Profile.Username }}
             <i class="icss-x"></i>
           </a>
-          does not follow you (<i>they may not see your replies!</i>)
+          {{(tr . "ProfileDoesNotFollowYou")|html}}
         {{ end }}
       </p>
     </div>
   </div>
   <div class="container">
     <hgroup>
-      <h2>Recent Twts</h2>
-      <h3>Recent twts from {{ .Profile.Username }}</h3>
+        <h2>{{tr . "RecentTwtsTitle"}}</h2>
+        <h3>{{tr . "RecentTwtsSummary" (dict "Username" .Profile.Username)}}</h3>
     </hgroup>
   </div>
-  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true "CSRFToken" $.CSRFToken) }}
-  {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" $.Twts) }}
+  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true "CSRFToken" $.CSRFToken "Ctx" .) }}
+  {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" $.Twts "Ctx" .) }}
 {{end}}

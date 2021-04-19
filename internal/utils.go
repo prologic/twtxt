@@ -107,7 +107,7 @@ var (
 
 	validFeedName  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
 	validUsername  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]+$`)
-	userAgentRegex = regexp.MustCompile(`(.*?)\s+?\(\+?(https?://.*?);? @?(.*)\)`)
+	userAgentRegex = regexp.MustCompile(`(.+) \(\+(https?://\S+/\S+); @(\S+)\)`)
 
 	ErrInvalidFeedName  = errors.New("error: invalid feed name")
 	ErrBadRequest       = errors.New("error: request failed with non-200 response")

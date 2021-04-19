@@ -58,7 +58,7 @@ func (s *Server) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := NewContext(s.config, s.db, r)
-	ctx.Title = "Page Not Found"
+	ctx.Title = s.tr(ctx, "PageNotFoundTitle")
 	w.WriteHeader(http.StatusNotFound)
 	s.render("404", w, ctx)
 }
@@ -208,6 +208,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 		log.Debugf("in ProfileHandler()...")
 
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Translate(s.translator)
 
 		nick := NormalizeUsername(p.ByName("nick"))
 		if nick == "" {
@@ -599,6 +600,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		hash := r.FormValue("hash")
 		lastTwt, _, err := GetLastTwt(s.config, ctx.User)
+		// log.Debugf("form.hash=%v,lastTwt.hash=%v", hash, lastTwt.Hash())
 		if err != nil {
 			ctx.Error = true
 			ctx.Message = "Error deleting last twt"
@@ -702,16 +704,17 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		}
 
 		ctx := NewContext(s.config, s.db, r)
+		// ctx translate
+		// TODO it's bad, I have no idea. @venjiang
+		ctx.Translate(s.translator)
 
-		log.Infof("conext.lang=%s", ctx.Lang)
-		log.Infof("user.lang=%s", ctx.User.Lang)
 		var twts types.Twts
 
 		if !ctx.Authenticated {
 			twts = s.cache.GetByPrefix(s.config.BaseURL, false)
-			ctx.Title = "Local timeline"
+			ctx.Title = s.tr(ctx, "PageLocalTimelineTitle")
 		} else {
-			ctx.Title = "Timeline"
+			ctx.Title = s.tr(ctx, "PageUserTimelineTitle")
 			user := ctx.User
 			if user != nil {
 				for feed := range user.Sources() {
@@ -730,7 +733,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		if err := pager.Results(&pagedTwts); err != nil {
 			log.WithError(err).Error("error sorting and paging twts")
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading the timeline"
+			ctx.Message = s.tr(ctx, "ErrorTimelineLoad")
 			s.render("error", w, ctx)
 			return
 		}
@@ -740,14 +743,19 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			if err != nil {
 				log.WithError(err).Error("error getting user last twt")
 				ctx.Error = true
-				ctx.Message = "An error occurred while loading the timeline"
+				ctx.Message = s.tr(ctx, "ErrorTimelineLoad")
 				s.render("error", w, ctx)
 				return
 			}
 			ctx.LastTwt = lastTwt
 		}
 
+		// log.Debugf("lastTwt.hash()=%s", ctx.LastTwt.Hash())
 		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
+		// log.Debugf("twt filter.list(%v)", len(ctx.Twts))
+		// for _, twt := range ctx.Twts {
+		// 	log.Debugf("\ttwt.hash()=%s", twt.Hash())
+		// }
 		ctx.Pager = &pager
 
 		s.render("timeline", w, ctx)
@@ -769,6 +777,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Translate(s.translator)
 
 		hash := p.ByName("hash")
 		if hash == "" {
@@ -884,6 +893,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 func (s *Server) DiscoverHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Translate(s.translator)
 
 		localTwts := s.cache.GetByPrefix(s.config.BaseURL, false)
 
@@ -913,7 +923,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 			ctx.LastTwt = lastTwt
 		}
 
-		ctx.Title = "Local timeline"
+		ctx.Title = s.tr(ctx, "PageDiscoverTitle")
 		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 
@@ -925,6 +935,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 func (s *Server) MentionsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Translate(s.translator)
 
 		twts := s.cache.GetMentions(ctx.User)
 		sort.Sort(twts)
@@ -942,7 +953,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = "Mentions"
+		ctx.Title = s.tr(ctx, "PageMentionsTitle")
 		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 		s.render("timeline", w, ctx)
@@ -953,6 +964,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 func (s *Server) SearchHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Translate(s.translator)
 
 		var twts types.Twts
 
@@ -1071,7 +1083,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = "Feeds"
+		ctx.Title = s.tr(ctx, "PageFeedsTitle")
 		ctx.Feeds = feeds
 		ctx.FeedSources = feedsources.Sources
 
@@ -1304,7 +1316,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
-			ctx.Title = "Settings"
+			ctx.Title = s.tr(ctx, "PageSettingsTitle")
 			s.render("settings", w, ctx)
 			return
 		}
@@ -1464,7 +1476,10 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = fmt.Sprintf("Followers for %s", nick)
+		trdata := map[string]interface{}{
+			"Username": nick,
+		}
+		ctx.Title = s.tr(ctx, "PageUserFollowersTitle", trdata)
 		s.render("followers", w, ctx)
 	}
 }
@@ -1510,7 +1525,10 @@ func (s *Server) FollowingHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = fmt.Sprintf("Users following %s", nick)
+		trdata := map[string]interface{}{
+			"Username": nick,
+		}
+		ctx.Title = s.tr(ctx, "PageUserFollowingTitle", trdata)
 		s.render("following", w, ctx)
 	}
 }
@@ -1519,6 +1537,7 @@ func (s *Server) FollowingHandler() httprouter.Handle {
 func (s *Server) ExternalHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Translate(s.translator)
 
 		uri := r.URL.Query().Get("uri")
 		nick := r.URL.Query().Get("nick")
@@ -1674,7 +1693,7 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
-			ctx.Title = "Reset password"
+			ctx.Title = s.tr(ctx, "PageResetPasswordTitle")
 			s.render("resetPassword", w, ctx)
 			return
 		}

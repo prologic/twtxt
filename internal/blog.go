@@ -292,6 +292,10 @@ func (b *BlogPost) loadContent(conf *Config) error {
 		return err
 	}
 
+	if b.data == nil {
+		b.data = new(bytes.Buffer)
+	}
+
 	b.data.Write(data)
 
 	return nil

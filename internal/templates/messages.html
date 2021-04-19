@@ -17,10 +17,10 @@
               <th scope="col">{{tr . "MessageStatus"}}</th>
             </tr>
             <tr>
-            {{ template "pager" $.Pager }}
+            {{$ctx:=.}}
+            {{ template "pager" (dict "Pager" $.Pager "Ctx" $ctx) }}
           </thead>
           <tbody>
-            {{$ctx:=.}}
             {{ range .Messages }}
               <tr>
                 <th scope="row"><input type="checkbox" name="msgid" value="{{ .Id }}"></th>

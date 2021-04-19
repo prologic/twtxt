@@ -42,7 +42,7 @@ func (s *Server) ListMessagesHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = "Private Messages"
+		ctx.Title = s.tr(ctx, "PageMessagesTitle")
 
 		ctx.Messages = pagedMsgs
 		ctx.Pager = &pager

@@ -23,6 +23,7 @@ import (
 func (s *Server) ViewBlogHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Translate(s.translator)
 
 		blogPost := BlogPostFromParams(s.config, p)
 		if !s.blogs.Has(blogPost.Hash()) {
@@ -358,8 +359,10 @@ func (s *Server) ListBlogsHandler() httprouter.Handle {
 			s.render("error", w, ctx)
 			return
 		}
-
-		ctx.Title = fmt.Sprintf("%s's Twt Blog Posts", profile.Username)
+		trdata := map[string]interface{}{
+			"Username": profile.Username,
+		}
+		ctx.Title = s.tr(ctx, "PageUserBlogsTitle", trdata)
 		ctx.BlogPosts = pagedBlogPosts
 		ctx.Pager = &pager
 

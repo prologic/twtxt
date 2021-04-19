@@ -1,15 +1,15 @@
 {{define "content"}}
   <article class="container-fluid">
     <hgroup>
-      <h2>Conversation <a href="/conv/{{ ($.Twts | first).Hash  }}">#{{ ($.Twts | first).Hash }}</a></h2>
-      <h3>Recent tws in this reply to <a href="/twt/{{ ($.Twts | first).Hash  }}">#{{ ($.Twts | first).Hash }}</a></h3>
+        <h2>{{tr . "ConversationTitle"}} <a href="/conv/{{ ($.Twts | first).Hash  }}">#{{ ($.Twts | first).Hash }}</a></h2>
+        <h3>{{tr . "ConversationSummary"}} <a href="/twt/{{ ($.Twts | first).Hash  }}">#{{ ($.Twts | first).Hash }}</a></h3>
     </hgroup>
-    {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" ( $.Twts | first) ) }}
+    {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" ( $.Twts | first) "Ctx" . )}}
   </article>
-  {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" ($.Twts | rest)) }}
+  {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" ($.Twts | rest) "Ctx" .)}}
   {{ if .Authenticated }}
-    {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" false "CSRFToken" $.CSRFToken) }}
+    {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" false "CSRFToken" $.CSRFToken "Ctx" .)}}
   {{ else }}
-    <small>You must be <a href="/login">Logged in</a> to join the conversation.</small>
+  <small>{{(tr . "ConversationJoinSummary")|html}}</small>
   {{ end }}
 {{ end }}

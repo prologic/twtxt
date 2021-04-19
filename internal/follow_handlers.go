@@ -22,7 +22,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 		url := NormalizeURL(r.FormValue("url"))
 
 		if r.Method == "GET" && nick == "" && url == "" {
-			ctx.Title = "Follow a new feed"
+			ctx.Title = s.tr(ctx, "PageFollowTitle")
 			s.render("follow", w, ctx)
 			return
 		}

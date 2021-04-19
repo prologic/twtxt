@@ -49,7 +49,7 @@
   {{ else }}
   <input type="hidden" id="replaceTwt" name="hash" value="" />
   <input type="hidden" id="replyTo" name="reply" value="{{ $.Reply }}" />
-  <input type="hidden" id="title" name="title" placeholder="Title" value="" />
+  <input type="hidden" id="title" name="title" placeholder="{{tr $.Ctx "TwtFormTitle"}}" value="" />
   {{ end }}
   <div class="textarea-container">
     {{ with $.BlogPost }}
@@ -67,7 +67,7 @@
       {{ with $.BlogPost }}
       {{ else }}
       <select id="postas" class="postas" name="postas">
-        <option value="{{ $.User.Username }}" selected>Post as {{ $.User.Username }}</option>
+          <option value="{{ $.User.Username }}" selected>{{tr $.Ctx "TwtFormPostAs" (dict "Username" $.User.Username)}}</option>
         {{ range $index, $feed := $.User.Feeds }}
         <option value="{{ $feed }}">{{ $feed }}</option>
         {{ end }}
@@ -76,10 +76,10 @@
       <button id="post" type="submit">
         {{ with $.BlogPost }}
         <i class="icss-print"></i>
-        Save
+        {{tr $.Ctx "TwtFormSave"}}
         {{ else }}
         <i class="icss-paper-plane"></i>
-        Post
+        {{tr $.Ctx  "TwtFormPost"}}
         {{ end }}
       </button>
     </div>
@@ -97,7 +97,7 @@
         <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" alt="" />
       </a>
       {{ else }}
-      {{ if isLocalURL $.Twt.Twter.URL }}
+        {{ if isLocalURL $.Twt.Twter.URL }}
       <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
         <img class="avatar u-photo" src="/user/{{ $.Twt.Twter.Nick }}/avatar" alt="" />
         {{ else }}
@@ -107,13 +107,13 @@
           {{ else }}
           <i class="icss-rss" style="font-size:3em"></i>
           {{ end }}
-          {{ end }}
-        </a>
         {{ end }}
+        </a>
+      {{ end }}
     </div>
     <div class="author">
       {{ if $.User.Is $.Twt.Twter.URL }}
-      <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="p-name">me</a>
+      <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="p-name">{{tr $.Ctx "MeLinkTitle"}}</a>
       {{ else }}
       {{ if isLocalURL $.Twt.Twter.URL }}
       <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="p-name">{{ $.Twt.Twter.Nick }}</a>
@@ -133,7 +133,7 @@
         <span> &nbsp;({{ $.Twt.Created | time }})</span>
         {{ if $.Authenticated }}
         <span> &nbsp;
-          <a class="bookmark" href="/bookmark/{{ $.Twt.Hash }}" data-tooltip="{{ if $.User.Bookmarked $.Twt.Hash }}Remove Twt Bookmark{{ else }}Bookmark Twt{{ end }}">
+            <a class="bookmark" href="/bookmark/{{ $.Twt.Hash }}" data-tooltip="{{ if $.User.Bookmarked $.Twt.Hash }}{{tr $.Ctx "BookmarkRemoveTwt"}}{{ else }}{{tr $.Ctx "BookmarkAddTwt"}}{{ end }}">
             <i class="icss-{{ if $.User.Bookmarked $.Twt.Hash }}bookmark{{ else }}bookmark-o{{ end }}"></i>
           </a>
         </span>
@@ -150,20 +150,20 @@
     <ul>
       {{ if $.Authenticated }}
       {{ if eq $.LastTwt.Hash $.Twt.Hash }}
-      <li><a class="edit" href="#" data-hash="{{ $.Twt.Hash }}" data-text="{{ $.Twt.Text | unparseTwt }}"><i class="icss-edit"></i>Edit</a></li>
+      <li><a class="edit" href="#" data-hash="{{ $.Twt.Hash }}" data-text="{{ $.Twt.Text | unparseTwt }}"><i class="icss-edit"></i>{{tr $.Ctx "TwtEditLinkTitle"}}</a></li>
       <li>&nbsp;</li>
-      <li><a class="delete" href="#" data-hash="{{ $.Twt.Hash }}"><i class="icss-x"></i>Delete</a></li>
+      <li><a class="delete" href="#" data-hash="{{ $.Twt.Hash }}"><i class="icss-x"></i>{{tr $.Ctx "TwtDeleteLinkTitle"}}</a></li>
       <li>&nbsp;</li>
       {{ end }}
-      <li><a class="reply" href="#" data-reply="{{ $.User.Reply $.Twt }}"><i class="icss-arrow-left"></i>Reply</a></li>
+      <li><a class="reply" href="#" data-reply="{{ $.User.Reply $.Twt }}"><i class="icss-arrow-left"></i>{{tr $.Ctx "TwtReplyLinkTitle"}}</a></li>
       <li>&nbsp;</li>
       {{ end }}
       {{ with urlForBlog $.Twt }}
-      <li><a class="blog" href="{{ urlForBlog $.Twt }}"><i class="icss-quill-pen"></i>Blog</a></li>
+      <li><a class="blog" href="{{ urlForBlog $.Twt }}"><i class="icss-quill-pen"></i>{{tr $.Ctx "BlogLinkTitle"}}</a></li>
       <li>&nbsp;</li>
       {{ end }}
       {{ with urlForConv $.Twt }}
-      <li><a class="conv" href="{{ urlForConv $.Twt }}"><i class="icss-comment"></i>Conversation</a></li>
+      <li><a class="conv" href="{{ urlForConv $.Twt }}"><i class="icss-comment"></i>{{tr $.Ctx "TwtConversationLinkTitle"}}</a></li>
       <li>&nbsp;</li>
       {{ end }}
     </ul>
@@ -174,13 +174,13 @@
 {{ define "feed" }}
 <div class="grid h-feed">
   <div>
-    {{ template "pager" $.Pager }}
+    {{ template "pager" (dict "Pager" $.Pager "Ctx" $.Ctx)}}
     {{ range $idx, $twt := $.Twts }}
-    {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" $twt) }}
+    {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" $twt "Ctx" $.Ctx) }}
     {{ else }}
-    <small><i>There are no twts yet... come back later!</i></small>
+    <small><i>{{tr $.Ctx "NoTwts"}}</i></small>
     {{ end }}
-    {{ template "pager" $.Pager }}
+    {{ template "pager" (dict "Pager" $.Pager "Ctx" $.Ctx)}}
   </div>
 </div>
 {{ end }}
@@ -188,8 +188,9 @@
 {{ define "blogposts" }}
 <div class="grid h-feed">
   <div>
+    {{$ctx:=.}}
     {{ if $.BlogPosts }}
-    {{ template "pager" $.Pager }}
+    {{ template "pager" (dict "Pager" $.Pager "Ctx" $ctx) }}
     <ul>
       {{ range $idx, $blogPost := $.BlogPosts }}
       <li>
@@ -203,45 +204,45 @@
         {{ if eq $.User.Username $blogPost.Author }}
         {{ if $blogPost.Draft }}
         &nbsp;
-        [<a href="{{ $blogPost.URL $.BaseURL }}/publish" onclick="return confirm('Are you sure you want to publish this blog post? This cannot be undone!');">Publish</a>]
+        [<a href="{{ $blogPost.URL $.BaseURL }}/publish" onclick="return confirm('Are you sure you want to publish this blog post? This cannot be undone!');">{{tr $ctx "BlogPublishLinkTitle"}}</a>]
         {{ end }}
         &nbsp;
-        [<a href="{{ $blogPost.URL $.BaseURL }}/edit">Edit</a>]
+        [<a href="{{ $blogPost.URL $.BaseURL }}/edit">{{tr $ctx "BlogEditLinkTitle"}}</a>]
         &nbsp;
-        [<a href="{{ $blogPost.URL $.BaseURL }}/delete" onclick="return confirm('Are you sure you want to delete this blog post? This cannot be undone!');">Delete</a>]
+        [<a href="{{ $blogPost.URL $.BaseURL }}/delete" onclick="return confirm('Are you sure you want to delete this blog post? This cannot be undone!');">{{tr $ctx "BlogDeleteLinkTitle"}}</a>]
         {{ end }}
       </li>
       {{ end }}
     </ul>
-    {{ template "pager" $.Pager }}
+    {{ template "pager" (dict "Pager" $.Pager "Ctx" $ctx) }}
     {{ else }}
-    <small><i>No twt blogs found! Come back later!</i></small>
+    <small><i>{{tr $ctx "NoBlogs"}}</i></small>
     {{ end }}
   </div>
 </div>
 {{ end }}
 
 {{ define "pager" }}
-{{ if .HasPages }}
+{{ if $.Pager.HasPages }}
 <nav class="pagination-nav">
   <ul>
     <li>
-      {{ if .HasPrev }}
-      <a href="?p={{ .PrevPage }}">Prev</a>
+      {{ if $.Pager.HasPrev }}
+      <a href="?p={{ $.Pager.PrevPage }}">{{tr $.Ctx "PagerPrevLinkTitle"}}</a>
       {{ else }}
-      <a href="#" data-tooltip="No previous page">Prev</a>
+      <a href="#" data-tooltip="{{tr $.Ctx "PagerNoPreviousTooltip"}}">{{tr $.Ctx "PagerPrevLinkTitle"}}</a>
       {{ end }}
     </li>
   </ul>
   <ul>
-    <li><small>Page {{ .Page }}/{{ .PageNums }} of {{ .Nums }} Twts</small></li>
+      <li><small>{{tr $.Ctx "PagerTwtsSummary" (dict "Page" $.Pager.Page "PageNums" $.Pager.PageNums "Nums" $.Pager.Nums)}}</small></li>
   </ul>
   <ul>
     <li>
-      {{ if .HasNext }}
-      <a href="?p={{ .NextPage }}">Next</a>
+      {{ if $.Pager.HasNext }}
+      <a href="?p={{ $.Pager.NextPage }}">{{tr $.Ctx "PagerNextLinkTitle"}}</a>
       {{ else }}
-      <a href="#" data-tooltip="No next page">Next</a>
+      <a href="#" data-tooltip="{{tr $.Ctx "PagerNoNextTooltip"}}">{{tr $.Ctx "PagerNextLinkTitle"}}</a>
       {{ end }}
     </li>
   </ul>

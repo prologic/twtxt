@@ -2,7 +2,6 @@ package internal
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -106,7 +105,10 @@ func (s *Server) BookmarksHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = fmt.Sprintf("Bookmarked twts for %s", nick)
+		trdata := map[string]interface{}{
+			"Username": nick,
+		}
+		ctx.Title = s.tr(ctx, "PageUserBookmarksTitle", trdata)
 		s.render("bookmarks", w, ctx)
 	}
 }

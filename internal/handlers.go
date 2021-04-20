@@ -1992,8 +1992,8 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 		}
 		feed.Items = items
 
-		w.Header().Set("Content-Type", "application/atom+xml; charset=utf-8")
-		data, err := feed.ToAtom()
+		w.Header().Set("Content-Type", "application/rss+xml; charset=utf-8")
+		data, err := feed.ToRss()
 		if err != nil {
 			log.WithError(err).Error("error serializing feed")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)

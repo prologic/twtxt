@@ -1968,22 +1968,28 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 		}
 
 		now := time.Now()
-
+		// feed author.email
+		email := ""
+		if nick == "" {
+			email = s.config.AdminEmail
+		}
+		// main feed
 		feed := &feeds.Feed{
 			Title:       fmt.Sprintf("%s Twtxt Atom Feed", profile.Username),
 			Link:        &feeds.Link{Href: profile.URL},
 			Description: profile.Tagline,
-			Author:      &feeds.Author{Name: profile.Username},
+			Author:      &feeds.Author{Name: profile.Username, Email: email},
 			Created:     now,
 		}
-
+		// feed items
 		var items []*feeds.Item
 
 		for _, twt := range twts {
+			url := URLForTwt(s.config.BaseURL, twt.Hash())
 			items = append(items, &feeds.Item{
-				Id:          twt.Hash(),
+				Id:          url,
 				Title:       string(formatTwt(twt)),
-				Link:        &feeds.Link{Href: URLForTwt(s.config.BaseURL, twt.Hash())},
+				Link:        &feeds.Link{Href: url},
 				Author:      &feeds.Author{Name: twt.Twter().Nick},
 				Description: string(formatTwt(twt)),
 				Created:     twt.Created(),
@@ -1992,8 +1998,8 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 		}
 		feed.Items = items
 
-		w.Header().Set("Content-Type", "application/rss+xml; charset=utf-8")
-		data, err := feed.ToRss()
+		w.Header().Set("Content-Type", "application/atom+xml; charset=utf-8")
+		data, err := feed.ToAtom()
 		if err != nil {
 			log.WithError(err).Error("error serializing feed")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)

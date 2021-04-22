@@ -301,7 +301,7 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 
 		if feedName == "" {
 			ctx.Error = true
-			ctx.Message = "No feed specified"
+			ctx.Message = s.tr(ctx, "ErrorNoFeed")
 			s.render("error", w, ctx)
 			return
 		}
@@ -311,11 +311,11 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 			log.WithError(err).Errorf("error loading feed object for %s", feedName)
 			ctx.Error = true
 			if err == ErrFeedNotFound {
-				ctx.Message = "Feed not found"
+				ctx.Message = s.tr(ctx, "ErrorFeedNotFound")
 				s.render("404", w, ctx)
 			}
 
-			ctx.Message = "Error loading feed"
+			ctx.Message = s.tr(ctx, "ErrorGetFeed")
 			s.render("error", w, ctx)
 			return
 		}
@@ -326,10 +326,12 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 			return
 		}
 
+		trdata := map[string]interface{}{}
 		switch r.Method {
 		case http.MethodGet:
 			ctx.Profile = feed.Profile(s.config.BaseURL, ctx.User)
-			ctx.Title = fmt.Sprintf("Manage feed %s", feed.Name)
+			trdata["Feed"] = feed.Name
+			ctx.Title = s.tr(ctx, "PageManageFeedTitle", trdata)
 			s.render("manageFeed", w, ctx)
 			return
 		case http.MethodPost:
@@ -356,7 +358,8 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 				)
 				if err != nil {
 					ctx.Error = true
-					ctx.Message = fmt.Sprintf("Error updating user: %s", err)
+					trdata["Error"] = err.Error()
+					ctx.Message = s.tr(ctx, "ErrorUpdateFeed", trdata)
 					s.render("error", w, ctx)
 					return
 				}
@@ -366,19 +369,19 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 				log.WithError(err).Warnf("error updating user object for followee %s", feed.Name)
 
 				ctx.Error = true
-				ctx.Message = "Error updating feed"
+				ctx.Message = s.tr(ctx, "ErrorSetFeed")
 				s.render("error", w, ctx)
 				return
 			}
 
 			ctx.Error = false
-			ctx.Message = "Successfully updated feed"
+			ctx.Message = s.tr(ctx, "MsgUpdateFeedSuccess")
 			s.render("error", w, ctx)
 			return
 		}
 
 		ctx.Error = true
-		ctx.Message = "Not found"
+		ctx.Message = s.tr(ctx, "ErrorFeedNotFound")
 		s.render("404", w, ctx)
 	}
 }
@@ -1019,17 +1022,19 @@ func (s *Server) FeedHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		name := NormalizeFeedName(r.FormValue("name"))
-
+		trdata := map[string]interface{}{}
 		if err := ValidateFeedName(s.config.Data, name); err != nil {
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("Invalid feed name: %s", err.Error())
+			trdata["Error"] = err.Error()
+			ctx.Message = s.tr(ctx, "ErrorInvalidFeedName", trdata)
 			s.render("error", w, ctx)
 			return
 		}
 
 		if err := CreateFeed(s.config, s.db, ctx.User, name, false); err != nil {
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("Error creating: %s", err.Error())
+			trdata["Error"] = err.Error()
+			ctx.Message = s.tr(ctx, "ErrorCreateFeed", trdata)
 			s.render("error", w, ctx)
 			return
 		}
@@ -1038,7 +1043,8 @@ func (s *Server) FeedHandler() httprouter.Handle {
 
 		if err := s.db.SetUser(ctx.Username, ctx.User); err != nil {
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("Error creating feed: %s", err.Error())
+			trdata["Error"] = err.Error()
+			ctx.Message = s.tr(ctx, "ErrorCreateFeed", trdata)
 			s.render("error", w, ctx)
 			return
 		}
@@ -1056,7 +1062,8 @@ func (s *Server) FeedHandler() httprouter.Handle {
 		}
 
 		ctx.Error = false
-		ctx.Message = fmt.Sprintf("Successfully created feed: %s", name)
+		trdata["Feed"] = name
+		ctx.Message = s.tr(ctx, "MsgCreateFeedSuccess", trdata)
 		s.render("error", w, ctx)
 
 	}
@@ -2034,7 +2041,7 @@ func (s *Server) TransferFeedHandler() httprouter.Handle {
 
 		if feedName == "" {
 			ctx.Error = true
-			ctx.Message = "No feed specified"
+			ctx.Message = s.tr(ctx, "ErrorNoFeed")
 			s.render("error", w, ctx)
 			return
 		}
@@ -2046,7 +2053,7 @@ func (s *Server) TransferFeedHandler() httprouter.Handle {
 				if err != nil {
 					log.WithError(err).Errorf("Error loading feed object for %s", feedName)
 					ctx.Error = true
-					ctx.Message = "Error loading profile"
+					ctx.Message = s.tr(ctx, "ErrorGetFeed")
 					s.render("error", w, ctx)
 					return
 				}
@@ -2064,7 +2071,7 @@ func (s *Server) TransferFeedHandler() httprouter.Handle {
 			if err != nil {
 				log.WithError(err).Errorf("Error loading feed object for %s", feedName)
 				ctx.Error = true
-				ctx.Message = "Error loading profile"
+				ctx.Message = s.tr(ctx, "ErrorGetFeed")
 				s.render("error", w, ctx)
 				return
 			}
@@ -2074,7 +2081,7 @@ func (s *Server) TransferFeedHandler() httprouter.Handle {
 			if err != nil {
 				log.WithError(err).Errorf("Error loading user")
 				ctx.Error = true
-				ctx.Message = "Error loading user"
+				ctx.Message = s.tr(ctx, "ErrorGetFeed")
 				s.render("error", w, ctx)
 				return
 			}
@@ -2084,7 +2091,7 @@ func (s *Server) TransferFeedHandler() httprouter.Handle {
 			if err != nil {
 				log.WithError(err).Errorf("Error loading user")
 				ctx.Error = true
-				ctx.Message = "Error loading user"
+				ctx.Message = s.tr(ctx, "ErrorGetUser")
 				s.render("error", w, ctx)
 				return
 			}
@@ -2094,7 +2101,7 @@ func (s *Server) TransferFeedHandler() httprouter.Handle {
 			_ = AddFeedOwnership(s.db, toUser, feed)
 
 			ctx.Error = false
-			ctx.Message = "Feed ownership changed successfully."
+			ctx.Message = s.tr(ctx, "MsgTransferFeedSuccess")
 			s.render("error", w, ctx)
 		}
 	}

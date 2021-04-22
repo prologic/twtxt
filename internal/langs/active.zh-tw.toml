@@ -1,3 +1,23 @@
+[ArchiveFeedFormArchive]
+hash = "sha1-2621c6fd51a58e1d1d5c491aac71488647b20224"
+other = "存檔"
+
+[ArchiveFeedFormConfirm]
+hash = "sha1-0266d9038845229bd15eee4636111a56b819ecee"
+other = "您確定要將 Feed 存檔嗎？此操作無法撤消！"
+
+[ArchiveFeedSummary]
+hash = "sha1-23568e3ecc2d0c16a6db4567828ecf66e7e4e036"
+other = "這裏可以存檔您的 Feed"
+
+[ArchiveFeedTitle]
+hash = "sha1-dc1c26a2070ba568260585707ed217b4548b3c4e"
+other = "Feed 存檔"
+
+[ArchiveFeedWarning]
+hash = "sha1-1fdf4e2632b57ead37eb8d434231c69174c80d9e"
+other = "<b>警告：</b>&nbsp; 這是個永久性操作，無法撤消且沒有確認操作！"
+
 [BlogCommentJoinSummary]
 hash = "sha1-26e6951ad535fa0ab3c9db8a80f113ee4aa1d2bd"
 other = "要發表評論论，請先 <a href=\"/login\">登錄</a>"
@@ -146,6 +166,26 @@ other = "由 <a href='https://github.com/prologic' target='_blank'>James Mills</
 hash = "sha1-f585553bb01b2326a11e091a6e07c6426d8c5c35"
 other = "你在想什麼？\n您的見地非常重要！\n今天是個好日子! 有什麼新鮮事兒？\n今天有什麼有趣的事，馬上與大家分享！ \n嗨！👋 朋友，別忘了發推文哦！"
 
+[ErrorCreateFeed]
+hash = "sha1-2ccc0dcebeac6bd910e18123fb9cbe852718c866"
+other = "創建 Feed 錯誤：{{.Error}}"
+
+[ErrorFeedNotFound]
+hash = "sha1-d01bdf9ce19f5e183eb2058e4d58a7b5b472f3d4"
+other = "沒有找到 Feed"
+
+[ErrorGetFeed]
+hash = "sha1-488ffebda10d862ebc11d543467ff05e84a532cb"
+other = "獲取 Feed 出錯"
+
+[ErrorGetUser]
+hash = "sha1-ae292a347c8c892dff4fc81976b3736fd15cbfc6"
+other = "獲取用戶出錯"
+
+[ErrorInvalidFeedName]
+hash = "sha1-1606900b2144070d4c2393341723eb83d2ebaa3b"
+other = "無效的 Feed 名稱：{{.Error}}"
+
 [ErrorInvalidPassword]
 hash = "sha1-52b29810c7c76d469feec362b5c77ccb7531718b"
 other = "密碼無效! 提示: 重新設置密碼?"
@@ -158,9 +198,17 @@ other = "用戶名無效! 提示: 註冊一個賬號?"
 hash = "sha1-dbebd52a4449b3d284699bd8f79dc7d55699e754"
 other = "太多次登錄失敗. 賬號臨時鎖定, 請稍候再試."
 
+[ErrorNoFeed]
+hash = "sha1-deeac7f92541e6e5f348dc5becc59db7accdf8aa"
+other = "沒有 Feed 指定"
+
 [ErrorRegisterDisabled]
 hash = "sha1-58ae30a9afd39e0111c2d0864b81bb12b799820e"
 other = "當前實例禁止註冊, 請聯繫管理員。"
+
+[ErrorSetFeed]
+hash = "sha1-53f11f7d64c54fdbe51c1650696a7a5f1f4fc011"
+other = "更新 Feed 出錯"
 
 [ErrorTimelineLoad]
 hash = "sha1-aab0d6f0ea631fdcbe5ec82b50b086ae23c5c82a"
@@ -346,6 +394,30 @@ other = "在 {{ .InstanceName }} 登錄您的社交賬號"
 hash = "sha1-ada2e9e96fa9ce85430225b412068b5b62b79800"
 other = "登錄"
 
+[ManageFeedFormChangeAvatarTitle]
+hash = "sha1-60f2e98ebe1b8c0c354734b807e898fd56146b83"
+other = "修改頭像"
+
+[ManageFeedFormDescription]
+hash = "sha1-e132e63f2c89c89b6ca9faa87847f37c38948200"
+other = "關於這個 Feed 的描述"
+
+[ManageFeedFormDescriptionTitle]
+hash = "sha1-55f8ebc805e65b5b71ddafdae390e3be2bcd69af"
+other = "描述"
+
+[ManageFeedFormUpdate]
+hash = "sha1-fb91e24fa52d8d2b32937bf04d843f730319a902"
+other = "更新"
+
+[ManageFeedSummary]
+hash = "sha1-7478c8fe59205658879ceac3f6ddb87c42209cdb"
+other = "管理 <b>{{ .Username}}</b> "
+
+[ManageFeedTitle]
+hash = "sha1-9c0a564e987c4e336259158190de22d7fa2085af"
+other = "Feed 管理"
+
 [ManagePodLinkTitle]
 hash = "sha1-0cf5b0b8b7f4dc729cd3230988a0a5bb3834e01e"
 other = "管理 Pod"
@@ -422,9 +494,21 @@ other = "您收到的訊息列表"
 hash = "sha1-e5204fc48e8ac1f01ba1f391a69aa88ba367d672"
 other = "訊息"
 
+[MsgCreateFeedSuccess]
+hash = "sha1-6c4ce8b4a48e6461594c84e727c722730f967af1"
+other = "創建 {{.Feed}} 成功！"
+
 [MsgMessagesSuccessfullySent]
 hash = "sha1-03a2ed9b9721a9755729b829c7623cfa4a9c0586"
 other = "已成功發送訊息"
+
+[MsgTransferFeedSuccess]
+hash = "sha1-562fb7a829c098116e4f3e5eedea209998209fd9"
+other = "改變 Feed 所有者成功"
+
+[MsgUpdateFeedSuccess]
+hash = "sha1-66f1077cea3b2c7b753c549d65d17a1627f70d59"
+other = "更新 Feed 成功"
 
 [NavDiscover]
 hash = "sha1-4827ea22716a74aaf8bbe499fc314bb93f73c65e"
@@ -489,6 +573,10 @@ other = "跟隨"
 [PageLocalTimelineTitle]
 hash = "sha1-c69cd8d5a9c8ce344bc8d779a0b8a2710ebca482"
 other = "本地動態"
+
+[PageManageFeedTitle]
+hash = "sha1-95a527881370b8830bb7f5057be0948581d7ed04"
+other = "Feed（{{.Feed}}）管理"
 
 [PageMentionsTitle]
 hash = "sha1-85e12bc6f2e56024e47cc826a14968247a52dc54"
@@ -873,6 +961,30 @@ other = "深色"
 [ThemeLight]
 hash = "sha1-a36ef8aba22905e2d2efbf1ac1d6230d5761859d"
 other = "淺色"
+
+[TransferFeedFormConfirm]
+hash = "sha1-1d1a2a5ca176b94b13d6393b44db100201c5cd98"
+other = "你確定要將 Feed 轉移到這個用戶？此操作無法撤消！"
+
+[TransferFeedFormTransfer]
+hash = "sha1-0be45ddfb8c117f4bf1cfa53fb32a4129c92a158"
+other = "轉移"
+
+[TransferFeedSummary]
+hash = "sha1-3b05176c6fb7011e266360a2f600131a5fa8a7cd"
+other = "變更 Feed 所有者"
+
+[TransferFeedTitle]
+hash = "sha1-4e53af8290e2777a78e62676813bdf64e62940b9"
+other = "Feed 轉移"
+
+[TransferFeedWarning]
+hash = "sha1-41ca954236b0b07da7e04fb4880a5ab6718c65f8"
+other = "<b>警告：</b>&nbsp; 這是個永久性操作，無法撤消！"
+
+[TransferUserFeedSummary]
+hash = "sha1-82a625ec39852607779e48c250bbc3b9a1afa838"
+other = "改變 <b>{{ .Username }}</b> 所有者"
 
 [TwtConversationLinkTitle]
 hash = "sha1-2a20c75033890ef64222cf0bae1c4564bbdce951"

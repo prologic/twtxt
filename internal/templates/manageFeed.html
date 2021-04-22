@@ -2,44 +2,44 @@
 <article class="grid">
   <div>
     <hgroup>
-      <h2>Manage feed</h2>
-      <h3>Manage <b>{{ .Profile.Username}}</b> details</h3>
+        <h2>{{tr . "ManageFeedTitle"}}</h2>
+        <h3>{{(tr . "ManageFeedSummary" dict "Username" .Profile.Username)|html}}</h3>
     </hgroup>
     <form action="/feed/{{  .Profile.Username }}/manage"  enctype="multipart/form-data" method="POST">
       <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
       <label for="avatar_upload">
-        Change avatar
+        {{tr . "ManageFeedFormChangeAvatarTitle"}}
         <input id="avatar_upload" type="file" accept="image/png, image/jpeg" name="avatar_file" aria-label="Upload Avatar" />
       </label>
       <label for="description">
-        Description
-        <input type="text" id="description" name="description" placeholder="A short description about the feed" required value="{{ .Profile.Tagline }}">
+        {{tr . "ManageFeedFormDescriptionTitle"}}
+        <input type="text" id="description" name="description" placeholder="{{tr . "ManageFeedFormDescription"}}" required value="{{ .Profile.Tagline }}">
       </label>
-      <button type="submit">Update</button>
+      <button type="submit">{{tr . "ManageFeedFormUpdate"}}</button>
     </form>
 
     <hgroup>
-      <h2>Archive feed</h3>
-      <h3>Here you may archive your custom feed</h3>
+        <h2>{{tr . "ArchiveFeedTitle"}}</h3>
+        <h3>{{tr . "ArchiveFeedSummary"}}</h3>
     </hgroup>
     <p>
-      <b>WARNING:</b>&nbsp;This is permanent and cannot be undone! (<i>There is no confirmation!</i>)
+    {{(tr . "ArchiveFeedWarning")|html}}
     </p>
-    <form action="/feed/{{  .Profile.Username }}/archive" method="POST" onsubmit="return confirm('Are you sure you want to archive this feed? This cannot be undone!');">
+    <form action="/feed/{{  .Profile.Username }}/archive" method="POST" onsubmit="return confirm('{{tr . "ArchiveFeedFormConfirm"}}');">
       <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-      <button type="submit" class="contrast">Archive</button>
+      <button type="submit" class="contrast">{{tr . "ArchiveFeedFormArchive"}}</button>
     </form>
 
     <hgroup>
-      <h2>Transfer feed</h2>
-      <h3>Change your feed's ownership</h3>
+        <h2>{{tr . "TransferFeedTitle"}}</h2>
+        <h3>{{tr . "TransferFeedSummary"}}</h3>
     </hgroup>
     <p>
-      <b>WARNING:</b>&nbsp;This is permanent and cannot be undone!
+    {{(tr . "TransferFeedWarning")|html}}
     </p>
     <form action="/transferFeed/{{  .Profile.Username }}" method="GET">
       <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-      <button type="submit" class="contrast">Transfer Feed</button>
+      <button type="submit" class="contrast">{{tr . "TransferFeedFormTransfer"}}</button>
     </form>
   </div>
 </article>

@@ -2,9 +2,10 @@
 <article class="grid">
   <div>
     <hgroup>
-      <h2>Transfer feed</h1>
-      <h3>Change ownership of <b>{{ .Profile.Username }}</b></h3>
+        <h2>{{tr . "TransferFeedTitle"}}</h1>
+        <h3>{{(tr . "TransferUserFeedSummary" (dict "Username" .Profile.Username))|html}}</h3>
     </hgroup>
+    {{$ctx:=.}}
     {{ if .Profile.Followers }}
       <ol>
         {{ range $Nick, $URL := .Profile.Followers }}
@@ -16,7 +17,7 @@
 
               {{ if $.Authenticated }}
                 {{ if not ($.User.Is $URL) }}
-                  [<a href="/transferFeed/{{$.Profile.Username}}/{{$Nick}}" onclick="return confirm('Are you sure you want to transfer feed to this user? This cannot be undone!');">Transfer</a>]
+                [<a href="/transferFeed/{{$.Profile.Username}}/{{$Nick}}" onclick="return confirm('{{tr $ctx "TransferFeedFormConfirm"}}');">{{tr $ctx "TransferFeedFormTransfer"}}</a>]
                 {{ end }}
               {{ end }}
             {{ end }}

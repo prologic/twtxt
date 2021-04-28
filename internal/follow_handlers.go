@@ -29,7 +29,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 
 		if nick == "" || url == "" {
 			ctx.Error = true
-			ctx.Message = "Both nick and url must be specified"
+			ctx.Message = s.tr(ctx, "ErrorNickOrURLEmpty")
 			s.render("error", w, ctx)
 			return
 		}
@@ -39,17 +39,21 @@ func (s *Server) FollowHandler() httprouter.Handle {
 			log.Fatalf("user not found in context")
 			return
 		}
-
+		trdata := map[string]interface{}{}
+		trdata["Nick"] = nick
+		trdata["URL"] = url
 		if err := user.FollowAndValidate(s.config, nick, url); err != nil {
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("Error following feed @<%s %s>: %s", nick, url, err)
+			trdata["Error"] = err.Error()
+			ctx.Message = s.tr(ctx, "ErrorFollowAndValidate", trdata)
 			s.render("error", w, ctx)
 			return
 		}
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("Error following feed %s: %s", nick, url)
+			trdata["Error"] = err.Error()
+			ctx.Message = s.tr(ctx, "ErrorSetUser", trdata)
 			s.render("error", w, ctx)
 			return
 		}
@@ -63,7 +67,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 				if err != nil {
 					log.WithError(err).Errorf("error loading user object for %s", nick)
 					ctx.Error = true
-					ctx.Message = "Error following user"
+					ctx.Message = s.tr(ctx, "ErrorFollowingUser")
 					s.render("error", w, ctx)
 					return
 				}
@@ -77,7 +81,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 				if err := s.db.SetUser(followee.Username, followee); err != nil {
 					log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
 					ctx.Error = true
-					ctx.Message = "Error following user"
+					ctx.Message = s.tr(ctx, "ErrorFollowingUser")
 					s.render("error", w, ctx)
 					return
 				}
@@ -99,7 +103,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 				if err != nil {
 					log.WithError(err).Errorf("error loading feed object for %s", nick)
 					ctx.Error = true
-					ctx.Message = "Error following user"
+					ctx.Message = s.tr(ctx, "ErrorFollowingUser")
 					s.render("error", w, ctx)
 					return
 				}
@@ -109,7 +113,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 				if err := s.db.SetFeed(feed.Name, feed); err != nil {
 					log.WithError(err).Warnf("error updating user object for followee %s", feed.Name)
 					ctx.Error = true
-					ctx.Message = "Error following feed"
+					ctx.Message = s.tr(ctx, "ErrorFollowingUser")
 					s.render("error", w, ctx)
 					return
 				}
@@ -130,7 +134,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 		}
 
 		ctx.Error = false
-		ctx.Message = fmt.Sprintf("Successfully started following %s: %s", nick, url)
+		ctx.Message = s.tr(ctx, "MsgFollowUserSuccess", trdata)
 		s.render("error", w, ctx)
 	}
 }

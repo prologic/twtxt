@@ -1,11 +1,19 @@
-[ErrorHasUserOrFeed]
-hash = "sha1-db844234365b0824c1f33d0f76b7548f2bb866b4"
-other = "用戶名 或 Feed 名稱已經存在，請選擇其它名稱！"
+[ErrorFollowAndValidate]
+hash = "sha1-0ba152accd240ca7f4e4116a0b1117bfdebb3ba5"
+other = "跟隨 Feed  @<{{.Nick}} {{.URL}}> 出錯: {{.Error}}"
 
-[ErrorUsernameExists]
-hash = "sha1-a66924d2fc116739aecea8d10e3ff1fe0570b476"
-other = "用戶(已刪除)名稱已經存在，請選擇其它名稱！"
+[ErrorFollowingUser]
+hash = "sha1-431d16794490a3bb584a8e13faae06e877902831"
+other = "跟隨用戶出錯"
 
-[ErrorValidateUsername]
-hash = "sha1-c4a43aec4a570bfe3db1ea4b81b58fd2db069d86"
-other = "用戶名稱驗證失敗：{{.Error}}"
+[ErrorNickOrURLEmpty]
+hash = "sha1-39346eb648d77a1728736407c7ab8eb83c266df1"
+other = "呢稱 和 URL 必須指定"
+
+[ErrorSetUser]
+hash = "sha1-20ba10642a8bd3a4141e40b98deee101889ee1e1"
+other = "跟隨 Feed {{.Nick}}: {{.URL}} 出錯"
+
+[MsgFollowUserSuccess]
+hash = "sha1-4633defa720997f5a179070ffe8ebc6264424ecc"
+other = "{{.Nick}}: {{.URL}} 跟隨成功"

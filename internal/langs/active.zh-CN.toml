@@ -182,6 +182,10 @@ other = "获取 Feed 出错"
 hash = "sha1-ae292a347c8c892dff4fc81976b3736fd15cbfc6"
 other = "获取用户出错"
 
+[ErrorHasUserOrFeed]
+hash = "sha1-db844234365b0824c1f33d0f76b7548f2bb866b4"
+other = "用户名 或 Feed 名称已经存在，请选择其它名称！"
+
 [ErrorInvalidFeedName]
 hash = "sha1-1606900b2144070d4c2393341723eb83d2ebaa3b"
 other = "无效的 Feed 名称：{{.Error}}"
@@ -217,6 +221,14 @@ other = "加载动态数据时发生了错误"
 [ErrorTitle]
 hash = "sha1-7f2f6a15cf8da2b27e5a4af47b58e7ad71c0b3d9"
 other = "错误"
+
+[ErrorUsernameExists]
+hash = "sha1-a66924d2fc116739aecea8d10e3ff1fe0570b476"
+other = "用户（已删除）名称已经存在，请选择其它名称！"
+
+[ErrorValidateUsername]
+hash = "sha1-c4a43aec4a570bfe3db1ea4b81b58fd2db069d86"
+other = "用户名称验证失败：{{.Error}}"
 
 [FeedManageLinkTitle]
 hash = "sha1-bf58d17e561b1b858e35f9202f811297dac2e9db"

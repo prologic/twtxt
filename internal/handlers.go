@@ -1216,14 +1216,17 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 
 		if err := ValidateUsername(username); err != nil {
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("Username validation failed: %s", err.Error())
+			trdata := map[string]interface{}{
+				"Error": err.Error(),
+			}
+			ctx.Message = s.tr(ctx, "ErrorValidateUsername", trdata)
 			s.render("error", w, ctx)
 			return
 		}
 
 		if s.db.HasUser(username) || s.db.HasFeed(username) {
 			ctx.Error = true
-			ctx.Message = "User or Feed with that name already exists! Please pick another!"
+			ctx.Message = s.tr(ctx, "ErrorHasUserOrFeed")
 			s.render("error", w, ctx)
 			return
 		}
@@ -1238,7 +1241,7 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 		fn := filepath.Join(p, username)
 		if _, err := os.Stat(fn); err == nil {
 			ctx.Error = true
-			ctx.Message = "Deleted user with that username already exists! Please pick another!"
+			ctx.Message = s.tr(ctx, "ErrorUsernameExists")
 			s.render("error", w, ctx)
 			return
 		}

@@ -1,19 +1,15 @@
-[ErrorFollowAndValidate]
-hash = "sha1-0ba152accd240ca7f4e4116a0b1117bfdebb3ba5"
-other = "关注 Feed  @<{{.Nick}} {{.URL}}> 出错: {{.Error}}"
+[ErrorNoFeedByNick]
+hash = "sha1-de30a4714a243dc78cfe242419ba447532603673"
+other = "没有找到 {{.Nick}} 的 Feed"
 
-[ErrorFollowingUser]
-hash = "sha1-431d16794490a3bb584a8e13faae06e877902831"
-other = "关注用户出错"
+[ErrorNoNick]
+hash = "sha1-2e0398c6377124d05a7fcb0a83bc2973692aa17c"
+other = "没有指定取关用户昵称"
 
-[ErrorNickOrURLEmpty]
-hash = "sha1-39346eb648d77a1728736407c7ab8eb83c266df1"
-other = "昵称 和 URL 必须指定"
+[ErrorUnfollowingFeed]
+hash = "sha1-430f3f412e0802c05e45dc4f23d83059d08079e9"
+other = "{{.Nick}}: {{.URL}} 取关出错"
 
-[ErrorSetUser]
-hash = "sha1-20ba10642a8bd3a4141e40b98deee101889ee1e1"
-other = "关注 Feed {{.Nick}}: {{.URL}} 出错"
-
-[MsgFollowUserSuccess]
-hash = "sha1-4633defa720997f5a179070ffe8ebc6264424ecc"
-other = "{{.Nick}}: {{.URL}} 关注成功"
+[MsgUnfollowSuccess]
+hash = "sha1-afaf49fe9f7ccb11463b3d5beebe99bca5759402"
+other = "{{.Nick}}: {{.URL}} 取关成功"

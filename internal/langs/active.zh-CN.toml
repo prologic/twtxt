@@ -218,6 +218,14 @@ other = "昵称 和 URL 必须指定"
 hash = "sha1-deeac7f92541e6e5f348dc5becc59db7accdf8aa"
 other = "没有 Feed 指定"
 
+[ErrorNoFeedByNick]
+hash = "sha1-de30a4714a243dc78cfe242419ba447532603673"
+other = "没有找到 {{.Nick}} 的 Feed"
+
+[ErrorNoNick]
+hash = "sha1-2e0398c6377124d05a7fcb0a83bc2973692aa17c"
+other = "没有指定取关用户昵称"
+
 [ErrorRegisterDisabled]
 hash = "sha1-58ae30a9afd39e0111c2d0864b81bb12b799820e"
 other = "当前实例禁止注册, 请联系管理员."
@@ -237,6 +245,10 @@ other = "加载动态数据时发生了错误"
 [ErrorTitle]
 hash = "sha1-7f2f6a15cf8da2b27e5a4af47b58e7ad71c0b3d9"
 other = "错误"
+
+[ErrorUnfollowingFeed]
+hash = "sha1-430f3f412e0802c05e45dc4f23d83059d08079e9"
+other = "{{.Nick}}: {{.URL}} 取关出错"
 
 [ErrorUsernameExists]
 hash = "sha1-a66924d2fc116739aecea8d10e3ff1fe0570b476"
@@ -537,6 +549,10 @@ other = "私信已成功发送"
 [MsgTransferFeedSuccess]
 hash = "sha1-562fb7a829c098116e4f3e5eedea209998209fd9"
 other = "改变 Feed 所有者成功"
+
+[MsgUnfollowSuccess]
+hash = "sha1-afaf49fe9f7ccb11463b3d5beebe99bca5759402"
+other = "{{.Nick}}: {{.URL}} 取关成功"
 
 [MsgUpdateFeedSuccess]
 hash = "sha1-66f1077cea3b2c7b753c549d65d17a1627f70d59"

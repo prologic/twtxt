@@ -211,7 +211,7 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 
 		if nick == "" {
 			ctx.Error = true
-			ctx.Message = "No nick specified to unfollow"
+			ctx.Message = s.tr(ctx, "ErrorNoNick")
 			s.render("error", w, ctx)
 			return
 		}
@@ -220,11 +220,13 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 		if user == nil {
 			log.Fatalf("user not found in context")
 		}
-
+		trdata := map[string]interface{}{}
 		url, ok := user.Following[nick]
+		trdata["Nick"] = nick
+		trdata["URL"] = url
 		if !ok {
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("No feed found by the nick %s", nick)
+			ctx.Message = s.tr(ctx, "ErrorNoFeedByNick", trdata)
 			s.render("error", w, ctx)
 			return
 		}
@@ -233,7 +235,7 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("Error unfollowing feed %s: %s", nick, url)
+			ctx.Message = s.tr(ctx, "ErrorUnfollowingFeed", trdata)
 			s.render("error", w, ctx)
 			return
 		}
@@ -267,7 +269,7 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 		}
 
 		ctx.Error = false
-		ctx.Message = fmt.Sprintf("Successfully stopped following %s: %s", nick, url)
+		ctx.Message = s.tr(ctx, "MsgUnfollowSuccess", trdata)
 		s.render("error", w, ctx)
 
 	}

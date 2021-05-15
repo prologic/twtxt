@@ -166,9 +166,45 @@ other = "由 <a href='https://github.com/prologic' target='_blank'>James Mills</
 hash = "sha1-f585553bb01b2326a11e091a6e07c6426d8c5c35"
 other = "你在想什么？\n您的见地非常重要！\n今天是个好日子! 有什么新鲜事？\n今天有什么有趣的事，马上与大家分享！ \n嗨！👋 朋友，别忘了发推文哦！"
 
+[DeleteAccountFormConfirm]
+hash = "sha1-30b058bb7a1cbd2ae222ec6e0d00e22bcaaadac5"
+other = "您确定要删除账号及所有内容? 此操作无法恢复"
+
+[DeleteAccountFormDeleteAll]
+hash = "sha1-97f32d67c7021a7b7f009703c3db00d6bcb78fab"
+other = "全部删除"
+
+[DeleteAccountNoFeedsSummary]
+hash = "sha1-f7e7f28bf453358e2163d12e530797c71c96d4df"
+other = "您没有任何 Feeds。"
+
+[DeleteAccountSummary]
+hash = "sha1-fc2d82acff9d38666535ec7528e90dc904cb659b"
+other = "您的账号将被永久删除！"
+
+[DeleteAccountTitle]
+hash = "sha1-ee1b9a9f2347505649f78cec43af6e1e86231474"
+other = "删除账号"
+
+[ErrorArchivingFeed]
+hash = "sha1-265e11d3ae2f17ae0711f20540f860031e2fcc96"
+other = "Feed 归档出错"
+
 [ErrorCreateFeed]
 hash = "sha1-2ccc0dcebeac6bd910e18123fb9cbe852718c866"
 other = "创建 Feed 错误：{{.Error}}"
+
+[ErrorDeleteLastTwt]
+hash = "sha1-cd9626a561e932d586d048805638b6137b3aa683"
+other = "删除推文出错"
+
+[ErrorDeletingAccount]
+hash = "sha1-7281529051bbb2b1c2c140a1a023da8975659444"
+other = "删除账号出错"
+
+[ErrorDeletingToken]
+hash = "sha1-1af9bbd37b3a74e097e702ce8a78b9525b9a2948"
+other = "删除令牌出错"
 
 [ErrorFeedNotFound]
 hash = "sha1-d01bdf9ce19f5e183eb2058e4d58a7b5b472f3d4"
@@ -202,9 +238,49 @@ other = "无效的 Feed 名称：{{.Error}}"
 hash = "sha1-52b29810c7c76d469feec362b5c77ccb7531718b"
 other = "密码无效! 提示: 重新设置密码?"
 
+[ErrorInvalidToken]
+hash = "sha1-7ac1506119d660dbaca215d74b0768e238ddc6fa"
+other = "无效 Token"
+
 [ErrorInvalidUsername]
 hash = "sha1-c1d07ba7f57bf718dfb346b21773834cc34c7fcd"
 other = "用户名无效! 提示: 注册一个账号?"
+
+[ErrorLoadingDiscover]
+hash = "sha1-6c78d0bc64a477cc75cec7a5f9c1b5800b402689"
+other = "加载发现数据出错"
+
+[ErrorLoadingFeed]
+hash = "sha1-488ffebda10d862ebc11d543467ff05e84a532cb"
+other = "加载 Feed 出错"
+
+[ErrorLoadingFeeds]
+hash = "sha1-5662fba6346ae041c64d1c03359096c393fa7ed2"
+other = "加载 Feeds 出错"
+
+[ErrorLoadingMentions]
+hash = "sha1-c6cad6996851c5c491ed46f42993b0941046f79d"
+other = "加载提及数据出错"
+
+[ErrorLoadingPage]
+hash = "sha1-be333bf165f0958ae075b50b9f978e75bd63f940"
+other = "加载页面出错！请联系客服。"
+
+[ErrorLoadingProfile]
+hash = "sha1-6b4851574aeb122eb0eb5551decacc8acfaadb0e"
+other = "加载用户配置出错"
+
+[ErrorLoadingSearch]
+hash = "sha1-9467f15a910dc86e62545b9e20f2b0e756d40646"
+other = "加载搜索数据出错"
+
+[ErrorLoadingTimeline]
+hash = "sha1-aab0d6f0ea631fdcbe5ec82b50b086ae23c5c82a"
+other = "加载动态时发生了错误"
+
+[ErrorLoadingTwtFromArchive]
+hash = "sha1-166cf1c04231010e14b7b9c23807ea51e6eda339"
+other = "从存档中加载推文出错，请重试"
 
 [ErrorMaxFailedLogins]
 hash = "sha1-dbebd52a4449b3d284699bd8f79dc7d55699e754"
@@ -214,6 +290,10 @@ other = "太多次登录失败. 账号临时锁定, 请稍候重试."
 hash = "sha1-39346eb648d77a1728736407c7ab8eb83c266df1"
 other = "昵称 和 URL 必须指定"
 
+[ErrorNoExternalFeed]
+hash = "sha1-851bdf435c847926b563a3b23a7249fe1a605734"
+other = "不能找到外部 Feed"
+
 [ErrorNoFeed]
 hash = "sha1-deeac7f92541e6e5f348dc5becc59db7accdf8aa"
 other = "没有 Feed 指定"
@@ -222,13 +302,37 @@ other = "没有 Feed 指定"
 hash = "sha1-de30a4714a243dc78cfe242419ba447532603673"
 other = "没有找到 {{.Nick}} 的 Feed"
 
+[ErrorNoMatchingTwt]
+hash = "sha1-526a0a4c76372ff65d69af750d50c42d1ba6a9fa"
+other = "没有找到匹配的推文"
+
 [ErrorNoNick]
 hash = "sha1-2e0398c6377124d05a7fcb0a83bc2973692aa17c"
 other = "没有指定取关用户昵称"
 
+[ErrorNoPostContent]
+hash = "sha1-dbb586ba4bf044dc51ea2349c24857415e0dfaa9"
+other = "没有提供内容"
+
+[ErrorNoTag]
+hash = "sha1-2276504b9c8d9474f6b925d51dbf30b488b7e536"
+other = "搜索条件必须提供"
+
+[ErrorNoUser]
+hash = "sha1-cabcfb0173ca7b5ff0b0f90a0ee2207b02d39843"
+other = "没有用户指定"
+
+[ErrorPostingTwt]
+hash = "sha1-3335fb1d3ffbc64fc705a63b65a2fee6563c83b1"
+other = "发表推文出错"
+
 [ErrorRegisterDisabled]
 hash = "sha1-58ae30a9afd39e0111c2d0864b81bb12b799820e"
 other = "当前实例禁止注册, 请联系管理员."
+
+[ErrorRenderingPage]
+hash = "sha1-765bc9593ea073002bbab83104e0bab31a160733"
+other = "加载页面出错！请联系客服。"
 
 [ErrorSetFeed]
 hash = "sha1-53f11f7d64c54fdbe51c1650696a7a5f1f4fc011"
@@ -246,9 +350,29 @@ other = "加载动态数据时发生了错误"
 hash = "sha1-7f2f6a15cf8da2b27e5a4af47b58e7ad71c0b3d9"
 other = "错误"
 
+[ErrorTokenExpires]
+hash = "sha1-a0682dcb983fc2fb1fc7d119a8fb933c18e0cca0"
+other = "Token 已过期"
+
 [ErrorUnfollowingFeed]
 hash = "sha1-430f3f412e0802c05e45dc4f23d83059d08079e9"
 other = "{{.Nick}}: {{.URL}} 取关出错"
+
+[ErrorUpdatingUser]
+hash = "sha1-4f65c2690abff8c08713b6d3c5027fdc8eea0f67"
+other = "更新用户出错"
+
+[ErrorUserNotFound]
+hash = "sha1-9acd623494620b9d4d5dbb91781a138357019593"
+other = "用户没有找到"
+
+[ErrorUserOrFeedNotFound]
+hash = "sha1-6a0c81d17564254c7cc8e59f3c34038911a4ed11"
+other = "用户 或 Feed 没有找到"
+
+[ErrorUserRecovery]
+hash = "sha1-4762bb21b3c64efd9e17071f0aca160301597d57"
+other = "错误！电子邮件地址与注册时填写地址不匹配"
 
 [ErrorUsernameExists]
 hash = "sha1-a66924d2fc116739aecea8d10e3ff1fe0570b476"
@@ -534,9 +658,21 @@ other = "您收到的私信列表"
 hash = "sha1-e5204fc48e8ac1f01ba1f391a69aa88ba367d672"
 other = "私信"
 
+[MsgArchiveFeedSuccess]
+hash = "sha1-64e4e8ba0cb0e8f74058e0ef263a173df2d2b2cb"
+other = "Feed 归档成功"
+
 [MsgCreateFeedSuccess]
 hash = "sha1-6c4ce8b4a48e6461594c84e727c722730f967af1"
 other = "创建 {{.Feed}} 成功！"
+
+[MsgDeleteAccountSuccess]
+hash = "sha1-ccbff76316ef62fbbfc9257e5ca8e6c69401175c"
+other = "删除账号成功"
+
+[MsgDeleteTokenSuccess]
+hash = "sha1-065262182c05fd1ffe90891963591d5589fc1581"
+other = "删除令牌成功"
 
 [MsgFollowUserSuccess]
 hash = "sha1-4633defa720997f5a179070ffe8ebc6264424ecc"
@@ -545,6 +681,10 @@ other = "{{.Nick}}: {{.URL}} 关注成功"
 [MsgMessagesSuccessfullySent]
 hash = "sha1-03a2ed9b9721a9755729b829c7623cfa4a9c0586"
 other = "私信已成功发送"
+
+[MsgPasswordResetSuccess]
+hash = "sha1-b4fa66ed409a0c041047c893c4359da1bb5ad8b7"
+other = "密码重置成功"
 
 [MsgTransferFeedSuccess]
 hash = "sha1-562fb7a829c098116e4f3e5eedea209998209fd9"
@@ -557,6 +697,14 @@ other = "{{.Nick}}: {{.URL}} 取关成功"
 [MsgUpdateFeedSuccess]
 hash = "sha1-66f1077cea3b2c7b753c549d65d17a1627f70d59"
 other = "更新 Feed 成功"
+
+[MsgUpdateSettingsSuccess]
+hash = "sha1-2d15d8d21abf06dce5cbabec0cf63139ff64c3da"
+other = "更新设置成功"
+
+[MsgUserRecoveryRequestSent]
+hash = "sha1-a3b2c11ab0b4c328326d2f3e629f52543d4eb230"
+other = "账号恢复请求已发送！请查收邮件并按说明操作"
 
 [NavDiscover]
 hash = "sha1-4827ea22716a74aaf8bbe499fc314bb93f73c65e"
@@ -609,6 +757,10 @@ other = "还没有内容... 稍候再来！"
 [PageDiscoverTitle]
 hash = "sha1-4827ea22716a74aaf8bbe499fc314bb93f73c65e"
 other = "发现"
+
+[PageExternalProfileTitle]
+hash = "sha1-3b7d3a2f266ef12cc74e125fd87a67d6a082898f"
+other = "外部配置 @<{{.Nick}} {{.URL}}>"
 
 [PageFeedsTitle]
 hash = "sha1-ffe8e99492ee9b850395d53f6c519938952fde0d"

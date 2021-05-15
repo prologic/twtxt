@@ -85,7 +85,7 @@ func (s *Server) PageHandler(name string) httprouter.Handle {
 		if err != nil {
 			log.WithError(err).Errorf("error rendering page %s", name)
 			ctx.Error = true
-			ctx.Message = "Error loading help page! Please contact support."
+			ctx.Message = s.tr(ctx, "ErrorRenderingPage")
 			s.render("error", w, ctx)
 			return
 		}
@@ -95,7 +95,7 @@ func (s *Server) PageHandler(name string) httprouter.Handle {
 		if err != nil {
 			log.WithError(err).Error("error parsing front matter")
 			ctx.Error = true
-			ctx.Message = "Error loading page! Please contact support."
+			ctx.Message = s.tr(ctx, "ErrorLoadingPage")
 			s.render("error", w, ctx)
 			return
 		}
@@ -213,7 +213,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 		nick := NormalizeUsername(p.ByName("nick"))
 		if nick == "" {
 			ctx.Error = true
-			ctx.Message = "No user specified"
+			ctx.Message = s.tr(ctx, "ErrorNoUser")
 			s.render("error", w, ctx)
 			return
 		}
@@ -227,7 +227,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 			if err != nil {
 				log.WithError(err).Errorf("error loading user object for %s", nick)
 				ctx.Error = true
-				ctx.Message = "Error loading profile"
+				ctx.Message = s.tr(ctx, "ErrorLoadingProfile")
 				s.render("error", w, ctx)
 				return
 			}
@@ -237,14 +237,14 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 			if err != nil {
 				log.WithError(err).Errorf("error loading feed object for %s", nick)
 				ctx.Error = true
-				ctx.Message = "Error loading profile"
+				ctx.Message = s.tr(ctx, "ErrorLoadingProfile")
 				s.render("error", w, ctx)
 				return
 			}
 			profile = feed.Profile(s.config.BaseURL, ctx.User)
 		} else {
 			ctx.Error = true
-			ctx.Message = "User or Feed Not Found"
+			ctx.Message = s.tr(ctx, "ErrorUserOrFeedNotFound")
 			s.render("404", w, ctx)
 			return
 		}
@@ -280,7 +280,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 		if err := pager.Results(&pagedTwts); err != nil {
 			log.WithError(err).Error("error sorting and paging twts")
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading the timeline"
+			ctx.Message = s.tr(ctx, "ErrorLoadingTimeline")
 			s.render("error", w, ctx)
 			return
 		}
@@ -394,7 +394,7 @@ func (s *Server) ArchiveFeedHandler() httprouter.Handle {
 
 		if feedName == "" {
 			ctx.Error = true
-			ctx.Message = "No feed specified"
+			ctx.Message = s.tr(ctx, "ErrorNoFeed")
 			s.render("error", w, ctx)
 			return
 		}
@@ -404,11 +404,11 @@ func (s *Server) ArchiveFeedHandler() httprouter.Handle {
 			log.WithError(err).Errorf("error loading feed object for %s", feedName)
 			ctx.Error = true
 			if err == ErrFeedNotFound {
-				ctx.Message = "Feed not found"
+				ctx.Message = s.tr(ctx, "ErrorFeedNotFound")
 				s.render("404", w, ctx)
 			}
 
-			ctx.Message = "Error loading feed"
+			ctx.Message = s.tr(ctx, "ErrorLoadingFeed")
 			s.render("error", w, ctx)
 			return
 		}
@@ -422,13 +422,13 @@ func (s *Server) ArchiveFeedHandler() httprouter.Handle {
 		if err := DetachFeedFromOwner(s.db, ctx.User, feed); err != nil {
 			log.WithError(err).Warnf("Error detaching feed owner %s from feed %s", ctx.User.Username, feed.Name)
 			ctx.Error = true
-			ctx.Message = "Error archiving feed"
+			ctx.Message = s.tr(ctx, "ErrorArchivingFeed")
 			s.render("error", w, ctx)
 			return
 		}
 
 		ctx.Error = false
-		ctx.Message = "Successfully archived feed"
+		ctx.Message = s.tr(ctx, "MsgArchiveFeedSuccess")
 		s.render("error", w, ctx)
 	}
 }
@@ -586,7 +586,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 		if r.Method == http.MethodDelete || r.Method == http.MethodPatch {
 			if err := DeleteLastTwt(s.config, ctx.User); err != nil {
 				ctx.Error = true
-				ctx.Message = "Error deleting last twt"
+				ctx.Message = s.tr(ctx, "ErrorDeleteLastTwt")
 				s.render("error", w, ctx)
 			}
 
@@ -606,7 +606,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 		// log.Debugf("form.hash=%v,lastTwt.hash=%v", hash, lastTwt.Hash())
 		if err != nil {
 			ctx.Error = true
-			ctx.Message = "Error deleting last twt"
+			ctx.Message = s.tr(ctx, "ErrorDeleteLastTwt")
 			s.render("error", w, ctx)
 			return
 		}
@@ -614,7 +614,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 		if hash != "" && lastTwt.Hash() == hash {
 			if err := DeleteLastTwt(s.config, ctx.User); err != nil {
 				ctx.Error = true
-				ctx.Message = "Error deleting last twt"
+				ctx.Message = s.tr(ctx, "ErrorDeleteLastTwt")
 				s.render("error", w, ctx)
 			}
 		} else {
@@ -625,7 +625,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		if text == "" {
 			ctx.Error = true
-			ctx.Message = "No post content provided!"
+			ctx.Message = s.tr(ctx, "ErrorNoPostContent")
 			s.render("error", w, ctx)
 			return
 		}
@@ -643,7 +643,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 		if err != nil {
 			log.WithError(err).Errorf("error loading user object for %s", ctx.Username)
 			ctx.Error = true
-			ctx.Message = "Error posting twt"
+			ctx.Message = s.tr(ctx, "ErrorPostingTwt")
 			s.render("error", w, ctx)
 			return
 		}
@@ -672,7 +672,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 		if err != nil {
 			log.WithError(err).Error("error posting twt")
 			ctx.Error = true
-			ctx.Message = "Error posting twt"
+			ctx.Message = s.tr(ctx, "ErrorPostingTwt")
 			s.render("error", w, ctx)
 			return
 		}
@@ -797,7 +797,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 				twt, err = s.archive.Get(hash)
 				if err != nil {
 					ctx.Error = true
-					ctx.Message = "Error loading twt from archive, please try again"
+					ctx.Message = s.tr(ctx, "ErrorLoadingTwtFromArchive")
 					s.render("error", w, ctx)
 					return
 				}
@@ -806,7 +806,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 
 		if twt.IsZero() {
 			ctx.Error = true
-			ctx.Message = "No matching twt found!"
+			ctx.Message = s.tr(ctx, "ErrorNoMatchingTwt")
 			s.render("404", w, ctx)
 			return
 		}
@@ -909,7 +909,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 		if err := pager.Results(&pagedTwts); err != nil {
 			log.WithError(err).Error("error sorting and paging twts")
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading the timeline"
+			ctx.Message = s.tr(ctx, "ErrorLoadingDiscover")
 			s.render("error", w, ctx)
 			return
 		}
@@ -919,7 +919,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 			if err != nil {
 				log.WithError(err).Error("error getting user last twt")
 				ctx.Error = true
-				ctx.Message = "An error occurred while loading the timeline"
+				ctx.Message = s.tr(ctx, "ErrorLoadingDiscover")
 				s.render("error", w, ctx)
 				return
 			}
@@ -951,7 +951,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 
 		if err := pager.Results(&pagedTwts); err != nil {
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading mentions"
+			ctx.Message = s.tr(ctx, "ErrorLoadingMentions")
 			s.render("error", w, ctx)
 			return
 		}
@@ -975,7 +975,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 
 		if tag == "" {
 			ctx.Error = true
-			ctx.Message = "At least search query is required"
+			ctx.Message = s.tr(ctx, "ErrorNoTag")
 			s.render("error", w, ctx)
 		}
 
@@ -1004,7 +1004,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 
 		if err := pager.Results(&pagedTwts); err != nil {
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading search results"
+			ctx.Message = s.tr(ctx, "ErrorLoadingSearch")
 			s.render("error", w, ctx)
 			return
 		}
@@ -1077,7 +1077,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 		feeds, err := s.db.GetAllFeeds()
 		if err != nil {
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading feeds"
+			ctx.Message = s.tr(ctx, "ErrorLoadingFeeds")
 			s.render("error", w, ctx)
 			return
 		}
@@ -1085,7 +1085,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 		feedsources, err := LoadFeedSources(s.config.Data)
 		if err != nil {
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading feeds"
+			ctx.Message = s.tr(ctx, "ErrorLoadingFeeds")
 			s.render("error", w, ctx)
 			return
 		}
@@ -1401,13 +1401,13 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
 			ctx.Error = true
-			ctx.Message = "Error updating user"
+			ctx.Message = s.tr(ctx, "ErrorUpdatingUser")
 			s.render("error", w, ctx)
 			return
 		}
 
 		ctx.Error = false
-		ctx.Message = "Successfully updated settings"
+		ctx.Message = s.tr(ctx, "MsgUpdateSettingsSuccess")
 		s.render("error", w, ctx)
 
 	}
@@ -1422,13 +1422,13 @@ func (s *Server) DeleteTokenHandler() httprouter.Handle {
 
 		if err := s.db.DelToken(signature); err != nil {
 			ctx.Error = true
-			ctx.Message = "Error deleting token"
+			ctx.Message = s.tr(ctx, "ErrorDeletingToken")
 			s.render("error", w, ctx)
 			return
 		}
 
 		ctx.Error = false
-		ctx.Message = "Successfully deleted token"
+		ctx.Message = s.tr(ctx, "MsgDeleteTokenSuccess")
 
 		http.Redirect(w, r, "/settings", http.StatusFound)
 
@@ -1447,7 +1447,7 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 			if err != nil {
 				log.WithError(err).Errorf("error loading user object for %s", nick)
 				ctx.Error = true
-				ctx.Message = "Error loading profile"
+				ctx.Message = s.tr(ctx, "ErrorLoadingProfile")
 				s.render("error", w, ctx)
 				return
 			}
@@ -1462,14 +1462,14 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 			if err != nil {
 				log.WithError(err).Errorf("error loading feed object for %s", nick)
 				ctx.Error = true
-				ctx.Message = "Error loading profile"
+				ctx.Message = s.tr(ctx, "ErrorLoadingProfile")
 				s.render("error", w, ctx)
 				return
 			}
 			ctx.Profile = feed.Profile(s.config.BaseURL, ctx.User)
 		} else {
 			ctx.Error = true
-			ctx.Message = "User or Feed Not Found"
+			ctx.Message = s.tr(ctx, "ErrorUserOrFeedNotFound")
 			s.render("404", w, ctx)
 			return
 		}
@@ -1506,7 +1506,7 @@ func (s *Server) FollowingHandler() httprouter.Handle {
 			if err != nil {
 				log.WithError(err).Errorf("error loading user object for %s", nick)
 				ctx.Error = true
-				ctx.Message = "Error loading profile"
+				ctx.Message = s.tr(ctx, "ErrorLoadingProfile")
 				s.render("error", w, ctx)
 				return
 			}
@@ -1518,7 +1518,7 @@ func (s *Server) FollowingHandler() httprouter.Handle {
 			ctx.Profile = user.Profile(s.config.BaseURL, ctx.User)
 		} else {
 			ctx.Error = true
-			ctx.Message = "User Not Found"
+			ctx.Message = s.tr(ctx, "ErrorUserNotFound")
 			s.render("404", w, ctx)
 			return
 		}
@@ -1554,7 +1554,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 
 		if uri == "" {
 			ctx.Error = true
-			ctx.Message = "Cannot find external feed"
+			ctx.Message = s.tr(ctx, "ErrorNoExternalFeed")
 			s.render("error", w, ctx)
 			return
 		}
@@ -1581,7 +1581,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 		if err := pager.Results(&pagedTwts); err != nil {
 			log.WithError(err).Error("error sorting and paging twts")
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading the timeline"
+			ctx.Message = s.tr(ctx, "ErrorLoadingTimeline")
 			s.render("error", w, ctx)
 			return
 		}
@@ -1609,7 +1609,10 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 			Muted:      ctx.User.HasMuted(uri),
 		}
 
-		ctx.Title = fmt.Sprintf("External profile for @<%s %s>", nick, uri)
+		trdata := map[string]interface{}{}
+		trdata["Nick"] = nick
+		trdata["URL"] = uri
+		ctx.Title = s.tr(ctx, "PageExternalProfileTitle", trdata)
 		s.render("externalProfile", w, ctx)
 	}
 }
@@ -1722,7 +1725,7 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 		// Check if user exist
 		if !s.db.HasUser(username) {
 			ctx.Error = true
-			ctx.Message = "User not found!"
+			ctx.Message = s.tr(ctx, "ErrorUserNotFound")
 			s.render("error", w, ctx)
 			return
 		}
@@ -1731,14 +1734,14 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 		user, err := s.db.GetUser(username)
 		if err != nil {
 			ctx.Error = true
-			ctx.Message = "Error loading user"
+			ctx.Message = s.tr(ctx, "ErrorGetUser")
 			s.render("error", w, ctx)
 			return
 		}
 
 		if recovery != user.Recovery {
 			ctx.Error = true
-			ctx.Message = "Error! The email address you supplied does not match what you registered with :/"
+			ctx.Message = s.tr(ctx, "ErrorUserRecovery")
 			s.render("error", w, ctx)
 			return
 		}
@@ -1775,7 +1778,7 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 
 		// Show success msg
 		ctx.Error = false
-		ctx.Message = "Password request request sent! Please check your email and follow the instructions"
+		ctx.Message = s.tr(ctx, "MsgUserRecoveryRequestSent")
 		s.render("error", w, ctx)
 	}
 }
@@ -1791,7 +1794,7 @@ func (s *Server) ResetPasswordMagicLinkHandler() httprouter.Handle {
 		// Check if valid token
 		if !ok || len(tokens[0]) < 1 {
 			ctx.Error = true
-			ctx.Message = "Invalid token"
+			ctx.Message = s.tr(ctx, "ErrorInvalidToken")
 			s.render("error", w, ctx)
 			return
 		}
@@ -1837,7 +1840,7 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 			// Check token expiry
 			if secs > int64(expiresAt) {
 				ctx.Error = true
-				ctx.Message = "Token expires"
+				ctx.Message = s.tr(ctx, "ErrorTokenExpires")
 				s.render("error", w, ctx)
 				return
 			}
@@ -1845,7 +1848,7 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 			user, err := s.db.GetUser(username)
 			if err != nil {
 				ctx.Error = true
-				ctx.Message = "Error loading user"
+				ctx.Message = s.tr(ctx, "ErrorGetUser")
 				s.render("error", w, ctx)
 				return
 			}
@@ -1855,7 +1858,7 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 				hash, err := s.pm.CreatePassword(password)
 				if err != nil {
 					ctx.Error = true
-					ctx.Message = "Error loading user"
+					ctx.Message = s.tr(ctx, "ErrorGetUser")
 					s.render("error", w, ctx)
 					return
 				}
@@ -1865,7 +1868,7 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 				// Save user
 				if err := s.db.SetUser(username, user); err != nil {
 					ctx.Error = true
-					ctx.Message = "Error loading user"
+					ctx.Message = s.tr(ctx, "ErrorGetUser")
 					s.render("error", w, ctx)
 					return
 				}
@@ -1875,7 +1878,7 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 
 			// Show success msg
 			ctx.Error = false
-			ctx.Message = "Password reset successfully."
+			ctx.Message = s.tr(ctx, "MsgPasswordResetSuccess")
 			s.render("error", w, ctx)
 		} else {
 			ctx.Error = true
@@ -2119,7 +2122,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 		feeds, err := s.db.GetAllFeeds()
 		if err != nil {
 			ctx.Error = true
-			ctx.Message = "An error occured whilst deleting your account"
+			ctx.Message = s.tr(ctx, "ErrorDeletingAccount")
 			s.render("error", w, ctx)
 			return
 		}
@@ -2135,7 +2138,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 						twts, err := GetAllTwts(s.config, nick)
 						if err != nil {
 							ctx.Error = true
-							ctx.Message = "An error occured whilst deleting your account"
+							ctx.Message = s.tr(ctx, "ErrorDeletingAccount")
 							s.render("error", w, ctx)
 							return
 						}
@@ -2145,7 +2148,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 							// Delete archived twts
 							if err := s.archive.Del(twt.Hash()); err != nil {
 								ctx.Error = true
-								ctx.Message = "An error occured whilst deleting your account"
+								ctx.Message = s.tr(ctx, "ErrorDeletingAccount")
 								s.render("error", w, ctx)
 								return
 							}
@@ -2159,7 +2162,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 								if FileExists(fn) {
 									if err := os.Remove(fn); err != nil {
 										ctx.Error = true
-										ctx.Message = "An error occured whilst deleting your account"
+										ctx.Message = s.tr(ctx, "ErrorDeletingAccount")
 										s.render("error", w, ctx)
 										return
 									}
@@ -2170,7 +2173,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 								if FileExists(fn) {
 									if err := os.Remove(fn); err != nil {
 										ctx.Error = true
-										ctx.Message = "An error occured whilst deleting your account"
+										ctx.Message = s.tr(ctx, "ErrorDeletingAccount")
 										s.render("error", w, ctx)
 										return
 									}
@@ -2183,7 +2186,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 				// Delete feed
 				if err := s.db.DelFeed(nick); err != nil {
 					ctx.Error = true
-					ctx.Message = "An error occured whilst deleting your account"
+					ctx.Message = s.tr(ctx, "ErrorDeletingAccount")
 					s.render("error", w, ctx)
 					return
 				}
@@ -2194,7 +2197,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 					if err := os.Remove(fn); err != nil {
 						log.WithError(err).Error("error removing feed")
 						ctx.Error = true
-						ctx.Message = "An error occured whilst deleting your account"
+						ctx.Message = s.tr(ctx, "ErrorDeletingAccount")
 						s.render("error", w, ctx)
 					}
 				}
@@ -2208,7 +2211,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 		twts, err := GetAllTwts(s.config, ctx.User.Username)
 		if err != nil {
 			ctx.Error = true
-			ctx.Message = "An error occured whilst deleting your account"
+			ctx.Message = s.tr(ctx, "ErrorDeletingAccount")
 			s.render("error", w, ctx)
 			return
 		}
@@ -2218,7 +2221,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 			// Delete archived twts
 			if err := s.archive.Del(twt.Hash()); err != nil {
 				ctx.Error = true
-				ctx.Message = "An error occured whilst deleting your account"
+				ctx.Message = s.tr(ctx, "ErrorDeletingAccount")
 				s.render("error", w, ctx)
 				return
 			}
@@ -2233,7 +2236,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 					if err := os.Remove(fn); err != nil {
 						log.WithError(err).Error("error removing media")
 						ctx.Error = true
-						ctx.Message = "An error occured whilst deleting your account"
+						ctx.Message = s.tr(ctx, "ErrorDeletingAccount")
 						s.render("error", w, ctx)
 					}
 				}
@@ -2244,7 +2247,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 					if err := os.Remove(fn); err != nil {
 						log.WithError(err).Error("error removing media")
 						ctx.Error = true
-						ctx.Message = "An error occured whilst deleting your account"
+						ctx.Message = s.tr(ctx, "ErrorDeletingAccount")
 						s.render("error", w, ctx)
 					}
 				}
@@ -2254,7 +2257,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 		// Delete user's primary feed
 		if err := s.db.DelFeed(ctx.User.Username); err != nil {
 			ctx.Error = true
-			ctx.Message = "An error occured whilst deleting your account"
+			ctx.Message = s.tr(ctx, "ErrorDeletingAccount")
 			s.render("error", w, ctx)
 			return
 		}
@@ -2265,7 +2268,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 			if err := os.Remove(fn); err != nil {
 				log.WithError(err).Error("error removing user's feed")
 				ctx.Error = true
-				ctx.Message = "An error occured whilst deleting your account"
+				ctx.Message = s.tr(ctx, "ErrorDeletingAccount")
 				s.render("error", w, ctx)
 			}
 		}
@@ -2273,7 +2276,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 		// Delete user
 		if err := s.db.DelUser(ctx.Username); err != nil {
 			ctx.Error = true
-			ctx.Message = "An error occured whilst deleting your account"
+			ctx.Message = s.tr(ctx, "ErrorDeletingAccount")
 			s.render("error", w, ctx)
 			return
 		}
@@ -2288,7 +2291,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 		ctx.Authenticated = false
 
 		ctx.Error = false
-		ctx.Message = "Successfully deleted account"
+		ctx.Message = s.tr(ctx, "MsgDeleteAccountSuccess")
 		s.render("error", w, ctx)
 	}
 }
@@ -2301,7 +2304,7 @@ func (s *Server) DeleteAccountHandler() httprouter.Handle {
 		feeds, err := s.db.GetAllFeeds()
 		if err != nil {
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading feeds"
+			ctx.Message = s.tr(ctx, "ErrorLoadingFeeds")
 			s.render("error", w, ctx)
 			return
 		}

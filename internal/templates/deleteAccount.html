@@ -2,8 +2,8 @@
   <article class="grid">
     <div>
       <hgroup>
-        <h1>Delete Account</h1>
-        <h2>Your account will be deleted permanently!</h2>
+        <h1>{{tr . "DeleteAccountTitle"}}</h1>
+        <h2>{{tr . "DeleteAccountSummary"}}</h2>
       </hgroup>
     </div>
   </article>
@@ -20,14 +20,14 @@
           {{ end }}
         </ul>
       {{ else }}
-        <p><small>You do not have any feeds.</small></p>
+      <p><small>{{tr . "DeleteAccountNoFeedsSummary"}}</small></p>
       {{ end }}
     </div>
     <div class="grid">
         <div>
-            <form action="/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete your account and all feeds? This cannot be undone!');">
+            <form action="/delete" method="POST" onsubmit="return confirm('{{tr . "DeleteAccountFormConfirm"}}');">
               <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
-              <button type="submit" class="contrast">Delete All</button>
+              <button type="submit" class="contrast">{{tr . "DeleteAccountFormDeleteAll"}}</button>
             </form>
         </div>
     </div>

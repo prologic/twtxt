@@ -1,15 +1,3 @@
-[ErrorNoFeedByNick]
-hash = "sha1-de30a4714a243dc78cfe242419ba447532603673"
-other = "没有找到 {{.Nick}} 的 Feed"
-
-[ErrorNoNick]
-hash = "sha1-2e0398c6377124d05a7fcb0a83bc2973692aa17c"
-other = "没有指定取关用户昵称"
-
-[ErrorUnfollowingFeed]
-hash = "sha1-430f3f412e0802c05e45dc4f23d83059d08079e9"
-other = "{{.Nick}}: {{.URL}} 取关出错"
-
-[MsgUnfollowSuccess]
-hash = "sha1-afaf49fe9f7ccb11463b3d5beebe99bca5759402"
-other = "{{.Nick}}: {{.URL}} 取关成功"
+[ErrorDeletingAccount]
+hash = "sha1-7281529051bbb2b1c2c140a1a023da8975659444"
+other = "删除账号出错"

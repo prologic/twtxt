@@ -525,11 +525,7 @@ func IsImage(fn string) bool {
 		return false
 	}
 
-	if filetype.IsImage(head) {
-		return true
-	}
-
-	return false
+	return filetype.IsImage(head)
 }
 
 func IsAudio(fn string) bool {
@@ -546,11 +542,7 @@ func IsAudio(fn string) bool {
 		return false
 	}
 
-	if filetype.IsAudio(head) {
-		return true
-	}
-
-	return false
+	return filetype.IsAudio(head)
 }
 
 func IsVideo(fn string) bool {
@@ -567,11 +559,7 @@ func IsVideo(fn string) bool {
 		return false
 	}
 
-	if filetype.IsVideo(head) {
-		return true
-	}
-
-	return false
+	return filetype.IsVideo(head)
 }
 
 type ImageOptions struct {

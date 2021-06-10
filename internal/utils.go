@@ -588,20 +588,11 @@ func DownloadImage(conf *Config, url string, resource, name string, opts *ImageO
 	}
 	defer res.Body.Close()
 
-	tf, err := ioutil.TempFile("", "rss2twtxt-*")
+	tf, err := receiveFile(res.Body, "rss2twtxt-*")
+	if tf != nil {
+		defer tf.Close()
+	}
 	if err != nil {
-		log.WithError(err).Error("error creating temporary file")
-		return "", err
-	}
-	defer tf.Close()
-
-	if _, err := io.Copy(tf, res.Body); err != nil {
-		log.WithError(err).Error("error writing temporary file")
-		return "", err
-	}
-
-	if _, err := tf.Seek(0, io.SeekStart); err != nil {
-		log.WithError(err).Error("error seeking temporary file")
 		return "", err
 	}
 
@@ -618,19 +609,8 @@ func DownloadImage(conf *Config, url string, resource, name string, opts *ImageO
 }
 
 func ReceiveAudio(r io.Reader) (string, error) {
-	tf, err := ioutil.TempFile("", "twtxt-upload-*")
+	tf, err := receiveFile(r, "twtxt-upload-*")
 	if err != nil {
-		log.WithError(err).Error("error creating temporary file")
-		return "", err
-	}
-
-	if _, err := io.Copy(tf, r); err != nil {
-		log.WithError(err).Error("error writing temporary file")
-		return "", err
-	}
-
-	if _, err := tf.Seek(0, io.SeekStart); err != nil {
-		log.WithError(err).Error("error seeking temporary file")
 		return "", err
 	}
 
@@ -642,19 +622,8 @@ func ReceiveAudio(r io.Reader) (string, error) {
 }
 
 func ReceiveImage(r io.Reader) (string, error) {
-	tf, err := ioutil.TempFile("", "twtxt-upload-*")
+	tf, err := receiveFile(r, "twtxt-upload-*")
 	if err != nil {
-		log.WithError(err).Error("error creating temporary file")
-		return "", err
-	}
-
-	if _, err := io.Copy(tf, r); err != nil {
-		log.WithError(err).Error("error writing temporary file")
-		return "", err
-	}
-
-	if _, err := tf.Seek(0, io.SeekStart); err != nil {
-		log.WithError(err).Error("error seeking temporary file")
 		return "", err
 	}
 
@@ -666,19 +635,8 @@ func ReceiveImage(r io.Reader) (string, error) {
 }
 
 func ReceiveVideo(r io.Reader) (string, error) {
-	tf, err := ioutil.TempFile("", "twtxt-upload-*")
+	tf, err := receiveFile(r, "twtxt-upload-*")
 	if err != nil {
-		log.WithError(err).Error("error creating temporary file")
-		return "", err
-	}
-
-	if _, err := io.Copy(tf, r); err != nil {
-		log.WithError(err).Error("error writing temporary file")
-		return "", err
-	}
-
-	if _, err := tf.Seek(0, io.SeekStart); err != nil {
-		log.WithError(err).Error("error seeking temporary file")
 		return "", err
 	}
 
@@ -687,6 +645,26 @@ func ReceiveVideo(r io.Reader) (string, error) {
 	}
 
 	return tf.Name(), nil
+}
+
+func receiveFile(r io.Reader, filePattern string) (*os.File, error) {
+	tf, err := ioutil.TempFile("", filePattern)
+	if err != nil {
+		log.WithError(err).Error("error creating temporary file")
+		return nil, err
+	}
+
+	if _, err := io.Copy(tf, r); err != nil {
+		log.WithError(err).Error("error writing temporary file")
+		return tf, err
+	}
+
+	if _, err := tf.Seek(0, io.SeekStart); err != nil {
+		log.WithError(err).Error("error seeking temporary file")
+		return tf, err
+	}
+
+	return tf, nil
 }
 
 func TranscodeAudio(conf *Config, ifn string, resource, name string, opts *AudioOptions) (string, error) {

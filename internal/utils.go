@@ -608,7 +608,7 @@ func DownloadImage(conf *Config, url string, resource, name string, opts *ImageO
 	defer tf.Close()
 
 	if _, err := io.Copy(tf, res.Body); err != nil {
-		log.WithError(err).Error("error writng temporary file")
+		log.WithError(err).Error("error writing temporary file")
 		return "", err
 	}
 
@@ -637,7 +637,7 @@ func ReceiveAudio(r io.Reader) (string, error) {
 	}
 
 	if _, err := io.Copy(tf, r); err != nil {
-		log.WithError(err).Error("error writng temporary file")
+		log.WithError(err).Error("error writing temporary file")
 		return "", err
 	}
 
@@ -661,7 +661,7 @@ func ReceiveImage(r io.Reader) (string, error) {
 	}
 
 	if _, err := io.Copy(tf, r); err != nil {
-		log.WithError(err).Error("error writng temporary file")
+		log.WithError(err).Error("error writing temporary file")
 		return "", err
 	}
 
@@ -685,7 +685,7 @@ func ReceiveVideo(r io.Reader) (string, error) {
 	}
 
 	if _, err := io.Copy(tf, r); err != nil {
-		log.WithError(err).Error("error writng temporary file")
+		log.WithError(err).Error("error writing temporary file")
 		return "", err
 	}
 

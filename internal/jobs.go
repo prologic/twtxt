@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jointwt/twtxt/types"
 	"github.com/robfig/cron"
@@ -152,6 +153,8 @@ type UpdateFeedsJob struct {
 	cache   *Cache
 	archive Archiver
 	db      Store
+
+	lastFetched time.Time
 }
 
 func NewUpdateFeedsJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
@@ -159,6 +162,14 @@ func NewUpdateFeedsJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Ar
 }
 
 func (job *UpdateFeedsJob) Run() {
+	if time.Now().Sub(job.lastFetched) < job.conf.FetchInterval {
+		return
+	}
+
+	defer func() {
+		job.lastFetched = time.Now()
+	}()
+
 	feeds, err := job.db.GetAllFeeds()
 	if err != nil {
 		log.WithError(err).Warn("unable to get all feeds from database")
@@ -206,10 +217,7 @@ func (job *UpdateFeedsJob) Run() {
 	log.Infof("warming cache with local twts for %s", job.conf.BaseURL)
 	job.cache.GetByPrefix(job.conf.BaseURL, true)
 
-	log.Info("updated feed cache")
-
 	log.Info("syncing feed cache ", len(job.cache.Twts))
-
 	if err := job.cache.Store(job.conf.Data); err != nil {
 		log.WithError(err).Warn("error saving feed cache")
 		return

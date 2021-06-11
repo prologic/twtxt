@@ -57,6 +57,7 @@ type Config struct {
 	MaxUploadSize     int64
 	MaxTwtLength      int
 	MaxCacheTTL       time.Duration
+	FetchInterval     time.Duration
 	MaxCacheItems     int
 	MsgsPerPage       int
 	OpenProfiles      bool

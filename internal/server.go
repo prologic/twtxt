@@ -851,6 +851,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("Admin Email: %s", server.config.AdminEmail)
 	log.Infof("Max Twts per Page: %d", server.config.TwtsPerPage)
 	log.Infof("Max Cache TTL: %s", server.config.MaxCacheTTL)
+	log.Infof("Fetch Interval: %s", server.config.FetchInterval)
 	log.Infof("Max Cache Items: %d", server.config.MaxCacheItems)
 	log.Infof("Maximum length of Posts: %d", server.config.MaxTwtLength)
 	log.Infof("Open User Profiles: %t", server.config.OpenProfiles)

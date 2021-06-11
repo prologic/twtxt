@@ -69,6 +69,10 @@ const (
 	// DefaultMaxCacheTTL is the default maximum cache ttl of twts in memory
 	DefaultMaxCacheTTL = time.Hour * 24 * 10 // 10 days 28 days 28 days 28 days
 
+	// DefaultFetchInterval is the default interval used by the global feed cache
+	// to control when to actually fetch and update feeds.
+	DefaultFetchInterval = time.Minute * 5 // 5 minutes
+
 	// DefaultMaxCacheItems is the default maximum cache items (per feed source)
 	// of twts in memory
 	DefaultMaxCacheItems = DefaultTwtsPerPage * 3 // We get bored after paging thorughh > 3 pages :D
@@ -312,6 +316,14 @@ func WithMaxTwtLength(maxTwtLength int) Option {
 func WithMaxCacheTTL(maxCacheTTL time.Duration) Option {
 	return func(cfg *Config) error {
 		cfg.MaxCacheTTL = maxCacheTTL
+		return nil
+	}
+}
+
+// WithFetchInterval sets the cache fetch interval
+func WithFetchInterval(fetchInterval time.Duration) Option {
+	return func(cfg *Config) error {
+		cfg.FetchInterval = fetchInterval
 		return nil
 	}
 }

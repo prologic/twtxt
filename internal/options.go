@@ -71,7 +71,7 @@ const (
 
 	// DefaultFetchInterval is the default interval used by the global feed cache
 	// to control when to actually fetch and update feeds.
-	DefaultFetchInterval = time.Minute * 5 // 5 minutes
+	DefaultFetchInterval = "@every 5m"
 
 	// DefaultMaxCacheItems is the default maximum cache items (per feed source)
 	// of twts in memory
@@ -321,7 +321,8 @@ func WithMaxCacheTTL(maxCacheTTL time.Duration) Option {
 }
 
 // WithFetchInterval sets the cache fetch interval
-func WithFetchInterval(fetchInterval time.Duration) Option {
+// Uses a cron syntax. See: github.com/robfig/cron
+func WithFetchInterval(fetchInterval string) Option {
 	return func(cfg *Config) error {
 		cfg.FetchInterval = fetchInterval
 		return nil

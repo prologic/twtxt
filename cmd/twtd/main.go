@@ -50,7 +50,7 @@ var (
 	maxUploadSize int64
 	maxFetchLimit int64
 	maxCacheTTL   time.Duration
-	fetchInterval time.Duration
+	fetchInterval string
 	maxCacheItems int
 
 	// Pod Secrets
@@ -131,7 +131,7 @@ func init() {
 		&maxCacheTTL, "max-cache-ttl", "C", internal.DefaultMaxCacheTTL,
 		"maximum cache ttl (time-to-live) of cached twts in memory",
 	)
-	flag.DurationVarP(
+	flag.StringVarP(
 		&fetchInterval, "fetch-interval", "", internal.DefaultFetchInterval,
 		"cache fetch interval (how often to update feeds)",
 	)

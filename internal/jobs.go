@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/jointwt/twtxt/types"
 	"github.com/robfig/cron"
@@ -24,10 +23,10 @@ var (
 	StartupJobs map[string]JobSpec
 )
 
-func init() {
+func InitJobs(conf *Config) {
 	Jobs = map[string]JobSpec{
 		"SyncStore":         NewJobSpec("@every 1m", NewSyncStoreJob),
-		"UpdateFeeds":       NewJobSpec("@every 5m", NewUpdateFeedsJob),
+		"UpdateFeeds":       NewJobSpec(conf.FetchInterval, NewUpdateFeedsJob),
 		"UpdateFeedSources": NewJobSpec("@every 15m", NewUpdateFeedSourcesJob),
 
 		"DeleteOldSessions": NewJobSpec("@hourly", NewDeleteOldSessionsJob),
@@ -47,6 +46,7 @@ func init() {
 		"DeleteOldSessions": Jobs["DeleteOldSessions"],
 		"RemoveEmails":      Jobs["RemoveEmails"],
 	}
+
 }
 
 type JobFactory func(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, store Store) cron.Job
@@ -153,8 +153,6 @@ type UpdateFeedsJob struct {
 	cache   *Cache
 	archive Archiver
 	db      Store
-
-	lastFetched time.Time
 }
 
 func NewUpdateFeedsJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
@@ -162,14 +160,6 @@ func NewUpdateFeedsJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Ar
 }
 
 func (job *UpdateFeedsJob) Run() {
-	if time.Now().Sub(job.lastFetched) < job.conf.FetchInterval {
-		return
-	}
-
-	defer func() {
-		job.lastFetched = time.Now()
-	}()
-
 	feeds, err := job.db.GetAllFeeds()
 	if err != nil {
 		log.WithError(err).Warn("unable to get all feeds from database")

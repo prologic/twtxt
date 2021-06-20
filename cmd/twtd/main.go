@@ -133,7 +133,7 @@ func init() {
 	)
 	flag.StringVarP(
 		&fetchInterval, "fetch-interval", "", internal.DefaultFetchInterval,
-		"cache fetch interval (how often to update feeds)",
+		"cache fetch interval (how often to update feeds) in cron syntax (https://pkg.go.dev/github.com/robfig/cron)",
 	)
 	flag.IntVarP(
 		&maxCacheItems, "max-cache-items", "I", internal.DefaultMaxCacheItems,

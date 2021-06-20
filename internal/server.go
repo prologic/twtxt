@@ -429,6 +429,7 @@ func (s *Server) setupWebMentions() {
 }
 
 func (s *Server) setupCronJobs() error {
+	InitJobs(s.config)
 	for name, jobSpec := range Jobs {
 		if jobSpec.Schedule == "" {
 			continue
@@ -436,7 +437,7 @@ func (s *Server) setupCronJobs() error {
 
 		job := jobSpec.Factory(s.config, s.blogs, s.cache, s.archive, s.db)
 		if err := s.cron.AddJob(jobSpec.Schedule, job); err != nil {
-			return err
+			return fmt.Errorf("invalid cron schedule for job %s: %v (see https://pkg.go.dev/github.com/robfig/cron)", name, err)
 		}
 		log.Infof("Started background job %s (%s)", name, jobSpec.Schedule)
 	}

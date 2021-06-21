@@ -23,10 +23,10 @@ var (
 	StartupJobs map[string]JobSpec
 )
 
-func init() {
+func InitJobs(conf *Config) {
 	Jobs = map[string]JobSpec{
 		"SyncStore":         NewJobSpec("@every 1m", NewSyncStoreJob),
-		"UpdateFeeds":       NewJobSpec("@every 5m", NewUpdateFeedsJob),
+		"UpdateFeeds":       NewJobSpec(conf.FetchInterval, NewUpdateFeedsJob),
 		"UpdateFeedSources": NewJobSpec("@every 15m", NewUpdateFeedSourcesJob),
 
 		"DeleteOldSessions": NewJobSpec("@hourly", NewDeleteOldSessionsJob),
@@ -46,6 +46,7 @@ func init() {
 		"DeleteOldSessions": Jobs["DeleteOldSessions"],
 		"RemoveEmails":      Jobs["RemoveEmails"],
 	}
+
 }
 
 type JobFactory func(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, store Store) cron.Job
@@ -206,10 +207,7 @@ func (job *UpdateFeedsJob) Run() {
 	log.Infof("warming cache with local twts for %s", job.conf.BaseURL)
 	job.cache.GetByPrefix(job.conf.BaseURL, true)
 
-	log.Info("updated feed cache")
-
 	log.Info("syncing feed cache ", len(job.cache.Twts))
-
 	if err := job.cache.Store(job.conf.Data); err != nil {
 		log.WithError(err).Warn("error saving feed cache")
 		return

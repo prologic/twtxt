@@ -50,6 +50,7 @@ var (
 	maxUploadSize int64
 	maxFetchLimit int64
 	maxCacheTTL   time.Duration
+	fetchInterval string
 	maxCacheItems int
 
 	// Pod Secrets
@@ -129,6 +130,10 @@ func init() {
 	flag.DurationVarP(
 		&maxCacheTTL, "max-cache-ttl", "C", internal.DefaultMaxCacheTTL,
 		"maximum cache ttl (time-to-live) of cached twts in memory",
+	)
+	flag.StringVarP(
+		&fetchInterval, "fetch-interval", "", internal.DefaultFetchInterval,
+		"cache fetch interval (how often to update feeds) in cron syntax (https://pkg.go.dev/github.com/robfig/cron)",
 	)
 	flag.IntVarP(
 		&maxCacheItems, "max-cache-items", "I", internal.DefaultMaxCacheItems,
@@ -275,6 +280,7 @@ func main() {
 		internal.WithMaxUploadSize(maxUploadSize),
 		internal.WithMaxFetchLimit(maxFetchLimit),
 		internal.WithMaxCacheTTL(maxCacheTTL),
+		internal.WithFetchInterval(fetchInterval),
 		internal.WithMaxCacheItems(maxCacheItems),
 
 		// Pod Secrets

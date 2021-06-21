@@ -429,6 +429,7 @@ func (s *Server) setupWebMentions() {
 }
 
 func (s *Server) setupCronJobs() error {
+	InitJobs(s.config)
 	for name, jobSpec := range Jobs {
 		if jobSpec.Schedule == "" {
 			continue
@@ -436,7 +437,7 @@ func (s *Server) setupCronJobs() error {
 
 		job := jobSpec.Factory(s.config, s.blogs, s.cache, s.archive, s.db)
 		if err := s.cron.AddJob(jobSpec.Schedule, job); err != nil {
-			return err
+			return fmt.Errorf("invalid cron schedule for job %s: %v (see https://pkg.go.dev/github.com/robfig/cron)", name, err)
 		}
 		log.Infof("Started background job %s (%s)", name, jobSpec.Schedule)
 	}
@@ -851,6 +852,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("Admin Email: %s", server.config.AdminEmail)
 	log.Infof("Max Twts per Page: %d", server.config.TwtsPerPage)
 	log.Infof("Max Cache TTL: %s", server.config.MaxCacheTTL)
+	log.Infof("Fetch Interval: %s", server.config.FetchInterval)
 	log.Infof("Max Cache Items: %d", server.config.MaxCacheItems)
 	log.Infof("Maximum length of Posts: %d", server.config.MaxTwtLength)
 	log.Infof("Open User Profiles: %t", server.config.OpenProfiles)

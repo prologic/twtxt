@@ -184,8 +184,16 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 
 	metrics.Gauge("cache", "sources").Set(float64(len(feeds)))
 
+	seen := make(map[string]bool)
 	for feed := range feeds {
+		// Skip feeds we've already fetched by URI
+		// (but possibly referenced by different nicknames/aliases)
+		if _, ok := seen[feed.URL]; ok {
+			continue
+		}
+
 		wg.Add(1)
+		seen[feed.URL] = true
 		fetchers <- struct{}{}
 
 		// anon func takes needed variables as arg, avoiding capture of iterator variables

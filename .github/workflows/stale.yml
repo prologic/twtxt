@@ -23,8 +23,7 @@ jobs:
 
             Thank you.
           stale-issue-label: 'stale'
-          exempt-issue-label: 'on hold'
-          stale-pr-labels:
+          exempt-issue-labels:
             - "on hold"
             - "good first issue"
             - "help wanted"

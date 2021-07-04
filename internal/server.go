@@ -634,6 +634,7 @@ func (s *Server) initRoutes() {
 	s.router.GET("/manage/users", s.ManageUsersHandler())
 	s.router.POST("/manage/adduser", s.AddUserHandler())
 	s.router.POST("/manage/deluser", s.DelUserHandler())
+	s.router.POST("/manage/rstuser", s.RstUserHandler())
 
 	s.router.GET("/deleteFeeds", s.DeleteAccountHandler())
 	s.router.POST("/delete", s.am.MustAuth(s.DeleteAllHandler()))

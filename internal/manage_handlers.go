@@ -396,3 +396,57 @@ func (s *Server) DelUserHandler() httprouter.Handle {
 		s.render("error", w, ctx)
 	}
 }
+
+// RstUserHandler ...
+func (s *Server) RstUserHandler() httprouter.Handle {
+	isAdminUser := IsAdminUserFactory(s.config)
+
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		if !isAdminUser(ctx.User) {
+			ctx.Error = true
+			ctx.Message = "You are not a Pod Owner!"
+			s.render("403", w, ctx)
+			return
+		}
+
+		username := NormalizeUsername(r.FormValue("username"))
+
+		user, err := s.db.GetUser(username)
+		if err != nil {
+			log.WithError(err).Errorf("error loading user object for %s", username)
+			ctx.Error = true
+			ctx.Message = s.tr(ctx, "ErrorGetUser")
+			s.render("error", w, ctx)
+			return
+		}
+
+		newPassword := GenerateRandomToken()
+
+		hash, err := s.pm.CreatePassword(newPassword)
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = s.tr(ctx, "ErrorInvalidPassword")
+			s.render("error", w, ctx)
+			return
+		}
+
+		user.Password = hash
+
+		// Save user
+		if err := s.db.SetUser(username, user); err != nil {
+			ctx.Error = true
+			ctx.Message = s.tr(ctx, "ErrorSetUser")
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Error = false
+		ctx.Message = fmt.Sprintf(
+			"Successfully reset password for %s to: %s",
+			username, newPassword,
+		)
+		s.render("error", w, ctx)
+	}
+}

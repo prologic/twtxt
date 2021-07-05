@@ -7,7 +7,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v3.0.18
+      - uses: actions/stale@v3.0.19
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           stale-issue-message: |-
@@ -23,11 +23,5 @@ jobs:
 
             Thank you.
           stale-issue-label: 'stale'
-          exempt-issue-labels:
-            - "on hold"
-            - "good first issue"
-            - "help wanted"
-          exempt-pr-labels:
-            - "on hold"
-            - "good first issue"
-            - "help wanted"
+          exempt-issue-labels: on hold,good first issue,help wanted
+          exempt-pr-labels: on hold, good first issue,help wanted
